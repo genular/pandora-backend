@@ -1,0 +1,336 @@
+<?php
+
+/**
+ * @Author: LogIN-
+ * @Date:   2018-04-03 12:22:33
+ * @Last Modified by:   LogIN-
+ * @Last Modified time: 2018-07-24 11:39:50
+ */
+namespace SIMON\Dataset;
+
+use League\Csv\Reader;
+use League\Csv\Statement;
+use League\Csv\Writer;
+use \Monolog\Logger;
+use \SIMON\Helpers\Helpers as Helpers;
+
+class DatasetIntersection {
+
+	protected $logger;
+	protected $Helpers;
+
+	public $outcomeColumn = "";
+	public $selectedFeatures = [];
+	protected $temp_upload_dir = "/tmp/uploads";
+
+	public function __construct(
+		Logger $logger,
+		Helpers $Helpers
+	) {
+
+		$this->logger = $logger;
+		$this->Helpers = $Helpers;
+		// Log anything.
+		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed");
+
+		if (!file_exists($this->temp_upload_dir)) {
+			mkdir($this->temp_upload_dir, 0777, true);
+		}
+	}
+	public function array_remove_keys($array, $keys) {
+
+		// array_diff_key() expected an associative array.
+		$assocKeys = array();
+		foreach ($keys as $key) {
+			$assocKeys[$key] = true;
+		}
+
+		return array_diff_key($array, $assocKeys);
+	}
+	/** Create new Resample Dataset from Intersect Calculation
+	 * Creates new CSV files from original file and keeps only columns and samples for specific intersection
+	 */
+	public function generateResamples($queueID, $tempFilePath, $resamples, $allOtherSelections) {
+		$datasets = array();
+
+		$reader = Reader::createFromPath($tempFilePath, 'r');
+		$reader->setHeaderOffset(0);
+		$dataHeader = $reader->getHeader();
+
+		$stmt = (new Statement())
+			->offset(0);
+
+		$records = $stmt->process($reader);
+
+		// Loop all records in original FILE
+		foreach ($records as $recordID => $record) {
+
+			// Loop all created intersections
+			foreach ($resamples as $resampleGroupKey => $resampleGroupValue) {
+
+				foreach ($resampleGroupValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
+
+					if (!isset($datasets[$resampleGroupDataKey])) {
+						$filename = 'genSysFile_queue_' . $queueID . '_group_' . $resampleGroupKey . '_resample_' . $resampleGroupDataKey . '.csv';
+						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"] = $this->temp_upload_dir . '/' . $filename;
+
+						$datasets[$resampleGroupDataKey] = array(
+							"header" => false,
+							"writer" => Writer::createFromPath($resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"], 'w+'),
+						);
+					}
+
+					$listFeatures = $resampleGroupDataValue["listFeatures"];
+
+					$keepColumns = array_merge($listFeatures, $allOtherSelections);
+					$keepColumns = array_intersect($keepColumns, array_keys($record));
+					$keepColumns = array_flip($keepColumns);
+
+					$listSamples = $resampleGroupDataValue["listSamples"];
+
+					foreach ($listSamples as $sampleRange) {
+						$range = explode("-", $sampleRange);
+
+						if (($range[0] <= $recordID) && ($recordID <= $range[1])) {
+
+							foreach ($record as $recordKey => $recordValue) {
+								if (!isset($keepColumns[$recordKey])) {
+									unset($record[$recordKey]);
+								}
+							}
+							ksort($record, SORT_NATURAL);
+
+							if ($datasets[$resampleGroupDataKey]["header"] === false) {
+								$datasets[$resampleGroupDataKey]["header"] = true;
+								$datasets[$resampleGroupDataKey]["writer"]->insertOne(array_keys($record));
+							}
+
+							try {
+								$datasets[$resampleGroupDataKey]["writer"]->insertOne(array_values($record));
+							} catch (CannotInsertRecord $e) {
+								$this->logger->addInfo("==> ERROR => SIMON\Dataset\DatasetIntersection CannotInsertRecord " . $queueID . ": " . json_encode($e->getData()));
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return ($resamples);
+	}
+
+	public function removeEmptyOutcomeValues(array $record): bool {
+		if (isset($record[$this->outcomeColumn]) && trim($record[$this->outcomeColumn]) === "") {
+			return (bool) false;
+		}
+		return (bool) true;
+	}
+
+	public function removeEmptyValues(array $record): bool {
+		foreach (array_keys($this->selectedFeatures) as $featureIndex) {
+			if (isset($record[$featureIndex]) && !is_numeric($record[$featureIndex])) {
+				return (bool) false;
+			}
+		}
+		return (bool) true;
+	}
+
+	/**
+	 * generateDataPresets
+	 *
+	 * Generates JSON (JavaScript Object Notation ) file with
+	 * MySQL commands that are necessarily to generate
+	 * input vectors of shared data
+	 * All other JSON keys except "sql" are just informational
+	 *
+	 * @param  [string] $outcome [table column containing outcome variable]
+	 * @return [string]          [path to the file containing results]
+	 */
+	public function generateDataPresets($filePath, $outcome, $features, $extraction) {
+
+		$data = [];
+		$headerMapping = [];
+
+		$reader = Reader::createFromPath($filePath, 'r');
+		## $delimiter = $this->Helpers->detectDelimiter($filePath);
+		## $reader->setDelimiter($delimiter);
+
+		$reader->setHeaderOffset(0);
+		$dataHeader = $reader->getHeader();
+
+		$this->outcomeColumn = $outcome["remapped"];
+
+		foreach ($features as $feature) {
+			if (!isset($this->selectedFeatures[$feature])) {
+				$this->selectedFeatures[$feature] = true;
+			}
+		}
+
+		$stmt = (new Statement())
+			->offset(0)
+			->where([$this, 'removeEmptyOutcomeValues']);
+
+		// If we are not doing dataset extraction remove all samples/rows that have empty values
+		if ($extraction === false) {
+			$stmt = $stmt->where([$this, 'removeEmptyValues']);
+		}
+		$records = $stmt->process($reader);
+		$samples = array();
+
+		$totalDatapoints = 0;
+		$missingDatapoints = 0;
+		$sparsity = 0;
+
+		if (count($records) > 0) {
+			foreach ($records as $sampleID => $record) {
+
+				if (!isset($samples[$sampleID])) {
+					$samples[$sampleID] = array();
+				}
+
+				foreach ($record as $recordID => $recordValue) {
+					// If column is not in user desired features list skip it
+					if (!isset($this->selectedFeatures[$recordID]) || $recordID === $this->outcomeColumn) {
+						continue;
+					}
+					// Map column name to column number
+					if (!isset($headerMapping[$recordID])) {
+						$headerMapping[$recordID] = array_search($recordID, $dataHeader);
+					}
+					$isNumeric = is_numeric($recordValue);
+					if (!isset($samples[$sampleID][$recordID]) && $isNumeric) {
+						$samples[$sampleID][$recordID] = true;
+					}
+
+					if (!$isNumeric) {
+						$missingDatapoints++;
+					}
+					$totalDatapoints++;
+				}
+			}
+			if ($missingDatapoints > 0 || $totalDatapoints > 0) {
+				$sparsity = ($missingDatapoints / $totalDatapoints);
+				$sparsity = round($sparsity, 2);
+			}
+		} else {
+			$sparsity = 1;
+		}
+
+		/** Sort an array by key - Sort subjects by their ID */
+		ksort($samples, SORT_NATURAL);
+
+		/** Remove variable thats holding all available data */
+		unset($records);
+
+		/** Placeholder for combination across different
+		 * subject feature sets
+		 */
+		$featureSets = array();
+
+		/** Placeholder for combination across different
+		 * shared subject feature sets
+		 */
+		$featureSetsShared = array();
+		$totalMultiSetsIntersections = 0;
+
+		$i = 0;
+		foreach ($samples as $sampleID => $sampleFeatures) {
+			// Limit to maximum number of datasets
+			if ($totalMultiSetsIntersections >= 200) {
+				continue;
+			}
+			$sampleFeatures = array_keys($sampleFeatures);
+			/** Sort an array by key - Maintain sorting order
+			 * of Features so we can use them in hashing algorithm
+			 */
+			ksort($sampleFeatures, SORT_NATURAL);
+
+			/** Calculate unique donor features identifier by
+			 * using MD5 hashing algorithm
+			 */
+			$featuresID = hash('sha512', implode($sampleFeatures, ','));
+
+			if (!isset($featureSets[$featuresID])) {
+				$featureSets[$featuresID] = $sampleFeatures;
+			} else {
+				continue;
+			}
+			ksort($featureSets, SORT_NATURAL);
+
+			foreach ($featureSets as $featuresTempID => $featuresTempValue) {
+				$featuresShared = array_intersect(
+					$featuresTempValue, $sampleFeatures);
+
+				if (!empty($featuresShared)) {
+					ksort($featuresShared, SORT_NATURAL);
+					$featuresSharedID = hash('sha512', implode($featuresShared, ','));
+
+					if (!isset($featureSetsShared[$featuresSharedID])) {
+						$featureSetsShared[$featuresSharedID] = array(
+							'totalFeatures' => count($featuresShared),
+							'listFeatures' => array_values($featuresShared),
+							'listSamples' => [],
+							'totalSamples' => 0,
+							'totalDatapoints' => 0,
+							'selected' => true, // Is the set preselected in GUI?
+						);
+						$totalMultiSetsIntersections++;
+					}
+				}
+			}
+			$i++;
+		}
+
+		// Get number of samples for each feature set
+		foreach ($featureSetsShared as $key => $value) {
+			foreach ($samples as $sampleKey => $sampleValue) {
+				$featuresShared = array_intersect(
+					$value["listFeatures"], array_keys($sampleValue));
+
+				if (count($featuresShared) === $value["totalFeatures"]) {
+					$featureSetsShared[$key]['totalSamples'] += 1;
+					array_push($featureSetsShared[$key]['listSamples'], $sampleKey);
+				}
+			}
+			$featureSetsShared[$key]['totalDatapoints'] = ($featureSetsShared[$key]['totalSamples'] * $featureSetsShared[$key]['totalFeatures']);
+			$featureSetsShared[$key]['listSamples'] = $this->generateRanges($featureSetsShared[$key]['listSamples']);
+		}
+
+		if (!empty($featureSetsShared)) {
+			$data = array_values($featureSetsShared);
+			// Sort data by number of totalSamples
+			usort($data, function ($item1, $item2) {
+				return $item1['totalSamples'] <=> $item2['totalSamples'];
+			});
+		}
+
+		return array("resamples" => $data, "info" => array("sparsity" => $sparsity, "missingDatapoints" => $missingDatapoints, "totalDatapoints" => $totalDatapoints));
+	}
+
+	/**
+	 *
+	 *
+	 */
+	public function generateRanges($aNumbers) {
+		$aNumbers = array_unique($aNumbers);
+		sort($aNumbers);
+		$aGroups = array();
+		for ($i = 0; $i < count($aNumbers); $i++) {
+			if ($i > 0 && ($aNumbers[$i - 1] == $aNumbers[$i] - 1)) {
+				array_push($aGroups[count($aGroups) - 1], $aNumbers[$i]);
+			} else {
+				array_push($aGroups, array($aNumbers[$i]));
+			}
+		}
+		$aRanges = array();
+		foreach ($aGroups as $aGroup) {
+			if (count($aGroup) == 1) {
+				$aRanges[] = $aGroup[0];
+			} else {
+				$aRanges[] = $aGroup[0] . '-' . $aGroup[count($aGroup) - 1];
+			}
+
+		}
+		return $aRanges;
+	}
+}

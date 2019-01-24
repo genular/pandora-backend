@@ -1,0 +1,119 @@
+default:
+    details:
+        title: PLACEHOLDER # Example: "genular"
+        email: PLACEHOLDER # Example: "support@genular.com"
+    # Please generate 8 character random string, this is used for encryption purposes (database, files)
+    salt: PLACEHOLDER
+    # Please generate 16 character random string, this is used in some ajax/http communications
+    # Plase make sure to have same secret defined on front end in config/env_*.json
+    secret: PLACEHOLDER
+    # API of your sendgrid account, for sending emails
+    sendgrid_api: PLACEHOLDER # Example: "SG.jiozGM0FRrmyTddfgfgdzq6dqSNv7j33Y24yadg-INc1dgU"
+    sendgrid_templates:
+        register: PLACEHOLDER # Example: "23434-234-479d-978d-1623432475c0c"
+    # Your SSH Key to be deployed in AI analysis servers
+    ssh_keys:
+        - PLACEHOLDER # Example: - "ssh-rsa /sE7xgkay/+5wderewr/QNnQ1+3Wtw== example@example.com"
+    ## If using could AI deployment mode please enter hetzner API credentials
+    cloud_providers:
+        hetzner:
+            token: PLACEHOLDER
+            analysis: PLACEHOLDER
+        chargebee:
+            site: PLACEHOLDER
+            api: PLACEHOLDER
+    storage:
+        s3:
+            key: PLACEHOLDER # Example: "OPERNifgfgdMYUQhVZo"
+            secret: PLACEHOLDER # Example: "IYTydVkuCrdfgfdggnEXMOlbibuxJdaAfowLTWQH"
+            region: PLACEHOLDER # Example: "ams3"
+            endpoint: PLACEHOLDER # Example: "https://ams3.digitaloceanspaces.com"
+            bucket: PLACEHOLDER # Example: "genular"
+    ## In this section we can configure specific details for each backend server module
+    analysis:
+        ## Path to the storage directory (/tmp)
+        data_path: PLACEHOLDER
+        ## Database configuration
+        database:
+            ## Database host IP address
+            host: PLACEHOLDER
+            ## Database host port
+            port: PLACEHOLDER
+            ## Database username
+            user: PLACEHOLDER
+            ## Password
+            password: PLACEHOLDER
+            ## Table name
+            dbname: PLACEHOLDER
+        ## Current web server general configuration
+        server:
+            debug: TRUE
+            ## Domain name
+            url: PLACEHOLDER_ANALYSIS_URL
+            ## IP address
+            host: PLACEHOLDER
+            ## Port
+            port: 8181
+            ## SSL?
+            ssl: FALSE
+    plots:
+        ## Path to the storage directory (/tmp)
+        data_path: PLACEHOLDER
+        ## Database configuration
+        database:
+            ## Database host IP address
+            host: PLACEHOLDER
+            ## Database host port
+            port: PLACEHOLDER
+            ## Database username
+            user: PLACEHOLDER
+            ## Password
+            password: PLACEHOLDER
+            ## Table name
+            dbname: PLACEHOLDER
+        server:
+            debug: TRUE
+            url: PLACEHOLDER_PLOTS_URL
+            host: PLACEHOLDER
+            port: 8184
+            ssl: FALSE
+    backend:
+        ## Path to the storage directory (/tmp)
+        data_path: PLACEHOLDER
+        ## Database configuration
+        database:
+            ## Database host IP address
+            host: PLACEHOLDER
+            ## Database host port
+            port: PLACEHOLDER
+            ## Database username
+            user: PLACEHOLDER
+            ## Password
+            password: PLACEHOLDER
+            ## Table name
+            dbname: PLACEHOLDER
+        server:
+            debug: TRUE
+            url: PLACEHOLDER_BACKEND_URL
+            host: PLACEHOLDER
+            port: 8186
+            ssl: FALSE
+    cron:
+        ## Path to the storage directory (/tmp)
+        data_path: PLACEHOLDER
+        ## Database configuration
+        database:
+            ## Database host IP address
+            host: PLACEHOLDER
+            ## Database host port
+            port: PLACEHOLDER
+            ## Database username
+            user: PLACEHOLDER
+            ## Password
+            password: PLACEHOLDER
+            ## Table name
+            dbname: PLACEHOLDER
+    ## Front-end dashboard interface domain
+    frontend:
+        server:
+            url: PLACEHOLDER_FRONTEND_URL

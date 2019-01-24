@@ -1,0 +1,189 @@
+<?php
+
+/**
+ * @Author: LogIN-
+ * @Date:   2018-04-03 12:22:33
+ * @Last Modified by:   LogIN-
+ * @Last Modified time: 2018-07-09 09:28:25
+ */
+namespace SIMON\System;
+use Noodlehaus\Config as Config;
+
+// PSR 7 standard.
+use \Medoo\Medoo;
+use \Monolog\Logger;
+use \SIMON\Helpers\Helpers as Helpers;
+
+class ResumableUpload {
+	protected $database;
+	protected $logger;
+	protected $Config;
+	protected $Helpers;
+
+	protected $temp_upload_dir = "/tmp/uploads";
+
+	public function __construct(
+		Medoo $database,
+		Logger $logger,
+		Config $Config,
+		Helpers $Helpers
+	) {
+		$this->database = $database;
+		$this->logger = $logger;
+		$this->Config = $Config;
+		$this->Helpers = $Helpers;
+
+		// Log anything.
+		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed");
+
+		if (!file_exists($this->temp_upload_dir)) {
+			mkdir($this->temp_upload_dir, 0777, true);
+		}
+	}
+	/**
+	 * Moves the uploaded file to the upload directory and assigns it a unique name
+	 * to avoid overwriting an existing uploaded file.
+	 * @param file $uploaded file uploaded file to move
+	 */
+	function moveUploadedFile($tmp_file_path, $filename) {
+		$errors = array();
+		$filename = $this->Helpers->sanitizeFileName($filename); # remove problematic symbols
+
+		$info = pathinfo($filename);
+		$extension = isset($info['extension']) ? '.' . strtolower($info['extension']) : '';
+		$filename = $info['filename'];
+
+		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $filename, $extension, $errors);
+		$savePath = $this->temp_upload_dir . "/" . $saveName . $extension;
+
+		if (move_uploaded_file($tmp_file_path, $savePath)) {
+			return $savePath;
+		} else {
+			return false;
+		}
+	}
+
+	public function resumableUpload($tmp_file_path, $filename, $post) {
+		$successes = array();
+		$errors = array();
+		$warnings = array();
+
+		$identifier = (isset($post['dzuuid'])) ? trim($post['dzuuid']) : '';
+		$file_chunks_folder = $this->temp_upload_dir . "/" . $identifier;
+		if (!is_dir($file_chunks_folder)) {
+			mkdir($file_chunks_folder, 0777, true);
+		}
+
+		$filename = $this->Helpers->sanitizeFileName($filename); # remove problematic symbols
+
+		$info = pathinfo($filename);
+		$extension = isset($info['extension']) ? '.' . strtolower($info['extension']) : '';
+		$filename = $info['filename'];
+		$totalSize = (isset($post['dztotalfilesize'])) ? (int) $post['dztotalfilesize'] : 0;
+		$totalChunks = (isset($post['dztotalchunkcount'])) ? (int) $post['dztotalchunkcount'] : 0;
+		$chunkInd = (isset($post['dzchunkindex'])) ? (int) $post['dzchunkindex'] : 0;
+		$chunkSize = (isset($post['dzchunksize'])) ? (int) $post['dzchunksize'] : 0;
+		$startByte = (isset($post['dzchunkbyteoffset'])) ? (int) $post['dzchunkbyteoffset'] : 0;
+		$chunk_file = "$file_chunks_folder/{$filename}.part{$chunkInd}";
+
+		if (!move_uploaded_file($tmp_file_path, $chunk_file)) {
+			$errors[] = array('text' => 'Move error', 'name' => $filename, 'index' => $chunkInd);
+		}
+
+		if (count($errors) == 0 and $new_path = $this->checkAllParts($file_chunks_folder,
+			$filename,
+			$extension,
+			$totalSize,
+			$totalChunks,
+			$successes, $errors, $warnings) and count($errors) == 0) {
+			return array('final' => true, 'path' => $new_path, 'successes' => $successes, 'errors' => $errors, 'warnings' => $warnings);
+		}
+
+		return array('final' => false, 'successes' => $successes, 'errors' => $errors, 'warnings' => $warnings);
+	}
+
+	public function checkAllParts($file_chunks_folder,
+		$filename,
+		$extension,
+		$totalSize,
+		$totalChunks,
+		&$successes, &$errors, &$warnings) {
+		// reality: count all the parts of this file
+		$parts = glob("$file_chunks_folder/*");
+		$successes[] = count($parts) . " of $totalChunks parts done so far in $file_chunks_folder";
+
+		// check if all the parts present, and create the final destination file
+		if (count($parts) == $totalChunks) {
+			$loaded_size = 0;
+
+			foreach ($parts as $file) {
+				$loaded_size += filesize($file);
+			}
+
+			if ($loaded_size >= $totalSize and $new_path = $this->createFileFromChunks(
+				$file_chunks_folder,
+				$filename,
+				$extension,
+				$totalSize,
+				$totalChunks,
+				$successes, $errors, $warnings) and count($errors) == 0) {
+				$this->cleanUp($file_chunks_folder);
+
+				return $new_path;
+			}
+		}
+		return false;
+	}
+
+	public function cleanUp($file_chunks_folder) {
+		// rename the temporary directory (to avoid access from other concurrent chunks uploads) and than delete it
+		if (rename($file_chunks_folder, $file_chunks_folder . '_UNUSED')) {
+			$this->Helpers->rrmdir($file_chunks_folder . '_UNUSED');
+		} else {
+			$this->Helpers->rrmdir($file_chunks_folder);
+		}
+	}
+
+	/**
+	 * Check if all the parts exist, and
+	 * gather all the parts of the file together
+	 * @param string $file_chunks_folder - the temporary directory holding all the parts of the file
+	 * @param string $fileName - the original file name
+	 * @param string $totalSize - original file size (in bytes)
+	 */
+	public function createFileFromChunks($file_chunks_folder, $fileName, $extension, $total_size, $total_chunks,
+		&$successes, &$errors, &$warnings) {
+		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $fileName, $extension, $errors);
+
+		if (!$saveName) {
+			return false;
+		}
+
+		$fp = fopen($this->temp_upload_dir . "/" . $saveName . $extension, 'w');
+		if ($fp === false) {
+			$errors[] = 'cannot create the destination file';
+			return false;
+		}
+
+		for ($i = 0; $i < $total_chunks; $i++) {
+			fwrite($fp, file_get_contents($file_chunks_folder . '/' . $fileName . '.part' . $i));
+		}
+		fclose($fp);
+
+		return $this->temp_upload_dir . "/" . $saveName . $extension;
+	}
+
+	public function getNextAvailableFilename($rel_path, $orig_file_name, $extension, &$errors) {
+
+		if (file_exists($rel_path . "/" . $orig_file_name . $extension)) {
+			$i = 0;
+			while (file_exists($rel_path . "/" . $orig_file_name . "_" . (++$i) . $extension) and $i < 10000) {}
+			if ($i >= 10000) {
+				$errors[] = "Can not create unique name for saving file " . $orig_file_name . $extension;
+				return false;
+			}
+			return $orig_file_name . "_" . $i;
+		}
+		return $orig_file_name;
+	}
+}

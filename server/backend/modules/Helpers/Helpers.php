@@ -1,0 +1,333 @@
+<?php
+
+/**
+ * @Author: LogIN-
+ * @Date:   2018-04-03 12:22:33
+ * @Last Modified by:   LogIN-
+ * @Last Modified time: 2018-07-24 09:58:58
+ */
+namespace SIMON\Helpers;
+
+class Helpers {
+
+	public function castArrayValues($input) {
+		// Cast all numeric values to INT
+		foreach ($input as $rowKey => $rowItem) {
+			foreach ($rowItem as $rowItemKey => $rowItemValue) {
+				if (is_numeric($rowItemValue)) {
+					// Try to convert the string to a float
+					$floatVal = floatval($rowItemValue);
+					// If the parsing succeeded and the value is not equivalent to an int
+					if ($floatVal && intval($floatVal) != $floatVal) {
+						$input[$rowKey][$rowItemKey] = floatval($rowItemValue);
+					} else {
+						$input[$rowKey][$rowItemKey] = intval($rowItemValue);
+					}
+				}
+			}
+		}
+		return $input;
+	}
+
+	/**
+	 * @param string $csvFile Path to the CSV file
+	 * @return string Delimiter
+	 */
+	public function detectDelimiter($csvFile) {
+		$delimiters = array(
+			';' => 0,
+			',' => 0,
+			"\t" => 0,
+			"|" => 0,
+		);
+
+		$handle = fopen($csvFile, "r");
+		$firstLine = fgets($handle);
+		fclose($handle);
+		foreach ($delimiters as $delimiter => &$count) {
+			$count = count(str_getcsv($firstLine, $delimiter));
+		}
+
+		return array_search(max($delimiters), $delimiters);
+	}
+
+	public function compressPath($initial_path) {
+		$renamed_path = dirname($initial_path) . "/" . md5(basename($initial_path));
+		rename($initial_path, $renamed_path);
+
+		// 0. GZ the file
+		$tar_cmd = "tar -zcvf " . $renamed_path . ".tar.gz -C " . dirname($renamed_path) . " " . basename($renamed_path);
+
+		$gzipped_path = exec($tar_cmd);
+		$gzipped_path = $renamed_path . ".tar.gz";
+
+		return array($renamed_path, $gzipped_path);
+	}
+	/**
+	 * [normalizeDataNames description]
+	 * @param  [type] $string [description]
+	 * @return [type]         [description]
+	 */
+	public function normalizeDataNames($string) {
+		$string = trim($string);
+		$string = str_replace("+", " pos ", $string);
+		$string = str_replace("-", " neg ", $string);
+		$string = preg_replace('/\s+/', '_', $string);
+		$string = str_replace("__", "_", $string);
+		$string = str_replace("/", "_", $string);
+		$string = str_replace("(", "", $string);
+		$string = str_replace(")", "", $string);
+		$string = str_replace(":", "", $string);
+		$string = preg_replace("/[^A-Za-z0-9_]/", '', $string);
+		$string = str_replace("__", "_", $string);
+		$string = str_replace("__", "_", $string);
+
+		return $string;
+	}
+	/**
+	 * Convert a multi-dimensional, associative array to CSV data
+	 * @param  array $data the array of data
+	 * @return string       CSV text
+	 */
+	public function str_putcsv($data) {
+		# Generate CSV data from array
+		$fh = fopen('php://temp', 'rw'); # don't create a file, attempt
+		# to use memory instead
+
+		# write out the data
+		fputcsv($fh, $data);
+		rewind($fh);
+		$csv = stream_get_contents($fh);
+		fclose($fh);
+
+		return $csv;
+	}
+
+	public function validateCSVFileHeader($filePath) {
+
+		$info = pathinfo($filePath);
+		$data = array(
+			'info' => $info,
+			'filename' => $info['filename'],
+			'item_type' => (substr($info['filename'], 0, 10) !== "genSysFile") ? 1 : 2,
+			'extension' => isset($info['extension']) ? '.' . strtolower($info['extension']) : '',
+			'mime_type' => mime_content_type($filePath),
+			'filesize' => filesize($filePath),
+			'file_hash' => hash_file('sha256', $filePath),
+			'details' => array("header" => array("original" => "", "formatted" => [])),
+			'message' => []
+		);
+		// Skip header check for system files and do it only for user files
+		if (file_exists($filePath) && $data['item_type'] === 1) {
+			$header = trim(fgets(fopen($filePath, 'r')));
+			// Remove newline character
+			if (substr($header, -2) === "\n") {
+				$header = substr($header, 0, -2);
+			}
+
+			$data['details']["header"]["original"] = $header;
+			$header_items = str_getcsv($header);
+			unset($header);
+
+			if (is_array($header_items) && count($header_items) > 0) {
+				$remapped = array();
+				foreach ($header_items as $itemKey => $itemValue) {
+					$itemValueHash = md5($itemKey . $itemValue);
+					$remapped[$itemKey] = "column" . $itemKey;
+					if (!isset($data['details']["header"]["formatted"][$itemValueHash])) {
+						$data['details']["header"]["formatted"][$itemValueHash] = array("original" => $itemValue, "position" => $itemKey, "remapped" => $remapped[$itemKey]);
+					}
+				}
+				$headerReplacedCSV = implode(',', $remapped);
+				$replace_cmd = exec("sed -i '1c\\" . $headerReplacedCSV . "' " . $filePath);
+				if ($replace_cmd !== "") {
+					array_push($data['message'], "Cannot reformat file header, please use only alphanumeric characters");
+				}
+			} else {
+				array_push($data['message'], "Cannot detect header items, please check delimiters");
+			}
+		}
+
+		return ($data);
+	}
+
+	/**
+	 * Determine if the provided value contains only alpha characters with dashed and underscores.
+	 *
+	 */
+	public function validateHeaderItem($input) {
+		if (empty($input)) {
+			return false;
+		}
+		$pattern = '/^([a-z0-9ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝàáâãäåçèéêëìíîïðòóôõöùúûüýÿ_-])+$/i';
+		if (!preg_match($pattern, $input) !== false) {
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * Decrypt data from a CryptoJS json encoding string
+	 *
+	 * @param mixed $passphrase
+	 * @param mixed $jsonString
+	 * @return mixed
+	 */
+	public function cryptoJsAesDecrypt($passphrase, $jsonString) {
+		$jsondata = json_decode($jsonString, true);
+		try {
+			$salt = hex2bin($jsondata["s"]);
+			$iv = hex2bin($jsondata["iv"]);
+		} catch (Exception $e) {return null;}
+		$ct = base64_decode($jsondata["ct"]);
+		$concatedPassphrase = $passphrase . $salt;
+		$md5 = array();
+		$md5[0] = md5($concatedPassphrase, true);
+		$result = $md5[0];
+		for ($i = 1; $i < 3; $i++) {
+			$md5[$i] = md5($md5[$i - 1] . $concatedPassphrase, true);
+			$result .= $md5[$i];
+		}
+		$key = substr($result, 0, 32);
+		$data = openssl_decrypt($ct, 'aes-256-cbc', $key, true, $iv);
+		return json_decode($data, true);
+	}
+	/**
+	 * Encrypt value to a cryptojs compatiable json encoding string
+	 *
+	 * @param mixed $passphrase
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function cryptoJsAesEncrypt($passphrase, $value) {
+		$salt = openssl_random_pseudo_bytes(8);
+		$salted = '';
+		$dx = '';
+		while (strlen($salted) < 48) {
+			$dx = md5($dx . $passphrase . $salt, true);
+			$salted .= $dx;
+		}
+		$key = substr($salted, 0, 32);
+		$iv = substr($salted, 32, 16);
+		$encrypted_data = openssl_encrypt(json_encode($value), 'aes-256-cbc', $key, true, $iv);
+		$data = array("ct" => base64_encode($encrypted_data), "iv" => bin2hex($iv), "s" => bin2hex($salt));
+		return json_encode($data);
+	}
+	/**
+	 * @return array
+	 */
+	private function crc64Table() {
+		$crc64tab = [];
+
+		// ECMA polynomial
+		$poly64rev = (0xC96C5795 << 32) | 0xD7870F42;
+
+		// ISO polynomial
+		// $poly64rev = (0xD8 << 56);
+
+		for ($i = 0; $i < 256; $i++) {
+			for ($part = $i, $bit = 0; $bit < 8; $bit++) {
+				if ($part & 1) {
+					$part = (($part >> 1) & ~(0x8 << 60)) ^ $poly64rev;
+				} else {
+					$part = ($part >> 1) & ~(0x8 << 60);
+				}
+			}
+
+			$crc64tab[$i] = $part;
+		}
+
+		return $crc64tab;
+	}
+
+	/**
+	 * @param string $string
+	 * @param string $format
+	 * @return mixed
+	 *
+	 * Formats:
+	 *  crc64('php'); // afe4e823e7cef190
+	 *  crc64('php', '0x%x'); // 0xafe4e823e7cef190
+	 *  crc64('php', '0x%X'); // 0xAFE4E823E7CEF190
+	 *  crc64('php', '%d'); // -5772233581471534704 signed int
+	 *  crc64('php', '%u'); // 12674510492238016912 unsigned int
+	 */
+	public function crc64($string, $format = '%x') {
+		static $crc64tab;
+
+		if ($crc64tab === null) {
+			$crc64tab = $this->crc64Table();
+		}
+
+		$crc = 0;
+
+		for ($i = 0; $i < strlen($string); $i++) {
+			$crc = $crc64tab[($crc ^ ord($string[$i])) & 0xff] ^ (($crc >> 8) & ~(0xff << 56));
+		}
+
+		return sprintf($format, $crc);
+	}
+
+	public function generateRandomString($length = 10) {
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i = 0; $i < $length; $i++) {
+			$randomString .= $characters[rand(0, $charactersLength - 1)];
+		}
+		return $randomString;
+	}
+
+	public function startsWith($haystack, $needle) {
+		$length = strlen($needle);
+		return (substr($haystack, 0, $length) === $needle);
+	}
+
+	public function endsWith($haystack, $needle) {
+		$length = strlen($needle);
+
+		return $length === 0 ||
+			(substr($haystack, -$length) === $needle);
+	}
+
+	/** Remove all files, folders and their subfolders
+	 *
+	 */
+	public function rrmdir($dir) {
+		if (is_dir($dir)) {
+			$objects = scandir($dir);
+			foreach ($objects as $object) {
+				if ($object != "." && $object != "..") {
+					if (filetype($dir . "/" . $object) == "dir") {
+						$this->rrmdir($dir . "/" . $object);
+					} else {
+						unlink($dir . "/" . $object);
+					}
+
+				}
+			}
+			reset($objects);
+			rmdir($dir);
+		}
+	}
+	/**
+	 * Returns a safe filename, for a given platform (OS), by replacing all
+	 * dangerous characters with an underscore.
+	 *
+	 * @param string $dangerous_filename The source filename to be "sanitized"
+	 * @param string $platform The target OS
+	 *
+	 * @return Boolean string A safe version of the input filename
+	 */
+	public function sanitizeFileName($dangerous_filename, $platform = 'Unix') {
+		if (in_array(strtolower($platform), array('unix', 'linux'))) {
+			// our list of "dangerous characters", add/remove characters if necessary
+			$dangerous_characters = array(" ", '"', "'", "&", "/", "\\", "?", "#");
+		} else {
+			// no OS matched? return the original filename then...
+			return $dangerous_filename;
+		}
+
+		// every forbidden character is replace by an underscore
+		return str_replace($dangerous_characters, '_', $dangerous_filename);
+	}
+}

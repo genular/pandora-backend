@@ -1,0 +1,48 @@
+{
+    "name": "simon/backend",
+    "description": "PHP API Backend Service for SIMON Backend Server",
+    "type": "project",
+    "require":
+    {
+        "dilab/resumable.php": "^0.1.4",
+        "phpmailer/phpmailer": "^6.0",
+        "monolog/monolog": "^1.23",
+        "slim/slim": "^3.9",
+        "slim/php-view": "^2.2",
+        "catfan/medoo": "^1.5",
+        "unicoart/slim-token-authentication": "dev-master",
+        "symfony/yaml": "^4.0",
+        "braintree/braintree_php": "^3.30",
+        "hassankhan/config": "^1.0",
+        "sendgrid/sendgrid": "^6.2",
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "league/flysystem-webdav": "^1.0",
+        "league/flysystem-sftp": "^1.0",
+        "aws/aws-sdk-php": "^3.61",
+        "guzzlehttp/guzzle": "^6.3",
+        "league/csv": "^9.0",
+        "league/container": "^2.4",
+        "matthiasmullie/scrapbook": "^1.4",
+        "paquettg/php-html-parser": "^1.7"
+    },
+    "authors": [
+    {
+        "name": "Ivan Tomic",
+        "email": "info@genular.com"
+    }],
+    "config":
+    {
+        "process-timeout": 0
+    },
+    "scripts":
+    {
+        "start": "php -S 127.0.0.1:8186 -t ./public"
+    },
+    "autoload": {
+        "psr-4": {
+            "SIMON\\": ["modules/"]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
