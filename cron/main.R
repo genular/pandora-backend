@@ -438,14 +438,14 @@ for (dataset in datasets) {
     } ## END caret model/algorithm loop
 
     resample_time_end <- Sys.time()
-    resample_total_time <- as.numeric(difftime(resample_time_end, resample_time_start,  units = c("secs")), units="secs")
+    resample_total_time <- as.numeric(difftime(resample_time_end, resample_time_start,  units = c("secs")))
     resample_total_time_ms <- ceiling(resample_total_time * 1000)
     updateDatabaseFiled("dataset_resamples", "processing_time", resample_total_time_ms, "id", dataset$resampleID)
 
 } ## MAIN DATASET LOOP END
 
 end_time <- Sys.time()
-total_time <- as.numeric(difftime(end_time, start_time,  units = c("secs")), units="secs")
+total_time <- as.numeric(difftime(end_time, start_time,  units = c("secs")))
 total_time_ms <- ceiling(total_time * 1000)
 
 updateDatabaseFiled("dataset_queue", "processing_time", total_time_ms, "id", serverData$queueID)

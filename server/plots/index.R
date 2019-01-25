@@ -25,10 +25,11 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/plots/stats", simon$handle$stats, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/correlation/render-options", simon$handle$plots$correlation$renderOptions, serializer=serializer_unboxed_json())
-    router$handle("GET", "/plots/correlation/render-plot", simon$handle$plots$correlation$renderPlot, serializer=serializer_content_type(list(type='image/png')))
+    router$handle("GET", "/plots/correlation/render-plot", simon$handle$plots$correlation$renderPlot, serializer=serializer_unboxed_json())
 
-    router$handle("GET", "/plots/heatmap/render-plot", simon$handle$plots$heatmap$renderPlot, serializer=serializer_content_type(list(type='image/png')))
-    router$handle("GET", "/plots/variableImportance/render-plot", simon$handle$plots$variableImportance$renderPlot, serializer=serializer_content_type(list(type='image/png')))
+    router$handle("GET", "/plots/heatmap/render-plot", simon$handle$plots$heatmap$renderPlot, serializer=serializer_unboxed_json())
+
+    router$handle("GET", "/plots/variableImportance/render-plot", simon$handle$plots$variableImportance$renderPlot, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/stats/multi-class", simon$handle$plots$stats$multiClass, serializer=serializer_unboxed_json())
     router$handle("GET", "/plots/stats/two-class", simon$handle$plots$stats$twoClass, serializer=serializer_unboxed_json())

@@ -74,7 +74,7 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         print(g_plot)
 
         dev.off() 
-        RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt")
+        return (list(image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))))
     }
 )
 

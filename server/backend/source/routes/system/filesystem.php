@@ -4,12 +4,19 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-24 12:17:19
+ * @Last Modified time: 2019-01-25 09:31:33
  */
 
 use Slim\Http\Request;
 use Slim\Http\Response;
 
+/**
+ * Multi part ajax file upload
+ *
+ * @param  {array} $_FILES
+ *
+ * @return {json} JSON encoded API response object
+ */
 $app->post('/backend/system/filesystem/upload', function (Request $request, Response $response, array $args) {
 	$success = false;
 	$message = array();
@@ -96,7 +103,14 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 });
 
-$app->post('/backend/system/filesystem/list', function (Request $request, Response $response, array $args) {
+/**
+ * Retrives list of files fot the user uploaded in specific user directory
+ *
+ * @param  {object} submitData Object containing one string variable: selectedDirectory that corresponds to upload_directory column in users_files table
+ *
+ * @return {json} JSON encoded API response object
+ */
+$app->get('/backend/system/filesystem/list/{fileID:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
 
@@ -106,20 +120,30 @@ $app->post('/backend/system/filesystem/list', function (Request $request, Respon
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$post = $request->getParsedBody();
-	if (isset($post['selectedDirectory'])) {
-		$selectedDirectory = urldecode(base64_decode($post['selectedDirectory']));
-	} else {
-		$selectedDirectory = urldecode(base64_decode($post['selectedDirectory']));
+	$submitData = false;
+	if (isset($args['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
 	}
 
-	$details = $FileSystem->getAllFilesByUserID($user_id, "uploads", false);
+	$selectedDirectory = "uploads";
+	if ($submitData && isset($submitData['selectedDirectory'])) {
+		$selectedDirectory = $submitData['selectedDirectory'];
+	}
 
-	return $response->withJson(["success" => $success, "message" => $details]);
+	$message = $FileSystem->getAllFilesByUserID($user_id, "uploads", false);
+
+	return $response->withJson(["success" => $success, "message" => $message]);
 
 });
 
-$app->get('/backend/system/filesystem/delete/{file_id:.*}', function (Request $request, Response $response, array $args) {
+/**
+ * Deletes file from database and from file system
+ *
+ * @param  {int} fileID ID of the desired file to be deleted from users_files database table
+ *
+ * @return {json} JSON encoded API response object
+ */
+$app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
 
@@ -128,22 +152,32 @@ $app->get('/backend/system/filesystem/delete/{file_id:.*}', function (Request $r
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$file_id = intval($args['file_id']);
-	$file_details = $FileSystem->getFileDetails($file_id, false);
+	if (isset($args['fileID'])) {
+		$fileID = (int) $args['fileID'];
+		$file_details = $FileSystem->getFileDetails($fileID, false);
 
-	if ($file_details !== false && $user_id == $file_details["uid"]) {
-		$message = $FileSystem->deleteFileByID($file_id, $file_details["path_remote"]);
-		if ($message === false) {
+		if ($file_details && $user_id == $file_details["uid"]) {
+			$message = $FileSystem->deleteFileByID($fileID, $file_details["path_remote"]);
+			if ($message === false) {
+				$success = false;
+			}
+		} else {
 			$success = false;
 		}
-	} else {
-		$success = false;
 	}
-
 	return $response->withJson(["success" => $success, "message" => $message]);
 
 });
 
+/**
+ * Generates download ZIP files and return full URL to download file
+ *
+ * @param  {string} submitData Is base 64 and json encoded javascript object containing two variables
+ * downloadType (resample:single, resample:details, queue:single)
+ * fileID Id of the file from users_files database table
+ *
+ * @return {json} JSON encoded API response object
+ */
 $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
@@ -153,18 +187,21 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$submitData = [];
+	$submitData = false;
 	if (isset($args['submitData'])) {
 		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
 	}
 
-	$file_id = intval($submitData['fileID']);
-	$file_details = $FileSystem->getFileDetails($file_id, false);
+	if ($submitData && isset($submitData['fileID'])) {
+		$file_id = intval($submitData['fileID']);
+		$file_details = $FileSystem->getFileDetails($file_id, false);
 
-	$headerFormatted = array_values($file_details["details"]["header"]["formatted"]);
+		$headerFormatted = array_values($file_details["details"]["header"]["formatted"]);
+		$url = $FileSystem->getPreSignedURL($file_details['path_remote'], 'genular');
 
-	$url = $FileSystem->getPreSignedURL($file_details['path_remote'], 'genular');
+		$message = ["url" => $url, "header" => $headerFormatted];
+	}
 
-	return $response->withJson(["success" => $success, "message" => ["url" => $url, "header" => $headerFormatted]]);
+	return $response->withJson(["success" => $success, "message" => $message]);
 
 });

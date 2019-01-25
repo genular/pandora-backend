@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-10-08 11:15:23
+ * @Last Modified time: 2019-01-25 09:31:41
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -19,8 +19,8 @@ $app->get('/backend/queue/list', function (Request $request, Response $response,
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$page = intval($request->getQueryParam('page', 1));
-	$limit = intval($request->getQueryParam('limit', 20));
+	$page = (int) $request->getQueryParam('page', 1);
+	$limit = (int) $request->getQueryParam('limit', 20);
 	$sort = $request->getQueryParam('sort', '+');
 
 	$filters = [];
@@ -193,9 +193,16 @@ $app->get('/backend/queue/resamples/details', function (Request $request, Respon
 
 	return $response->withJson(["success" => $success, "data" => $data]);
 });
-/** Suggest features of requested re-sample ID
- **/
-$app->get('/backend/queue/resamples/features/suggest', function (Request $request, Response $response, array $args) {
+
+/**
+ * Suggest features of requested re-sample ID
+ *
+ * @param  {object} Containing 3 variables
+ * resampleID: database ID of the resample, userInput: user inputed string, inputType: features, outcome, classes
+ *
+ * @return {json} JSON encoded API response object
+ */
+$app->get('/backend/queue/resamples/features/suggest/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = [];
 	$data = "";
@@ -206,11 +213,21 @@ $app->get('/backend/queue/resamples/features/suggest', function (Request $reques
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$resampleID = $request->getQueryParam('resampleID', 0);
-	$userInput = $request->getQueryParam('userInput', "");
-	$inputType = $request->getQueryParam('inputType', "outcome_classes");
+	$resampleID = false;
+	$userInput = "";
+	$inputType = "outcome_classes";
 
-	if (is_numeric($resampleID)) {
+	$submitData = false;
+	if (isset($args['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+		if ($submitData) {
+			$resampleID = (int) $submitData['resampleID'];
+			$userInput = (string) $submitData['userInput'];
+			$inputType = (string) $submitData['inputType'];
+		}
+	}
+
+	if ($resampleID) {
 		$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
 		$options = $DatasetResamples->getResampleOptions($resampleID, $user_id);
 

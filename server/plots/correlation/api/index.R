@@ -101,7 +101,7 @@ simon$handle$plots$correlation$renderPlot <- expression(
                         )
 
         # Modify the default png size.
-        tmp <- tempfile()
+        tmp <- tempfile() 
         svg(tmp,
             width = 8, height = 8, pointsize = 12,
             onefile = TRUE, family = "Arial", bg = "white",
@@ -120,8 +120,7 @@ simon$handle$plots$correlation$renderPlot <- expression(
         }
 
         dev.off() 
-        RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt")
-
+        return (list(image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))))
     }
 )
 

@@ -108,7 +108,7 @@ simon$handle$plots$heatmap$renderPlot <- expression(
         
 
         dev.off() 
-        RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt")
+        return (list(image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))))
     }
 )
 
