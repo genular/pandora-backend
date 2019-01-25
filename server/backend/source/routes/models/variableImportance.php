@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-10-08 11:15:23
+ * @Last Modified time: 2019-01-25 14:26:00
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -32,7 +32,7 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 	$variableImportanceData = $ModelsVariables->getVariableImportance(intval($resampleID), $modelsID, intval($page), intval($page_size), $sort, $sort_by);
 
 	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
-	$queueDetails = $DatasetQueue->getDatasetQueueDetails($pqid, $user_id);
+	$queueDetails = $DatasetQueue->getDetailsByID($pqid, $user_id);
 
 	$selectedOptions = json_decode($queueDetails["selectedOptions"], true);
 	$queueDetails["selectedOptions"] = $selectedOptions;

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 09:31:41
+ * @Last Modified time: 2019-01-25 14:25:46
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -65,7 +65,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 
 	if (is_numeric($queueID)) {
 		$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
-		$queueDetails = $DatasetQueue->getDatasetQueueDetails($queueID, $user_id);
+		$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
 
 		if ($queueDetails !== false) {
 			$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');

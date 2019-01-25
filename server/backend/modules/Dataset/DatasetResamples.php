@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-23 15:15:47
+ * @Last Modified time: 2019-01-25 14:52:35
  */
 namespace SIMON\Dataset;
 
@@ -86,44 +86,72 @@ class DatasetResamples {
 
 		return ($resampleID);
 	}
+
+	/**
+	 * [getDetailsByID description]
+	 * @param  [type] $resampleID    [description]
+	 * @param  [type] $user_id [description]
+	 * @return [array]
+	 */
+	public function getDetailsByID($resampleID, $user_id) {
+		// [><] == INNER JOIN
+		$join = [
+			"[><]dataset_queue" => ["dqid" => "id"],
+		];
+		$columns =
+			[
+			"dataset_resamples.dqid(resampleID) [Int]",
+			"dataset_resamples.ufid(fileID) [Int]",
+			"dataset_resamples.ufid_train(fileID_train) [Int]",
+			"dataset_resamples.ufid_test(fileID_test) [Int]",
+		];
+		$conditions = [
+			"dataset_resamples.dqid" => $resampleID,
+			"dataset_queue.uid" => $user_id,
+			"LIMIT" => 1,
+		];
+
+		$details = $this->database->get($this->table_name, $join, $columns, $conditions);
+
+		return ($details);
+	}
+
 	/** Retrieve a list of re-samples that belong to certain Queue **/
 	public function getDatasetResamples($queueID, $user_id) {
 
 		$sql = "SELECT dataset_resamples.id              AS resampleID,
-               dataset_resamples.ufid_train       AS fileID_train,
-               dataset_resamples.ufid_test        AS fileID_test,
-               dataset_resamples.data_source      AS dataSource,
-               dataset_resamples.samples_total    AS samplesTotal,
-               dataset_resamples.samples_training AS samplesTraining,
-               dataset_resamples.samples_testing  AS samplesTesting,
-               dataset_resamples.features_total   AS featuresTotal,
-               dataset_resamples.datapoints       AS datapoints,
-               dataset_resamples.status           AS status,
-               dataset_resamples.processing_time  AS processing_time,
-               dataset_resamples.error            AS error,
-               Count(models.id)                   AS modelsTotal,
-               ROUND(SUM(models.training_time))   AS model_processing_time,
-               Sum(CASE
-                     WHEN models.status > 0 THEN 1
-                     ELSE 0
-                   END)                           AS models_success";
+		               dataset_resamples.ufid_train       AS fileID_train,
+		               dataset_resamples.ufid_test        AS fileID_test,
+		               dataset_resamples.data_source      AS dataSource,
+		               dataset_resamples.samples_total    AS samplesTotal,
+		               dataset_resamples.samples_training AS samplesTraining,
+		               dataset_resamples.samples_testing  AS samplesTesting,
+		               dataset_resamples.features_total   AS featuresTotal,
+		               dataset_resamples.datapoints       AS datapoints,
+		               dataset_resamples.status           AS status,
+		               dataset_resamples.processing_time  AS processing_time,
+		               dataset_resamples.error            AS error,
+		               Count(models.id)                   AS modelsTotal,
+		               ROUND(SUM(models.training_time))   AS model_processing_time,
+		               Sum(CASE
+		                     WHEN models.status > 0 THEN 1
+		                     ELSE 0
+		                   END)                           AS models_success
+					FROM   dataset_resamples
 
-		$sql .= "
-		FROM   dataset_resamples
+			               	INNER JOIN dataset_queue
+			                      ON dataset_resamples.dqid = dataset_queue.id
+			               	INNER JOIN models
+			                      ON dataset_resamples.id = models.drid
+			               	INNER JOIN models_performance
+			                      ON models.id = models_performance.mid
+			          		INNER JOIN models_performance_variables
+			                	ON models_performance.mpvid = models_performance_variables.id
 
-               	INNER JOIN dataset_queue
-                      ON dataset_resamples.dqid = dataset_queue.id
-               	INNER JOIN models
-                      ON dataset_resamples.id = models.drid
-               	INNER JOIN models_performance
-                      ON models.id = models_performance.mid
-          		INNER JOIN models_performance_variables
-                	ON models_performance.mpvid = models_performance_variables.id
+					WHERE  dataset_queue.uid = :user_id
+			               AND dataset_resamples.dqid = :queueID
 
-		WHERE  dataset_queue.uid = :user_id
-               AND dataset_resamples.dqid = :queueID
-
-               GROUP BY dataset_resamples.id ORDER BY modelsTotal DESC;";
+			               GROUP BY dataset_resamples.id ORDER BY modelsTotal DESC;";
 
 		$details = $this->database->query($sql, [
 			":user_id" => $user_id,

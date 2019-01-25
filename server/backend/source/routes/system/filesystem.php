@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 09:31:33
+ * @Last Modified time: 2019-01-25 15:35:06
  */
 
 use Slim\Http\Request;
@@ -173,13 +173,13 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
  * Generates download ZIP files and return full URL to download file
  *
  * @param  {string} submitData Is base 64 and json encoded javascript object containing two variables
- * downloadType (resample:single, resample:details, queue:single)
- * fileID Id of the file from users_files database table
+ * downloadType: (resample, queue)
+ * recordID: main ID of the queue or resample
  *
  * @return {json} JSON encoded API response object
  */
 $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Request $request, Response $response, array $args) {
-	$success = true;
+	$success = false;
 	$message = false;
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
@@ -192,14 +192,44 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
 	}
 
-	if ($submitData && isset($submitData['fileID'])) {
-		$file_id = intval($submitData['fileID']);
-		$file_details = $FileSystem->getFileDetails($file_id, false);
+	if ($submitData && isset($submitData['recordID'])) {
+		$recordID = (int) $submitData['recordID'];
+		$downloadType = $submitData['downloadType'];
 
-		$headerFormatted = array_values($file_details["details"]["header"]["formatted"]);
-		$url = $FileSystem->getPreSignedURL($file_details['path_remote'], 'genular');
+		$recordDetails = false;
+		if ($downloadType === "queue") {
+			$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+			$recordDetails = $DatasetQueue->getDetailsByID($recordID, $user_id);
+		} else {
+			$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+			$recordDetails = $DatasetResamples->getDetailsByID($recordID, $user_id);
+		}
 
-		$message = ["url" => $url, "header" => $headerFormatted];
+		$downloadIDs = [];
+		if ($recordDetails) {
+			// Loop all values and search for fileIDs
+			foreach ($recordDetails as $recordDetailsKey => $recordDetailsValue) {
+				if (strpos($recordDetailsKey, 'fileID') === 0) {
+					if (!isset($downloadIDs[$recordDetailsValue])) {
+						$downloadIDs[$recordDetailsValue] = $recordDetailsValue;
+					}
+				}
+			}
+		}
+
+		$downloadLinks = [];
+		foreach ($downloadIDs as $fileID) {
+			$fileDetails = $FileSystem->getFileDetails($fileID, false);
+			if (isset($fileDetails['path_remote'])) {
+				$url = $FileSystem->getPreSignedURL($fileDetails['path_remote'], 'genular');
+				$downloadLinks[] = $url;
+			}
+		}
+
+		if (count($downloadLinks) > 0) {
+			$message = $downloadLinks;
+			$success = true;
+		}
 	}
 
 	return $response->withJson(["success" => $success, "message" => $message]);

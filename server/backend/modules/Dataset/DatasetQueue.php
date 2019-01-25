@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-23 14:47:54
+ * @Last Modified time: 2019-01-25 14:26:54
  */
 namespace SIMON\Dataset;
 
@@ -187,10 +187,17 @@ class DatasetQueue {
 
 		return ($count);
 	}
-	public function getDatasetQueueDetails($pqid, $user_id) {
+	/**
+	 * [getDetailsByID description]
+	 * @param  [type] $pqid    [description]
+	 * @param  [type] $user_id [description]
+	 * @return [type]          [description]
+	 */
+	public function getDetailsByID($pqid, $user_id) {
 
 		$sql = "SELECT
 	                dataset_queue.id    AS id,
+	                dataset_queue.ufid   AS fileID,
 	                dataset_queue.created   AS created,
 	                dataset_queue.updated   AS updated,
 	                dataset_queue.selectedOptions   AS selectedOptions,

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-10-09 10:37:57
+ * @Last Modified time: 2019-01-25 15:42:06
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -71,15 +71,20 @@ class FileSystem {
 	 * @param  string     $pathRemote The object name (full path)
 	 * @param  string     $bucket The bucket name
 	 * @param  string|int $expiration The Unix timestamp to expire at or a string that can be evaluated by strtotime
+	 * @param  string     $customFilename Custom filename of the file
 	 * @return string
 	 */
-	public function getPreSignedURL($pathRemote, $bucket = 'genular', $expiration = '+1 day') {
+	public function getPreSignedURL($pathRemote, $bucket = 'genular', $expiration = '+1 day', $customFilename = false) {
 
 		$bucket = $bucket . '/' . dirname($pathRemote);
 		$object = basename($pathRemote);
 
 		if ($expiration) {
-			$command = $this->client->getCommand('GetObject', ['Bucket' => $bucket, 'Key' => $object]);
+			$commandArgs = ['Bucket' => $bucket, 'Key' => $object];
+			if ($customFilename) {
+				$commandArgs['ResponseContentDisposition'] = 'attachment; filename=' . $customFilename;
+			}
+			$command = $this->client->getCommand('GetObject', );
 			return $this->client->createPresignedRequest($command, $expiration)->getUri()->__toString();
 		} else {
 			return $this->client->getObjectUrl($bucket, $object);
