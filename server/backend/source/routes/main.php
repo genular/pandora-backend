@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 11:55:02
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 09:31:27
+ * @Last Modified time: 2019-01-25 16:14:48
  */
 
 require 'source/routes/users/main.php';
@@ -14,7 +14,6 @@ require 'source/routes/system/main.php';
 require 'source/routes/system/validation.php';
 require 'source/routes/system/filesystem.php';
 require 'source/routes/system/simon.php';
-require 'source/routes/system/cronJobs.php';
 
 require 'source/routes/organization/main.php';
 require 'source/routes/models/main.php';

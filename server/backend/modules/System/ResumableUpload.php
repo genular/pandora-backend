@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-09 09:28:25
+ * @Last Modified time: 2019-01-25 16:12:42
  */
 namespace SIMON\System;
 use Noodlehaus\Config as Config;
@@ -63,6 +63,13 @@ class ResumableUpload {
 		}
 	}
 
+	/**
+	 * [resumableUpload description]
+	 * @param  [string] $tmp_file_path [description]
+	 * @param  [string] $filename      [description]
+	 * @param  [array] $post          [description]
+	 * @return [array]                [description]
+	 */
 	public function resumableUpload($tmp_file_path, $filename, $post) {
 		$successes = array();
 		$errors = array();
@@ -102,6 +109,18 @@ class ResumableUpload {
 		return array('final' => false, 'successes' => $successes, 'errors' => $errors, 'warnings' => $warnings);
 	}
 
+	/**
+	 * [checkAllParts description]
+	 * @param  [type] $file_chunks_folder [description]
+	 * @param  [type] $filename           [description]
+	 * @param  [type] $extension          [description]
+	 * @param  [type] $totalSize          [description]
+	 * @param  [type] $totalChunks        [description]
+	 * @param  [type] &$successes         [description]
+	 * @param  [type] &$errors            [description]
+	 * @param  [type] &$warnings          [description]
+	 * @return [type]                     [description]
+	 */
 	public function checkAllParts($file_chunks_folder,
 		$filename,
 		$extension,
@@ -135,6 +154,11 @@ class ResumableUpload {
 		return false;
 	}
 
+	/**
+	 * [cleanUp description]
+	 * @param  [type] $file_chunks_folder [description]
+	 * @return [type]                     [description]
+	 */
 	public function cleanUp($file_chunks_folder) {
 		// rename the temporary directory (to avoid access from other concurrent chunks uploads) and than delete it
 		if (rename($file_chunks_folder, $file_chunks_folder . '_UNUSED')) {
@@ -173,6 +197,14 @@ class ResumableUpload {
 		return $this->temp_upload_dir . "/" . $saveName . $extension;
 	}
 
+	/**
+	 * [getNextAvailableFilename description]
+	 * @param  [type] $rel_path       [description]
+	 * @param  [type] $orig_file_name [description]
+	 * @param  [type] $extension      [description]
+	 * @param  [type] &$errors        [description]
+	 * @return [type]                 [description]
+	 */
 	public function getNextAvailableFilename($rel_path, $orig_file_name, $extension, &$errors) {
 
 		if (file_exists($rel_path . "/" . $orig_file_name . $extension)) {

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-10 09:00:54
+ * @Last Modified time: 2019-01-25 16:27:48
  */
 namespace SIMON\Dataset;
 
@@ -26,9 +26,13 @@ class DatasetCalculations {
 		// Log anything.
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetCalculations constructed");
 	}
-	// selectedFiles: this.submitJobForm["selectedFiles"],
-	// feature: feature,
-	// isLast: isLast
+
+	/**
+	 * [preCSVCalculations description]
+	 * @param  [type] $submitData [description]
+	 * @param  [type] $filePath   [description]
+	 * @return [type]             [description]
+	 */
 	public function preCSVCalculations($submitData, $filePath) {
 
 		$results = [

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-08 16:12:01
+ * @Last Modified time: 2019-01-25 16:20:03
  */
 namespace SIMON\Models;
 
@@ -30,6 +30,11 @@ class Models {
 		$this->logger->addInfo("==> INFO: SIMON\Models constructed");
 	}
 
+	/**
+	 * [getStatistics description]
+	 * @param  integer $user_id [description]
+	 * @return [type]           [description]
+	 */
 	public function getStatistics($user_id = 14) {
 		$data = $this->database->query("SELECT COUNT(DISTINCT dq.id) AS total_queue,
 					       COUNT(DISTINCT dr.id) AS total_resamples,
@@ -48,6 +53,11 @@ class Models {
 
 	}
 
+	/**
+	 * [deleteByResampleIDs description]
+	 * @param  [type] $resampleIDs [description]
+	 * @return [type]              [description]
+	 */
 	public function deleteByResampleIDs($resampleIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [
@@ -57,6 +67,13 @@ class Models {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [assignMesurmentsToModels description]
+	 * @param  [type] $modelsList                [description]
+	 * @param  [type] $modelsPerformace          [description]
+	 * @param  [type] $modelsPerformaceVariables [description]
+	 * @return [type]                            [description]
+	 */
 	public function assignMesurmentsToModels($modelsList, $modelsPerformace, $modelsPerformaceVariables) {
 		$modelsPerformaceVariablesDefults = array_map(function ($val) {return 0;}, array_flip($modelsPerformaceVariables));
 
@@ -81,6 +98,12 @@ class Models {
 		return $modelsList;
 	}
 
+	/**
+	 * [getDatasetResamplesModels description]
+	 * @param  [type] $drid    [description]
+	 * @param  [type] $user_id [description]
+	 * @return [type]          [description]
+	 */
 	public function getDatasetResamplesModels($drid, $user_id) {
 		$drids = join(',', array_map('intval', $drid));
 

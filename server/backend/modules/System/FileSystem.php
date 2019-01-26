@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 15:42:06
+ * @Last Modified time: 2019-01-25 16:13:27
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -84,7 +84,7 @@ class FileSystem {
 			if ($customFilename) {
 				$commandArgs['ResponseContentDisposition'] = 'attachment; filename=' . $customFilename;
 			}
-			$command = $this->client->getCommand('GetObject', );
+			$command = $this->client->getCommand('GetObject', $commandArgs);
 			return $this->client->createPresignedRequest($command, $expiration)->getUri()->__toString();
 		} else {
 			return $this->client->getObjectUrl($bucket, $object);
@@ -265,6 +265,11 @@ class FileSystem {
 		return $local_path;
 	}
 
+	/**
+	 * Initilize user workspace directory on file-system
+	 * @param  [int] $user_id [description]
+	 * @return [string]
+	 */
 	public function initilizeUserWorkspace($user_id) {
 		$workspace_directory = $user_id;
 

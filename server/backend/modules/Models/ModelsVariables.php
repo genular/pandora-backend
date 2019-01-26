@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-08 16:13:17
+ * @Last Modified time: 2019-01-25 16:19:06
  */
 namespace SIMON\Models;
 
@@ -30,6 +30,11 @@ class ModelsVariables {
 		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsVariables constructed");
 	}
 
+	/**
+	 * [deleteByModelIDs description]
+	 * @param  [int] $modelIDs [description]
+	 * @return [int]           [description]
+	 */
 	public function deleteByModelIDs($modelIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [
@@ -39,6 +44,11 @@ class ModelsVariables {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [countTotalVariables description]
+	 * @param  [array] $modelsID [description]
+	 * @return [int]           [description]
+	 */
 	public function countTotalVariables($modelsID) {
 		$mids = join(',', array_map('intval', $modelsID));
 
@@ -47,9 +57,19 @@ class ModelsVariables {
 				WHERE  models_variables.mid IN (" . $mids . ")";
 
 		$details = $this->database->query($sql)->fetch(\PDO::FETCH_ASSOC);
-		return (intval($details["total"]));
+		return ((int) $details["total"]);
 	}
 
+	/**
+	 * [getVariableImportance description]
+	 * @param  [type] $resampleID [description]
+	 * @param  [type] $modelsID   [description]
+	 * @param  [type] $page       [description]
+	 * @param  [type] $page_size  [description]
+	 * @param  [type] $sort       [description]
+	 * @param  [type] $sort_by    [description]
+	 * @return [type]             [description]
+	 */
 	public function getVariableImportance($resampleID, $modelsID, $page, $page_size, $sort, $sort_by) {
 
 		$start_limit = (($page - 1) * $page_size);

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-24 09:02:41
+ * @Last Modified time: 2019-01-25 16:24:46
  */
 namespace SIMON\Dataset;
 
@@ -34,6 +34,11 @@ class DatasetResamplesMappings {
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetResamplesMappings constructed");
 	}
 
+	/**
+	 * [deleteByQueueIDs description]
+	 * @param  [type] $queueIDs [description]
+	 * @return [type]           [description]
+	 */
 	public function deleteByQueueIDs($queueIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [

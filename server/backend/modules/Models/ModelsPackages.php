@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-09 10:51:56
+ * @Last Modified time: 2019-01-25 16:19:32
  */
 namespace SIMON\Models;
 
@@ -25,8 +25,12 @@ class ModelsPackages {
 		// Log anything.
 		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsPackages constructed");
 	}
+
 	/**
 	 * Get all available analysis packages
+	 * @param  integer $installed  [description]
+	 * @param  [type]  $packageIDs [description]
+	 * @return [type]              [description]
 	 */
 	public function getPackages($installed = 1, $packageIDs = null) {
 		$columns = [

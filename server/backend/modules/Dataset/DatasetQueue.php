@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 14:26:54
+ * @Last Modified time: 2019-01-25 16:26:00
  */
 namespace SIMON\Dataset;
 
@@ -36,6 +36,11 @@ class DatasetQueue {
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetQueue constructed");
 	}
 
+	/**
+	 * [deleteByQueueIDs description]
+	 * @param  [type] $queueIDs [description]
+	 * @return [type]           [description]
+	 */
 	public function deleteByQueueIDs($queueIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [
@@ -45,6 +50,14 @@ class DatasetQueue {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [updateTable description]
+	 * @param  [type] $column      [description]
+	 * @param  [type] $value       [description]
+	 * @param  [type] $whereColumn [description]
+	 * @param  [type] $whereValue  [description]
+	 * @return [type]              [description]
+	 */
 	public function updateTable($column, $value, $whereColumn, $whereValue) {
 
 		$data = $this->database->update($this->table_name, [
@@ -57,6 +70,11 @@ class DatasetQueue {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [setProcessingStatus description]
+	 * @param [type] $dqID   [description]
+	 * @param [type] $status [description]
+	 */
 	public function setProcessingStatus($dqID, $status) {
 		$details = $this->database->update($this->table_name, [
 			"status" => $status,
@@ -67,7 +85,10 @@ class DatasetQueue {
 		return ($details->rowCount());
 	}
 
-	/** Get all Queue Entries where status = 1 eg. just created */
+	/**
+	 * Get all Queue Entries where status = 1 eg. just created
+	 * @return [type] [description]
+	 */
 	public function getProcessingEntries() {
 		$columns = [
 			"id [Int]",
@@ -82,9 +103,14 @@ class DatasetQueue {
 
 		return ($details);
 	}
+
 	/**
-	 *
-	 *
+	 * [createQueue description]
+	 * @param  [type] $user_id             [description]
+	 * @param  [type] $submitData          [description]
+	 * @param  [type] $allOtherSelections  [description]
+	 * @param  [type] $allSelectedFeatures [description]
+	 * @return [type]                      [description]
 	 */
 	public function createQueue($user_id, $submitData, $allOtherSelections, $allSelectedFeatures) {
 		$queue_id = 0;
@@ -178,6 +204,13 @@ class DatasetQueue {
 		return ($queue_id);
 	}
 
+	/**
+	 * [getDatasetQueueCount description]
+	 * @param  [type] $column  [description]
+	 * @param  [type] $value   [description]
+	 * @param  array  $filters [description]
+	 * @return [type]          [description]
+	 */
 	public function getDatasetQueueCount($column, $value, $filters = []) {
 		$columns = "*";
 		$conditions = [
@@ -187,6 +220,7 @@ class DatasetQueue {
 
 		return ($count);
 	}
+
 	/**
 	 * [getDetailsByID description]
 	 * @param  [type] $pqid    [description]
@@ -232,6 +266,15 @@ class DatasetQueue {
 
 	}
 
+	/**
+	 * [getDatasetQueueList description]
+	 * @param  [type] $user_id [description]
+	 * @param  [type] $page    [description]
+	 * @param  [type] $limit   [description]
+	 * @param  [type] $sort    [description]
+	 * @param  array  $filters [description]
+	 * @return [type]          [description]
+	 */
 	public function getDatasetQueueList($user_id, $page, $limit, $sort, $filters = []) {
 
 		$start_limit = (($page - 1) * $limit);

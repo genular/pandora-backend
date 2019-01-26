@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-24 11:39:50
+ * @Last Modified time: 2019-01-25 16:27:29
  */
 namespace SIMON\Dataset;
 
@@ -37,6 +37,13 @@ class DatasetIntersection {
 			mkdir($this->temp_upload_dir, 0777, true);
 		}
 	}
+
+	/**
+	 * [array_remove_keys description]
+	 * @param  [type] $array [description]
+	 * @param  [type] $keys  [description]
+	 * @return [type]        [description]
+	 */
 	public function array_remove_keys($array, $keys) {
 
 		// array_diff_key() expected an associative array.
@@ -47,8 +54,15 @@ class DatasetIntersection {
 
 		return array_diff_key($array, $assocKeys);
 	}
-	/** Create new Resample Dataset from Intersect Calculation
+
+	/**
+	 * Create new Resample Dataset from Intersect Calculation
 	 * Creates new CSV files from original file and keeps only columns and samples for specific intersection
+	 * @param  [type] $queueID            [description]
+	 * @param  [type] $tempFilePath       [description]
+	 * @param  [type] $resamples          [description]
+	 * @param  [type] $allOtherSelections [description]
+	 * @return [type]                     [description]
 	 */
 	public function generateResamples($queueID, $tempFilePath, $resamples, $allOtherSelections) {
 		$datasets = array();
@@ -119,6 +133,11 @@ class DatasetIntersection {
 		return ($resamples);
 	}
 
+	/**
+	 * [removeEmptyOutcomeValues description]
+	 * @param  array  $record [description]
+	 * @return [type]         [description]
+	 */
 	public function removeEmptyOutcomeValues(array $record): bool {
 		if (isset($record[$this->outcomeColumn]) && trim($record[$this->outcomeColumn]) === "") {
 			return (bool) false;
@@ -126,6 +145,11 @@ class DatasetIntersection {
 		return (bool) true;
 	}
 
+	/**
+	 * [removeEmptyValues description]
+	 * @param  array  $record [description]
+	 * @return [type]         [description]
+	 */
 	public function removeEmptyValues(array $record): bool {
 		foreach (array_keys($this->selectedFeatures) as $featureIndex) {
 			if (isset($record[$featureIndex]) && !is_numeric($record[$featureIndex])) {
@@ -308,8 +332,9 @@ class DatasetIntersection {
 	}
 
 	/**
-	 *
-	 *
+	 * [generateRanges description]
+	 * @param  [type] $aNumbers [description]
+	 * @return [type]           [description]
 	 */
 	public function generateRanges($aNumbers) {
 		$aNumbers = array_unique($aNumbers);

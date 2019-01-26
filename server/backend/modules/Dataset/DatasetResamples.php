@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 14:52:35
+ * @Last Modified time: 2019-01-25 16:25:20
  */
 namespace SIMON\Dataset;
 
@@ -34,6 +34,11 @@ class DatasetResamples {
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetResamples constructed");
 	}
 
+	/**
+	 * [deleteByQueueIDs description]
+	 * @param  [type] $queueIDs [description]
+	 * @return [type]           [description]
+	 */
 	public function deleteByQueueIDs($queueIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [
@@ -43,6 +48,11 @@ class DatasetResamples {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [updateStatus description]
+	 * @param  [type] $resample [description]
+	 * @return [type]           [description]
+	 */
 	public function updateStatus($resample) {
 
 		if ($resample['selected'] === true) {
@@ -62,6 +72,14 @@ class DatasetResamples {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [createResample description]
+	 * @param  [type] $queueID  [description]
+	 * @param  [type] $fileID   [description]
+	 * @param  [type] $resample [description]
+	 * @param  [type] $outcome  [description]
+	 * @return [type]           [description]
+	 */
 	public function createResample($queueID, $fileID, $resample, $outcome) {
 
 		$this->database->insert($this->table_name, [
@@ -116,7 +134,12 @@ class DatasetResamples {
 		return ($details);
 	}
 
-	/** Retrieve a list of re-samples that belong to certain Queue **/
+	/**
+	 * Retrieve a list of re-samples that belong to certain Queue
+	 * @param  [type] $queueID [description]
+	 * @param  [type] $user_id [description]
+	 * @return [type]          [description]
+	 */
 	public function getDatasetResamples($queueID, $user_id) {
 
 		$sql = "SELECT dataset_resamples.id              AS resampleID,
@@ -163,7 +186,13 @@ class DatasetResamples {
 		return ($details);
 
 	}
-	/** Retrieve a list of re-samples that belong to certain Queue **/
+
+	/**
+	 * Retrieve a list of re-samples that belong to certain Queue
+	 * @param  [type] $resampleID [description]
+	 * @param  [type] $user_id    [description]
+	 * @return [type]             [description]
+	 */
 	public function getResampleOptions($resampleID, $user_id) {
 
 		$sql = "SELECT

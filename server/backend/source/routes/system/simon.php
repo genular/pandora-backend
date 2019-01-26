@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-10-16 12:59:54
+ * @Last Modified time: 2019-01-25 16:37:42
  */
 
 use Slim\Http\Request;
@@ -366,7 +366,7 @@ $app->post('/backend/system/simon/dataset-queue/cancel', function (Request $requ
  * Deletes all queue related data from the system
  */
 $app->post('/backend/system/simon/dataset-queue/delete', function (Request $request, Response $response, array $args) {
-	$success = true;
+	$success = false;
 
 	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 
@@ -420,6 +420,39 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
 		// 3. dataset_queue
 		$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 		$DatasetQueue->deleteByQueueIDs($queueID);
+
+		$success = true;
+	}
+
+	return $response->withJson(["success" => $success]);
+
+});
+
+/**
+ * Deletes all queue related data from the system
+ */
+$app->get('/backend/system/simon/dataset-resample/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
+	$success = false;
+
+	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$post = $request->getParsedBody();
+	$submitData = array();
+
+	$submitData = false;
+	if (isset($args['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+	}
+
+	$resampleID = false;
+	if ($submitData && isset($submitData['resampleID'])) {
+		$resampleID = (int) $submitData['resampleID'];
+	}
+	if ($resampleID !== false) {
+
 	}
 
 	return $response->withJson(["success" => $success]);

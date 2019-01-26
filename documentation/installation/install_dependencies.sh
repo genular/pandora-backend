@@ -572,34 +572,12 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
             fi
         fi
     fi
-
-    ## make specific configuration changes
-    if [ "${MODS[simon_cron]}" == y ] ; then
-        echo "${yellow}Do you wish to run cron analysis task as distributed cloud process, on cloud service provider? (y/n) Enter n${clear}"
-        read -e cron_cloud
-        if [ "${cron_cloud}" == "" ] ; then
-            cron_cloud=n
-        fi
-        echo ""
-
-        if [ "$cron_cloud" == n ] ; then
-            echo "${red}"
-            echo "# Since you will run analysis here on shared server you need to create cron task that will check for any new queues to process"
-            echo "# We suggest creating crontab task like this"
-            echo "chmod 777 /var/www/genular/simon-backend/cron/main.R"
-            echo "*/2 * * * * /usr/bin/flock -n ${B_CONF[data_path]}/simon_cron.pid /var/www/genular/simon-backend/cron/main.R > /var/log/simon-cron.log 2>&1"
-            echo "${clear}"
-        else
-            echo "${red}"
-            echo "# Since you will run analysis cron on cloud server please make sure to have valid cloud_providers configuration in config.yml file"
-            echo "# In addition to that you need to configure task schluder to lunch new cloud servers as needed."
-            echo "# Please configure cron job as follows"
-            echo "cd /mnt/data/projects/genular/simon-backend/server/backend/ && php /public/index.php backend/system/cron/bb5dc8842ca31d4603d6aa11448d1654"
-
-            echo "${clear}"
-        fi
-        echo ""
-    fi
+    echo "${red}"
+    echo "# Since you will run analysis here on shared server you need to create cron task that will check for any new queues to process"
+    echo "# We suggest creating crontab task like this"
+    echo "chmod 777 /var/www/genular/simon-backend/cron/main.R"
+    echo "*/2 * * * * /usr/bin/flock -n ${B_CONF[data_path]}/simon_cron.pid /var/www/genular/simon-backend/cron/main.R > /var/log/simon-cron.log 2>&1"
+    echo "${clear}"
 fi
 
 ### Database installation

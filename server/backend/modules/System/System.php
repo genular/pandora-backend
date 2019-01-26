@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 09:29:31
+ * @Last Modified time: 2019-01-25 16:11:23
  */
 namespace SIMON\System;
 
@@ -58,12 +58,20 @@ class System {
 		$this->logger->addInfo("==> INFO: SIMON\System constructed");
 	}
 
+	/**
+	 * Initialize the system
+	 * @return [type] [description]
+	 */
 	public function init() {
 		$this->logger->addInfo("==> INFO: SIMON\System initializing");
 		$this->initModelPerformanceVariables();
 		$this->initModelsPacakges();
 	}
 
+	/**
+	 * Reset system data
+	 * @return [type] [description]
+	 */
 	public function reset() {
 		foreach ($this->tables as $table) {
 			$this->logger->addInfo("==> INFO: SIMON\System deleting records from: " . $table);
@@ -71,6 +79,13 @@ class System {
 		}
 	}
 
+	/**
+	 * Checks if field is in database
+	 * @param  [type] $validationTable [description]
+	 * @param  [type] $validationField [description]
+	 * @param  [type] $validationValue [description]
+	 * @return [type]                  [description]
+	 */
 	public function databaseAvailability($validationTable, $validationField, $validationValue) {
 		$columns = [
 			'id',
@@ -83,6 +98,10 @@ class System {
 		return ($field_id);
 	}
 
+	/**
+	 * List of all model performance measures
+	 * @return [type] [description]
+	 */
 	private function initModelPerformanceVariables() {
 		$this->database->insert("models_performance_variables", [
 			["value" => "Accuracy"],
@@ -121,6 +140,11 @@ class System {
 			["value" => "TrainSpecificity"],
 		]);
 	}
+
+	/**
+	 * [initModelsPacakges description]
+	 * @return [type] [description]
+	 */
 	private function initModelsPacakges() {
 
 		$data = [];
@@ -195,6 +219,10 @@ class System {
 		$this->database->insert("models_packages", $packages);
 	}
 
+	/**
+	 * [scrapeHelpDocumentation description]
+	 * @return [type] [description]
+	 */
 	public function scrapeHelpDocumentation() {
 		$columns = [
 			"id",

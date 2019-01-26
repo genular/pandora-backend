@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-11 16:30:58
+ * @Last Modified time: 2019-01-25 16:08:18
  */
 namespace SIMON\Users;
 use \Medoo\Medoo;
@@ -30,6 +30,11 @@ class UsersDetails {
 		$this->logger->addInfo("==> INFO: SIMON\Users\UsersDetails constructed");
 	}
 
+	/**
+	 * [getUsersDetailsByUserId description]
+	 * @param  [int] $user_id [description]
+	 * @return [type]          [description]
+	 */
 	public function getUsersDetailsByUserId($user_id) {
 		$columns = "*";
 		$conditions = [
@@ -42,11 +47,16 @@ class UsersDetails {
 
 		return ($details);
 	}
-	// 1 - Global Administrator / 2 - User / 3 - Organization Administrator / 4 - Organization User
+
+	/**
+	 * // 1 - Global Administrator / 2 - User / 3 - Organization Administrator / 4 - Organization User
+	 * @param  [type] $account_details [description]
+	 * @return [type]                  [description]
+	 */
 	public function generateUserRoles($account_details) {
 		$account_roles = [];
 
-		$account_type = intval($account_details["account_type"]);
+		$account_type = (int) $account_details["account_type"];
 
 		if ($account_type === 3) {
 			array_push($account_roles, 3);
@@ -54,14 +64,11 @@ class UsersDetails {
 		} else {
 			array_push($account_roles, $account_type);
 		}
-
-		if ($this->Helpers->endsWith($account_details["email"], "genular.com") === true) {
-			array_push($account_roles, 1);
-		}
-		if ($this->Helpers->endsWith($account_details["email"], "ivantomic.com") === true) {
-			array_push($account_roles, 1);
-		}
-
+		/*
+			if ($this->Helpers->endsWith($account_details["email"], "genular.com") === true) {
+				array_push($account_roles, 1);
+			}
+		*/
 		return $account_roles;
 	}
 }

@@ -4,26 +4,13 @@
  * @Author: LogIN-
  * @Date:   2018-04-04 16:28:25
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 09:18:16
+ * @Last Modified time: 2019-01-25 16:28:32
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Slim\Middleware\TokenAuthentication;
 use \SIMON\Exceptions\UnauthorizedException as UnauthorizedException;
 
-/// try {
-/// 	$auth_request = $this->options['authenticator']($request, $this);
-/// 	if ($auth_request === false) {
-/// 		return $this->error($request, $response);
-/// 	}
-/// 	if ($auth_request instanceof Request) {
-/// 		return $next($auth_request, $response);
-/// 	}
-/// 	return $next($request, $response);
-/// } catch (UnauthorizedExceptionInterface $e) {
-/// 	$this->setResponseMessage($e->getMessage());
-/// 	return $this->error($request, $response);
-/// }
 $app->add(new TokenAuthentication([
 	'path' => '/backend',
 	'passthrough' => [

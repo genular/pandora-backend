@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-07-24 09:58:58
+ * @Last Modified time: 2019-01-25 16:22:52
  */
 namespace SIMON\Helpers;
 
@@ -51,6 +51,11 @@ class Helpers {
 		return array_search(max($delimiters), $delimiters);
 	}
 
+	/**
+	 * [compressPath description]
+	 * @param  [type] $initial_path [description]
+	 * @return [type]               [description]
+	 */
 	public function compressPath($initial_path) {
 		$renamed_path = dirname($initial_path) . "/" . md5(basename($initial_path));
 		rename($initial_path, $renamed_path);
@@ -103,6 +108,11 @@ class Helpers {
 		return $csv;
 	}
 
+	/**
+	 * [validateCSVFileHeader description]
+	 * @param  [type] $filePath [description]
+	 * @return [type]           [description]
+	 */
 	public function validateCSVFileHeader($filePath) {
 
 		$info = pathinfo($filePath);
@@ -153,7 +163,8 @@ class Helpers {
 
 	/**
 	 * Determine if the provided value contains only alpha characters with dashed and underscores.
-	 *
+	 * @param  [type] $input [description]
+	 * @return [type]        [description]
 	 */
 	public function validateHeaderItem($input) {
 		if (empty($input)) {
@@ -165,6 +176,7 @@ class Helpers {
 		}
 		return true;
 	}
+
 	/**
 	 * Decrypt data from a CryptoJS json encoding string
 	 *
@@ -191,6 +203,7 @@ class Helpers {
 		$data = openssl_decrypt($ct, 'aes-256-cbc', $key, true, $iv);
 		return json_decode($data, true);
 	}
+
 	/**
 	 * Encrypt value to a cryptojs compatiable json encoding string
 	 *
@@ -212,7 +225,9 @@ class Helpers {
 		$data = array("ct" => base64_encode($encrypted_data), "iv" => bin2hex($iv), "s" => bin2hex($salt));
 		return json_encode($data);
 	}
+
 	/**
+	 * [crc64Table description]
 	 * @return array
 	 */
 	private function crc64Table() {
@@ -240,16 +255,16 @@ class Helpers {
 	}
 
 	/**
-	 * @param string $string
-	 * @param string $format
-	 * @return mixed
-	 *
+	 * CRC32 string
 	 * Formats:
 	 *  crc64('php'); // afe4e823e7cef190
 	 *  crc64('php', '0x%x'); // 0xafe4e823e7cef190
 	 *  crc64('php', '0x%X'); // 0xAFE4E823E7CEF190
 	 *  crc64('php', '%d'); // -5772233581471534704 signed int
 	 *  crc64('php', '%u'); // 12674510492238016912 unsigned int
+	 * @param  [type] $string [description]
+	 * @param  string $format [description]
+	 * @return mixed
 	 */
 	public function crc64($string, $format = '%x') {
 		static $crc64tab;
@@ -267,6 +282,11 @@ class Helpers {
 		return sprintf($format, $crc);
 	}
 
+	/**
+	 * [generateRandomString description]
+	 * @param  integer $length [description]
+	 * @return [type]          [description]
+	 */
 	public function generateRandomString($length = 10) {
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		$charactersLength = strlen($characters);
@@ -277,11 +297,23 @@ class Helpers {
 		return $randomString;
 	}
 
+	/**
+	 * Check if string starts with some another string
+	 * @param  string $haystack
+	 * @param  string $needle
+	 * @return [type]           [description]
+	 */
 	public function startsWith($haystack, $needle) {
 		$length = strlen($needle);
 		return (substr($haystack, 0, $length) === $needle);
 	}
 
+	/**
+	 * Check if string ends with some another string
+	 * @param  string $haystack
+	 * @param  string $needle
+	 * @return [type]           [description]
+	 */
 	public function endsWith($haystack, $needle) {
 		$length = strlen($needle);
 
@@ -289,8 +321,10 @@ class Helpers {
 			(substr($haystack, -$length) === $needle);
 	}
 
-	/** Remove all files, folders and their subfolders
-	 *
+	/**
+	 * Recursively deletes directory. Remove all files, folders and their sub-folders
+	 * @param  string $dir
+	 * @return [type]      [description]
 	 */
 	public function rrmdir($dir) {
 		if (is_dir($dir)) {
@@ -309,6 +343,7 @@ class Helpers {
 			rmdir($dir);
 		}
 	}
+
 	/**
 	 * Returns a safe filename, for a given platform (OS), by replacing all
 	 * dangerous characters with an underscore.

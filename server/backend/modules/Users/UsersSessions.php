@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-10-08 11:09:45
+ * @Last Modified time: 2019-01-25 16:10:02
  */
 namespace SIMON\Users;
 use \Medoo\Medoo;
@@ -23,16 +23,26 @@ class UsersSessions {
 		$this->logger->addInfo("==> INFO: SIMON\Users\UsersSessions constructed");
 	}
 
-	public function getUsersSessionsByUserId($user_id) {
+	/**
+	 * [getUsersSessionsByUserId description]
+	 * @param  [int] $userId ID of the user
+	 * @return [array]
+	 */
+	public function getUsersSessionsByUserId($userId) {
 		$columns = "*";
 		$conditions = [
-			'uid' => $user_id,
+			'uid' => $userId,
 		];
 		$details = $this->database->get($this->table_name, $columns, $conditions);
 
 		return ($details);
 	}
 
+	/**
+	 * [getSessionId description]
+	 * @param  [int] $userId ID of the user
+	 * @return [array]
+	 */
 	public function getSessionId($userId) {
 		$columns = [
 			'session',
@@ -43,9 +53,11 @@ class UsersSessions {
 		$users_sessions = $this->database->get('users_sessions', $columns, $conditions);
 		return ($users_sessions);
 	}
+
 	/**
 	 * Retrieve user ID from Database by Session ID
-	 *
+	 * @param  [string] $sessionId
+	 * @return [array]
 	 */
 	public function getUserIdBySessionId($sessionId) {
 		$columns = [
@@ -60,8 +72,12 @@ class UsersSessions {
 		return ($user_id);
 	}
 
+	/**
+	 * Sets new session ID for the user
+	 * @param [int] $userId ID of the user
+	 */
 	public function setSessionId($userId) {
-		$random_number = intval("0" . rand(1, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9)); // random(ish) 5 digit int
+		$random_number = intval("0" . rand(1, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9) . rand(0, 9));
 		$timestamp = microtime(true);
 
 		$sessionHash = hash('sha256', $random_number . $timestamp);

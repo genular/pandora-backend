@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-08 16:12:06
+ * @Last Modified time: 2019-01-25 16:26:45
  */
 namespace SIMON\Dataset;
 
@@ -30,6 +30,11 @@ class DatasetProportions {
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetProportions constructed");
 	}
 
+	/**
+	 * [deleteByResampleIDs description]
+	 * @param  [type] $resampleIDs [description]
+	 * @return [type]              [description]
+	 */
 	public function deleteByResampleIDs($resampleIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [
@@ -39,6 +44,13 @@ class DatasetProportions {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [mapRenamedToOriginal description]
+	 * @param  [type] $searchColumn    [description]
+	 * @param  [type] $searchArray     [description]
+	 * @param  [type] $selectedOptions [description]
+	 * @return [type]                  [description]
+	 */
 	public function mapRenamedToOriginal($searchColumn, $searchArray, $selectedOptions) {
 		$mappings = [];
 		foreach ($searchArray as $searchArrayKey => $searchArrayValue) {
@@ -65,6 +77,12 @@ class DatasetProportions {
 		return $searchArray;
 	}
 
+	/**
+	 * [mergeProportions description]
+	 * @param  [type] $resamplesProportions [description]
+	 * @param  [type] $resamplesList        [description]
+	 * @return [type]                       [description]
+	 */
 	public function mergeProportions($resamplesProportions, $resamplesList) {
 		$td = [];
 
@@ -158,9 +176,11 @@ class DatasetProportions {
 		return $resamplesList;
 	}
 
-	/*
-		 * @drids dataset resamples ids
-	*/
+	/**
+	 * [getDatasetResamplesProportions description]
+	 * @param  [type] $drids dataset resamples ids
+	 * @return [type]        [description]
+	 */
 	public function getDatasetResamplesProportions($drids) {
 
 		$drids = join(',', array_map('intval', $drids));
@@ -215,6 +235,12 @@ class DatasetProportions {
 
 	}
 
+	/**
+	 * [getUniqueValuesCountForClasses description]
+	 * @param  [type] $resampleIDs [description]
+	 * @param  [type] $classes     [description]
+	 * @return [type]              [description]
+	 */
 	public function getUniqueValuesCountForClasses($resampleIDs, $classes) {
 
 		$details = $this->database->select($this->table_name,

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-11 10:41:11
+ * @Last Modified time: 2019-01-25 16:18:09
  */
 namespace SIMON\Organization;
 
@@ -26,6 +26,11 @@ class Organization {
 		$this->logger->addInfo("==> INFO: SIMON\Organization constructed");
 	}
 
+	/**
+	 * [getOrganizationByUserId description]
+	 * @param  [int] $user_id
+	 * @return [array]
+	 */
 	public function getOrganizationByUserId($user_id) {
 		$columns = "*";
 		$conditions = [

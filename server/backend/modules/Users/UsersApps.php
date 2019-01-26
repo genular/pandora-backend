@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-08 15:58:56
+ * @Last Modified time: 2019-01-25 16:07:04
  */
 namespace SIMON\Users;
 
@@ -26,6 +26,11 @@ class UsersApps {
 		$this->logger->addInfo("==> INFO: SIMON\Users\UsersApps constructed");
 	}
 
+	/**
+	 * [getUsersAppsByUserId description]
+	 * @param  [type] $user_id [description]
+	 * @return [type]          [description]
+	 */
 	public function getUsersAppsByUserId($user_id) {
 		$columns = "*";
 		$conditions = [

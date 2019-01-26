@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 10:32:23
+ * @Last Modified time: 2019-01-25 16:06:58
  */
 namespace SIMON\Users;
 
@@ -53,12 +53,21 @@ class Users {
 
 		$this->logger->addInfo("==> INFO: SIMON\Users constructed");
 	}
-
+	/**
+	 * Get number of total users in database
+	 * @return [int]
+	 */
 	public function countTotalUsers() {
 		$count = $this->database->count("users");
 		return $count;
 	}
 
+	/**
+	 * Logs in user and sets session hash in database
+	 * @param  [string] $username [description]
+	 * @param  [string] $password [description]
+	 * @return [string]
+	 */
 	public function login($username, $password) {
 		$sessionHash = false;
 		$saltDetails = $this->getSalt($username);
@@ -87,28 +96,43 @@ class Users {
 		}
 		return $sessionHash;
 	}
+
 	/**
 	 * Destroy user one or all sessions from database
+	 * @param  [int]  $user_id    [description]
+	 * @param  [string]  $session_id [description]
+	 * @param  boolean $specific   Should we delete only one specific session or all ones
+	 * @return [int] Number of affected rows
 	 */
 	public function logout($user_id, $session_id, $specific = true) {
+
+		$conditions = [
+			"uid" => $user_id,
+		];
+
 		if ($specific === true) {
-			$data = $this->database->delete("users_sessions", [
-				"AND" => [
-					"uid" => $user_id,
-					"session" => $session_id,
-				],
-			]);
-		} else {
-			$data = $this->database->delete("users_sessions", [
-				"AND" => [
-					"uid" => $user_id,
-				],
-			]);
+			$conditions["session"] = $session_id;
 		}
+
+		$data = $this->database->delete("users_sessions", [
+			"AND" => $conditions,
+		]);
+
 		return $data->rowCount();
 	}
 
-	/** Register user in database **/
+	/**
+	 * Register user in database
+	 * @param  [type] $username        [description]
+	 * @param  [type] $password        [description]
+	 * @param  [type] $email_adress    [description]
+	 * @param  [type] $firstName       [description]
+	 * @param  [type] $lastName        [description]
+	 * @param  [type] $phoneNumber     [description]
+	 * @param  [type] $org_invite_code [description]
+	 * @param  [type] $validation_hash [description]
+	 * @return [int]                   User ID
+	 */
 	public function register($username, $password, $email_adress, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash) {
 		$salt = $this->Helpers->generateRandomString(16);
 		$hash_password = hash('sha256', $salt . $password);
@@ -177,6 +201,11 @@ class Users {
 		return $user_id;
 	}
 
+	/**
+	 * Get salt for specific user
+	 * @param  [type] $username [description]
+	 * @return [type]           [description]
+	 */
 	private function getSalt($username) {
 		$columns = [
 			'id',
@@ -199,33 +228,11 @@ class Users {
 
 		return ($details);
 	}
-	/**
-	 *
-	 */
-	public function getUsersByCBSubscriptionId($cb_subscription_id) {
-		$columns = "*";
-		$conditions = [
-			'cb_subscription_id' => $cb_subscription_id,
-		];
-		$details = $this->database->get($this->table_name, $columns, $conditions);
 
-		return ($details);
-	}
-	/**
-	 *
-	 */
-	public function getUsersByCBUserId($cb_user_id) {
-		$columns = "*";
-		$conditions = [
-			'cb_user_id' => $cb_user_id,
-		];
-		$details = $this->database->get($this->table_name, $columns, $conditions);
-
-		return ($details);
-	}
 	/**
 	 * Check if User Email is in database or not
-	 *
+	 * @param  [type] $email_adress [description]
+	 * @return [type]               [description]
 	 */
 	public function checkUserByEmail($email_adress) {
 		$columns = [
@@ -239,9 +246,11 @@ class Users {
 
 		return $uid;
 	}
+
 	/**
 	 * Check if User Username is in database or not
-	 *
+	 * @param  [type] $username [description]
+	 * @return [type]           [description]
 	 */
 	public function checkUserByUsername($username) {
 		$columns = [
@@ -253,9 +262,11 @@ class Users {
 		$id = $this->database->get('users', $columns, $conditions);
 		return $id;
 	}
+
 	/**
 	 * Check if User validation_hash is in database or not
-	 *
+	 * @param  [type] $validation_hash [description]
+	 * @return [type]                  [description]
 	 */
 	public function checkUserByValidationHash($validation_hash) {
 		$columns = [
@@ -269,9 +280,13 @@ class Users {
 
 		return $id;
 	}
+
 	/**
 	 * Update User status
-	 *
+	 * @param  string $table [description]
+	 * @param  array  $data  [description]
+	 * @param  array  $where [description]
+	 * @return [type]        [description]
 	 */
 	public function updateField($table = "users", $data = ["email_status" => null], $where = ["id" => null]) {
 		$check = $this->database->update($table, $data, $where);

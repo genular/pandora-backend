@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-06-08 16:12:38
+ * @Last Modified time: 2019-01-25 16:19:22
  */
 namespace SIMON\Models;
 
@@ -30,6 +30,11 @@ class ModelsPerformance {
 		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsPerformance constructed");
 	}
 
+	/**
+	 * [deleteByModelIDs description]
+	 * @param  [type] $modelIDs [description]
+	 * @return [type]           [description]
+	 */
 	public function deleteByModelIDs($modelIDs) {
 		$data = $this->database->delete($this->table_name, [
 			"AND" => [
@@ -39,6 +44,14 @@ class ModelsPerformance {
 		return ($data->rowCount());
 	}
 
+	/**
+	 * [getPerformaceVariables description]
+	 * @param  [type] $ids           [description]
+	 * @param  string $groupColumn   [description]
+	 * @param  string $aggregateFunc [description]
+	 * @param  [type] $measurements  [description]
+	 * @return [type]                [description]
+	 */
 	public function getPerformaceVariables($ids, $groupColumn = "queueID", $aggregateFunc = "MAX", $measurements) {
 
 		$ids = join(',', array_map('intval', $ids));
