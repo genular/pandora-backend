@@ -21,8 +21,13 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/analysis/other/available-packages", simon$handle$analysis$other$availablePackages, serializer=serializer_unboxed_json())
 
     ## Use on front-end in exploration analysis
+    ## SAM
     router$handle("GET", "/analysis/other/sam/render-options", simon$handle$analysis$other$sam$renderOptions, serializer=serializer_unboxed_json())
     router$handle("GET", "/analysis/other/sam/render-plot", simon$handle$analysis$other$sam$renderPlot, serializer=serializer_unboxed_json())
+
+    ## CATBOOST
+    router$handle("GET", "/analysis/other/predict/catboost/renderOptions", simon$handle$analysis$other$predict$catboost$renderOptions, serializer=serializer_unboxed_json())
+    router$handle("GET", "/analysis/other/predict/catboost/submit", simon$handle$analysis$other$predict$catboost$submit, serializer=serializer_unboxed_json())
 
     router$run(host = options$host, port = as.numeric(options$port), debug = options$debug)
 }

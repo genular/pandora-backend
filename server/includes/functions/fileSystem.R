@@ -83,7 +83,7 @@ downloadFile <- function(filepath_remote, filepath_local){
                          url_style = "path",
                          base_url = simonConfig$storage$s3$endpoint,
                          region = simonConfig$storage$s3$region,
-                         verbose = TRUE)
+                         verbose = FALSE)
    end_time <- Sys.time()
    time_diff <- end_time - start_time
    cat(paste0("===> INFO: file download end: ",filepath_remote," time: ",time_diff," \r\n"))
@@ -147,7 +147,7 @@ uploadFile <- function(user_id, filepath_local, upload_directory, retry_count = 
                         url_style = "path",
                         base_url = simonConfig$storage$s3$endpoint,
                         region = simonConfig$storage$s3$region,
-                        verbose = TRUE)
+                        verbose = FALSE)
 
     end_time <- Sys.time()
     time_diff <- end_time - start_time

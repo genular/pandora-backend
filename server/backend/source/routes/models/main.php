@@ -4,14 +4,14 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 14:25:46
+ * @Last Modified time: 2019-01-28 14:11:46
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
 
 $app->get('/backend/queue/list', function (Request $request, Response $response, array $args) {
-	$success = true;
-	$message = [];
+	$success = false;
+	$message = array();
 
 	$config = $this->get('Noodlehaus\Config');
 	$redirectURL = $config->get('default.frontend.server.url');
@@ -36,18 +36,24 @@ $app->get('/backend/queue/list', function (Request $request, Response $response,
 	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 	$paginatedData = $DatasetQueue->getDatasetQueueList($user_id, $page, $limit, $sort, $filters);
 
-	$countData = 0;
-	if (count($paginatedData) > 0) {
-		$countData = $DatasetQueue->getDatasetQueueCount("uid", $user_id, $filters);
+	if ($paginatedData) {
+		$countData = 0;
+		if (count($paginatedData) > 0) {
+			$countData = $DatasetQueue->getDatasetQueueCount("uid", $user_id, $filters);
+
+			$message["queueList"] = $paginatedData;
+			$message["queueTotalItems"] = $countData;
+			$success = true;
+		}
 	}
 
-	return $response->withJson(["success" => $success, "data" => $paginatedData, "totalItems" => $countData]);
+	return $response->withJson(["success" => $success, "message" => $message]);
 });
 
 $app->get('/backend/queue/exploration/list', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = [];
-	$data = Array(
+	$message = Array(
 		'resamplesList' => null,
 		'modelsList' => null,
 		'queueDetails' => null,
@@ -89,8 +95,10 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$resamplesProportions = $DatasetProportions->getDatasetResamplesProportions($resamplesListIDs);
 
 			$queueDetails["selectedOptions"]["classes"] = $DatasetProportions->getUniqueValuesCountForClasses($resamplesListIDs, $queueDetails["selectedOptions"]["classes"]);
-
+			// For each proportion column add additional array key "original" and put original column name in it column7 => Outcome
 			$resamplesProportions = $DatasetProportions->mapRenamedToOriginal("column_remapped", $resamplesProportions, $queueDetails["selectedOptions"]);
+
+			// Format proportions and merge them with resamples
 			$resamplesList = $DatasetProportions->mergeProportions($resamplesProportions, $resamplesList);
 
 			foreach ($resamplesList as $resampleKey => $resamplesListValue) {
@@ -115,7 +123,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements);
 			$modelsList = $Models->assignMesurmentsToModels($modelsList, $modelsPerformace, $modelsPerformaceVariables);
 
-			$data = Array(
+			$message = Array(
 				'resamplesList' => $resamplesList,
 				'modelsList' => $modelsList,
 				'queueDetails' => $queueDetails,
@@ -129,7 +137,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 		$success = false;
 	}
 
-	return $response->withJson(["success" => $success, "data" => $data]);
+	return $response->withJson(["success" => $success, "message" => $message]);
 });
 
 $app->get('/backend/queue/details', function (Request $request, Response $response, array $args) {

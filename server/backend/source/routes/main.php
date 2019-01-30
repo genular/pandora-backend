@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 11:55:02
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:14:48
+ * @Last Modified time: 2019-01-29 13:51:44
  */
 
 require 'source/routes/users/main.php';
@@ -16,8 +16,11 @@ require 'source/routes/system/filesystem.php';
 require 'source/routes/system/simon.php';
 
 require 'source/routes/organization/main.php';
+
 require 'source/routes/models/main.php';
 require 'source/routes/models/variableImportance.php';
+require 'source/routes/models/predict.php';
+
 require 'source/routes/dataset/main.php';
 
 $app->options('/{routes:.+}', function ($request, $response, $args) {

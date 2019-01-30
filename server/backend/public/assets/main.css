@@ -1,0 +1,36 @@
+/*
+* @Author: LogIN-
+* @Date:   2019-01-29 13:59:26
+* @Last Modified by:   LogIN-
+* @Last Modified time: 2019-01-29 14:04:28
+*/
+* {
+	margin: 0px;
+	padding: 0px;
+}
+body {
+	font-family: 'Open Sans', sans-serif;
+	color: #fff;
+	background-color: #35224a;
+}
+a {
+	color: #fff;
+}
+#genular_logo {
+	background-image: url("https://raw.githubusercontent.com/genular/simon-frontend/master/src/app/assets/logo/png/white_logo_transparent%402x.png");
+	background-repeat: no-repeat;
+	display: block;
+	width: 250px;
+	height: 250px;
+	margin: 0 auto;
+	margin-top: 25px;
+	position: relative;
+	background-size: contain;
+}
+
+#footer {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	padding: 15px;
+}
