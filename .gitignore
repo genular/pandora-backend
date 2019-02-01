@@ -60,3 +60,5 @@ SIMON_DATA
 *.bak
 
 *.sublime-workspace
+
+dataset_generator

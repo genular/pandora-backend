@@ -34,7 +34,12 @@ setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
 
 cpu_cores <- detectCores(logical = TRUE)
 cpu_cores <- as.numeric(cpu_cores)
-CORES <- cpu_cores - 1
+
+if(cpu_cores > 3){
+    CORES <- cpu_cores - 3    
+}else{
+    CORES <- 1
+}
 
 start_time <- Sys.time()
 
@@ -96,6 +101,8 @@ if(length(serverData) < 1){
         pid_time_diff <- round(difftime(Sys.time(), pid_info$mtime, units="secs"), digits = 0)
 
         cat(paste0("===> ERROR: Found PID file ", SIMON_PID, " Age: ", pid_time_diff," sec. Waiting for existing cron task to finish.\r\n"))
+        updateDatabaseFiled("dataset_queue", "status", 1, "id", serverData$queueID)
+
         # if(pid_time_diff > globalTimeLimit){
         #     cat(paste0("===> INFO: Deleting PID file since exceeded global time limit of ", globalTimeLimit ," sec \r\n"))
         #     if(file.exists(SIMON_PID)){
@@ -215,6 +222,9 @@ for (dataset in datasets) {
     loaded_libraries_for_model <- NULL
     ## Loop all user selected methods and make models
     for (model in rev(models_to_process)) {
+        ## Used when saving model to models DB table to set training_time value
+        model_time_start <- Sys.time()
+
         model_details <- dataset$packages[dataset$packages$internal_id %in% model,]
         ##   id internal_id classification regression
         ## 3854          lm              0          1
@@ -314,7 +324,6 @@ for (dataset in datasets) {
         }
         cat(paste0("===> INFO: model training start: ",model_details$internal_id," \r\n"))
 
-
         trainModel <- caretTrainModel(modelData$training, model_details, problemType, dataset$outcome, NULL, dataset$resampleID, JOB_DIR)
 
         ## Define results variables
@@ -394,7 +403,8 @@ for (dataset in datasets) {
                                                       performanceVariables,
                                                       results_auc, 
                                                       as.numeric(sucess),
-                                                      error_models)
+                                                      error_models,
+                                                      model_time_start)
 
         if(sucess != FALSE){
 

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:06:58
+ * @Last Modified time: 2019-01-31 13:09:30
  */
 namespace SIMON\Users;
 
@@ -131,9 +131,10 @@ class Users {
 	 * @param  [type] $phoneNumber     [description]
 	 * @param  [type] $org_invite_code [description]
 	 * @param  [type] $validation_hash [description]
+	 * @param  [type] $account_type [description]
 	 * @return [int]                   User ID
 	 */
-	public function register($username, $password, $email_adress, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash) {
+	public function register($username, $password, $email_adress, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash, $account_type) {
 		$salt = $this->Helpers->generateRandomString(16);
 		$hash_password = hash('sha256', $salt . $password);
 
@@ -155,9 +156,6 @@ class Users {
 			$user_id = null;
 		}
 		$organization_id = false;
-		// 2 - User
-		$account_type = 2;
-
 		if ($user_id !== null) {
 			if (trim($org_invite_code) !== "") {
 				$organization_id = $this->database->get("organization", ['id'], ["invite_code" => $org_invite_code]);

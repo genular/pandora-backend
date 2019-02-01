@@ -8,7 +8,7 @@ simon$handle$plots$summary$renderPlot <- expression(
 
         options(width = 360)
 
-        data <- list( boxplot = NULL, info = list(summary = NULL, differences = NULL), rocplot = NULL)
+        data <- list( boxplot = NULL, rocplot = NULL, info = list(summary = NULL, differences = NULL))
 
         resampleID <- 0
         if("resampleID" %in% names(args)){
@@ -68,9 +68,6 @@ simon$handle$plots$summary$renderPlot <- expression(
             ## 4. ROC_AUC_PLOT
             tmp <- tempfile()
             svg(tmp,  width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "mono", bg = "white", antialias = "default")
-
-
-
                 i = 1;
                 for(model in modelsDetailsData){
                     all_models[i] <- model$method
@@ -91,10 +88,7 @@ simon$handle$plots$summary$renderPlot <- expression(
             data$rocplot <- toString(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
         }
 
-        resp <- jsonlite::toJSON(data, simplifyVector=FALSE, pretty=TRUE, auto_unbox=TRUE)
-        resp <- RCurl::base64Encode(resp, "txt")
-
-        return(resp)
+        return (list(success = TRUE, message = data))
     }
 )
 

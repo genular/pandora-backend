@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:26:00
+ * @Last Modified time: 2019-01-30 12:46:41
  */
 namespace SIMON\Dataset;
 
@@ -190,12 +190,12 @@ class DatasetQueue {
 				"sparsity" => 0,
 				"packages" => json_encode($packages),
 				"status" => 0,
-				"processing_time" => 0,
+				"processing_time" => Medoo::raw("NULL"),
 				"servers_total" => $serverGroups,
 				"created" => Medoo::raw("NOW()"),
-				"created_ip_address" => "",
+				"created_ip_address" => Medoo::raw("NULL"),
 				"updated" => Medoo::raw("NOW()"),
-				"updated_ip_address" => "",
+				"updated_ip_address" => Medoo::raw("NULL"),
 			]);
 
 			$queue_id = $this->database->id();
@@ -289,6 +289,7 @@ class DatasetQueue {
 				    dataset_queue.extraction AS queueExtraction,
 				    dataset_queue.sparsity AS sparsity,
 				    dataset_queue.ufid AS fileID,
+				    users_files.display_filename AS queueName,
 				    users.username  AS username,
 				    COUNT(DISTINCT(dataset_resamples.id)) AS resamplesTotal,
 				    COUNT(models.id) AS modelsTotal,
@@ -304,6 +305,9 @@ class DatasetQueue {
 
 				LEFT JOIN models
 				    ON dataset_resamples.id = models.drid
+
+				LEFT JOIN users_files
+				    ON dataset_queue.ufid = users_files.id
 
 	            WHERE dataset_queue.uid = :user_id";
 

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:37:42
+ * @Last Modified time: 2019-01-30 12:48:57
  */
 
 use Slim\Http\Request;
@@ -227,7 +227,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 		$queueID = $DatasetQueue->createQueue($user_id, $submitData, $allOtherSelections, $allSelectedFeatures);
 
-		$sparsityUpdate = 0;
+		$sparsityUpdate = true;
 		$sparsity = 0;
 		if ($queueID !== 0) {
 			// CALCULATE INTERSECTIONS
@@ -236,9 +236,9 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 				$datasetResample = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"]);
 
 				// Update sparsity values only once per queue
-				if ($sparsityUpdate === 0) {
-					$sparsityUpdate = $DatasetQueue->updateTable("sparsity", $datasetResample["info"]["sparsity"], "id", $queueID);
+				if ($sparsityUpdate === true) {
 					$sparsity = $datasetResample["info"]["sparsity"];
+					$sparsityUpdate = $DatasetQueue->updateTable("sparsity", $sparsity, "id", $queueID);
 				}
 
 				$resamples[] = ["outcome" => $selectedOutcome, "data" => $datasetResample["resamples"]];

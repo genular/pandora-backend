@@ -383,6 +383,9 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         echo "${green}=> Installing shared dependencies${clear}"
 
         sudo Rscript -e "install.packages(c('devtools'), repo = 'https://cloud.r-project.org/')"
+        ## server/backend/public/assets/datasets/Rdatasets.R
+        sudo Rscript -e "devtools::install_github('trinker/pacman')"
+
         sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'aws.s3'), repos='http://cran.us.r-project.org')"
         
         ## Check some shared deps

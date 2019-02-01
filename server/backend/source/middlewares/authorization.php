@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-04 16:28:25
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-29 13:50:12
+ * @Last Modified time: 2019-01-31 11:53:33
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -45,7 +45,7 @@ $app->add(new TokenAuthentication([
 		$user_id = $UsersSessions->getUserIdBySessionId($session_id);
 
 		$initial_db_connect = microtime(true) - $start;
-		if ($user_id !== false) {
+		if ($user_id) {
 			return $request->withAttribute('user', ["user_id" => intval($user_id["uid"]), "session_id" => $session_id, "initial_db_connect" => $initial_db_connect]);
 		} else {
 			throw new UnauthorizedException('Invalid Authentication');

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:11:23
+ * @Last Modified time: 2019-01-30 12:31:24
  */
 namespace SIMON\System;
 
@@ -146,7 +146,7 @@ class System {
 	 * @return [type] [description]
 	 */
 	private function initModelsPacakges() {
-
+		$status = false;
 		$data = [];
 		$packages = [];
 
@@ -162,12 +162,13 @@ class System {
 					}
 				}
 			}
-		} catch (GuzzleHttp\Exception\ServerException $e) {
-			$data = $e->getResponse()->getBody()->getContents();
-			$this->logger->error("SIMON\System initModelsPacakges ClientException " . $data);
+		} catch (\GuzzleHttp\Exception\ServerException $e) {
+			$httpError = $e->getResponse()->getBody()->getContents();
+			$this->logger->error("SIMON\System initModelsPacakges ClientException " . $httpError);
 		}
 
 		if (count($data) > 0) {
+			$status = true;
 			foreach ($data as $package_key => $package_value) {
 				$tuning_parameters = [];
 				if (isset($package_value["tuning_parameters"]) and is_array($package_value["tuning_parameters"])) {
@@ -213,10 +214,10 @@ class System {
 					$packages[$package_key] = $package;
 				}
 			}
+			$packages = array_values($packages);
+			$this->database->insert("models_packages", $packages);
 		}
-		$packages = array_values($packages);
-
-		$this->database->insert("models_packages", $packages);
+		return $status;
 	}
 
 	/**

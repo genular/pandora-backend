@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:27:46
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 10:15:23
+ * @Last Modified time: 2019-01-31 13:09:09
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -58,6 +58,9 @@ $app->get('/backend/user/details', function (Request $request, Response $respons
 
 $app->post('/backend/user/register', function (Request $request, Response $response, array $args) {
 	$success = true;
+	// Check if system is properly initialized
+	$sysInit = false;
+
 	$message = [];
 
 	$users = $this->get('SIMON\Users\Users');
@@ -65,11 +68,14 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 	$system = $this->get('SIMON\System\System');
 
 	// Lets try to reset all data if there are no users registered in database!
-	if ($users->countTotalUsers() < 1) {
+	$totalUsersRegistered = $users->countTotalUsers();
+	if ($totalUsersRegistered < 1) {
 		/** Empty all database tables */
 		$system->reset();
 		/** Initialize measurement variables */
-		$system->init();
+		$sysInit = $system->init();
+	} else {
+		$sysInit = true;
 	}
 
 	// 1 - Create User account in database
@@ -90,6 +96,11 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 			$phoneNumber = $post["user"]['phoneNumber'];
 			$org_invite_code = $post["user"]['org_invite_code'];
 
+			$account_type = 2;
+			if ($totalUsersRegistered < 1) {
+				$account_type = 1;
+			}
+
 			/** Check is user-name or email is already registered **/
 			$userExsistCheck = false;
 			$dbResults = $users->checkUserByUsername($username);
@@ -107,7 +118,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 			/** Is user already registered in database? **/
 			if ($userExsistCheck === false) {
 				$validation_hash = md5($username . $email . $firstName);
-				$user_id = $users->register($username, $password, $email, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash);
+				$user_id = $users->register($username, $password, $email, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash, $account_type);
 
 				$post["user"]["user_id"] = $user_id;
 			}

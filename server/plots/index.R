@@ -34,7 +34,7 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/plots/stats/multi-class", simon$handle$plots$stats$multiClass, serializer=serializer_unboxed_json())
     router$handle("GET", "/plots/stats/two-class", simon$handle$plots$stats$twoClass, serializer=serializer_unboxed_json())
 
-    router$handle("GET", "/plots/summary/render-plot", simon$handle$plots$summary$renderPlot, serializer=serializer_content_type(list(type='image/png')))
+    router$handle("GET", "/plots/summary/render-plot", simon$handle$plots$summary$renderPlot, serializer=serializer_unboxed_json())
     
     router$run(host = options$host, port = as.numeric(options$port), debug = options$debug)
 }

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:20:03
+ * @Last Modified time: 2019-01-30 13:51:21
  */
 namespace SIMON\Models;
 
@@ -112,7 +112,7 @@ class Models {
 				       models.id         AS modelID,
 				       models.status     AS status,
 				       models.error      AS error,
-				       models.training_time    AS trainingTime,
+				       models.processing_time    AS processing_time,
 				       models_packages.internal_id AS modelName
 
 				FROM   models
