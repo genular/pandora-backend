@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 15:35:06
+ * @Last Modified time: 2019-02-02 10:31:47
  */
 
 use Slim\Http\Request;
@@ -64,25 +64,21 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 	if ($success === true) {
 		// Validate File Header and rename it t standardize column names!
 		$details = $Helpers->validateCSVFileHeader($initial_path);
-
+		// Compress original file tot GZ
 		list($renamed_path, $gzipped_path) = $Helpers->compressPath($initial_path);
-
-		// 1. Upload to cloud
+		// Upload compressed file to the S3 Storage
 		$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
-
-		if (file_exists($gzipped_path)) {
-			@unlink($gzipped_path);
-		}
-		// 2. Save reference to Database
+		// Save reference to Database
 		$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $initial_path, $renamed_path, $remote_path, "uploads");
-
-		// 3. Delete local file
+		// Delete and cleanup local files
 		if (file_exists($initial_path)) {
 			@unlink($initial_path);
 		}
-
 		if (file_exists($renamed_path)) {
 			@unlink($renamed_path);
+		}
+		if (file_exists($gzipped_path)) {
+			@unlink($gzipped_path);
 		}
 
 		$file_details = $FileSystem->getFileDetails($file_id, false);
@@ -104,7 +100,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 });
 
 /**
- * Retrives list of files fot the user uploaded in specific user directory
+ * Retrieves list of files for the user, uploaded in specific user directory
  *
  * @param  {object} submitData Object containing one string variable: selectedDirectory that corresponds to upload_directory column in users_files table
  *
@@ -152,19 +148,27 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	if (isset($args['fileID'])) {
-		$fileID = (int) $args['fileID'];
-		$file_details = $FileSystem->getFileDetails($fileID, false);
+	$submitData = false;
+	if (isset($args['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+	}
 
-		if ($file_details && $user_id == $file_details["uid"]) {
-			$message = $FileSystem->deleteFileByID($fileID, $file_details["path_remote"]);
-			if ($message === false) {
+	if (isset($submitData['selectedFiles'])) {
+		foreach ($submitData['selectedFiles'] as $selectedFilesKey => $selectedFilesValue) {
+			$fileID = (int) $selectedFilesValue;
+			$file_details = $FileSystem->getFileDetails($fileID, false);
+
+			if ($file_details && $user_id == $file_details["uid"]) {
+				$message = $FileSystem->deleteFileByID($fileID, $file_details["path_remote"]);
+				if ($message === false) {
+					$success = false;
+				}
+			} else {
 				$success = false;
 			}
-		} else {
-			$success = false;
 		}
 	}
+
 	return $response->withJson(["success" => $success, "message" => $message]);
 
 });

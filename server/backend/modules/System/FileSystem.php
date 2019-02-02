@@ -4,13 +4,11 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:13:27
+ * @Last Modified time: 2019-02-02 09:33:58
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
 use League\Flysystem\AwsS3v3\AwsS3Adapter as AwsS3Adapter;
-
-/* http://flysystem.thephpleague.com/docs/usage/filesystem-api/ */
 use League\Flysystem\Filesystem as Flysystem;
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
@@ -138,7 +136,7 @@ class FileSystem {
 	}
 
 	public function getAllFilesByUserID($user_id, $upload_directory, $cache = true) {
-		$cache_key = "getAllFilesByUserID" . md5($user_id . $upload_directory);
+		$cache_key = $this->table_name . "_getAllFilesByUserID_" . md5($user_id . $upload_directory);
 		$details = $this->Cache->getArray($cache_key);
 
 		if ($cache === false || $details === false) {
@@ -164,7 +162,7 @@ class FileSystem {
 
 	public function getFileDetails($file_id, $cache = true) {
 
-		$cache_key = "getFileDetails_" . md5($file_id);
+		$cache_key = $this->table_name . "_getFileDetails_" . md5($file_id);
 
 		$details = $this->Cache->getArray($cache_key);
 		if ($cache === false || $details === false) {
@@ -226,8 +224,10 @@ class FileSystem {
 		return $remote_path;
 	}
 
-	/** Downloads file from remote server to
-	 * temporary place in our local file-system
+	/**
+	 * Downloads file from remote server to temporary place in our local file-system
+	 * @param  [type] $file_id [description]
+	 * @return [type]          [description]
 	 */
 	public function downloadFile($file_id) {
 

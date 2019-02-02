@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: cluster.genular.net:3307
--- Generation Time: Jan 24, 2019 at 06:36 PM
+-- Generation Time: Feb 01, 2019 at 01:28 AM
 -- Server version: 10.1.29-MariaDB-6
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
@@ -21,6 +21,26 @@ SET time_zone = "+00:00";
 --
 -- Database: `genular`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dataset_database`
+--
+
+CREATE TABLE `dataset_database` (
+  `id` int(11) NOT NULL,
+  `uid` int(11) DEFAULT NULL COMMENT 'User ID of the dataset uploader',
+  `title` varchar(255) DEFAULT NULL,
+  `description_latex` text COMMENT 'LaTeX formatted description of the dataset',
+  `description_html` text,
+  `rows` int(11) DEFAULT NULL COMMENT 'Total number of rows in the dataset',
+  `columns` int(11) DEFAULT NULL COMMENT 'Number of columns in the dataset',
+  `hash` char(32) DEFAULT NULL COMMENT 'MD5 hash of the data csv file, this hash is also filename',
+  `sparsity` int(11) DEFAULT NULL COMMENT 'Sparsity of a dataframe',
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP,
+  `created` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Database of example datasets that once can use';
 
 -- --------------------------------------------------------
 
@@ -125,10 +145,11 @@ CREATE TABLE `models` (
   `mv_hash` char(32) DEFAULT NULL COMMENT 'models_variables MD5 signature hash',
   `status` tinyint(6) DEFAULT NULL COMMENT 'Analysis status\n0 - Model Training or Predict Failure\n1- Sucess\n3- In progress',
   `error` longtext COMMENT 'Newline delimited list of errors',
-  `training_time` float DEFAULT NULL COMMENT 'Training model time in sec',
+  `training_time` float DEFAULT NULL COMMENT 'Only model training time in sec',
+  `processing_time` int(11) DEFAULT NULL COMMENT 'Total models processing time. Training, testing etc.. in ms',
   `credits` int(11) DEFAULT NULL COMMENT 'Used credits in specific analysis',
-  `created` datetime DEFAULT NULL COMMENT 'time created',
-  `updated` datetime DEFAULT NULL
+  `created` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'time created',
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Processed Models for Specific Dataset Resample';
 
 -- --------------------------------------------------------
@@ -383,6 +404,14 @@ CREATE TABLE `users_sessions` (
 --
 
 --
+-- Indexes for table `dataset_database`
+--
+ALTER TABLE `dataset_database`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `hash_UNIQUE` (`hash`);
+ALTER TABLE `dataset_database` ADD FULLTEXT KEY `description` (`description_latex`);
+
+--
 -- Indexes for table `dataset_proportions`
 --
 ALTER TABLE `dataset_proportions`
@@ -526,6 +555,12 @@ ALTER TABLE `users_sessions`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `dataset_database`
+--
+ALTER TABLE `dataset_database`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `dataset_proportions`

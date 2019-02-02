@@ -22,18 +22,27 @@ simon$handle$plots$heatmap$renderPlot <- expression(
         if(length(settings$scale) == 0){
             settings$scale = "column"
         }
-        if(length(settings$displayNumbers) == 0){
-            settings$displayNumbers = FALSE
+        # Define default values
+        settings$displayNumbers = FALSE
+        settings$displayLegend = FALSE
+        settings$displayColnames = FALSE
+        settings$displayRownames = FALSE
+
+        if(length(settings$displayOptions) > 0) {
+            if("numbers" %in% settings$displayOptions){
+                settings$displayNumbers = TRUE
+            }
+            if("legend" %in% settings$displayOptions){
+                settings$displayLegend = TRUE
+            }
+            if("colnames" %in% settings$displayOptions){
+                settings$displayColnames = TRUE
+            }
+            if("rownames" %in% settings$displayOptions){
+                settings$displayRownames = TRUE
+            }
         }
-        if(length(settings$displayLegend) == 0){
-            settings$displayLegend = TRUE
-        }
-        if(length(settings$displayColnames) == 0){
-            settings$displayColnames = TRUE
-        }
-        if(length(settings$displayRownames) == 0){
-            settings$displayRownames = TRUE
-        }
+
         if(length(settings$plotWidth) == 0){
             settings$plotWidth = 20
         }

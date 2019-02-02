@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:22:52
+ * @Last Modified time: 2019-02-02 11:33:28
  */
 namespace SIMON\Helpers;
 
@@ -345,24 +345,114 @@ class Helpers {
 	}
 
 	/**
-	 * Returns a safe filename, for a given platform (OS), by replacing all
-	 * dangerous characters with an underscore.
+	 * Sanitizes a filename replacing whitespace with dashes
 	 *
-	 * @param string $dangerous_filename The source filename to be "sanitized"
-	 * @param string $platform The target OS
+	 * Removes special characters that are illegal in filenames on certain
+	 * operating systems and special characters requiring special escaping
+	 * to manipulate at the command line. Replaces spaces and consecutive
+	 * dashes with a single dash. Trim period, dash and underscore from beginning
+	 * and end of filename.
 	 *
-	 * @return Boolean string A safe version of the input filename
+	 * @since 2.1.0
+	 *
+	 * @param string $filename The filename to be sanitized
+	 * @return string The sanitized filename
 	 */
-	public function sanitizeFileName($dangerous_filename, $platform = 'Unix') {
-		if (in_array(strtolower($platform), array('unix', 'linux'))) {
-			// our list of "dangerous characters", add/remove characters if necessary
-			$dangerous_characters = array(" ", '"', "'", "&", "/", "\\", "?", "#");
-		} else {
-			// no OS matched? return the original filename then...
-			return $dangerous_filename;
+	public function sanitizeFileName($filename) {
+		$special_chars = array("?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", "\"", "&", "$", "#", "*", "(", ")", "|", "~", "`", "!", "{", "}");
+		$filename = str_replace($special_chars, '', $filename);
+
+		$filename = preg_replace('/[\s-]+/', '-', $filename);
+		$filename = trim($filename, '.-_');
+
+		return strtolower($filename);
+	}
+	/**
+	 * Copy remote file over HTTP one small chunk at a time.
+	 * https://stackoverflow.com/questions/4000483/how-download-big-file-using-php-low-memory-usage
+	 *
+	 * @param $infile The full URL to the remote file
+	 * @param $outfile The path where to save the file
+	 */
+	public function copyfile_chunked($infile, $outfile) {
+		$chunksize = 10 * (1024 * 1024); // 10 Megs
+		/**
+		 * parse_url breaks a part a URL into it's parts, i.e. host, path,
+		 * query string, etc.
+		 */
+		$parts = parse_url($infile);
+		$i_handle = fsockopen($parts['host'], 80, $errstr, $errcode, 5);
+		$o_handle = fopen($outfile, 'wb');
+
+		if ($i_handle == false || $o_handle == false) {
+			return false;
 		}
 
-		// every forbidden character is replace by an underscore
-		return str_replace($dangerous_characters, '_', $dangerous_filename);
+		if (!empty($parts['query'])) {
+			$parts['path'] .= '?' . $parts['query'];
+		}
+
+		/**
+		 * Send the request to the server for the file
+		 */
+		$request = "GET {$parts['path']} HTTP/1.1\r\n";
+		$request .= "Host: {$parts['host']}\r\n";
+		$request .= "User-Agent: Mozilla/5.0\r\n";
+		$request .= "Keep-Alive: 115\r\n";
+		$request .= "Connection: keep-alive\r\n\r\n";
+		fwrite($i_handle, $request);
+
+		/**
+		 * Now read the headers from the remote server. We'll need
+		 * to get the content length.
+		 */
+		$headers = array();
+		while (!feof($i_handle)) {
+			$line = fgets($i_handle);
+			if ($line == "\r\n") {
+				break;
+			}
+
+			$headers[] = $line;
+		}
+
+		/**
+		 * Look for the Content-Length header, and get the size
+		 * of the remote file.
+		 */
+		$length = 0;
+		foreach ($headers as $header) {
+			if (stripos($header, 'Content-Length:') === 0) {
+				$length = (int) str_replace('Content-Length: ', '', $header);
+				break;
+			}
+		}
+
+		/**
+		 * Start reading in the remote file, and writing it to the
+		 * local file one chunk at a time.
+		 */
+		$cnt = 0;
+		while (!feof($i_handle)) {
+			$buf = '';
+			$buf = fread($i_handle, $chunksize);
+			$bytes = fwrite($o_handle, $buf);
+			if ($bytes == false) {
+				return false;
+			}
+			$cnt += $bytes;
+
+			/**
+			 * We're done reading when we've reached the conent length
+			 */
+			if ($cnt >= $length) {
+				break;
+			}
+
+		}
+
+		fclose($i_handle);
+		fclose($o_handle);
+		return $cnt;
 	}
 }
