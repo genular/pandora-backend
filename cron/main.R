@@ -392,7 +392,7 @@ for (dataset in datasets) {
 
         }else{
             sucess <- FALSE
-            error_models <- c(error_models, "Could not train model, distribution of data does not fit selected algorithm")
+            error_models <- c(error_models, "Could not train model, errors occurred")
         }
         
         ## Save failed model so we don't process it again

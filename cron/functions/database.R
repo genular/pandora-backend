@@ -393,24 +393,25 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
 db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmatrix, model_details, performanceVariables, roc, status, error, model_time_start){
 
     training_time <- NULL
-    ## Get total amount of time needed for model to process
+
+    ## Get total amount of time needed for model to process - time in DB should always be in milliseconds
     model_time_end <- Sys.time()
     processing_time <- as.numeric(difftime(model_time_end, model_time_start,  units = c("secs")))
     processing_time <- ceiling(processing_time * 1000)
 
     if (trainModel$status == TRUE) {
         ## Get only model training time
-        training_time <- round(as.numeric(trainModel$data$times$everything[3]))
+        training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
 
         if(length(error) < 1){
             error <- NULL
         }else{
             error <- c(trainModel$data, error)
-            error <- paste(error, collapse = '\n')
+            error <- jsonlite::toJSON(error)
         }
     }else{
         error <- c(trainModel$data, error)
-        error <- paste(error, collapse = '\n')
+        error <- jsonlite::toJSON(error)
     }
 
 
