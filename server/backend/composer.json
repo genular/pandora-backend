@@ -23,7 +23,9 @@
         "league/csv": "^9.0",
         "league/container": "^2.4",
         "matthiasmullie/scrapbook": "^1.4",
-        "paquettg/php-html-parser": "^1.7"
+        "paquettg/php-html-parser": "^1.7",
+        "lasserafn/php-initial-avatar-generator": "^3.0",
+        "lasserafn/php-initials": "^2.20"
     },
     "authors": [
     {

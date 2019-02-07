@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-31 13:09:30
+ * @Last Modified time: 2019-02-06 11:02:11
  */
 namespace SIMON\Users;
 
@@ -218,11 +218,27 @@ class Users {
 	}
 
 	public function getUsersByUserId($user_id) {
-		$columns = "*";
-		$conditions = [
-			'id' => $user_id,
+		$columns = [
+			"users.id [Int]",
+			"users.username",
+			"users.email_status [Int]",
+			"users.created",
+			"users_details.first_name",
+			"users_details.last_name",
+			"users_details.email",
+			"users_details.phone",
+			"users_details.profile_picture",
+			"users_details.account_type [Int]",
+			"users_organization.oid [Int]",
 		];
-		$details = $this->database->get($this->table_name, $columns, $conditions);
+		$join = [
+			"[>]users_details" => ["users.id" => "uid"],
+			"[>]users_organization" => ["users.id" => "uid"],
+		];
+		$conditions = [
+			'users.id' => $user_id,
+		];
+		$details = $this->database->get($this->table_name, $join, $columns, $conditions);
 
 		return ($details);
 	}

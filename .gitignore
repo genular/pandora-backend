@@ -58,6 +58,7 @@ SIMON_DATA
 
 *.ignore
 *.bak
+*.gitignore
 
 *.sublime-workspace
 

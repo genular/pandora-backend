@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-04 16:28:25
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-31 11:53:33
+ * @Last Modified time: 2019-02-06 10:00:35
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -21,6 +21,7 @@ $app->add(new TokenAuthentication([
 		'/backend/system/cron/*',
 		'/backend/system/servers/*',
 		'/backend/user/verify/*',
+		'/backend/user/avatar/*',
 		'/backend/models/predict/*',
 		'/backend/system/validation/database/*',
 		'/backend/system/plans/list/*'],

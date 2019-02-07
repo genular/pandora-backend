@@ -4,8 +4,10 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:27:46
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-31 13:09:09
+ * @Last Modified time: 2019-02-06 11:16:38
  */
+use LasseRafn\InitialAvatarGenerator\InitialAvatar;
+use LasseRafn\Initials\Initials;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -13,13 +15,14 @@ $app->post('/backend/user/login', function (Request $request, Response $response
 	$success = false;
 	$authToken = false;
 
-	$controller = $this->get('SIMON\Users\Users');
+	$Users = $this->get('SIMON\Users\Users');
 	$post = $request->getParsedBody();
 
 	if (isset($post['username']) && isset($post['password'])) {
 		$username = $post['username'];
 		$password = $post['password'];
-		$authToken = $controller->login($username, $password);
+
+		$authToken = $Users->login($username, $password);
 	}
 
 	if ($authToken !== false) {
@@ -31,28 +34,75 @@ $app->post('/backend/user/login', function (Request $request, Response $response
 
 $app->post('/backend/user/logout', function (Request $request, Response $response, array $args) {
 	$success = false;
-	$controller = $this->get('SIMON\Users\Users');
+	$Users = $this->get('SIMON\Users\Users');
 
 	$user_details = $request->getAttribute('user');
 	if (is_array($user_details)) {
-		$user_logout = $controller->logout($user_details['user_id'], $user_details['session_id'], true);
+		$user_logout = $Users->logout($user_details['user_id'], $user_details['session_id'], true);
+	}
+	return $response->withJson(["success" => $success]);
+});
+
+$app->get('/backend/user/avatar', function (Request $request, Response $response, array $args) {
+	$success = false;
+	$Users = $this->get('SIMON\Users\Users');
+
+	$user_id = (int) $request->getQueryParam('id', 0);
+
+	$user_details = $Users->getUsersByUserId($user_id);
+
+	$size = (int) $request->getQueryParam('size', 256);
+	if ($size > 512 || $size < 16) {
+		$size = 256;
+	}
+	$userID = (int) $request->getQueryParam('id', 0);
+
+	if (!$user_details || $userID < 1) {
+		$user_details = ["first_name" => "unknown", "last_name" => ""];
 	}
 
-	return $response->withJson(["success" => $success]);
+	$colors = [
+		["background" => "#8BC34A", "color" => "#FFFFFF"],
+	];
+	$color = $colors[array_rand($colors, 1)];
+
+	$avatar = new InitialAvatar();
+	$initials = new Initials();
+
+	$initials = $initials->name($user_details["first_name"] . " " . $user_details["last_name"])->generate();
+
+	$image = $avatar->gd()
+		->autoFont()
+		->background($color["background"])
+		->color($color["color"])
+		->name($initials)
+		->size(256)
+		->rounded()
+		->smooth()
+		->generate()
+		->stream('png', 100);
+
+	$response->write($image);
+	return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
 
 });
 
 $app->get('/backend/user/details', function (Request $request, Response $response, array $args) {
-	$success = true;
+	$success = false;
 
 	// 1 - Global Administrator / 2 - User / 3 - Organization Administrator / 4 - Organization User
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	// TODO
-	$account_roles = $user_id;
+	$Users = $this->get('SIMON\Users\Users');
 
-	return $response->withJson(["success" => $success, "account_roles" => [2]]);
+	$user_details = $Users->getUsersByUserId($user_id);
+
+	if ($user_details) {
+		$success = true;
+	}
+
+	return $response->withJson(["success" => $success, "message" => $user_details]);
 
 });
 
