@@ -10,14 +10,16 @@ simon$filter$authentication <- function(req, res){
     #res$setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
     #res$setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept, X-Token")
 
-    route_whitelist <- c('/plots/correlation/render-options', '/analysis/other/available-packages')
+    route_whitelist <- c('/analysis/other/available-packages')
     current_route <- req$PATH_INFO
 
     auth_token <- NULL
 
     if("HTTP_X_TOKEN" %in% names(req)){
         auth_token <- req$HTTP_X_TOKEN
+        print("test 1")
         results <- db.checkUserAuthToken(auth_token)
+        print("test 2")
     }
 
     if(!is.null(auth_token) && nrow(results) > 0){

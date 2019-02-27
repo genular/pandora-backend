@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:21
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-02 11:32:25
+ * @Last Modified time: 2019-02-13 09:28:08
  */
 
 use Slim\Http\Request;
@@ -46,14 +46,16 @@ $app->get('/backend/dataset/import/public/list/{submitData:.*}', function (Reque
 	}
 
 	$page = isset($submitData['page']) ? (int) $submitData['page'] : 1;
-	$limit = isset($submitData['limit']) ? (int) $submitData['limit'] : 10;
+	$limit = isset($submitData['limit']) ? (int) $submitData['limit'] : 5;
+	$sort_by = isset($submitData['sort_by']) ? $submitData['sort_by'] : 'id';
 	$sort = isset($submitData['sort']) ? $submitData['sort'] : '+';
 
+	// Full text search string
 	$custom = isset($submitData['custom']) ? $submitData['custom'] : "";
 
 	if ($submitData && isset($submitData['page'])) {
 		$PublicDatabases = $this->get('SIMON\PublicDatabases\PublicDatabases');
-		list($paginatedData, $countData) = $PublicDatabases->getList($user_id, $page, $limit, $sort, $custom);
+		list($paginatedData, $countData) = $PublicDatabases->getList($user_id, $page, $limit, $sort_by, $sort, $custom);
 
 		// Lets just convert CSV from example field to associative array
 		foreach ($paginatedData as $paginatedDataKey => $paginatedDataValue) {

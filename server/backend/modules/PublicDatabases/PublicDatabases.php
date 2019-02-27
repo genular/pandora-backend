@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-02 11:30:02
+ * @Last Modified time: 2019-02-13 09:32:55
  */
 namespace SIMON\PublicDatabases;
 
@@ -181,12 +181,19 @@ class PublicDatabases {
 	 * @param  [type] $user_id [description]
 	 * @param  [type] $page    [description]
 	 * @param  [type] $limit   [description]
-	 * @param  [type] $sort    [description]
+	 * @param  string $sort    [description]
+	 * @param  string $sort_by    [description]
 	 * @param  array  $custom [description]
 	 * @return [type]          [description]
 	 */
-	public function getList($user_id, $page, $limit, $sort, $custom, $sql_calc_found_rows = false) {
-
+	public function getList($user_id, $page, $limit, $sort_by, $sort, $custom, $sql_calc_found_rows = false) {
+		$sort_by_options = ['id', 'title', 'rows', 'columns', 'sparsity', 'updated'];
+		if (!in_array($sort_by, $sort_by_options)) {
+			$sort_by = "id";
+		}
+		if ($limit < 1 || $limit > 50) {
+			$limit = 50;
+		}
 		$start_limit = (($page - 1) * $limit);
 		$end_limit = $limit;
 
@@ -222,7 +229,10 @@ class PublicDatabases {
 		$sql = $sql . " FROM " . $this->table_name . "
 
 	            WHERE " . $this->table_name . ".uid = :user_id
-	            OR " . $this->table_name . ".uid IS NULL";
+	            OR " . $this->table_name . ".uid IS NULL
+	            AND " . $this->table_name . ".rows > 5
+	            AND " . $this->table_name . ".columns > 5
+	            AND " . $this->table_name . ".format IS NOT NULL";
 
 		if (trim($custom) !== "") {
 			$sql = $sql . " AND MATCH(public_databases.title, public_databases.description, public_databases.format, public_databases.source, public_databases.references) AGAINST('" . $custom . "' IN BOOLEAN MODE)";
@@ -232,14 +242,14 @@ class PublicDatabases {
 		if ($sql_calc_found_rows === false) {
 			$filters[":start_limit"] = $start_limit;
 			$filters[":end_limit"] = $end_limit;
-			$sql = $sql . " ORDER BY " . $this->table_name . ".id " . $sort . " LIMIT :start_limit, :end_limit;";
+			$sql = $sql . " ORDER BY " . $this->table_name . "." . $sort_by . " " . $sort . " LIMIT :start_limit, :end_limit;";
 		} else {
-			$sql = $sql . " ORDER BY " . $this->table_name . ".id " . $sort . ";";
+			$sql = $sql . " ORDER BY " . $this->table_name . "." . $sort_by . " " . $sort . ";";
 		}
 
 		if ($sql_calc_found_rows === false) {
 			$details = $this->database->query($sql, $filters)->fetchAll(\PDO::FETCH_ASSOC);
-			$totalResults = $this->getList($user_id, $page, $limit, $sort, $custom, true);
+			$totalResults = $this->getList($user_id, $page, $limit, $sort_by, $sort, $custom, true);
 			return array($details, $totalResults);
 		} else {
 			$details = $this->database->query($sql, $filters)->fetch();

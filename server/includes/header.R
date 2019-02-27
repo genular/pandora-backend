@@ -2,7 +2,7 @@
 
 ## Variables defined in this file should be always globally accessible in any other R file/script
 ## This file must be always included as a start point in any other R process
-library(config)
+require(config)
 args <- commandArgs(TRUE)
 
 SERVER_NAME <- args[1]
@@ -25,16 +25,16 @@ ifelse(!dir.exists(DATA_PATH), dir.create(DATA_PATH), FALSE)
 UPTIME_PID <- paste0(DATA_PATH,"/uptime_",SERVER_NAME,".pid")
 
 ## Load libraries that are commonly used
-library(DBI)
-library(pool)
+require(DBI)
+require(pool)
 
-library(urltools)
+require(urltools)
 
 ## TODO: this is so SLOW! Preload AWS client to speed up process
-library(aws.s3)
+require(aws.s3)
 
 databasePool <- pool::dbPool(
-        drv = RMariaDB::MariaDB(), ## RMySQL::MySQL() --- RMariaDB::MariaDB()
+        drv = RMySQL::MySQL(), ## RMySQL::MySQL() --- RMariaDB::MariaDB()
         dbname = simonConfig[[SERVER_NAME]]$database$dbname,
         host = simonConfig[[SERVER_NAME]]$database$host,
         port = simonConfig[[SERVER_NAME]]$database$port,

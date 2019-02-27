@@ -1,0 +1,305 @@
+#!/usr/bin/env bash
+set -e
+
+mkimgdeb="$(basename "$0")"
+mkimg="$(dirname "$0").sh"
+
+usage() {
+	echo >&2 "usage: $mkimgdeb rootfsDir suite [debootstrap-args]"
+	echo >&2 " note: $mkimgdeb meant to be used from $mkimg"
+	exit 1
+}
+
+rootfsDir="$1"
+if [ -z "$rootfsDir" ]; then
+	echo >&2 "error: rootfsDir is missing"
+	echo >&2
+	usage
+fi
+shift
+
+# we have to do a little fancy footwork to make sure "rootfsDir" becomes the second non-option argument to debootstrap
+
+before=()
+while [ $# -gt 0 ] && [[ "$1" == -* ]]; do
+	before+=( "$1" )
+	shift
+done
+
+suite="$1"
+if [ -z "$suite" ]; then
+	echo >&2 "error: suite is missing"
+	echo >&2
+	usage
+fi
+shift
+
+FRESH_START="$1"
+if [ -z "$FRESH_START" ]; then
+	FRESH_START=n
+fi
+shift
+
+# get path to "chroot" in our current PATH
+chrootPath="$(type -P chroot || :)"
+if [ -z "$chrootPath" ]; then
+	echo >&2 "error: chroot not found. Are you root?"
+	echo >&2
+	usage
+fi
+
+mount_paths(){
+	echo "START => mount_paths"
+	##sudo mount --bind /dev     ${rootfsDir}/dev
+	##sudo mount --bind /dev/pts ${rootfsDir}/dev/pts
+	##sudo mount --bind /proc    ${rootfsDir}/proc
+	##sudo mount --bind /sys     ${rootfsDir}/sys
+}
+
+unmount_paths(){
+	echo "START => unmount_paths"
+	## sudo mount | grep -qs ${rootfsDir}/dev 	   && sudo umount -lf ${rootfsDir}/dev
+	## sudo mount | grep -qs ${rootfsDir}/dev/pts && sudo umount -lf ${rootfsDir}/dev/pts
+	## sudo mount | grep -qs ${rootfsDir}/proc    && sudo umount -lf ${rootfsDir}/proc
+	## sudo mount | grep -qs ${rootfsDir}/sys     && sudo umount -lf ${rootfsDir}/sys
+}
+
+rootfs_chroot() {
+	
+	# "chroot" doesn't set PATH, so we need to set it explicitly to something our new debootstrap chroot can use appropriately!
+	# set PATH and chroot away!
+	mount_paths && PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+		"$chrootPath" "$rootfsDir" "$@" && unmount_paths
+		
+}
+
+if [ "$FRESH_START" == y ] ; then
+	echo "Downloading base system START"
+
+	# allow for DEBOOTSTRAP=qemu-debootstrap ./mkimage.sh ...
+	: ${DEBOOTSTRAP:=debootstrap}
+
+	(
+		set -x
+		$DEBOOTSTRAP "${before[@]}" "$suite" "$rootfsDir" "$@"
+	)
+
+	echo "Downloading base system DONE"
+fi
+
+
+# now for some Docker-specific tweaks
+# prevent init scripts from running during install/update
+echo >&2 "+ echo exit 101 > '$rootfsDir/usr/sbin/policy-rc.d'"
+cat > "$rootfsDir/usr/sbin/policy-rc.d" <<-'EOF'
+	#!/bin/sh
+
+	# For most Docker users, "apt-get install" only happens during "docker build",
+	# where starting services doesn't work and often fails in humorous ways. This
+	# prevents those failures by stopping the services from attempting to start.
+
+	exit 101
+EOF
+chmod +x "$rootfsDir/usr/sbin/policy-rc.d"
+
+## Assume yes answer for apt operations.
+cp "$rootfsDir/../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/apt.conf.d/10-assume_yes"
+
+## Example: https://gist.github.com/takumin/952b5144e7b6466c6006
+( rootfs_chroot /bin/sh << '__EOS__'
+	#!/bin/sh
+
+	set -e
+
+	export HOME=/root
+	export LC_ALL=C
+	export LANGUAGE=C
+	export LANG=C
+	export DEBIAN_FRONTEND=noninteractive
+	export DEBIAN_PRIORITY=critical
+	export DEBCONF_NONINTERACTIVE_SEEN=true
+
+	apt-get update && apt-get upgrade
+
+	# systemd require dbus
+	apt-get install dbus
+
+	# dbus initilized
+	dbus-uuidgen > /var/lib/dbus/machine-id
+
+	# delay configuration install packages
+	apt-get install apt-utils
+
+	# package configuration utility
+	apt-get install debconf-utils
+
+	# locale
+	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
+	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
+
+	apt-get install locales
+	# tzdata
+	echo 'Europe/Amsterdam' > /etc/timezone
+	cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
+	dpkg-reconfigure tzdata
+
+	# enable root login
+	echo 'root:root' | chpasswd
+
+	# adduser genular if doesnt exsist
+	if [ -z "$(getent passwd genular)" ]; then
+		adduser --disabled-password --gecos "Debian Live User,,," genular
+		echo 'genular:genular' | chpasswd
+	fi
+
+	# log
+	dpkg -l > /packages.log
+	debconf-get-selections > /configs.log
+
+	# cleanup
+	rm /var/lib/dbus/machine-id
+	apt-get clean
+__EOS__
+)
+
+# prevent upstart scripts from running during install/update
+(
+	set -x
+	rootfs_chroot dpkg-divert --local --rename --add /sbin/initctl
+	cp -a "$rootfsDir/usr/sbin/policy-rc.d" "$rootfsDir/sbin/initctl"
+	sed -i 's/^exit.*/exit 0/' "$rootfsDir/sbin/initctl"
+)
+
+# Remove downloaded packages from local repository, shrink a little, since apt makes us cache-fat (wheezy: ~157.5MB vs ~120MB)
+( set -x; rootfs_chroot apt-get clean )
+
+# this file is one APT creates to make sure we don't "autoremove" our currently
+# in-use kernel, which doesn't really apply to debootstraps/Docker images that
+# don't even have kernels installed
+rm -f "$rootfsDir/etc/apt/apt.conf.d/01autoremove-kernels"
+
+# Ubuntu 10.04 sucks... :)
+if strings "$rootfsDir/usr/bin/dpkg" | grep -q unsafe-io; then
+	# force dpkg not to call sync() after package extraction (speeding up installs)
+	echo >&2 "+ echo force-unsafe-io > '$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup'"
+	cat > "$rootfsDir/etc/dpkg/dpkg.cfg.d/docker-apt-speedup" <<-'EOF'
+		# For most Docker users, package installs happen during "docker build", which
+		# doesn't survive power loss and gets restarted clean afterwards anyhow, so
+		# this minor tweak gives us a nice speedup (much nicer on spinning disks,
+		# obviously).
+
+		force-unsafe-io
+	EOF
+fi
+
+if [ -d "$rootfsDir/etc/apt/apt.conf.d" ]; then
+	# _keep_ us lean by effectively running "apt-get clean" after every install
+	aptGetClean='"rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true";'
+
+	if [ ! -f "$rootfsDir/etc/apt/apt.conf.d/docker-clean" ]; then
+		echo >&2 "+ cat > '$rootfsDir/etc/apt/apt.conf.d/docker-clean'"
+		cat > "$rootfsDir/etc/apt/apt.conf.d/docker-clean" <<-EOF
+			# Since for most Docker users, package installs happen in "docker build" steps,
+			# they essentially become individual layers due to the way Docker handles
+			# layering, especially using CoW filesystems.  What this means for us is that
+			# the caches that APT keeps end up just wasting space in those layers, making
+			# our layers unnecessarily large (especially since we'll normally never use
+			# these caches again and will instead just "docker build" again and make a brand
+			# new image).
+
+			# Ideally, these would just be invoking "apt-get clean", but in our testing,
+			# that ended up being cyclic and we got stuck on APT's lock, so we get this fun
+			# creation that's essentially just "apt-get clean".
+			DPkg::Post-Invoke { ${aptGetClean} };
+			APT::Update::Post-Invoke { ${aptGetClean} };
+
+			Dir::Cache::pkgcache "";
+			Dir::Cache::srcpkgcache "";
+
+			# Note that we do realize this isn't the ideal way to do this, and are always
+			# open to better suggestions (https://github.com/docker/docker/issues).
+		EOF
+	fi
+
+	if [ ! -f "$rootfsDir/etc/apt/apt.conf.d/docker-no-languages" ]; then
+		# remove apt-cache translations for fast "apt-get update"
+		echo >&2 "+ echo Acquire::Languages 'none' > '$rootfsDir/etc/apt/apt.conf.d/docker-no-languages'"
+		cat > "$rootfsDir/etc/apt/apt.conf.d/docker-no-languages" <<-'EOF'
+			# In Docker, we don't often need the "Translations" files, so we're just wasting
+			# time and space by downloading them, and this inhibits that.  For users that do
+			# need them, it's a simple matter to delete this file and "apt-get update". :)
+
+			Acquire::Languages "none";
+		EOF
+	fi
+
+	if [ ! -f "$rootfsDir/etc/apt/apt.conf.d/docker-gzip-indexes" ]; then
+		echo >&2 "+ echo Acquire::GzipIndexes 'true' > '$rootfsDir/etc/apt/apt.conf.d/docker-gzip-indexes'"
+		cat > "$rootfsDir/etc/apt/apt.conf.d/docker-gzip-indexes" <<-'EOF'
+			# Since Docker users using "RUN apt-get update && apt-get install -y ..." in
+			# their Dockerfiles don't go delete the lists files afterwards, we want them to
+			# be as small as possible on-disk, so we explicitly request "gz" versions and
+			# tell Apt to keep them gzipped on-disk.
+
+			# For comparison, an "apt-get update" layer without this on a pristine
+			# "debian:wheezy" base image was "29.88 MB", where with this it was only
+			# "8.273 MB".
+
+			Acquire::GzipIndexes "true";
+			Acquire::CompressionTypes::Order:: "gz";
+		EOF
+	fi
+
+	if [ ! -f "$rootfsDir/etc/apt/apt.conf.d/docker-autoremove-suggests" ]; then
+		# update "autoremove" configuration to be aggressive about removing suggests deps that weren't manually installed
+		echo >&2 "+ echo Apt::AutoRemove::SuggestsImportant 'false' > '$rootfsDir/etc/apt/apt.conf.d/docker-autoremove-suggests'"
+		cat > "$rootfsDir/etc/apt/apt.conf.d/docker-autoremove-suggests" <<-'EOF'
+			# Since Docker users are looking for the smallest possible final images, the
+			# following emerges as a very common pattern:
+
+			#   RUN apt-get update \
+			#       && apt-get install -y <packages> \
+			#       && <do some compilation work> \
+			#       && apt-get purge -y --auto-remove <packages>
+
+			# By default, APT will actually _keep_ packages installed via Recommends or
+			# Depends if another package Suggests them, even and including if the package
+			# that originally caused them to be installed is removed.  Setting this to
+			# "false" ensures that APT is appropriately aggressive about removing the
+			# packages it added.
+
+			# https://aptitude.alioth.debian.org/doc/en/ch02s05s05.html#configApt-AutoRemove-SuggestsImportant
+			Apt::AutoRemove::SuggestsImportant "false";
+		EOF
+	fi
+fi
+
+(
+	set -x
+
+	# make sure we're fully up-to-date
+	rootfs_chroot sh -xc 'apt-get update && apt-get dist-upgrade -y'
+
+	# Remove downloaded package lists.
+	# delete all the apt list files since they're big and get stale quickly
+	find "$rootfsDir/var/lib/apt/lists/" -maxdepth 2 -type f -delete
+	# this forces "apt-get update" in dependent images, which is also good
+
+	mkdir -p "$rootfsDir/var/lib/apt/lists/partial" # Lucid... "E: Lists directory /var/lib/apt/lists/partial is missing."
+
+	# Copy new configuration files
+	sudo cp "$rootfsDir/../configs/etc/resolv.conf" "$rootfsDir/etc/resolv.conf"
+	
+	if [ ! -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
+		sudo cp "$rootfsDir/../../../installation/install_dependencies.sh" "$rootfsDir/home/genular/install_dependencies.sh"
+		sudo chmod +x "$rootfsDir/home/genular/install_dependencies.sh"
+	fi
+)
+
+if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
+	echo "Installing SIMON deps START"
+	(	set -x 
+		rootfs_chroot /bin/bash /home/genular/install_dependencies.sh 
+	)
+	echo "Installing SIMON deps END"
+fi
