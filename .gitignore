@@ -63,5 +63,4 @@ SIMON_DATA
 *.sublime-workspace
 
 dataset_generator
-
-documentation/docker_images/base_image/genular
+documentation/docker_images/base_image/images/*

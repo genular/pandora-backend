@@ -41,10 +41,10 @@ B_CONF[database_user]="genular"
 B_CONF[database_password]="genular"
 B_CONF[database_dbname]="genular"
 
-B_CONF[analysis_url]="https://analysis.api.genular.org"
-B_CONF[plots_url]="https://plots.api.genular.org"
-B_CONF[backend_url]="https://backend.api.genular.org"
-B_CONF[frontend_url]="https://dashboard.genular.org"
+B_CONF[analysis_url]="http://analysis.api.genular.local"
+B_CONF[plots_url]="http://plots.api.genular.local"
+B_CONF[backend_url]="http://backend.api.genular.local"
+B_CONF[frontend_url]="http://dashboard.genular.local"
 
 yellow=$(tput setaf 3)
 green=$(tput setaf 2)
@@ -469,6 +469,7 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
                 yarn install
 
                 echo "${red}Setting basic configuration files in './config' directory${clear}"
+
                 ## Configure front-end configuration files
                 cd "$GIT_FRONTEND_LOCAL/config" || exit 1
                 cp env_development.example.json env_development.json

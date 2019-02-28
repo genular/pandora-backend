@@ -50,22 +50,21 @@ fi
 
 mount_paths(){
 	echo "START => mount_paths"
-	##sudo mount --bind /dev     ${rootfsDir}/dev
-	##sudo mount --bind /dev/pts ${rootfsDir}/dev/pts
-	##sudo mount --bind /proc    ${rootfsDir}/proc
-	##sudo mount --bind /sys     ${rootfsDir}/sys
+	sudo mount --bind /dev     ${rootfsDir}/dev
+	sudo mount --bind /dev/pts ${rootfsDir}/dev/pts
+	sudo mount --bind /proc    ${rootfsDir}/proc
+	sudo mount --bind /sys     ${rootfsDir}/sys
 }
 
 unmount_paths(){
 	echo "START => unmount_paths"
-	## sudo mount | grep -qs ${rootfsDir}/dev 	   && sudo umount -lf ${rootfsDir}/dev
-	## sudo mount | grep -qs ${rootfsDir}/dev/pts && sudo umount -lf ${rootfsDir}/dev/pts
-	## sudo mount | grep -qs ${rootfsDir}/proc    && sudo umount -lf ${rootfsDir}/proc
-	## sudo mount | grep -qs ${rootfsDir}/sys     && sudo umount -lf ${rootfsDir}/sys
+	sudo mount | grep -qs ${rootfsDir}/dev 	    && sudo umount -lf ${rootfsDir}/dev
+	sudo mount | grep -qs ${rootfsDir}/dev/pts  && sudo umount -lf ${rootfsDir}/dev/pts
+	sudo mount | grep -qs ${rootfsDir}/proc     && sudo umount -lf ${rootfsDir}/proc
+	sudo mount | grep -qs ${rootfsDir}/sys      && sudo umount -lf ${rootfsDir}/sys
 }
 
 rootfs_chroot() {
-	
 	# "chroot" doesn't set PATH, so we need to set it explicitly to something our new debootstrap chroot can use appropriately!
 	# set PATH and chroot away!
 	mount_paths && PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
@@ -75,18 +74,14 @@ rootfs_chroot() {
 
 if [ "$FRESH_START" == y ] ; then
 	echo "Downloading base system START"
-
 	# allow for DEBOOTSTRAP=qemu-debootstrap ./mkimage.sh ...
 	: ${DEBOOTSTRAP:=debootstrap}
-
 	(
 		set -x
-		$DEBOOTSTRAP "${before[@]}" "$suite" "$rootfsDir" "$@"
+		$DEBOOTSTRAP --arch=amd64 "${before[@]}" "$suite" "$rootfsDir" "$@"
 	)
-
 	echo "Downloading base system DONE"
 fi
-
 
 # now for some Docker-specific tweaks
 # prevent init scripts from running during install/update
@@ -102,8 +97,40 @@ cat > "$rootfsDir/usr/sbin/policy-rc.d" <<-'EOF'
 EOF
 chmod +x "$rootfsDir/usr/sbin/policy-rc.d"
 
+## Copy new configuration files
 ## Assume yes answer for apt operations.
-cp "$rootfsDir/../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/apt.conf.d/10-assume_yes"
+cp "$rootfsDir/../../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/apt.conf.d/10-assume_yes"
+cp "$rootfsDir/../../configs/etc/resolv.conf" "$rootfsDir/etc/resolv.conf"
+
+cat > "$rootfsDir/etc/hosts" << '__EOS__'
+127.0.0.1	localhost
+127.0.0.1	doom
+::1		localhost ip6-localhost ip6-loopback
+ff02::1		ip6-allnodes
+ff02::2		ip6-allrouters
+
+127.0.0.1	genular.local
+127.0.0.1	analysis.api.genular.local
+127.0.0.1	plots.api.genular.local
+127.0.0.1	backend.api.genular.local
+127.0.0.1	dashboard.genular.local
+__EOS__
+
+
+cat > "$rootfsDir/etc/apt/sources.list" << '__EOS__'
+#------------------------------------------------------------------------------#
+#                   OFFICIAL DEBIAN REPOS                    
+#------------------------------------------------------------------------------#
+
+###### Debian Main Repos
+deb https://deb.debian.org/debian/ stable main
+deb-src https://deb.debian.org/debian/ stable main
+
+deb https://deb.debian.org/debian/ stable-updates main
+deb-src https://deb.debian.org/debian/ stable-updates main
+__EOS__
+
+
 
 ## Example: https://gist.github.com/takumin/952b5144e7b6466c6006
 ( rootfs_chroot /bin/sh << '__EOS__'
@@ -122,7 +149,10 @@ cp "$rootfsDir/../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/
 	apt-get update && apt-get upgrade
 
 	# systemd require dbus
-	apt-get install dbus
+	apt-get install dbus sudo curl
+
+	# Because of yarn conflict
+	apt-get remove cmdtest
 
 	# dbus initilized
 	dbus-uuidgen > /var/lib/dbus/machine-id
@@ -144,12 +174,14 @@ cp "$rootfsDir/../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/
 	dpkg-reconfigure tzdata
 
 	# enable root login
-	echo 'root:root' | chpasswd
+	# echo 'root:root' | chpasswd
 
-	# adduser genular if doesnt exsist
+	# adduser genular if user doesnt exsist
 	if [ -z "$(getent passwd genular)" ]; then
 		adduser --disabled-password --gecos "Debian Live User,,," genular
 		echo 'genular:genular' | chpasswd
+		## Add genular user to sudo
+		usermod -aG sudo genular
 	fi
 
 	# log
@@ -161,6 +193,96 @@ cp "$rootfsDir/../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/
 	apt-get clean
 __EOS__
 )
+
+if [ "$FRESH_START" == y ] ; then
+
+	( rootfs_chroot /bin/sh << '__EOS__'
+		curl -sL https://deb.nodesource.com/setup_11.x | bash -
+		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+__EOS__
+	)
+
+fi
+echo "Installation of basic dependencies START"
+
+( rootfs_chroot /bin/sh << '__EOS__'
+	apt-get update
+
+	## Install basic dependencies needed for SIMON
+	echo "INSTALLATION step: 1"
+	apt-get install nginx
+
+	echo "INSTALLATION step: 2"
+	apt-get install php-fpm php-mysql composer
+
+	echo "INSTALLATION step: 3"
+	apt-get install -y nodejs
+	apt-get install yarn
+
+	echo "INSTALLATION step: 4"
+	apt-get install default-jre default-jdk
+
+	echo "INSTALLATION step: 5"
+	## Install flock
+	apt-get install util-linux
+
+	echo "INSTALLATION step: 6"
+	apt-get install gfortran
+
+	echo "INSTALLATION step: 7"
+	apt-get install openssl
+
+	echo "INSTALLATION step: 8"
+	apt-get install git
+
+	echo "INSTALLATION step: 9"
+	apt-get install mariadb-server mariadb-client
+__EOS__
+)
+echo "Installation of basic dependencies END"
+
+cp "$rootfsDir/../../configs/etc/php/7.0/fpm/php.ini" "$rootfsDir/etc/php/7.0/fpm/php.ini"
+
+mkdir -p "$rootfsDir/var/www/html"
+cp "$rootfsDir/../../configs/var/www/genular-info.php" "$rootfsDir/var/www/html/genular-info.php"
+
+cp "$rootfsDir/../../configs/etc/nginx/sites-available/default" "$rootfsDir/etc/nginx/sites-available/default"
+cp "$rootfsDir/../../configs/etc/nginx/sites-available/genular.conf" "$rootfsDir/etc/nginx/sites-available/genular.conf"
+
+echo "Installation of advanced dependencies START"
+( rootfs_chroot /bin/sh << '__EOS__'
+	
+	ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+	ln -s /etc/nginx/sites-available/genular.conf /etc/nginx/sites-enabled/genular.conf
+
+	apt-get update
+	## Install basic dependencies needed for SIMON
+
+	echo "INSTALLATION step: 0"
+	apt install build-essential libssl-dev
+
+	echo "INSTALLATION step: 1"
+	apt-get install libopenblas-dev
+
+	echo "INSTALLATION step: 2"
+	apt-get install libopencv-dev
+
+	echo "INSTALLATION step: 3"
+	apt-get install libssh2-1-dev
+
+	echo "INSTALLATION step: 4"
+	apt-get install libmariadbclient-dev
+
+	echo "INSTALLATION step: 5"
+	apt-get install libxml2-dev
+
+	echo "INSTALLATION step: 6"
+	apt-get install unzip php-zip php-simplexml php-curl php-mbstring php-gmp php-libsodium php-imagick
+
+__EOS__
+)
+echo "Installation of advanced dependencies END"
 
 # prevent upstart scripts from running during install/update
 (
@@ -286,9 +408,6 @@ fi
 	# this forces "apt-get update" in dependent images, which is also good
 
 	mkdir -p "$rootfsDir/var/lib/apt/lists/partial" # Lucid... "E: Lists directory /var/lib/apt/lists/partial is missing."
-
-	# Copy new configuration files
-	sudo cp "$rootfsDir/../configs/etc/resolv.conf" "$rootfsDir/etc/resolv.conf"
 	
 	if [ ! -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
 		sudo cp "$rootfsDir/../../../installation/install_dependencies.sh" "$rootfsDir/home/genular/install_dependencies.sh"
@@ -297,9 +416,17 @@ fi
 )
 
 if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
+
 	echo "Installing SIMON deps START"
 	(	set -x 
 		rootfs_chroot /bin/bash /home/genular/install_dependencies.sh 
 	)
 	echo "Installing SIMON deps END"
+
 fi
+
+# Docker mounts tmpfs at /dev and procfs at /proc so we can remove them
+sudo rm -rf "$rootfsDir/dev"
+sudo rm -rf "$rootfsDir/proc"
+sudo mkdir -p "$rootfsDir/dev"
+sudo mkdir -p "$rootfsDir/proc"
