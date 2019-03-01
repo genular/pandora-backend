@@ -1,0 +1,15 @@
+# ignore .git and .cache folders
+.git
+.gitignore
+node_modules
+.cache
+
+# ignore all markdown files (md) beside all README*.md other than README-secret.md
+*.md
+!README*.md
+README-secret.md
+
+base_image
+
+start.sh
+supervisord.conf

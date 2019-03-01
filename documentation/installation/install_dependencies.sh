@@ -35,7 +35,7 @@ B_CONF[details_email]="support@genular.com"
 
 B_CONF[data_path]="/tmp"
 
-B_CONF[database_host]="127.0.0.1"
+B_CONF[database_host]="localhost"
 B_CONF[database_port]=3306
 B_CONF[database_user]="genular"
 B_CONF[database_password]="genular"
@@ -594,7 +594,7 @@ echo "Username: ${B_CONF[database_user]}"
 echo "Password: *********"
 echo "DB name: ${B_CONF[database_dbname]}"
 echo ""
-echo "Please make sure that blank database and database user are created on the server before continuing..."
+echo "Please make sure that blank database and database user are created on the server and that mysql is started before continuing..."
 echo ""
 echo "================================================================="
 echo "${clear}"
@@ -609,7 +609,7 @@ if [ "$install_database" == y ] ; then
     if [ -d "$GIT_BACKEND_LOCAL" ]; then
         echo "${yellow}Starting database import${clear}"
         mysql -u ${B_CONF[database_user]} -p${B_CONF[database_password]} -h ${B_CONF[database_host]} ${B_CONF[database_dbname]} < "$GIT_BACKEND_LOCAL/documentation/installation/schema.sql"
-        echo "${yellow}import done${clear}"
+        echo "${yellow}Database import done${clear}"
     else
         echo "${red}Cannot locate simon-backend directory! Exiting..${clear}"
     fi

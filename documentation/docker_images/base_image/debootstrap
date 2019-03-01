@@ -102,20 +102,21 @@ chmod +x "$rootfsDir/usr/sbin/policy-rc.d"
 cp "$rootfsDir/../../configs/etc/apt/apt.conf.d/10-assume_yes" "$rootfsDir/etc/apt/apt.conf.d/10-assume_yes"
 cp "$rootfsDir/../../configs/etc/resolv.conf" "$rootfsDir/etc/resolv.conf"
 
+cp "$rootfsDir/../../configs/root/.my.cnf" "$rootfsDir/root/.my.cnf"
+chmod 0600 "$rootfsDir/root/.my.cnf"
+
 cat > "$rootfsDir/etc/hosts" << '__EOS__'
 127.0.0.1	localhost
 127.0.0.1	doom
-::1		localhost ip6-localhost ip6-loopback
+::1			localhost ip6-localhost ip6-loopback
 ff02::1		ip6-allnodes
 ff02::2		ip6-allrouters
-
 127.0.0.1	genular.local
 127.0.0.1	analysis.api.genular.local
 127.0.0.1	plots.api.genular.local
 127.0.0.1	backend.api.genular.local
 127.0.0.1	dashboard.genular.local
 __EOS__
-
 
 cat > "$rootfsDir/etc/apt/sources.list" << '__EOS__'
 #------------------------------------------------------------------------------#
@@ -129,8 +130,6 @@ deb-src https://deb.debian.org/debian/ stable main
 deb https://deb.debian.org/debian/ stable-updates main
 deb-src https://deb.debian.org/debian/ stable-updates main
 __EOS__
-
-
 
 ## Example: https://gist.github.com/takumin/952b5144e7b6466c6006
 ( rootfs_chroot /bin/sh << '__EOS__'
@@ -149,7 +148,13 @@ __EOS__
 	apt-get update && apt-get upgrade
 
 	# systemd require dbus
-	apt-get install dbus sudo curl
+	apt-get install apt-transport-https dbus sudo curl
+
+	## Add support for installation of PHP 7.3
+	apt-get -y install apt-transport-https lsb-release ca-certificates
+	wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+	sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+	apt-get update
 
 	# Because of yarn conflict
 	apt-get remove cmdtest
@@ -174,7 +179,7 @@ __EOS__
 	dpkg-reconfigure tzdata
 
 	# enable root login
-	# echo 'root:root' | chpasswd
+	echo 'root:toor' | chpasswd
 
 	# adduser genular if user doesnt exsist
 	if [ -z "$(getent passwd genular)" ]; then
@@ -210,45 +215,69 @@ echo "Installation of basic dependencies START"
 	apt-get update
 
 	## Install basic dependencies needed for SIMON
-	echo "INSTALLATION step: 1"
+	echo "===> INSTALLATION step: 1"
 	apt-get install nginx
+	
+	echo "===> INSTALLATION step: 2"
+	apt-get install supervisor
 
-	echo "INSTALLATION step: 2"
-	apt-get install php-fpm php-mysql composer
-
-	echo "INSTALLATION step: 3"
+	echo "===> INSTALLATION step: 3"
 	apt-get install -y nodejs
 	apt-get install yarn
 
-	echo "INSTALLATION step: 4"
+	echo "===> INSTALLATION step: 4"
 	apt-get install default-jre default-jdk
 
-	echo "INSTALLATION step: 5"
+	echo "===> INSTALLATION step: 5"
 	## Install flock
 	apt-get install util-linux
 
-	echo "INSTALLATION step: 6"
+	echo "===> INSTALLATION step: 6"
 	apt-get install gfortran
 
-	echo "INSTALLATION step: 7"
+	echo "===> INSTALLATION step: 7"
 	apt-get install openssl
 
-	echo "INSTALLATION step: 8"
+	echo "===> INSTALLATION step: 8"
 	apt-get install git
 
-	echo "INSTALLATION step: 9"
+	echo "===> INSTALLATION step: 9"
 	apt-get install mariadb-server mariadb-client
+
+	echo "===> INSTALLATION step: 10"
+	mysqld_safe --skip-grant-tables --skip_networking &
+
+	sleep 7
+
+mysql --user=root <<_EOF_
+	UPDATE mysql.user SET Password=PASSWORD('genular') WHERE User='root';
+	DELETE FROM mysql.user WHERE User='';
+	DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+	DROP DATABASE IF EXISTS test;
+	DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+	FLUSH PRIVILEGES;
+_EOF_
+
 __EOS__
 )
-echo "Installation of basic dependencies END"
 
-cp "$rootfsDir/../../configs/etc/php/7.0/fpm/php.ini" "$rootfsDir/etc/php/7.0/fpm/php.ini"
+cp "$rootfsDir/../../configs/etc/mysql/mariadb.conf.d/50-server.cnf" "$rootfsDir/etc/mysql/mariadb.conf.d/50-server.cnf"
+echo "Installation of basic dependencies END"
 
 mkdir -p "$rootfsDir/var/www/html"
 cp "$rootfsDir/../../configs/var/www/genular-info.php" "$rootfsDir/var/www/html/genular-info.php"
 
 cp "$rootfsDir/../../configs/etc/nginx/sites-available/default" "$rootfsDir/etc/nginx/sites-available/default"
 cp "$rootfsDir/../../configs/etc/nginx/sites-available/genular.conf" "$rootfsDir/etc/nginx/sites-available/genular.conf"
+
+## Add SIMON analysis CRONtab file
+cp "$rootfsDir/../../configs/etc/cron.d/genular" "$rootfsDir/etc/cron.d/genular"
+chmod +x "$rootfsDir/etc/cron.d/genular"
+touch "$rootfsDir/var/log/cron.log"
+
+if [ "$FRESH_START" == y ] ; then
+	echo "daemon off;" >> "$rootfsDir/etc/nginx/nginx.conf"
+fi
 
 echo "Installation of advanced dependencies START"
 ( rootfs_chroot /bin/sh << '__EOS__'
@@ -259,29 +288,60 @@ echo "Installation of advanced dependencies START"
 	apt-get update
 	## Install basic dependencies needed for SIMON
 
-	echo "INSTALLATION step: 0"
+	echo "===> INSTALLATION step: 0"
 	apt install build-essential libssl-dev
 
-	echo "INSTALLATION step: 1"
+	echo "===> INSTALLATION step: 1"
 	apt-get install libopenblas-dev
 
-	echo "INSTALLATION step: 2"
+	echo "===> INSTALLATION step: 2"
 	apt-get install libopencv-dev
 
-	echo "INSTALLATION step: 3"
+	echo "===> INSTALLATION step: 3"
 	apt-get install libssh2-1-dev
 
-	echo "INSTALLATION step: 4"
+	echo "===> INSTALLATION step: 4"
 	apt-get install libmariadbclient-dev
 
-	echo "INSTALLATION step: 5"
+	echo "===> INSTALLATION step: 5"
 	apt-get install libxml2-dev
 
-	echo "INSTALLATION step: 6"
-	apt-get install unzip php-zip php-simplexml php-curl php-mbstring php-gmp php-libsodium php-imagick
+	echo "===> INSTALLATION step: 6"
+	apt-get install php7.3-fpm php7.3-common php7.3-cli
+	apt-get install php7.3-mysql
+	apt-get install unzip php7.3-zip php7.3-xml php7.3-curl php7.3-mbstring php7.3-gmp php-libsodium php7.3-imagick
+	apt-get install php7.3-bcmath php7.3-bz2 php7.3-gd php7.3-intl php7.3-json php7.3-readline php7.3-xml
+
+	echo "===> INSTALLATION step: 7"
+	## Create GENULAR mysql USER
+	PASSWDDB="genular"
+	MAINDB="genular"
+
+	# If /root/.my.cnf exists then it won't ask for root password
+	if [ -f /root/.my.cnf ]; then
+	    mysql -e "CREATE DATABASE ${MAINDB} /*\!40100 DEFAULT CHARACTER SET utf8 */;"
+	    mysql -e "CREATE USER ${MAINDB}@localhost IDENTIFIED BY '${PASSWDDB}';"
+	    mysql -e "GRANT ALL PRIVILEGES ON ${MAINDB}.* TO '${MAINDB}'@'localhost';"
+	    mysql -e "FLUSH PRIVILEGES;"
+
+	# If /root/.my.cnf doesn't exist then it'll ask for root password   
+	else
+	    echo "Please enter root user MySQL password!"
+	    read rootpasswd
+	    mysql -uroot -p${rootpasswd} -e "CREATE DATABASE ${MAINDB} /*\!40100 DEFAULT CHARACTER SET utf8 */;"
+	    mysql -uroot -p${rootpasswd} -e "CREATE USER ${MAINDB}@localhost IDENTIFIED BY '${PASSWDDB}';"
+	    mysql -uroot -p${rootpasswd} -e "GRANT ALL PRIVILEGES ON ${MAINDB}.* TO '${MAINDB}'@'localhost';"
+	    mysql -uroot -p${rootpasswd} -e "FLUSH PRIVILEGES;"
+	fi
+
+	## Lets try to install composer
+	cd /tmp && curl -sS https://getcomposer.org/installer -o composer-setup.php
+	php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 __EOS__
 )
+cp "$rootfsDir/../../configs/etc/php/7.3/fpm/php.ini" "$rootfsDir/etc/php/7.3/fpm/php.ini"
+
 echo "Installation of advanced dependencies END"
 
 # prevent upstart scripts from running during install/update
@@ -410,7 +470,7 @@ fi
 	mkdir -p "$rootfsDir/var/lib/apt/lists/partial" # Lucid... "E: Lists directory /var/lib/apt/lists/partial is missing."
 	
 	if [ ! -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
-		sudo cp "$rootfsDir/../../../installation/install_dependencies.sh" "$rootfsDir/home/genular/install_dependencies.sh"
+		sudo cp "$rootfsDir/../../../../installation/install_dependencies.sh" "$rootfsDir/home/genular/install_dependencies.sh"
 		sudo chmod +x "$rootfsDir/home/genular/install_dependencies.sh"
 	fi
 )

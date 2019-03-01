@@ -1,7 +1,7 @@
 # @Author: LogIN-
 # @Date:   2019-02-26 13:27:17
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-02-27 15:44:22
+# @Last Modified time: 2019-02-28 17:58:47
 # 
 # 
 # Example: https://blog.sleeplessbeastie.eu/2018/04/11/how-to-create-base-docker-image/
@@ -26,6 +26,8 @@ if [ "$FRESH_START" == y ] ; then
 	# Clear any existing directories
 	if [ -d "./images/${IMAGE_NAME}" ]; then
 		sudo rm -Rf "./images/${IMAGE_NAME}" && mkdir "./images/${IMAGE_NAME}"
+	else
+		mkdir "./images/${IMAGE_NAME}"
 	fi
 fi
 
@@ -38,20 +40,19 @@ build_command="sudo ./debootstrap $ROOT_FS stable $FRESH_START"
 
 echo "Building base docker image: "
 eval $build_command
-exit
+
 
 echo "File-system size:"
 sudo du --human-readable --summarize $ROOT_FS
 
-## Create archive with Debian base system.
-(
-	set -x
-	sudo tar --numeric-owner --create --auto-compress --file "./images/$IMAGE_NAME.tar" --directory "./images/${IMAGE_NAME}" --transform='s,^./,,' .
-)
-
-
-echo "Archive size:"
-sudo du --human-readable ./images/$IMAGE_NAME.tar
-
+if [ -d "./images/${IMAGE_NAME}" ]; then
+	## Create archive with Debian base system.
+	(
+		set -x
+		sudo tar --numeric-owner --create --auto-compress --file "./images/$IMAGE_NAME.tar" --directory "./images/${IMAGE_NAME}" --transform='s,^./,,' .
+	)
+	echo "Archive size:"
+	sudo du --human-readable ./images/$IMAGE_NAME.tar
+fi
 ### Import image to docker
-# cat file-system.tar | docker import - genular
+# cat "./images/$IMAGE_NAME.tar" | sudo docker import - ${IMAGE_NAME}

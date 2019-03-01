@@ -1,0 +1,4 @@
+MAILTO=""
+
+*/2 * * * * /usr/bin/flock -n /tmp/simon_cron.pid /var/www/genular/simon-backend/cron/main.R > /var/log/simon-cron.log 2>&1
+# An empty line is required at the end of this file for a valid cron file.
