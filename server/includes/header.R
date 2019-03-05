@@ -35,11 +35,11 @@ require(aws.s3)
 
 databasePool <- pool::dbPool(
         drv = RMySQL::MySQL(), ## RMySQL::MySQL() --- RMariaDB::MariaDB()
-        dbname = simonConfig[[SERVER_NAME]]$database$dbname,
-        host = simonConfig[[SERVER_NAME]]$database$host,
-        port = simonConfig[[SERVER_NAME]]$database$port,
-        username = simonConfig[[SERVER_NAME]]$database$user,
-        password = simonConfig[[SERVER_NAME]]$database$password,
+        dbname = simonConfig$database$dbname,
+        host = simonConfig$database$host,
+        port = simonConfig$database$port,
+        username = simonConfig$database$user,
+        password = simonConfig$database$password,
         maxSize = 600, 
         idleTimeout = 3600000
     )

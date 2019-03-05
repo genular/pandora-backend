@@ -40,17 +40,16 @@ sudo docker run --dns 8.8.8.8 busybox nslookup google.com
 	- sudo docker build --tag "genular:build" --file ./Dockerfile .
 
 ## 3. Run Dockerfile
-docker run --rm \
-	--add-host=genular.local:127.0.0.1 \
-	--add-host=analysis.api.genular.local:127.0.0.1 \
-	--add-host=plots.api.genular.local:127.0.0.1 \
-	--add-host=backend.api.genular.local:127.0.0.1 \
-	--add-host=dashboard.genular.local :127.0.0.1 \
+sudo docker run --rm \
+	--add-host="analysis.api.genular.localhost:127.0.0.1" \
+	--add-host="plots.api.genular.localhost:127.0.0.1" \
+	--add-host="backend.api.genular.localhost:127.0.0.1" \
+	--add-host="dashboard.genular.localhost :127.0.0.1" \
 	--detach \
 	--name genular \
 	--tty --interactive \
-	--publish 3005:80 \
-	--publish 3010:22 genular:build
+	--publish 80:80 \
+	genular:build
 
 
 ## SSH into a running container:

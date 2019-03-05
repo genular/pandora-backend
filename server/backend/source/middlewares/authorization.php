@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-04 16:28:25
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-06 10:00:35
+ * @Last Modified time: 2019-03-05 15:17:24
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -44,7 +44,6 @@ $app->add(new TokenAuthentication([
 		 * If token isn't valid, must throw an UnauthorizedExceptionInterface
 		 */
 		$user_id = $UsersSessions->getUserIdBySessionId($session_id);
-
 		$initial_db_connect = microtime(true) - $start;
 		if ($user_id) {
 			return $request->withAttribute('user', ["user_id" => intval($user_id["uid"]), "session_id" => $session_id, "initial_db_connect" => $initial_db_connect]);
@@ -53,18 +52,20 @@ $app->add(new TokenAuthentication([
 		}
 	},
 	'error' => function (Request $request, $response, TokenAuthentication $tokenAuth) {
+		$status = 401;
 		$output = [];
+
 		$output['error'] = [
 			'msg' => $tokenAuth->getResponseMessage(),
 			'token' => $tokenAuth->getResponseToken(),
-			'status' => 401,
+			'status' => $status,
 			'error' => true,
 		];
-		return $response->withJson($output, 401);
+		return $response->withJson($output, $status);
 	},
 	'secure' => false,
-	'relaxed' => ['127.0.0.1', 'localhost'],
-	'header' => 'HTTP_X_TOKEN',
+	'relaxed' => ['127.0.0.1', 'localhost', 'localhost:3010'],
+	'header' => 'X-TOKEN',
 	'regex' => "/^([a-f0-9]{64})$/",
 	'parameter' => 'HTTP_X_TOKEN',
 	'cookie' => 'HTTP_X_TOKEN',

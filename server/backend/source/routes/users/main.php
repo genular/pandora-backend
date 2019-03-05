@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:27:46
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-06 11:16:38
+ * @Last Modified time: 2019-03-05 14:37:29
  */
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 use LasseRafn\Initials\Initials;

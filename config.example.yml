@@ -26,93 +26,57 @@ default:
         s3:
             key: PLACEHOLDER # Example: "OPERNifgfgdMYUQhVZo"
             secret: PLACEHOLDER # Example: "IYTydVkuCrdfgfdggnEXMOlbibuxJdaAfowLTWQH"
-            region: PLACEHOLDER # Example: "ams3"
-            endpoint: PLACEHOLDER # Example: "https://ams3.digitaloceanspaces.com"
+            region: "ams3" # Example: "ams3"
+            endpoint: "https://ams3.digitaloceanspaces.com" # Example: "https://ams3.digitaloceanspaces.com"
             bucket: PLACEHOLDER # Example: "genular"
+    ## Database configuration
+    database:
+        ## Database host IP address
+        host: PLACEHOLDER
+        ## Database host port
+        port: PLACEHOLDER
+        ## Database username
+        user: PLACEHOLDER
+        ## Password
+        password: PLACEHOLDER
+        ## Table name
+        dbname: PLACEHOLDER
     ## In this section we can configure specific details for each backend server module
     analysis:
         ## Path to the storage directory (/tmp)
         data_path: PLACEHOLDER
-        ## Database configuration
-        database:
-            ## Database host IP address
-            host: PLACEHOLDER
-            ## Database host port
-            port: PLACEHOLDER
-            ## Database username
-            user: PLACEHOLDER
-            ## Password
-            password: PLACEHOLDER
-            ## Table name
-            dbname: PLACEHOLDER
         ## Current web server general configuration
         server:
             debug: TRUE
             ## Domain name
             url: PLACEHOLDER_ANALYSIS_URL
             ## IP address
-            host: PLACEHOLDER
+            proxy_host: PLACEHOLDER
             ## Port
-            port: 8181
+            proxy_port: 8181
             ## SSL?
             ssl: FALSE
     plots:
         ## Path to the storage directory (/tmp)
         data_path: PLACEHOLDER
-        ## Database configuration
-        database:
-            ## Database host IP address
-            host: PLACEHOLDER
-            ## Database host port
-            port: PLACEHOLDER
-            ## Database username
-            user: PLACEHOLDER
-            ## Password
-            password: PLACEHOLDER
-            ## Table name
-            dbname: PLACEHOLDER
         server:
             debug: TRUE
             url: PLACEHOLDER_PLOTS_URL
-            host: PLACEHOLDER
-            port: 8184
+            proxy_host: PLACEHOLDER
+            proxy_port: 8184
             ssl: FALSE
     backend:
         ## Path to the storage directory (/tmp)
         data_path: PLACEHOLDER
-        ## Database configuration
-        database:
-            ## Database host IP address
-            host: PLACEHOLDER
-            ## Database host port
-            port: PLACEHOLDER
-            ## Database username
-            user: PLACEHOLDER
-            ## Password
-            password: PLACEHOLDER
-            ## Table name
-            dbname: PLACEHOLDER
         server:
             debug: TRUE
             url: PLACEHOLDER_BACKEND_URL
-            host: PLACEHOLDER
-            port: 8186
+            proxy_host: PLACEHOLDER
+            proxy_port: 8186
             ssl: FALSE
     cron:
         ## Path to the storage directory (/tmp)
         data_path: PLACEHOLDER
-        ## Database configuration
-        database:
-            ## Database host IP address
-            host: PLACEHOLDER
-            ## Database host port
-            port: PLACEHOLDER
-            ## Database username
-            user: PLACEHOLDER
-            ## Password
-            password: PLACEHOLDER
-            ## Table name
-            dbname: PLACEHOLDER
     ## Front-end dashboard interface domain
     frontend:
         server:

@@ -29,7 +29,7 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/analysis/other/predict/catboost/renderOptions", simon$handle$analysis$other$predict$catboost$renderOptions, serializer=serializer_unboxed_json())
     router$handle("GET", "/analysis/other/predict/catboost/submit", simon$handle$analysis$other$predict$catboost$submit, serializer=serializer_unboxed_json())
 
-    router$run(host = options$host, port = as.numeric(options$port), debug = options$debug)
+    router$run(host = options$proxy_host, port = as.numeric(options$proxy_port), debug = options$debug)
 }
 
 if(file.exists(UPTIME_PID)){

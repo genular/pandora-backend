@@ -2,8 +2,7 @@
     "name": "simon/backend",
     "description": "PHP API Backend Service for SIMON Backend Server",
     "type": "project",
-    "require":
-    {
+    "require": {
         "dilab/resumable.php": "^0.1.4",
         "phpmailer/phpmailer": "^6.0",
         "monolog/monolog": "^1.23",
@@ -11,7 +10,7 @@
         "slim/php-view": "^2.2",
         "catfan/medoo": "^1.5",
         "unicoart/slim-token-authentication": "dev-master",
-        "symfony/yaml": "^4.0",
+        "symfony/yaml": "^4.2",
         "braintree/braintree_php": "^3.30",
         "hassankhan/config": "^1.0",
         "sendgrid/sendgrid": "^6.2",
@@ -28,17 +27,17 @@
         "lasserafn/php-initials": "^2.20"
     },
     "authors": [
-    {
-        "name": "Ivan Tomic",
-        "email": "info@genular.com"
-    }],
-    "config":
-    {
+        {
+            "name": "Ivan Tomic",
+            "email": "info@genular.com"
+        }
+    ],
+    "config": {
         "process-timeout": 0
     },
-    "scripts":
-    {
-        "start": "php -S 127.0.0.1:8186 -t ./public"
+    "scripts": {
+        "start": "php -S 127.0.0.1:8186 -t ./public",
+        "post-install": ["SIMON\\System\\ComposerScripts::updateConfiguration"]
     },
     "autoload": {
         "psr-4": {

@@ -41,10 +41,15 @@ B_CONF[database_user]="genular"
 B_CONF[database_password]="genular"
 B_CONF[database_dbname]="genular"
 
-B_CONF[analysis_url]="http://analysis.api.genular.local"
-B_CONF[plots_url]="http://plots.api.genular.local"
-B_CONF[backend_url]="http://backend.api.genular.local"
-B_CONF[frontend_url]="http://dashboard.genular.local"
+# B_CONF[analysis_url]="http://analysis.api.genular.localhost"
+# B_CONF[plots_url]="http://plots.api.genular.localhost"
+# B_CONF[backend_url]="http://backend.api.genular.localhost"
+# B_CONF[frontend_url]="http://dashboard.genular.localhost"
+
+B_CONF[analysis_url]="http://localhost"
+B_CONF[plots_url]="http://localhost"
+B_CONF[backend_url]="http://localhost"
+B_CONF[frontend_url]="http://localhost"
 
 yellow=$(tput setaf 3)
 green=$(tput setaf 2)

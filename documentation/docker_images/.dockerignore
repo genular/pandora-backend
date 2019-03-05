@@ -12,4 +12,7 @@ README-secret.md
 base_image
 
 start.sh
-supervisord.conf
+
+*.ignore
+*.bak
+*.gitignore

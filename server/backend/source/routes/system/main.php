@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:10
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 09:14:54
+ * @Last Modified time: 2019-03-05 13:37:10
  */
 
 use Slim\Http\Request;
@@ -33,7 +33,7 @@ $app->get('/backend/system/status/{secret:.*}', function (Request $request, Resp
 	foreach ($configData["default"] as $configItemKey => $configItemValue) {
 		$server_name = $configItemKey;
 		if (is_array($configItemValue) && isset($configItemValue["server"])) {
-			if (isset($configItemValue["server"]["ssl"]) && isset($configItemValue["server"]["host"])) {
+			if (isset($configItemValue["server"]["url"])) {
 				$server_details[] = [
 					"type" => $server_name,
 					"url" => $configItemValue["server"]["url"],

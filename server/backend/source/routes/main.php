@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 11:55:02
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-29 13:51:44
+ * @Last Modified time: 2019-03-05 15:18:54
  */
 
 require 'source/routes/users/main.php';
@@ -26,14 +26,6 @@ require 'source/routes/dataset/main.php';
 $app->options('/{routes:.+}', function ($request, $response, $args) {
 	return $response;
 });
-
-// $app->add(function ($req, $res, $next) {
-// 	$response = $next($req, $res);
-// 	return $response
-// 		->withHeader('Access-Control-Allow-Origin', '*')
-// 		->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
-// 		->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-// });
 
 // Catch-all route to serve a 404 Not Found page if none of the routes match
 // NOTE: make sure this route is defined last

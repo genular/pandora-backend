@@ -1,10 +1,10 @@
 # Default server configuration
 #
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
+	listen 3010 default_server;
+	listen [::]:3010 default_server;
 
-	root /var/www/genular/simon-frontend/compiled;
+	root /var/www/genular/simon-frontend/compiled/web;
 
 	server_name _;
     index index.html;
@@ -12,9 +12,7 @@ server {
     charset utf-8;
 
     location / {
-            # This is cool because no php is touched for static content.
-            # include the "?$args" part so non-default permalinks doesn't break when using query string
-            try_files $uri $uri/ /index.php?$args;
+            try_files $uri $uri/ =404;
     }
 
 	location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|mp4|ogg|ogv|webm|htc)$ {
@@ -28,5 +26,6 @@ server {
 		access_log off;
 	}
 
-	error_log  /var/log/nginx/dashboard.genular.local_error.log warn;
+	access_log /var/log/nginx/dashboard.genular.localhost_access.log;
+	error_log  /var/log/nginx/dashboard.genular.localhost_error.log warn;
 }
