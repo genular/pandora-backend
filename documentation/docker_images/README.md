@@ -42,19 +42,21 @@ You can get example of configuration JSON by executing following command
 This will create a new file: documentation/docker_images/configuration.json where you can add/remove custom configuration variables
 
 ### 2.2 Build docker image
-	- sudo docker build --tag "genular:build" --file ./Dockerfile .
+	- sudo docker build --network=host --tag "genular:master" --file ./Dockerfile .
 
 ## 3. Run Dockerfile
 sudo docker run --rm \
 	--detach \
+	--network=host \
 	--name genular \
-	--tty --interactive \
+	--tty \
+	--interactive \
 	--env IS_DOCKER \
 	--publish 3010:3010 \
 	--publish 3011:3011 \
 	--publish 3012:3012 \
 	--publish 3013:3013 \
-	genular:build
+	genular:master
 
 
 ## SSH into a running container:

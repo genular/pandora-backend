@@ -1,4 +1,4 @@
-MAILTO=""
+# /etc/cron.d/genular: crontab fragment for genular
+# Look for new analysis and try to process them
 
-*/2 * * * * /usr/bin/flock -n /tmp/simon_cron.pid /var/www/genular/simon-backend/cron/main.R > /var/log/simon-cron.log 2>&1
-# An empty line is required at the end of this file for a valid cron file.
+*/2 * * * * root /usr/bin/flock -n /tmp/simon_cron.pid -c "cd /var/www/genular/simon-backend && ./cron/main.R" > /var/log/simon-cron.log 2>&1

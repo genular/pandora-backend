@@ -550,7 +550,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 sed -i 's|data_path: PLACEHOLDER|data_path: '"\"${B_CONF[data_path]}\""'|g' "config.yml"
 
                 sed -i 's|host: PLACEHOLDER|host: '"\"${B_CONF[database_host]}\""'|g' "config.yml"
-                sed -i 's|port: PLACEHOLDER|port: '"\"${B_CONF[database_port]}\""'|g' "config.yml"
+                sed -i 's|port: PLACEHOLDER|port: '"${B_CONF[database_port]}"'|g' "config.yml"
                 sed -i 's|user: PLACEHOLDER|user: '"\"${B_CONF[database_user]}\""'|g' "config.yml"
                 sed -i 's|password: PLACEHOLDER|password: '"\"${B_CONF[database_password]}\""'|g' "config.yml"
                 sed -i 's|dbname: PLACEHOLDER|dbname: '"\"${B_CONF[database_dbname]}\""'|g' "config.yml"
@@ -569,6 +569,9 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
                 touch "$GIT_BACKEND_LOCAL/server/backend/source/logs/simon.log"
                 chmod -R 777 "$GIT_BACKEND_LOCAL/server/backend/source/logs"
+
+                touch "/var/log/simon-cron.log"
+                chmod -R 777 "$GIT_BACKEND_LOCAL/cron/main.R"
 
                 sudo chown -hR $USER:www-data "/var/www/genular"
 

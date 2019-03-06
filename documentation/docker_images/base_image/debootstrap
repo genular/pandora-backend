@@ -348,9 +348,10 @@ echo "Installation of advanced dependencies START"
 __EOS__
 )
 cp "$rootfsDir/../../configs/etc/php/7.3/fpm/php.ini" "$rootfsDir/etc/php/7.3/fpm/php.ini"
+## Set PHP session directory permissions
+mkdir "$rootfsDir/var/lib/php/sessions" && chmod 777 "$rootfsDir/var/lib/php/sessions"
+
 echo "Installation of advanced dependencies END"
-
-
 
 # prevent upstart scripts from running during install/update
 (

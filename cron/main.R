@@ -5,7 +5,7 @@
 
 source("server/includes/header.R")
 
-SIMON_PID <- paste0(DATA_PATH,"/simon_",SERVER_NAME,".pid")
+SIMON_PID <- paste0(DATA_PATH,"/simon_r_cron_",SERVER_NAME,".pid")
 
 # for parallel CPU processing
 library(doMC)
