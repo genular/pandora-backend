@@ -30,7 +30,7 @@ RUN cd /var/www/genular/simon-frontend \
 RUN cd /var/www/genular/simon-backend \
 	# && git pull origin master \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
-	&& composer post-install composer post-install '{"default":{"sendgrid_api":"${sendgrid_api}","storage":{"s3":{"key":"${s3_key}","secret":"${s3_secret}","bucket":"${s3_bucket}"}}}}'
+	&& composer post-install '{"default":{"sendgrid_api":"${sendgrid_api}","storage":{"s3":{"key":"${s3_key}","secret":"${s3_secret}","bucket":"${s3_bucket}"}}}}'
 
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"]
 

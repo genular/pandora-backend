@@ -18,6 +18,7 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$registerHooks(sessionCookie(simonConfig$secret, name=cookie_name, path="/", expiration=Sys.time() + (20 * 365 * 24 * 60 * 60)))
 
     router$filter("logger", simon$filter$logger)
+    router$filter("cors", simon$filter$cors)
     router$filter("authentication", simon$filter$authentication)
 
     router$handle("GET", "/", simon$handle$default)

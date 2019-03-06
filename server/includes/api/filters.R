@@ -4,12 +4,22 @@ simon$filter$logger <- function(req){
     plumber::forward()
 }
 
-#* @filter setuser
-simon$filter$authentication <- function(req, res){
-    #res$setHeader("Access-Control-Allow-Origin", "*")
-    #res$setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
-    #res$setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept, X-Token")
+#* @filter cors
+simon$filter$cors <- function(req, res){
+    res$setHeader("Access-Control-Allow-Origin", simonConfig$frontend$server$url)
+    res$setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD")
+    res$setHeader("Access-Control-Allow-Headers", "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Origin,Accept,X-Token")
+    
+    ##  If request is not OPTIONS forward otherwise stop the app, and sends the response
+    if(req$REQUEST_METHOD != "OPTIONS"){
+        return (plumber::forward())
+    }else{
+        return (res)
+    }
+}
 
+#* @filter authentication
+simon$filter$authentication <- function(req, res){
     route_whitelist <- c('/analysis/other/available-packages')
     current_route <- req$PATH_INFO
 
@@ -38,3 +48,4 @@ simon$filter$authentication <- function(req, res){
         }
     }
 }
+
