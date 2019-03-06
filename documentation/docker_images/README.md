@@ -41,14 +41,13 @@ sudo docker run --dns 8.8.8.8 busybox nslookup google.com
 
 ## 3. Run Dockerfile
 sudo docker run --rm \
-	--add-host="analysis.api.genular.localhost:127.0.0.1" \
-	--add-host="plots.api.genular.localhost:127.0.0.1" \
-	--add-host="backend.api.genular.localhost:127.0.0.1" \
-	--add-host="dashboard.genular.localhost :127.0.0.1" \
 	--detach \
 	--name genular \
 	--tty --interactive \
-	--publish 80:80 \
+	--publish 3010:3010 \
+	--publish 3011:3011 \
+	--publish 3012:3012 \
+	--publish 3013:3013 \
 	genular:build
 
 

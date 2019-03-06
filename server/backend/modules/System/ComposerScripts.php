@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-04 15:53:18
+ * @Last Modified time: 2019-03-05 18:17:00
  */
 namespace SIMON\System;
 
@@ -43,10 +43,16 @@ class ComposerScripts {
 				try {
 					$yaml = Yaml::dump($result, 2, 4);
 					file_put_contents($config_path, $yaml);
+					echo $yaml;
+					echo "Configuration successfully changed!\r\n";
 				} catch (ParseException $exception) {
 					printf('Unable to save the YAML string: %s', $exception->getMessage());
 				}
+			} else {
+				echo "Cannot validate JSON arguments, please check syntax!\r\n";
 			}
+		} else {
+			echo "Cannot detect any arguments! Skipping... \r\n";
 		}
 	}
 }

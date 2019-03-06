@@ -493,8 +493,7 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
                 echo "${yellow}Building static front-end files, please wait. (yarn run webpack:web:dev)${clear}"
                 yarn run webpack:web:dev
 
-                ## TODO: TESTING
-                sudo chown -hR www-data:root "/var/www/genular"
+                sudo chown -hR $USER:www-data "/var/www/genular" 
 
             else
                 echo "${red}Directory already exist, stopping, please clone it manually: $GIT_FRONTEND_LOCAL ${clear}"
@@ -566,8 +565,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 echo ""
                 composer install
 
-                ## TODO: TESTING
-                sudo chown -hR www-data:root "/var/www/genular"
+                sudo chown -hR $USER:www-data "/var/www/genular"
 
                 echo ""
                 echo "${red}Backend installation is successful.${clear}"

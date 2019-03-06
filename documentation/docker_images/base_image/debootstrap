@@ -111,11 +111,6 @@ cat > "$rootfsDir/etc/hosts" << '__EOS__'
 ::1			localhost ip6-localhost ip6-loopback
 ff02::1		ip6-allnodes
 ff02::2		ip6-allrouters
-127.0.0.1	genular.local
-127.0.0.1	analysis.api.genular.local
-127.0.0.1	plots.api.genular.local
-127.0.0.1	backend.api.genular.local
-127.0.0.1	dashboard.genular.local
 __EOS__
 
 cat > "$rootfsDir/etc/apt/sources.list" << '__EOS__'
@@ -185,8 +180,8 @@ __EOS__
 	if [ -z "$(getent passwd genular)" ]; then
 		adduser --disabled-password --gecos "Debian Live User,,," genular
 		echo 'genular:genular' | chpasswd
-		## Add genular user to sudo
-		usermod -aG sudo genular
+		## Add an Existing User to a Group
+		usermod -a -G sudo genular
 	fi
 
 	# log
@@ -284,6 +279,11 @@ echo "Installation of advanced dependencies START"
 	
 	ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 	ln -s /etc/nginx/sites-available/genular.conf /etc/nginx/sites-enabled/genular.conf
+
+	## Change the Primary Group of a genular user
+	usermod -g www-data genular
+	## Display User Groups
+	id genular
 
 	apt-get update
 	## Install basic dependencies needed for SIMON
@@ -486,7 +486,7 @@ if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
 
 	echo "Installing SIMON deps START"
 	(	set -x 
-		rootfs_chroot /bin/bash /home/genular/install_dependencies.sh 
+		rootfs_chroot /bin/bash USER="genular" /home/genular/install_dependencies.sh 
 	)
 	echo "Installing SIMON deps END"
 
