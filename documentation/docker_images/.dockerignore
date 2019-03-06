@@ -11,8 +11,6 @@ README-secret.md
 
 base_image
 
-start.sh
-
 *.ignore
 *.bak
 *.gitignore

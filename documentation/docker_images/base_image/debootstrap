@@ -286,6 +286,7 @@ echo "Installation of advanced dependencies START"
 	id genular
 
 	apt-get update
+	apt-get install vim
 	## Install basic dependencies needed for SIMON
 
 	echo "===> INSTALLATION step: 0"
@@ -486,7 +487,12 @@ if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
 
 	echo "Installing SIMON deps START"
 	(	set -x 
-		rootfs_chroot /bin/bash USER="genular" /home/genular/install_dependencies.sh 
+		rootfs_chroot /bin/bash  /home/genular/install_dependencies.sh 
+	)
+	## Docker specific : adjust permissions
+	( rootfs_chroot /bin/sh << '__EOS__'
+		chown -hR genular:www-data "/var/www/genular"
+__EOS__
 	)
 	echo "Installing SIMON deps END"
 

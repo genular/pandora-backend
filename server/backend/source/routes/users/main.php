@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:27:46
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-05 14:37:29
+ * @Last Modified time: 2019-03-06 10:43:38
  */
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 use LasseRafn\Initials\Initials;
@@ -121,8 +121,10 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 	$totalUsersRegistered = $users->countTotalUsers();
 	if ($totalUsersRegistered < 1) {
 		/** Empty all database tables */
+		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Reseting mysql tables");
 		$system->reset();
 		/** Initialize measurement variables */
+		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Initialize measurement variables");
 		$sysInit = $system->init();
 	} else {
 		$sysInit = true;
@@ -168,6 +170,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 			/** Is user already registered in database? **/
 			if ($userExsistCheck === false) {
 				$validation_hash = md5($username . $email . $firstName);
+				$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' registering user");
 				$user_id = $users->register($username, $password, $email, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash, $account_type);
 
 				$post["user"]["user_id"] = $user_id;
@@ -183,33 +186,44 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 
 	// If user is successfully registered send verification email
 	if ($success !== false && $validation_hash !== null) {
-		$from = new SendGrid\Email($config->get('default.details.title') . " Support", $config->get('default.details.email'));
-		$subject = "Welcome to " . $config->get('default.details.title') . "! Please confirm Your Email";
+		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' verification email");
 
-		$to = new SendGrid\Email($username, $email);
-
-		$content = new SendGrid\Content("text/html", "Copyright (c) " . $config->get('default.details.title'));
-
-		$mail = new SendGrid\Mail($from, $subject, $to, $content);
-
-		$mail->personalization[0]->addSubstitution("{{username}}", $username);
-		$mail->personalization[0]->addSubstitution("{{email}}", $email);
-		$mail->personalization[0]->addSubstitution("{{firstName}}", $firstName);
-
-		$confirm_account_url = $config->get('default.backend.server.url');
-		$confirm_account_url = $confirm_account_url . "/backend/user/verify/" . $validation_hash;
-
-		$mail->personalization[0]->addSubstitution("{{confirm_account_url}}", $confirm_account_url);
-
-		$mail->setTemplateId($config->get('default.sendgrid_templates.register'));
-
-		$sg = new \SendGrid($config->get('default.sendgrid_api'));
-
-		try {
-			$res = $sg->client->mail()->send()->post($mail);
-		} catch (Exception $e) {
-			echo 'Caught exception: ', $e->getMessage(), "\n";
+		$sendgrid_configured = true;
+		if ($config->get('default.sendgrid_api') === null || strlen($config->get('default.sendgrid_api')) < 20) {
+			$sendgrid_configured = false;
 		}
+
+		// Don't use this function if sendgrid is not configured or Internet is unavailable
+		if ($this->get('settings')["is_connected"] === true && $sendgrid_configured === true) {
+			$from = new SendGrid\Email($config->get('default.details.title') . " Support", $config->get('default.details.email'));
+			$subject = "Welcome to " . $config->get('default.details.title') . "! Please confirm Your Email";
+
+			$to = new SendGrid\Email($username, $email);
+
+			$content = new SendGrid\Content("text/html", "Copyright (c) " . $config->get('default.details.title'));
+
+			$mail = new SendGrid\Mail($from, $subject, $to, $content);
+
+			$mail->personalization[0]->addSubstitution("{{username}}", $username);
+			$mail->personalization[0]->addSubstitution("{{email}}", $email);
+			$mail->personalization[0]->addSubstitution("{{firstName}}", $firstName);
+
+			$confirm_account_url = $config->get('default.backend.server.url');
+			$confirm_account_url = $confirm_account_url . "/backend/user/verify/" . $validation_hash;
+
+			$mail->personalization[0]->addSubstitution("{{confirm_account_url}}", $confirm_account_url);
+
+			$mail->setTemplateId($config->get('default.sendgrid_templates.register'));
+
+			$sg = new \SendGrid($config->get('default.sendgrid_api'));
+
+			try {
+				$res = $sg->client->mail()->send()->post($mail);
+			} catch (Exception $e) {
+				echo 'Caught exception: ', $e->getMessage(), "\n";
+			}
+		}
+
 	}
 
 	return $response->withJson(["success" => $success, "message" => $message]);

@@ -1,3 +1,6 @@
+# vim:set ft=dockerfile:
+# escape=\
+
 FROM "genular"
 MAINTAINER LogIN- "info@genular.com"
 
@@ -7,6 +10,7 @@ WORKDIR /tmp
 ## Run only if Internet is Enabled!
 # RUN apt-get update && apt-get upgrade
 
+## ARG - is environment variable available only during buildtime
 ARG  analysis_url=http://localhost:3012
 ARG  plots_url=http://localhost:3013
 ARG  backend_url=http://localhost:3011
@@ -27,7 +31,7 @@ RUN cd /var/www/genular/simon-frontend \
 	--server_homepage=http://localhost:3010
 
 ## 2nd configure backend
-RUN cd /var/www/genular/simon-backend \
+RUN chmod -R 777 /var/www/genularsimon-backend/server/backend/source/logs \
 	# && git pull origin master \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
 	&& composer post-install '{"default":{"sendgrid_api":"${sendgrid_api}","storage":{"s3":{"key":"${s3_key}","secret":"${s3_secret}","bucket":"${s3_bucket}"}}}}'

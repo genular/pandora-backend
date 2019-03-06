@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-11 14:17:57
+ * @Last Modified time: 2019-03-06 10:45:53
  */
 namespace SIMON\System;
 
@@ -150,9 +150,11 @@ class System {
 		$data = [];
 		$packages = [];
 
-		$endpiont = $this->Config->get('default.analysis.server.url') . "/analysis/other/available-packages";
+		$endpoint = $this->Config->get('default.analysis.server.url') . "/analysis/other/available-packages";
+		$this->logger->addInfo("==> INFO: SIMON\System\initModelsPacakges fetching packages from: " . $endpoint);
+
 		try {
-			$res = $this->HTTPClient->request('GET', $endpiont, ['verify' => false, 'allow_redirects' => true, 'connect_timeout' => 1200, 'timeout' => 1200, 'debug' => false]);
+			$res = $this->HTTPClient->request('GET', $endpoint, ['verify' => false, 'allow_redirects' => true, 'connect_timeout' => 1200, 'timeout' => 1200, 'debug' => false]);
 			if ($res->getStatusCode() === 200) {
 				if ($res->getBody()) {
 					$data = $res->getBody()->getContents();

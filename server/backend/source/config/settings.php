@@ -4,10 +4,24 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 11:55:08
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2018-04-04 18:01:12
+ * @Last Modified time: 2019-03-06 10:28:36
  */
+
+function is_connected() {
+	$connected = @fsockopen("www.google.com", 80);
+	if ($connected) {
+		$is_conn = true; //action when connected
+		fclose($connected);
+	} else {
+		$is_conn = false; //action in connection failure
+	}
+	return $is_conn;
+}
+
 return [
 	'settings' => [
+		'is_docker' => getenv('IS_DOCKER') ? getenv('IS_DOCKER') : false,
+		'is_connected' => is_connected(),
 		'displayErrorDetails' => true, // set to false in production
 		'addContentLengthHeader' => false, // Allow the web server to send the content-length header
 		// Renderer settings
@@ -17,7 +31,7 @@ return [
 		// Monolog settings
 		'logger' => [
 			'name' => 'simon-backend',
-			'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/simon.log',
+			'path' => getenv('IS_DOCKER') ? 'php://stdout' : __DIR__ . '/../logs/simon.log',
 			'level' => \Monolog\Logger::DEBUG,
 		],
 		'timezone' => "Europe/London",

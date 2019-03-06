@@ -37,7 +37,8 @@
     },
     "scripts": {
         "start": "php -S 127.0.0.1:8186 -t ./public",
-        "post-install": ["SIMON\\System\\ComposerScripts::updateConfiguration"]
+        "post-install": ["SIMON\\System\\ComposerScripts::updateConfiguration"],
+        "generate-docker-config": ["SIMON\\System\\ComposerScripts::generateDockerConfiguration"]
     },
     "autoload": {
         "psr-4": {

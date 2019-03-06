@@ -34,9 +34,14 @@ sudo docker run --dns 8.8.8.8 busybox nslookup google.com
 ##### Prune all images:
 	- sudo docker system prune -a
 
-## 2. Build Dockerfile
-	<!-- 
-		--network host -->
+## 2. Build docker image from Dockerfile
+
+### 2.1 Set configuration variables in Dockerfile
+You can get example of configuration JSON by executing following command
+	- cd simon-backend/server/backend && composer generate-docker-config
+This will create a new file: documentation/docker_images/configuration.json where you can add/remove custom configuration variables
+
+### 2.2 Build docker image
 	- sudo docker build --tag "genular:build" --file ./Dockerfile .
 
 ## 3. Run Dockerfile
@@ -44,6 +49,7 @@ sudo docker run --rm \
 	--detach \
 	--name genular \
 	--tty --interactive \
+	--env IS_DOCKER \
 	--publish 3010:3010 \
 	--publish 3011:3011 \
 	--publish 3012:3012 \

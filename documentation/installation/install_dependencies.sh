@@ -390,7 +390,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         sudo Rscript -e "install.packages(c('devtools'), repo = 'https://cloud.r-project.org/')"
         ## server/backend/public/assets/datasets/Rdatasets.R
         sudo Rscript -e "devtools::install_github('trinker/pacman')"
-        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'aws.s3'), repos='http://cran.us.r-project.org')"
+        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'RMySQL', 'pool', 'urltools', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'aws.s3'), repos='http://cran.us.r-project.org')"
         
         ## Check some shared deps
         if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then
@@ -493,7 +493,7 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
                 echo "${yellow}Building static front-end files, please wait. (yarn run webpack:web:dev)${clear}"
                 yarn run webpack:web:dev
 
-                sudo chown -hR $USER:www-data "/var/www/genular" 
+                sudo chown -hR $USER:www-data "/var/www/genular"
 
             else
                 echo "${red}Directory already exist, stopping, please clone it manually: $GIT_FRONTEND_LOCAL ${clear}"
@@ -544,9 +544,9 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
 
                 sed -i 's|title: PLACEHOLDER|title: '"\"${B_CONF[details_title]}\""'|g' "config.yml"
                 sed -i 's|email: PLACEHOLDER|email: '"\"${B_CONF[details_email]}\""'|g' "config.yml"
-
                 sed -i 's|salt: PLACEHOLDER|salt: '"\"${B_CONF[salt]}\""'|g' "config.yml"
-                sed -i 's|secret: PLACEHOLDER|secret: '"\"${B_CONF[secret]}\""'|g' "config.yml"
+                
+                sed -i 's|secret: SECRET_PLACEHOLDER|secret: '"\"${B_CONF[secret]}\""'|g' "config.yml"
                 sed -i 's|data_path: PLACEHOLDER|data_path: '"\"${B_CONF[data_path]}\""'|g' "config.yml"
 
                 sed -i 's|host: PLACEHOLDER|host: '"\"${B_CONF[database_host]}\""'|g' "config.yml"
@@ -564,6 +564,11 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 echo "${red}Installing dependencies..${clear}"
                 echo ""
                 composer install
+
+                ## Create logs directory
+                mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
+                touch "$GIT_BACKEND_LOCAL/server/backend/source/logs/simon.log"
+                chmod -R 777 "$GIT_BACKEND_LOCAL/server/backend/source/logs"
 
                 sudo chown -hR $USER:www-data "/var/www/genular"
 
