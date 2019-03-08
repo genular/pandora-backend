@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-07 13:07:47
+ * @Last Modified time: 2019-03-08 14:45:36
  */
 
 use Slim\Http\Request;
@@ -158,7 +158,7 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 			$fileID = (int) $selectedFilesValue;
 			$file_details = $FileSystem->getFileDetails($fileID, false);
 
-			if ($file_details && $user_id == $file_details["uid"]) {
+			if ($file_details["details"] && $user_id == $file_details["uid"]) {
 				$message = $FileSystem->deleteFileByID($fileID, $file_details["path_remote"]);
 				if ($message === false) {
 					$success = false;

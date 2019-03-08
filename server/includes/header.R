@@ -63,7 +63,6 @@ source("server/includes/functions/file_system/main.R")
 if(WORKING_MODE == "local"){
     source("server/includes/functions/file_system/adapters/local.R")
 }else{
-    ## TODO: this is so SLOW! Preload AWS client to speed up process
     require(aws.s3)
     source("server/includes/functions/file_system/adapters/s3.R")
 }

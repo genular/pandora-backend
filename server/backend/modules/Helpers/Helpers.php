@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-04 15:11:07
+ * @Last Modified time: 2019-03-08 14:38:53
  */
 namespace SIMON\Helpers;
 
@@ -27,6 +27,20 @@ class Helpers {
 			}
 		}
 		return $input;
+	}
+	/**
+	 * Checks if device has Internet connection
+	 * @return boolean
+	 */
+	public static function is_connected() {
+		$connected = @fsockopen("www.google.com", 80);
+		if ($connected) {
+			$is_conn = true; //action when connected
+			fclose($connected);
+		} else {
+			$is_conn = false; //action in connection failure
+		}
+		return $is_conn;
 	}
 
 	/**

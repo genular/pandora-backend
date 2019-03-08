@@ -5,9 +5,21 @@
 #' @return 
 preProcessDataset <- function(dataset) {
 
-    cat(paste0("==> INFO: Preprocessing: splitting into partitions.. path: ", dataset$remotePathMain,"\r\n"))
+    cat(paste0("===> INFO: Preprocessing: splitting into partitions.. path: ", dataset$remotePathMain,"\r\n"))
 
     filepath_extracted <- downloadDataset(dataset$remotePathMain)
+    ## If data is missing cancel processing!
+    if(filepath_extracted == FALSE){
+        cat(paste0("===> ERROR: Cannot download remote dataset data\r\n"))
+        updateDatabaseFiled("dataset_queue", "status", 6, "id", dataset$queueID)
+        ## Remove PID file
+        if(file.exists(SIMON_PID)){
+            cat(paste0("===> INFO: Deleting SIMON_PID file \r\n"))
+            invisible(file.remove(SIMON_PID))
+        }
+        quit()
+    }
+
     glabalDataset <- data.table::fread(filepath_extracted, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
 
     #####################################################
@@ -16,7 +28,7 @@ preProcessDataset <- function(dataset) {
     #####################################################
 
     if(length(dataset$outcome) != 1){
-        cat("==> ERROR: Invalid number of outcome columns detected")
+        cat("===> ERROR: Invalid number of outcome columns detected")
         quit()
     }
 
@@ -33,7 +45,7 @@ preProcessDataset <- function(dataset) {
     outcome_unique <- unique(datasetData[[dataset$outcome]])
 
     if(length(outcome_unique) > 2 || length(outcome_unique) < 2){
-        cat(paste0("==> ERROR: Only two unique outcome classes are currently supported. You have: ", length(outcome_unique), "\r\n"))
+        cat(paste0("===> ERROR: Only two unique outcome classes are currently supported. You have: ", length(outcome_unique), "\r\n"))
         print(outcome_unique)
         updateDatabaseFiled("dataset_resamples", "status", 4, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", paste0("Incorrect number of outcome levels in main dataset: ", length(outcome_unique)), "id", dataset$resampleID)

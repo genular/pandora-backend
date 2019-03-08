@@ -27,10 +27,10 @@ has_internet <- function(){
 get_working_mode <- function(global_configuration){
     working_mode <- "remote"
 
-    IS_DOCKER <- Sys.getenv("IS_DOCKER")
+    IS_DOCKER <- Sys.getenv(c("IS_DOCKER"))
     is_connected <- has_internet()
 
-    if(IS_DOCKER == TRUE || is_connected == FALSE){
+    if(IS_DOCKER != "" || is_connected == FALSE){
         working_mode <- "local"
     }else{
         if(is.null(global_configuration$storage$s3$secret) || global_configuration$storage$s3$secret == "PLACEHOLDER"){
