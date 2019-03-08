@@ -3,27 +3,60 @@
 #' Full file path is returned with the filename included
 #' @return string
 thisFileLocation <- function() {
-        cmdArgs <- commandArgs(trailingOnly = FALSE)
-        needle <- "--file="
-        match <- grep(needle, cmdArgs)
-        if (length(match) > 0) {
-            return(normalizePath(sub(needle, "", cmdArgs[match])))
-        } else {
-            return(normalizePath(sys.frames()[[1]]$ofile))
+    cmdArgs <- commandArgs(trailingOnly = FALSE)
+    needle <- "--file="
+    match <- grep(needle, cmdArgs)
+    if (length(match) > 0) {
+        return(normalizePath(sub(needle, "", cmdArgs[match])))
+    } else {
+        return(normalizePath(sys.frames()[[1]]$ofile))
+    }
+}
+
+#' @title has_internet
+#' @description Checks if there is Internet connection
+#' @return boolean
+has_internet <- function(){
+    out <-try(is.character(RCurl::getURL("www.google.com"))) == TRUE
+    return (out)
+}
+
+#' @title get_working_mode
+#' @description Returns current mode of operation. So we know what file-system adapter to use
+#' @return string
+get_working_mode <- function(global_configuration){
+    working_mode <- "remote"
+
+    IS_DOCKER <- Sys.getenv("IS_DOCKER")
+    is_connected <- has_internet()
+
+    if(IS_DOCKER == TRUE || is_connected == FALSE){
+        working_mode <- "local"
+    }else{
+        if(is.null(global_configuration$storage$s3$secret) || global_configuration$storage$s3$secret == "PLACEHOLDER"){
+            working_mode <- "local"
         }
+    }
+
+    return(working_mode)
 }
 
 #' @title loadRObject
 #' @description Load R data file object that is saved using R "save" function
 #' Create a new environment, load the .rda file into that environment, and retrieve object
+#' @param file_path
 #' @return object
-loadRObject <- function(filePath)
+loadRObject <- function(file_path)
 {
     env <- new.env()
-    nm <- load(filePath, env)[1]
+    nm <- load(file_path, env)[1]
     return(env[[nm]])
 }
-
+#' @title detach_package
+#' @description Detaches package from R session
+#' @param pkg
+#' @param character.only
+#' @return 
 detach_package <- function(pkg, character.only = FALSE)
 {
     if(!character.only)
@@ -38,7 +71,7 @@ detach_package <- function(pkg, character.only = FALSE)
 }
 
 #' @title  shortRversion
-#' @description Short R version string, ("space free", useful in file/directory names. Also fine for unreleased versions of R):
+#' @description Short R version string
 #' @return string
 shortRversion <- function() {
    rvs <- R.Version()
@@ -46,7 +79,7 @@ shortRversion <- function() {
 }
 
 #' @title  %!in%
-#' @description Negation of %in% in R
+#' @description negation of %in% function in R
 #' @return boolean
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
@@ -99,6 +132,8 @@ saveCachedList <- function(cachePath, data){
 
 #' @title Check if All Elements in Character Vector are Numeric
 #' @description Tests, without issuing warnings, whether all elements of a character vector are legal numeric values
+#' @param x
+#' @param extras
 #' @return boolean
 all.is.numeric <- function(x, extras=c('.','NA'))
 {

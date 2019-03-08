@@ -1,3 +1,7 @@
+#' @title  db.checkUserAuthToken
+#' @description Checks if user session X-TOKEN exist in database
+#' @param auth_token
+#' @return boolean
 db.checkUserAuthToken  <- function(auth_token){
 
     sql <- "SELECT users_sessions.id AS id, users_sessions.uid AS uid, users.salt AS salt FROM `users_sessions` INNER JOIN users ON users_sessions.uid = users.id WHERE `session` = ?auth_token LIMIT 1;"
@@ -7,6 +11,11 @@ db.checkUserAuthToken  <- function(auth_token){
     return(results)
 }
 
+#' @title  db.getTotalCount
+#' @description Return total count of data from mysql table
+#' @param tables
+#' @param where_clause
+#' @return integer
 db.getTotalCount <- function(tables, where_clause = NULL){
     data_count <- list()
     for (table in tables) {
@@ -21,6 +30,10 @@ db.getTotalCount <- function(tables, where_clause = NULL){
 }
 
 
+#' @title  db.apps.getCronJobQueue
+#' @description Returns list of datasets that needs to be processed by a CRON script
+#' @param data
+#' @return list
 db.apps.getCronJobQueue <- function(data){
     datasets = list()
 
@@ -30,8 +43,8 @@ db.apps.getCronJobQueue <- function(data){
     packages <- dbGetQuery(databasePool, packagesQuery)
 
     ## Development overwrite
-    testing_sql <- paste0("UPDATE dataset_queue SET status = 4 WHERE id = ", data$queueID)
-    dbExecute(databasePool, testing_sql)
+    ## testing_sql <- paste0("UPDATE dataset_queue SET status = 4 WHERE id = ", data$queueID)
+    ## dbExecute(databasePool, testing_sql)
 
     sql <- paste0("## One Queue can have multiple resamples, resamples are datasets that needs to be processed on the server
                     ## Select queue needed for processing and all resamples that did not processed on all servers

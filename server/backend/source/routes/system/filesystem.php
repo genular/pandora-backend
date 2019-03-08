@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-02 10:31:47
+ * @Last Modified time: 2019-03-07 13:07:47
  */
 
 use Slim\Http\Request;
@@ -225,7 +225,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		foreach ($downloadIDs as $fileID) {
 			$fileDetails = $FileSystem->getFileDetails($fileID, false);
 			if (isset($fileDetails['path_remote'])) {
-				$url = $FileSystem->getPreSignedURL($fileDetails['path_remote'], 'genular');
+				$url = $FileSystem->getDownloadLink($fileDetails['path_remote']);
 				$downloadLinks[] = $url;
 			}
 		}

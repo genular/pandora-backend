@@ -33,7 +33,7 @@ B_CONF[secret]=$(LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+= < /dev/uran
 B_CONF[details_title]="genular"
 B_CONF[details_email]="support@genular.com"
 
-B_CONF[data_path]="/tmp"
+B_CONF[data_path]="/tmp/genular"
 
 B_CONF[database_host]="localhost"
 B_CONF[database_port]=3306
@@ -390,7 +390,10 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         sudo Rscript -e "install.packages(c('devtools'), repo = 'https://cloud.r-project.org/')"
         ## server/backend/public/assets/datasets/Rdatasets.R
         sudo Rscript -e "devtools::install_github('trinker/pacman')"
-        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'RMySQL', 'pool', 'urltools', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'aws.s3'), repos='http://cran.us.r-project.org')"
+
+        ## This package is not yet on CRAN. To install the latest development version you can install from the cloudyr drat repository:
+        sudo Rscript -e "install.packages('aws.s3', repos = c('cloudyr' = 'http://cloudyr.github.io/drat'))"
+        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMySQL', 'RMariaDB', 'PKI', 'data.table', 'RCurl'), repos='http://cran.us.r-project.org')"
         
         ## Check some shared deps
         if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then
@@ -569,6 +572,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
                 touch "$GIT_BACKEND_LOCAL/server/backend/source/logs/simon.log"
                 chmod -R 777 "$GIT_BACKEND_LOCAL/server/backend/source/logs"
+                chmod 777 "$GIT_BACKEND_LOCAL/server/backend/public/downloads"
 
                 touch "/var/log/simon-cron.log"
                 chmod -R 777 "$GIT_BACKEND_LOCAL/cron/main.R"

@@ -85,6 +85,7 @@ if(isStandAlone == FALSE){
     serverData <- getProcessingEntries()
 
     if(length(serverData) > 0){
+        # TODO: Testing
         updateDatabaseFiled("dataset_queue", "status", 3, "id", serverData$queueID)
     }
 }
@@ -463,9 +464,8 @@ updateDatabaseFiled("dataset_queue", "processing_time", total_time_ms, "id", ser
 updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 
 cat(paste0("======> INFO: PROCESSING END (",total_time," sec) \r\n"))
-
 ## Remove PID file
 if(file.exists(SIMON_PID)){
-    cat(paste0("======> INFO: Deleting PID file \r\n"))
+    cat(paste0("======> INFO: Deleting SIMON_PID file \r\n"))
     invisible(file.remove(SIMON_PID))
 }

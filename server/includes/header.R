@@ -30,9 +30,6 @@ require(pool)
 
 require(urltools)
 
-## TODO: this is so SLOW! Preload AWS client to speed up process
-require(aws.s3)
-
 databasePool <- pool::dbPool(
         drv = RMySQL::MySQL(), ## RMySQL::MySQL() --- RMariaDB::MariaDB()
         dbname = simonConfig$database$dbname,
@@ -55,7 +52,21 @@ options(error = quote(dump.frames(error_path, TRUE)))
 
 source("server/includes/functions/helpers.R")
 source("server/includes/functions/database.R")
-source("server/includes/functions/fileSystem.R")
+
+## local or remote
+WORKING_MODE <- get_working_mode(simonConfig)
+
+source("server/includes/functions/file_system/main.R")
+
+ cat(paste0("===> INFO: LOCAL WORKING MODE: ",WORKING_MODE," \r\n"))
+
+if(WORKING_MODE == "local"){
+    source("server/includes/functions/file_system/adapters/local.R")
+}else{
+    ## TODO: this is so SLOW! Preload AWS client to speed up process
+    require(aws.s3)
+    source("server/includes/functions/file_system/adapters/s3.R")
+}
 
 ## MAIN Route handler
 simon <- list(filter = list(), handle = list(analysis = list(), general = list(), plots = list() ))

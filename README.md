@@ -16,7 +16,7 @@ Goal of this project is to make unified user interface that will empower anyone 
 While `SIMON` can be used in across many different fields, 
 our focus here is scientific community so we can enable scientist and other researchers in the field to quickly prototype around their data and get meaningful results out of it.
 
-## More info [HERE](https://github.com/genular/simon-frontend) at main repository
+## More info [HERE](https://github.com/genular/simon-frontend) at main project repository
 
 ## License
 Please check `LICENCE` file for more information.

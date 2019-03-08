@@ -4,10 +4,11 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-02 09:33:58
+ * @Last Modified time: 2019-03-07 16:17:11
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
+use League\Flysystem\Adapter\Local as Local;
 use League\Flysystem\AwsS3v3\AwsS3Adapter as AwsS3Adapter;
 use League\Flysystem\Filesystem as Flysystem;
 use Noodlehaus\Config as Config;
@@ -28,6 +29,7 @@ class FileSystem {
 	protected $Cache;
 
 	protected $temp_download_dir = "/tmp/downloads";
+	protected $storage_type = "remote";
 
 	public function __construct(
 		Medoo $database,
@@ -40,27 +42,57 @@ class FileSystem {
 		$this->logger = $logger;
 		$this->Config = $Config;
 		$this->Cache = $Cache;
-
-		$configuration = [
-			'credentials' => [
-				'key' => $this->Config->get('default.storage.s3.key'),
-				'secret' => $this->Config->get('default.storage.s3.secret'),
-			],
-			'region' => $this->Config->get('default.storage.s3.region'),
-			'version' => 'latest',
-			'endpoint' => "https://" . $this->Config->get('default.storage.s3.region') . "." . $this->Config->get('default.storage.s3.endpoint'),
-		];
-
-		$this->client = new S3Client($configuration);
-		$adapter = new AwsS3Adapter($this->client, $this->Config->get('default.storage.s3.bucket'));
-
-		$this->filesystem = new Flysystem($adapter);
+		$this->temp_download_dir = $this->Config->get('default.backend.data_path') . "/tmp";
 
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed");
+
+		if (!file_exists($this->Config->get('default.backend.data_path'))) {
+			mkdir($this->Config->get('default.backend.data_path'));
+		}
 
 		if (!file_exists($this->temp_download_dir)) {
 			mkdir($this->temp_download_dir, 0777, true);
 		}
+
+		// Check if S3 storage is configured!
+		$s3_configured = true;
+		if ($this->Config->get('default.storage.s3.secret') === null ||
+			$this->Config->get('default.storage.s3.secret') === "PLACEHOLDER") {
+			$s3_configured = false;
+		}
+
+		// If we are inside a DOCKER or there is no Internet available or remote storage is not configured use Local storage
+		if ($this->Config->get('settings')["is_docker"] === true ||
+			$this->Config->get('settings')["is_connected"] === false ||
+			$s3_configured === false) {
+
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using local storage: " . $this->Config->get('default.backend.data_path'));
+
+			$this->storage_type = "local";
+			$adapter = new Local($this->Config->get('default.backend.data_path'));
+
+			// Otherwise use remote s3 storage
+		} else if ($this->Config->get('settings')["is_connected"] === true && $s3_configured === true) {
+
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using S3 remote storage: " . $this->Config->get('default.backend.data_path'));
+
+			$this->client = new S3Client([
+				'credentials' => [
+					'key' => $this->Config->get('default.storage.s3.key'),
+					'secret' => $this->Config->get('default.storage.s3.secret'),
+				],
+				'region' => $this->Config->get('default.storage.s3.region'),
+				'version' => 'latest',
+				'endpoint' => "https://" . $this->Config->get('default.storage.s3.region') . "." . $this->Config->get('default.storage.s3.endpoint'),
+			]);
+			$adapter = new AwsS3Adapter($this->client, $this->Config->get('default.storage.s3.bucket'));
+
+		} else {
+			throw new Exception("Error: SIMON\System\FileSystem Cannot configure file-system", 1);
+		}
+
+		$this->filesystem = new Flysystem($adapter);
+
 	}
 	/**
 	 * Create a link to a S3 object from a bucket. If expiration is not empty, then it is used to create
@@ -72,7 +104,7 @@ class FileSystem {
 	 * @param  string     $customFilename Custom filename of the file
 	 * @return string
 	 */
-	public function getPreSignedURL($pathRemote, $bucket = 'genular', $expiration = '+1 day', $customFilename = false) {
+	private function getPreSignedURL($pathRemote, $bucket = 'genular', $expiration = '+1 day', $customFilename = false) {
 
 		$bucket = $bucket . '/' . dirname($pathRemote);
 		$object = basename($pathRemote);
@@ -86,6 +118,56 @@ class FileSystem {
 			return $this->client->createPresignedRequest($command, $expiration)->getUri()->__toString();
 		} else {
 			return $this->client->getObjectUrl($bucket, $object);
+		}
+	}
+	/**
+	 * [getDownloadLink description]
+	 * @param  [type] $filesystem_path [description]
+	 * @return [type]                  [description]
+	 */
+	public function getDownloadLink($filesystem_path) {
+		$downloadLink = false;
+
+		if ($this->storage_type === "remote") {
+			return $this->getPreSignedURL($filesystem_path, $this->Config->get('default.storage.s3.bucket'), '+1 day', false);
+
+		} else if ($this->storage_type === "local") {
+			$public_directory = realpath(__DIR__ . '/../../public/downloads');
+			// Clean old files
+			$this->deleteOldFiles($public_directory);
+
+			$copy_from = realpath($this->Config->get('default.backend.data_path') . "/" . $filesystem_path);
+			$copy_to = $public_directory . "/" . basename($filesystem_path);
+
+			$downloadLink = $this->Config->get('default.backend.server.url') . "/downloads/" . basename($filesystem_path);
+
+			if (!file_exists($copy_to)) {
+				if (file_exists($copy_from)) {
+					if (!copy($copy_from, $copy_to)) {
+						$downloadLink = false;
+					}
+				} else {
+					$downloadLink = false;
+				}
+			}
+		}
+		return $downloadLink;
+	}
+	/**
+	 * Delete files older than 2 days
+	 * @param  [type] $directory [description]
+	 * @return [type]            [description]
+	 */
+	public function deleteOldFiles($directory) {
+		if (file_exists($directory)) {
+			foreach (new \DirectoryIterator($directory) as $fileInfo) {
+				if ($fileInfo->isDot()) {
+					continue;
+				}
+				if ($fileInfo->isFile() && time() - $fileInfo->getCTime() >= 2 * 24 * 60 * 60) {
+					unlink($fileInfo->getRealPath());
+				}
+			}
 		}
 	}
 	/**
@@ -266,7 +348,7 @@ class FileSystem {
 	}
 
 	/**
-	 * Initilize user workspace directory on file-system
+	 * Initialize user workspace directory on file-system
 	 * @param  [int] $user_id [description]
 	 * @return [string]
 	 */
@@ -282,6 +364,9 @@ class FileSystem {
 
 			if (!$exists) {
 				$response = $this->filesystem->createDir($path);
+				if ($this->storage_type === "local") {
+					chmod($path, 0777);
+				}
 			}
 		}
 

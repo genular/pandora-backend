@@ -1,7 +1,7 @@
 # @Author: LogIN-
 # @Date:   2019-02-26 13:27:17
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-02-28 17:58:47
+# @Last Modified time: 2019-03-06 15:06:20
 # 
 # 
 # Example: https://blog.sleeplessbeastie.eu/2018/04/11/how-to-create-base-docker-image/
@@ -10,6 +10,7 @@ FRESH_START=y
 
 IMAGE_NAME="genular"
 WORKING_DIR=$(pwd)
+DATE_TAG=$(date +%Y_%m_%d)
 
 ROOT_FS=${WORKING_DIR}/images/${IMAGE_NAME}
 
@@ -31,8 +32,8 @@ if [ "$FRESH_START" == y ] ; then
 	fi
 fi
 
-if [ -f "./images/${IMAGE_NAME}.tar" ]; then
-	sudo rm "./images/${IMAGE_NAME}.tar"
+if [ -f "./images/${IMAGE_NAME}_$DATE_TAG.tar" ]; then
+	sudo rm "./images/${IMAGE_NAME}_$DATE_TAG.tar"
 fi
 
 ## Build stable debian image currently stretch/Debian 9
@@ -49,10 +50,10 @@ if [ -d "./images/${IMAGE_NAME}" ]; then
 	## Create archive with Debian base system.
 	(
 		set -x
-		sudo tar --numeric-owner --create --auto-compress --file "./images/$IMAGE_NAME.tar" --directory "./images/${IMAGE_NAME}" --transform='s,^./,,' .
+		sudo tar --numeric-owner --create --auto-compress --file "./images/$IMAGE_NAME_$DATE_TAG.tar" --directory "./images/${IMAGE_NAME}" --transform='s,^./,,' .
 	)
 	echo "Archive size:"
-	sudo du --human-readable ./images/$IMAGE_NAME.tar
+	sudo du --human-readable ./images/$IMAGE_NAME_$DATE_TAG.tar
 fi
 ### Import image to docker
 # cat "./images/$IMAGE_NAME.tar" | sudo docker import - ${IMAGE_NAME}

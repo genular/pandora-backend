@@ -1,10 +1,12 @@
-This directory contains scripts necessary to create parent docker image.
+## Explanation
+
+This directory ("./base_image") contains scripts necessary to create parent docker image.
 
 Usage:
-sudo ./make_image.sh
+	- sudo ./make_image.sh
 
-Script pre-installs basic genular dependencies and compiles custom debian image out of it,
-that is than used in Dockerfile.
+Script pre-installs basic genular dependencies from a Debian distribution and compiles custom image out of it,
+that is than used latter on in Dockerfile.
 
 
 ## 1. Import parent image
@@ -45,6 +47,7 @@ This will create a new file: documentation/docker_images/configuration.json wher
 	- sudo docker build --network=host --tag "genular:master" --file ./Dockerfile .
 
 ## 3. Run Dockerfile
+```bash
 sudo docker run --rm \
 	--detach \
 	--network=host \
@@ -52,17 +55,31 @@ sudo docker run --rm \
 	--tty \
 	--interactive \
 	--env IS_DOCKER \
+	--volume /mnt/genular/simon-backend/SHARED_DATA:/tmp/genular \
 	--publish 3010:3010 \
 	--publish 3011:3011 \
 	--publish 3012:3012 \
 	--publish 3013:3013 \
 	genular:master
+```
 
+## Helpers
 
-## SSH into a running container:
-
+### SSH into a running container
+	- sudo docker exec -it genular /bin/bash
 ### List all running ones
 	- sudo docker ps
+### Stop image
+	- sudo docker stop genular
 
-sudo docker exec -it genular /bin/bash
-sudo docker stop genular
+
+## Publish parent docker image
+
+### Login to DockerHub
+	- cat ~/my_password.txt | docker login --username foo --password-stdin
+### Tag image
+	- docker tag TAG_ID HUB_USERNAME/genular:firsttry
+### Push your image to the repository you created on DockerHub
+	- docker push HUB_USERNAME/genular
+### or upload to CDN
+	- rclone copy ./genular.tar genular-spaces:genular/docker-parent-images

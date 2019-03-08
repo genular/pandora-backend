@@ -50,12 +50,15 @@ server/data/*
 uptime.pid
 availablePackages.json
 
-SHARED_DATA
+
 server/backend/additional
-simon.log
+server/backend/public/downloads/*
+!server/backend/public/downloads/index.html
 
 SIMON_DATA
+SHARED_DATA
 
+*.log
 *.ignore
 *.bak
 *.gitignore

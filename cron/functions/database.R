@@ -1,4 +1,4 @@
-#' @title 
+#' @title getProcessingEntries
 #' @description Returns next processing queue. This is used if cron is used in single server mode.
 #' Otherwise base64 encoded data from SIMON_DATA that is created by could.init script is used
 #' @return data-frame
@@ -6,6 +6,7 @@ getProcessingEntries <- function(){
     queue = list()
 
     ## Get older processing entries first
+    ## queue gets status = 1 after user confirms re-samples back in UI
     query <- "SELECT id, uid, packages  FROM dataset_queue WHERE status = ?status ORDER BY id ASC LIMIT 1"
     
     query <- sqlInterpolate(databasePool, query, status = 1)
@@ -19,7 +20,7 @@ getProcessingEntries <- function(){
     return(queue)
 }
 
-#' @title 
+#' @title getPerformanceVariable
 #' @description 
 #' @return data-frame
 getPerformanceVariable <- function(variableValue, performanceVariables){
@@ -33,7 +34,7 @@ getPerformanceVariable <- function(variableValue, performanceVariables){
     return(performanceVariables)
 }
 
-#' @title 
+#' @title createPerformanceVariable
 #' @description 
 #' @return data-frame
 createPerformanceVariable <- function(variableValue){
@@ -50,7 +51,7 @@ createPerformanceVariable <- function(variableValue){
     return(pvID)
 }
 
-#' @title Get all Performance Variables
+#' @title getAllPerformanceVariables
 #' @description Get all Performance Variables that are known to be used for model metrics
 #' @return data-frame
 getAllPerformanceVariables <- function(){
@@ -60,7 +61,7 @@ getAllPerformanceVariables <- function(){
     return(results)
 }
 
-#' @title 
+#' @title getDatasetResamplesMappings
 #' @description 
 #' @param resampleID 
 #' @param outcome_and_classes

@@ -1,7 +1,8 @@
 # vim:set ft=dockerfile:
 # escape=\
 
-FROM "genular"
+FROM "genular/parent:master"
+
 MAINTAINER LogIN- "info@genular.com"
 
 # Set a working directory
@@ -10,36 +11,24 @@ WORKDIR /tmp
 ## Run only if Internet is Enabled!
 # RUN apt-get update && apt-get upgrade
 
-## ARG - is environment variable available only during buildtime
-ARG  analysis_url=http://localhost:3012
-ARG  plots_url=http://localhost:3013
-ARG  backend_url=http://localhost:3011
-ARG  frontend_url=http://localhost:3010
+ADD ./configuration.json /tmp/configuration.json
 
-ARG  sendgrid_api=
-ARG  s3_key=
-ARG  s3_secret=
-ARG  s3_bucket=
-
-## 1st let configure frontend
-RUN cd /var/www/genular/simon-frontend \
-	# && git pull origin master \
+## Lets build and configure SIMON
+RUN su - genular -c 'cd /var/www/genular/simon-frontend \
+	&& git pull origin master \
 	&& yarn run webpack:web:dev \
 	--isDemoServer=false \
 	--server_frontend=http://localhost:3010 \
 	--server_backend=http://localhost:3011 \
-	--server_homepage=http://localhost:3010
-
-## 2nd configure backend
-RUN chmod -R 777 /var/www/genularsimon-backend/server/backend/source/logs \
-	# && git pull origin master \
+	--server_homepage=http://localhost:3010 \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
-	&& composer post-install '{"default":{"sendgrid_api":"${sendgrid_api}","storage":{"s3":{"key":"${s3_key}","secret":"${s3_secret}","bucket":"${s3_bucket}"}}}}'
+	&& git pull origin master \
+	&& composer post-install /tmp/configuration.json'
 
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"]
 
 #
-# Expose the nginx port
+# Expose the ports!
 #
 EXPOSE 3010
 EXPOSE 3011
