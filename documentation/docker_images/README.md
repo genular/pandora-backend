@@ -54,7 +54,7 @@ sudo docker run --rm \
 	--name genular \
 	--tty \
 	--interactive \
-	--env IS_DOCKER \
+	--env IS_DOCKER='true' \
 	--volume /mnt/genular/simon-backend/SHARED_DATA:/tmp/genular \
 	--publish 3010:3010 \
 	--publish 3011:3011 \

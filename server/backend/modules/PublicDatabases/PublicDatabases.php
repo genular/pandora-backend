@@ -4,18 +4,16 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-13 09:32:55
+ * @Last Modified time: 2019-03-08 16:27:54
  */
 namespace SIMON\PublicDatabases;
 
-use Aws\S3\S3Client as S3Client;
-use League\Flysystem\AwsS3v3\AwsS3Adapter as AwsS3Adapter;
-use League\Flysystem\Filesystem as Flysystem;
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
 use \SIMON\Helpers\Cache as Cache;
 use \SIMON\Helpers\Helpers as Helpers;
+use \SIMON\System\FileSystem as FileSystem;
 
 class PublicDatabases {
 	protected $table_name = "public_databases";
@@ -23,7 +21,7 @@ class PublicDatabases {
 	protected $logger;
 	protected $Helpers;
 
-	protected $filesystem;
+	protected $FileSystem;
 
 	protected $Config;
 	protected $Cache;
@@ -35,33 +33,15 @@ class PublicDatabases {
 
 		Config $Config,
 		Cache $Cache,
-		Helpers $Helpers
+		Helpers $Helpers,
+		FileSystem $FileSystem
 	) {
 		$this->database = $database;
 		$this->logger = $logger;
 		$this->Config = $Config;
 		$this->Cache = $Cache;
-
 		$this->Helpers = $Helpers;
-
-		$configuration = [
-			'credentials' => [
-				'key' => $this->Config->get('default.storage.s3.key'),
-				'secret' => $this->Config->get('default.storage.s3.secret'),
-			],
-			'region' => $this->Config->get('default.storage.s3.region'),
-			'version' => 'latest',
-			'endpoint' => "https://" . $this->Config->get('default.storage.s3.region') . "." . $this->Config->get('default.storage.s3.endpoint'),
-		];
-
-		$this->client = new S3Client($configuration);
-		$adapter = new AwsS3Adapter($this->client, $this->Config->get('default.storage.s3.bucket'));
-
-		$this->filesystem = new Flysystem($adapter);
-
-		if (!file_exists($this->temp_download_dir)) {
-			mkdir($this->temp_download_dir, 0777, true);
-		}
+		$this->FileSystem = $FileSystem;
 
 		$this->logger->addInfo("==> INFO: SIMON\PublicDatabases\PublicDatabases constructed");
 	}
@@ -132,48 +112,12 @@ class PublicDatabases {
 	 */
 	public function downloadInternalDataset($datasetID) {
 
-		$details = $this->getDatasetByID($datasetID, false);
+		$datasetDetails = $this->getDatasetByID($datasetID, false);
 
-		$hashName = $details["hash"];
-		$fileName = $this->Helpers->sanitizeFileName($details["title"]);
+		$datasetPathRemote = "/datasets/" . $datasetDetails["hash"] . ".csv.tar.gz";
+		$datasetPathLocal = $this->FileSystem->downloadFile($datasetPathRemote, $this->Helpers->sanitizeFileName($datasetDetails["title"]) . ".csv");
 
-		$local_path_original = $this->temp_download_dir . "/" . $hashName . ".csv";
-		$local_path_rename = $this->temp_download_dir . "/" . $fileName . ".csv";
-
-		$local_gzipped_path = $this->temp_download_dir . "/" . $hashName . ".csv.tar.gz";
-		$remote_gzipped_path = "/datasets/" . $hashName . ".csv.tar.gz";
-
-		// Skip downloading if file is already downloaded
-		if (file_exists($local_path_rename)) {
-			@unlink($local_gzipped_path);
-			return $local_path_rename;
-		}
-		$ungz_cmd = "tar xf "
-		. escapeshellarg($local_gzipped_path) . " -C "
-		. escapeshellarg($this->temp_download_dir) . " && mv "
-		. escapeshellarg($local_path_original) . " " . escapeshellarg($local_path_rename);
-
-		// Skip downloading if compressed file is already downloaded
-		if (file_exists($local_gzipped_path)) {
-			exec($ungz_cmd);
-			return $local_path_rename;
-		}
-		$exists = $this->filesystem->has($remote_gzipped_path);
-		if ($exists === true) {
-			// Retrieve a read-stream
-			$stream = $this->filesystem->readStream($remote_gzipped_path);
-			$contents = stream_get_contents($stream);
-			if (is_resource($contents)) {
-				fclose($contents);
-			}
-			file_put_contents($local_gzipped_path, $contents);
-			exec($ungz_cmd);
-			@unlink($local_gzipped_path);
-		} else {
-			$local_path_rename = false;
-		}
-
-		return $local_path_rename;
+		return $datasetPathLocal;
 	}
 
 	/**
@@ -219,7 +163,7 @@ class PublicDatabases {
 				    " . $this->table_name . ".rows,
 				    " . $this->table_name . ".columns,
 				    " . $this->table_name . ".hash,
-				    CONCAT('https://ams3.digitaloceanspaces.com/genular/datasets/', " . $this->table_name . ".hash, '.csv.tar.gz') AS downloadLink,
+				    CONCAT('https://genular.ams3.cdn.digitaloceanspaces.com/datasets/', " . $this->table_name . ".hash, '.csv.tar.gz') AS downloadLink,
 				    " . $this->table_name . ".sparsity,
 				    " . $this->table_name . ".updated";
 		} else {

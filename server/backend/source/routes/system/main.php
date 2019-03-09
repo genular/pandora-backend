@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:10
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-06 10:40:49
+ * @Last Modified time: 2019-03-08 15:35:43
  */
 
 use Slim\Http\Request;
@@ -41,7 +41,8 @@ $app->get('/backend/system/status/{secret:.*}', function (Request $request, Resp
 			}
 		}
 	}
-	if (count($server_details) > 2) {
+
+	if (count($server_details) === 4) {
 		$success = true;
 	}
 

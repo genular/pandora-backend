@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 11:55:08
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-08 14:45:58
+ * @Last Modified time: 2019-03-08 16:13:23
  */
 
 use \SIMON\Helpers\Helpers as Helpers;
@@ -12,7 +12,7 @@ use \SIMON\Helpers\Helpers as Helpers;
 return [
 	'settings' => [
 		// Check for Docker ENV variable
-		'is_docker' => getenv('IS_DOCKER') ? getenv('IS_DOCKER') : false,
+		'is_docker' => false, // getenv('IS_DOCKER') ? true : false,
 		// Do we have Internet connection
 		'is_connected' => Helpers::is_connected(),
 		'displayErrorDetails' => true, // set to false in production

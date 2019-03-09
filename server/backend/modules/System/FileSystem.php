@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-07 16:17:11
+ * @Last Modified time: 2019-03-08 16:25:29
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -308,43 +308,56 @@ class FileSystem {
 
 	/**
 	 * Downloads file from remote server to temporary place in our local file-system
-	 * @param  [type] $file_id [description]
+	 * @param  [type] $input can be file_id from users_files table or full path to the requested file
 	 * @return [type]          [description]
 	 */
-	public function downloadFile($file_id) {
+	public function downloadFile($input, $new_file_name = false) {
 
-		$details = $this->getFileDetails($file_id, false);
+		$remotePath = $input;
+		if (is_numeric($input)) {
+			$details = $this->getFileDetails($input, false);
+			if (isset($details["path_remote"])) {
+				$remotePath = $details["path_remote"];
+			} else {
+				return false;
+			}
+		}
+		$file = new \SplFileInfo($remotePath);
+		$file_path = $this->temp_download_dir . "/" . $file->getBasename('.tar.gz');
+		$file_path_gz = $file_path . ".tar.gz";
 
-		$filename = basename($details["path_renamed"]);
-		$local_path = $this->temp_download_dir . "/" . $filename;
-		$local_gzipped_path = $local_path . ".tar.gz";
-		$remote_gzipped_path = $details["path_remote"];
-
-		// Skip downloading if file is already downloaded
-		if (file_exists($local_path)) {
-			@unlink($local_gzipped_path);
-			return $local_path;
+		// Skip downloading if file is already downloaded and extracted
+		if (file_exists($file_path)) {
+			@unlink($file_path_gz);
+			return $file_path;
 		}
 
-		$ungz_cmd = "tar xf " . $local_gzipped_path . " -C " . $this->temp_download_dir;
+		$ungz_cmd = "tar xf " . $file_path_gz . " -C " . $this->temp_download_dir;
 		// Skip downloading if compressed file is already downloaded
-		if (file_exists($local_gzipped_path)) {
+		if (file_exists($file_path_gz)) {
 			exec($ungz_cmd);
-			return $local_path;
+			return $file_path;
 		}
 
 		// Retrieve a read-stream
-		$stream = $this->filesystem->readStream($remote_gzipped_path);
+		$stream = $this->filesystem->readStream($remotePath);
 		$contents = stream_get_contents($stream);
 		if (is_resource($contents)) {
 			fclose($contents);
 		}
 
-		file_put_contents($local_gzipped_path, $contents);
+		file_put_contents($file_path_gz, $contents);
 		exec($ungz_cmd);
-		@unlink($local_gzipped_path);
+		@unlink($file_path_gz);
 
-		return $local_path;
+		if ($new_file_name !== false) {
+			$new_file_name = $this->temp_download_dir . "/" . $new_file_name;
+			rename($file_path, $new_file_name);
+
+			$file_path = $new_file_name;
+		}
+
+		return $file_path;
 	}
 
 	/**
