@@ -5,6 +5,7 @@
 #' @return string
 downloadFile <- function(file_path_from, file_path_to){
     file_path_from <- file.path(simonConfig$backend$data_path, file_path_from)
+    cat(paste0("===> INFO: downloadFile: ",file_path_from," \r\n"))
     
      ## Create directory if doesn't exist
     ifelse(!dir.exists(dirname(file_path_to)), dir.create(dirname(file_path_to), recursive=TRUE), FALSE)
@@ -21,7 +22,8 @@ downloadFile <- function(file_path_from, file_path_to){
 #' @return boolean
 checkFileExists <- function(file_path){
     file_path <- file.path(simonConfig$backend$data_path, file_path)
-
+    cat(paste0("===> INFO: checkFileExists: ",checkFileExists," \r\n"))
+    
     exists <- FALSE
     if(file.exists(file_path)){
         exists <- TRUE

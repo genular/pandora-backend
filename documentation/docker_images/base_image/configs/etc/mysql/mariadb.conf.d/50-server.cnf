@@ -31,8 +31,8 @@ bind-address		= 127.0.0.1
 #
 # * Fine Tuning
 #
-key_buffer_size		= 16M
-max_allowed_packet	= 16M
+key_buffer_size		= 128M
+max_allowed_packet	= 512M
 thread_stack		= 192K
 thread_cache_size       = 8
 # This replaces the startup script and checks MyISAM tables if needed
@@ -45,8 +45,8 @@ myisam_recover_options  = BACKUP
 #
 # * Query Cache Configuration
 #
-query_cache_limit	= 1M
-query_cache_size        = 16M
+query_cache_limit	= 8M
+query_cache_size        = 128M
 
 #
 # * Logging and Replication

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:12:42
+ * @Last Modified time: 2019-03-11 15:12:24
  */
 namespace SIMON\System;
 use Noodlehaus\Config as Config;
@@ -20,6 +20,7 @@ class ResumableUpload {
 	protected $Config;
 	protected $Helpers;
 
+	protected $errors = [];
 	protected $temp_upload_dir = "/tmp/uploads";
 
 	public function __construct(
@@ -33,8 +34,9 @@ class ResumableUpload {
 		$this->Config = $Config;
 		$this->Helpers = $Helpers;
 
-		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed");
+		$this->temp_upload_dir = $this->Config->get('default.backend.data_path') . "/tmp/uploads";
+
+		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed: " . $this->temp_upload_dir);
 
 		if (!file_exists($this->temp_upload_dir)) {
 			mkdir($this->temp_upload_dir, 0777, true);
@@ -46,14 +48,13 @@ class ResumableUpload {
 	 * @param file $uploaded file uploaded file to move
 	 */
 	function moveUploadedFile($tmp_file_path, $filename) {
-		$errors = array();
 		$filename = $this->Helpers->sanitizeFileName($filename); # remove problematic symbols
 
 		$info = pathinfo($filename);
 		$extension = isset($info['extension']) ? '.' . strtolower($info['extension']) : '';
 		$filename = $info['filename'];
 
-		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $filename, $extension, $errors);
+		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $filename, $extension);
 		$savePath = $this->temp_upload_dir . "/" . $saveName . $extension;
 
 		if (move_uploaded_file($tmp_file_path, $savePath)) {
@@ -72,7 +73,6 @@ class ResumableUpload {
 	 */
 	public function resumableUpload($tmp_file_path, $filename, $post) {
 		$successes = array();
-		$errors = array();
 		$warnings = array();
 
 		$identifier = (isset($post['dzuuid'])) ? trim($post['dzuuid']) : '';
@@ -94,19 +94,19 @@ class ResumableUpload {
 		$chunk_file = "$file_chunks_folder/{$filename}.part{$chunkInd}";
 
 		if (!move_uploaded_file($tmp_file_path, $chunk_file)) {
-			$errors[] = array('text' => 'Move error', 'name' => $filename, 'index' => $chunkInd);
+			$this->errors[] = array('text' => 'Move error', 'name' => $filename, 'index' => $chunkInd);
 		}
 
-		if (count($errors) == 0 and $new_path = $this->checkAllParts($file_chunks_folder,
+		if (count($this->errors) == 0 and $new_path = $this->checkAllParts($file_chunks_folder,
 			$filename,
 			$extension,
 			$totalSize,
 			$totalChunks,
-			$successes, $errors, $warnings) and count($errors) == 0) {
-			return array('final' => true, 'path' => $new_path, 'successes' => $successes, 'errors' => $errors, 'warnings' => $warnings);
+			$successes, $warnings)) {
+			return array('final' => true, 'path' => $new_path, 'successes' => $successes, 'errors' => $this->errors, 'warnings' => $warnings);
 		}
 
-		return array('final' => false, 'successes' => $successes, 'errors' => $errors, 'warnings' => $warnings);
+		return array('final' => false, 'successes' => $successes, 'errors' => $this->errors, 'warnings' => $warnings);
 	}
 
 	/**
@@ -117,7 +117,6 @@ class ResumableUpload {
 	 * @param  [type] $totalSize          [description]
 	 * @param  [type] $totalChunks        [description]
 	 * @param  [type] &$successes         [description]
-	 * @param  [type] &$errors            [description]
 	 * @param  [type] &$warnings          [description]
 	 * @return [type]                     [description]
 	 */
@@ -126,7 +125,7 @@ class ResumableUpload {
 		$extension,
 		$totalSize,
 		$totalChunks,
-		&$successes, &$errors, &$warnings) {
+		&$successes, &$warnings) {
 		// reality: count all the parts of this file
 		$parts = glob("$file_chunks_folder/*");
 		$successes[] = count($parts) . " of $totalChunks parts done so far in $file_chunks_folder";
@@ -145,7 +144,7 @@ class ResumableUpload {
 				$extension,
 				$totalSize,
 				$totalChunks,
-				$successes, $errors, $warnings) and count($errors) == 0) {
+				$successes, $warnings) and count($this->errors) == 0) {
 				$this->cleanUp($file_chunks_folder);
 
 				return $new_path;
@@ -176,8 +175,8 @@ class ResumableUpload {
 	 * @param string $totalSize - original file size (in bytes)
 	 */
 	public function createFileFromChunks($file_chunks_folder, $fileName, $extension, $total_size, $total_chunks,
-		&$successes, &$errors, &$warnings) {
-		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $fileName, $extension, $errors);
+		&$successes, &$warnings) {
+		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $fileName, $extension);
 
 		if (!$saveName) {
 			return false;
@@ -185,7 +184,7 @@ class ResumableUpload {
 
 		$fp = fopen($this->temp_upload_dir . "/" . $saveName . $extension, 'w');
 		if ($fp === false) {
-			$errors[] = 'cannot create the destination file';
+			$this->errors[] = 'cannot create the destination file';
 			return false;
 		}
 
@@ -202,16 +201,15 @@ class ResumableUpload {
 	 * @param  [type] $rel_path       [description]
 	 * @param  [type] $orig_file_name [description]
 	 * @param  [type] $extension      [description]
-	 * @param  [type] &$errors        [description]
 	 * @return [type]                 [description]
 	 */
-	public function getNextAvailableFilename($rel_path, $orig_file_name, $extension, &$errors) {
+	public function getNextAvailableFilename($rel_path, $orig_file_name, $extension) {
 
 		if (file_exists($rel_path . "/" . $orig_file_name . $extension)) {
 			$i = 0;
 			while (file_exists($rel_path . "/" . $orig_file_name . "_" . (++$i) . $extension) and $i < 10000) {}
 			if ($i >= 10000) {
-				$errors[] = "Can not create unique name for saving file " . $orig_file_name . $extension;
+				$this->errors = "Can not create unique name for saving file " . $orig_file_name . $extension;
 				return false;
 			}
 			return $orig_file_name . "_" . $i;

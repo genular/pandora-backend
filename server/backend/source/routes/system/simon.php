@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-30 12:48:57
+ * @Last Modified time: 2019-03-11 16:15:02
  */
 
 use Slim\Http\Request;
@@ -178,6 +178,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 	$resamples = [];
 	$queueID = 0;
+	$sparsity = 0;
 
 	if (file_exists($tempFilePath)) {
 		$totalDatasetsGenerated = 0;
@@ -228,7 +229,6 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 		$queueID = $DatasetQueue->createQueue($user_id, $submitData, $allOtherSelections, $allSelectedFeatures);
 
 		$sparsityUpdate = true;
-		$sparsity = 0;
 		if ($queueID !== 0) {
 			// CALCULATE INTERSECTIONS
 			foreach ($submitData["selectedOutcome"] as $selectedOutcome) {
@@ -252,20 +252,22 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 				foreach ($resamples as $resampleGroupKey => $resampleGroupValue) {
 
 					foreach ($resampleGroupValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
-						$initial_path = $resampleGroupDataValue["resamplePath"];
-						// Validate File Header and rename it t standardize column names!
-						$resampleFileDetails = $Helpers->validateCSVFileHeader($initial_path);
-						$resampleFileDetails["details"] = $mainFileDetails["details"];
+						$uploaded_path = $resampleGroupDataValue["resamplePath"];
+						// Validate File Header and rename it to standardize column names!
+						$details = $Helpers->validateCSVFileHeader($uploaded_path);
+						$details["details"] = $mainFileDetails["details"];
 
-						// Foreach resample dataset TAR GZ insert into DB, get new ID and UPLOAD!
-						list($renamed_path, $gzipped_path) = $Helpers->compressPath($initial_path);
+						$renamed_path = $Helpers->renamePathToHash($details);
+						// Compress original file to GZ archive format
+						$gzipped_path = $Helpers->compressPath($renamed_path);
+						// Upload compressed file to the Storage
+						$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads/queue/" . $queueID);
+						// Save reference to Database
+						$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
 
-						// 1. Upload to cloud
-						$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads/datasets/" . $queueID);
-
-						// 3. Delete local file
-						if (file_exists($initial_path)) {
-							@unlink($initial_path);
+						// Delete and cleanup local files
+						if (file_exists($uploaded_path)) {
+							@unlink($uploaded_path);
 						}
 						if (file_exists($renamed_path)) {
 							@unlink($renamed_path);
@@ -274,16 +276,13 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 							@unlink($gzipped_path);
 						}
 
-						$fileID = $FileSystem->insertFileToDatabase($user_id, $resampleFileDetails, $initial_path, $renamed_path, $remote_path, "uploads/datasets/" . $queueID);
-						$resampleID = $DatasetResamples->createResample($queueID, $fileID, $resampleGroupDataValue, $resampleGroupValue["outcome"], $submitData);
+						$resampleID = $DatasetResamples->createResample($queueID, $file_id, $resampleGroupDataValue, $resampleGroupValue["outcome"], $submitData);
 
 						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["id"] = $resampleID;
-						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["fileID"] = $fileID;
+						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["fileID"] = $file_id;
 
 						unset($resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["listFeatures"]);
 						unset($resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"]);
-						// Create/Calculate Dataset Proportions
-						// This is done in R when training and testing sets are spliced
 					}
 				}
 			} else {
@@ -298,7 +297,14 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	}
 	$time_elapsed_secs = microtime(true) - $start;
 
-	return $response->withJson(["success" => $success, "message" => array("queueID" => $queueID, "sparsity" => $sparsity, "resamples" => $resamples, "message" => $message), "time_elapsed_secs" => $time_elapsed_secs, "initial_db_connect" => $initial_db_connect]);
+	return $response->withJson(["success" => $success,
+		"message" => array(
+			"queueID" => $queueID,
+			"sparsity" => $sparsity,
+			"resamples" => $resamples,
+			"message" => $message),
+		"time_elapsed_secs" => $time_elapsed_secs,
+		"initial_db_connect" => $initial_db_connect]);
 
 });
 

@@ -20,7 +20,10 @@ if(!(SERVER_NAME %in% names(simonConfig))){
 }
 
 DATA_PATH <- simonConfig[[SERVER_NAME]]$data_path
-ifelse(!dir.exists(DATA_PATH), dir.create(DATA_PATH), FALSE)
+if(!dir.exists(DATA_PATH)){
+    dir.create(DATA_PATH, showWarnings = FALSE, recursive = TRUE, mode = "0777")
+    Sys.chmod(DATA_PATH, "777", use_umask = FALSE)
+}
 
 UPTIME_PID <- paste0(DATA_PATH,"/uptime_",SERVER_NAME,".pid")
 

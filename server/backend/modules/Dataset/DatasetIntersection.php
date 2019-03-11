@@ -4,19 +4,21 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:27:29
+ * @Last Modified time: 2019-03-11 16:05:03
  */
 namespace SIMON\Dataset;
 
 use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\Writer;
+use Noodlehaus\Config as Config;
 use \Monolog\Logger;
 use \SIMON\Helpers\Helpers as Helpers;
 
 class DatasetIntersection {
 
 	protected $logger;
+	protected $Config;
 	protected $Helpers;
 
 	public $outcomeColumn = "";
@@ -25,13 +27,17 @@ class DatasetIntersection {
 
 	public function __construct(
 		Logger $logger,
+		Config $Config,
 		Helpers $Helpers
 	) {
 
 		$this->logger = $logger;
+		$this->Config = $Config;
 		$this->Helpers = $Helpers;
-		// Log anything.
-		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed");
+
+		$this->temp_upload_dir = $this->Config->get('default.backend.data_path') . "/tmp/uploads";
+
+		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed: " . $this->temp_upload_dir);
 
 		if (!file_exists($this->temp_upload_dir)) {
 			mkdir($this->temp_upload_dir, 0777, true);

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-08 14:45:36
+ * @Last Modified time: 2019-03-11 16:09:43
  */
 
 use Slim\Http\Request;
@@ -41,38 +41,44 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 				$message[] = 'Tmp file not found';
 				continue;
 			}
-			$initial_path = $file['tmp_name'];
+			$uploaded_path = $file['tmp_name'];
 			$filename = (isset($file['filename'])) ? $file['filename'] : $file['name'];
 			// Check if chunk upload
 			if (isset($post['dzuuid'])) {
-				$chunks_res = $ResumableUpload->resumableUpload($initial_path, $filename, $post);
+				$chunks_res = $ResumableUpload->resumableUpload($uploaded_path, $filename, $post);
 				if ($chunks_res['final'] === true) {
 					// Last chunk uploaded and file constructed
 					$success = true;
-					$initial_path = $chunks_res['path'];
+					$uploaded_path = $chunks_res['path'];
+					$message[] = 'File uploaded in chunks';
 				}
 			} else {
 				// File is not chunk is complete file
-				$initial_path = $ResumableUpload->moveUploadedFile($initial_path, $filename);
-				if ($initial_path !== false) {
+				$uploaded_path = $ResumableUpload->moveUploadedFile($uploaded_path, $filename);
+				if ($uploaded_path !== false) {
 					$success = true;
+					$message[] = 'File uploaded as whole';
 				}
 			}
 		}
 	}
+
 	// File upload is finished!
 	if ($success === true) {
-		// Validate File Header and rename it t standardize column names!
-		$details = $Helpers->validateCSVFileHeader($initial_path);
-		// Compress original file tot GZ
-		list($renamed_path, $gzipped_path) = $Helpers->compressPath($initial_path);
-		// Upload compressed file to the S3 Storage
+		// Validate File Header and rename it to standardize column names!
+		$details = $Helpers->validateCSVFileHeader($uploaded_path);
+
+		$renamed_path = $Helpers->renamePathToHash($details);
+		// Compress original file to GZ archive format
+		$gzipped_path = $Helpers->compressPath($renamed_path);
+		// Upload compressed file to the Storage
 		$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
 		// Save reference to Database
-		$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $initial_path, $renamed_path, $remote_path, "uploads");
+		$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
+
 		// Delete and cleanup local files
-		if (file_exists($initial_path)) {
-			@unlink($initial_path);
+		if (file_exists($uploaded_path)) {
+			@unlink($uploaded_path);
 		}
 		if (file_exists($renamed_path)) {
 			@unlink($renamed_path);
@@ -126,9 +132,9 @@ $app->get('/backend/system/filesystem/list/{fileID:.*}', function (Request $requ
 		$selectedDirectory = $submitData['selectedDirectory'];
 	}
 
-	$message = $FileSystem->getAllFilesByUserID($user_id, "uploads", false);
+	$data = $FileSystem->getAllFilesByUserID($user_id, "uploads", false);
 
-	return $response->withJson(["success" => $success, "message" => $message]);
+	return $response->withJson(["success" => $success, "message" => $data]);
 
 });
 
@@ -159,7 +165,7 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 			$file_details = $FileSystem->getFileDetails($fileID, false);
 
 			if ($file_details["details"] && $user_id == $file_details["uid"]) {
-				$message = $FileSystem->deleteFileByID($fileID, $file_details["path_remote"]);
+				$message = $FileSystem->deleteFileByID($fileID, $file_details["file_path"]);
 				if ($message === false) {
 					$success = false;
 				}
@@ -224,8 +230,8 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		$downloadLinks = [];
 		foreach ($downloadIDs as $fileID) {
 			$fileDetails = $FileSystem->getFileDetails($fileID, false);
-			if (isset($fileDetails['path_remote'])) {
-				$url = $FileSystem->getDownloadLink($fileDetails['path_remote']);
+			if (isset($fileDetails['file_path'])) {
+				$url = $FileSystem->getDownloadLink($fileDetails['file_path']);
 				$downloadLinks[] = $url;
 			}
 		}

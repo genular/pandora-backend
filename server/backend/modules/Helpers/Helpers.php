@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-08 14:38:53
+ * @Last Modified time: 2019-03-11 15:14:00
  */
 namespace SIMON\Helpers;
 
@@ -66,22 +66,35 @@ class Helpers {
 	}
 
 	/**
-	 * [compressPath description]
-	 * @param  [type] $initial_path [description]
-	 * @return [type]               [description]
+	 * [renamePath]
+	 * @param  [type] $file_from
+	 * @param  [type] $file_to
+	 * @return [type]
 	 */
-	public function compressPath($initial_path) {
-		$renamed_path = dirname($initial_path) . "/" . md5(basename($initial_path));
-		rename($initial_path, $renamed_path);
+	public function renamePathToHash($path_parts) {
+		$file_from = $path_parts['dirname'] . "/" . $path_parts['basename'];
+		$file_to = $path_parts['dirname'] . "/" . md5($path_parts['basename']);
 
-		// 0. GZ the file
-		$tar_cmd = "tar -zcvf " . $renamed_path . ".tar.gz -C " . dirname($renamed_path) . " " . basename($renamed_path);
+		if (!rename($file_from, $file_to)) {
+			$file_to = false;
+		}
 
-		$gzipped_path = exec($tar_cmd);
-		$gzipped_path = $renamed_path . ".tar.gz";
-
-		return array($renamed_path, $gzipped_path);
+		return $file_to;
 	}
+
+	/**
+	 * [compressPath description]
+	 * @param  [type] $file_from
+	 * @return [type]
+	 */
+	public function compressPath($file_from) {
+		// 1. Archive file
+		$tar_cmd = "tar -zcvf " . $file_from . ".tar.gz -C " . dirname($file_from) . " " . basename($file_from);
+		$gzipped = exec($tar_cmd);
+
+		return $file_from . ".tar.gz";
+	}
+
 	/**
 	 * [normalizeDataNames description]
 	 * @param  [type] $string [description]
@@ -129,12 +142,14 @@ class Helpers {
 	 */
 	public function validateCSVFileHeader($filePath) {
 
-		$info = pathinfo($filePath);
+		$path_parts = pathinfo($filePath);
 		$data = array(
-			'info' => $info,
-			'filename' => $info['filename'],
-			'item_type' => (substr($info['filename'], 0, 10) !== "genSysFile") ? 1 : 2,
-			'extension' => isset($info['extension']) ? '.' . strtolower($info['extension']) : '',
+			'info' => $path_parts,
+			'dirname' => $path_parts['dirname'],
+			'basename' => $path_parts['basename'],
+			'filename' => $path_parts['filename'],
+			'item_type' => (substr($path_parts['filename'], 0, 10) !== "genSysFile") ? 1 : 2,
+			'extension' => isset($path_parts['extension']) ? '.' . strtolower($path_parts['extension']) : '',
 			'mime_type' => mime_content_type($filePath),
 			'filesize' => filesize($filePath),
 			'file_hash' => hash_file('sha256', $filePath),

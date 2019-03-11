@@ -1,10 +1,7 @@
 # @Author: LogIN-
 # @Date:   2019-02-26 13:27:17
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-03-06 15:06:20
-# 
-# 
-# Example: https://blog.sleeplessbeastie.eu/2018/04/11/how-to-create-base-docker-image/
+# @Last Modified time: 2019-03-11 08:16:01
 
 FRESH_START=y
 

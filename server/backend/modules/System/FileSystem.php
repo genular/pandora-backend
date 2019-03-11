@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-08 16:25:29
+ * @Last Modified time: 2019-03-11 16:06:55
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -42,9 +42,10 @@ class FileSystem {
 		$this->logger = $logger;
 		$this->Config = $Config;
 		$this->Cache = $Cache;
-		$this->temp_download_dir = $this->Config->get('default.backend.data_path') . "/tmp";
 
-		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed");
+		$this->temp_download_dir = $this->Config->get('default.backend.data_path') . "/tmp/downloads";
+
+		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->Config->get('default.backend.data_path'));
 
 		if (!file_exists($this->Config->get('default.backend.data_path'))) {
 			mkdir($this->Config->get('default.backend.data_path'));
@@ -174,26 +175,25 @@ class FileSystem {
 	 * Insert remote file reference into local database
 	 *
 	 * @param string $user_id Database ID of the current user
-	 * @param string $path_initial eg /tmp/filename.txt
-	 * @param string $path_renamed eg /tmp/filename
-	 * @param string $upload_directory
+	 * @param array $details file-info array
+	 * @param string $remote_path
 	 */
-	public function insertFileToDatabase($user_id, $details, $path_initial, $path_renamed, $path_remote, $upload_directory) {
+	public function insertFileToDatabase($user_id, $details, $remote_path) {
 		// Display user friendly name for system files
 		if ($details['item_type'] === 2) {
 			if (substr($details['filename'], 0, 17) !== "genSysFile_queue_") {
 				$details['filename'] = str_replace("genSysFile_queue_", "", $details['filename']);
 			}
 		}
+
 		$this->database->insert($this->table_name, [
 			"uid" => $user_id,
 			"ufsid" => 1,
 			"item_type" => $details['item_type'],
-			"path_initial" => $path_initial,
-			"path_renamed" => $path_renamed,
-			"path_remote" => $path_remote,
+			"file_path" => $remote_path,
+			"base_directory" => $this->Config->get('default.backend.data_path'),
+			"filename" => md5($details['basename']),
 			"display_filename" => $details['filename'],
-			"upload_directory" => $upload_directory,
 			"size" => $details['filesize'],
 			"extension" => $details['extension'],
 			"mime_type" => $details['mime_type'],
@@ -205,18 +205,33 @@ class FileSystem {
 
 		return $this->database->id();
 	}
+	/**
+	 * [deleteFileByID description]
+	 * @param  [type] $file_id          [description]
+	 * @param  [type] $remote_file_path [description]
+	 * @return [type]                   [description]
+	 */
 	public function deleteFileByID($file_id, $remote_file_path) {
 		$response = false;
 		$data = $this->database->delete($this->table_name, [
 			"id" => $file_id,
 		]);
 		if ($data->rowCount() > 0) {
-			$response = $this->filesystem->delete($remote_file_path);
+			if ($this->filesystem->has($remote_file_path)) {
+				$response = $this->filesystem->delete($remote_file_path);
+			}
 		}
 
 		return ($response);
 	}
 
+	/**
+	 * [getAllFilesByUserID description]
+	 * @param  [type]  $user_id          [description]
+	 * @param  [type]  $upload_directory [description]
+	 * @param  boolean $cache            [description]
+	 * @return [type]                    [description]
+	 */
 	public function getAllFilesByUserID($user_id, $upload_directory, $cache = true) {
 		$cache_key = $this->table_name . "_getAllFilesByUserID_" . md5($user_id . $upload_directory);
 		$details = $this->Cache->getArray($cache_key);
@@ -233,7 +248,7 @@ class FileSystem {
 			$conditions = [
 				'uid' => $user_id,
 				'item_type' => 1,
-				'upload_directory[~]' => $upload_directory,
+				'file_path[~]' => $upload_directory,
 			];
 			$details = $this->database->select($this->table_name, $columns, $conditions);
 			$this->Cache->setArray($cache_key, $details, 5000);
@@ -264,7 +279,7 @@ class FileSystem {
 		$details = $this->getFileDetails($file_id);
 
 		// Retrieve a read-stream
-		$stream = $this->filesystem->readStream($details["path_remote"]);
+		$stream = $this->filesystem->readStream($details["file_path"]);
 		$contents = stream_get_contents($stream, 1000000);
 		if (is_resource($contents)) {
 			fclose($contents);
@@ -278,32 +293,33 @@ class FileSystem {
 	/**
 	 * Upload file on remote filesystem
 	 * @param string $user_id Database ID of the current user
-	 * @param string $local_path eg /tmp/filename.txt
+	 * @param string $file_from eg /tmp/filename.txt
 	 * @param string $upload_directory Relative directory name: eg uploads
 	 */
-	public function uploadFile($user_id, $local_path, $upload_directory) {
+	public function uploadFile($user_id, $file_from, $upload_directory) {
 
-		$info = pathinfo($local_path);
-		$extension = isset($info['extension']) ? '.' . strtolower($info['extension']) : '';
-		$filename = $info['filename'];
+		$path_parts = pathinfo($file_from);
 
-		$remote_path = $user_id . "/" . $upload_directory . "/" . $filename . $extension;
+		$extension = isset($path_parts['extension']) ? '.' . strtolower($path_parts['extension']) : '';
+		$file_to = $user_id . "/" . $upload_directory . "/" . $path_parts['filename'] . $extension;
 
-		$exists = $this->filesystem->has($remote_path);
+		$exists = $this->filesystem->has($file_to);
+
 		if ($exists === true) {
-			$remote_path = $user_id . "/" . $upload_directory . "/" . crc32(round(microtime(true) * 1000)) . "_" . $filename . $extension;
+			$file_to = $user_id . "/" . $upload_directory . "/" . crc32(round(microtime(true) * 1000)) . "_" . $path_parts['filename'] . $extension;
 		}
 
-		$stream = fopen($local_path, 'r+');
+		$stream = fopen($file_from, 'r+');
 		$this->filesystem->writeStream(
-			$remote_path,
+			$file_to,
 			$stream
 		);
+
 		if (is_resource($stream)) {
 			fclose($stream);
 		}
 
-		return $remote_path;
+		return $file_to;
 	}
 
 	/**
@@ -316,8 +332,8 @@ class FileSystem {
 		$remotePath = $input;
 		if (is_numeric($input)) {
 			$details = $this->getFileDetails($input, false);
-			if (isset($details["path_remote"])) {
-				$remotePath = $details["path_remote"];
+			if (isset($details["file_path"])) {
+				$remotePath = $details["file_path"];
 			} else {
 				return false;
 			}

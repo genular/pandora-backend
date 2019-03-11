@@ -2,9 +2,9 @@
 -- version 5.0.0-dev
 -- https://www.phpmyadmin.net/
 --
--- Host: cluster.genular.net:3307
--- Generation Time: Feb 01, 2019 at 01:28 AM
--- Server version: 10.1.29-MariaDB-6
+-- Host: 95.216.176.70:3307
+-- Generation Time: Mar 11, 2019 at 11:38 PM
+-- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -21,26 +21,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `genular`
 --
-
--- --------------------------------------------------------
-
---
--- Table structure for table `dataset_database`
---
-
-CREATE TABLE `dataset_database` (
-  `id` int(11) NOT NULL,
-  `uid` int(11) DEFAULT NULL COMMENT 'User ID of the dataset uploader',
-  `title` varchar(255) DEFAULT NULL,
-  `description_latex` text COMMENT 'LaTeX formatted description of the dataset',
-  `description_html` text,
-  `rows` int(11) DEFAULT NULL COMMENT 'Total number of rows in the dataset',
-  `columns` int(11) DEFAULT NULL COMMENT 'Number of columns in the dataset',
-  `hash` char(32) DEFAULT NULL COMMENT 'MD5 hash of the data csv file, this hash is also filename',
-  `sparsity` int(11) DEFAULT NULL COMMENT 'Sparsity of a dataframe',
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP,
-  `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Database of example datasets that once can use';
 
 -- --------------------------------------------------------
 
@@ -77,12 +57,12 @@ CREATE TABLE `dataset_queue` (
   `sparsity` float DEFAULT NULL,
   `packages` longtext COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n	packageID: \n	serverGroup:\n}',
   `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors',
-  `processing_time` int(11) DEFAULT NULL COMMENT 'Total processing time in miliseconds',
+  `processing_time` int(11) DEFAULT NULL COMMENT 'Total processing time - miliseconds',
   `servers_total` int(11) DEFAULT '0' COMMENT 'Total number of created cloud servers that needs to do processing',
   `created` datetime DEFAULT NULL COMMENT 'Initial Created time',
   `created_ip_address` varchar(15) DEFAULT NULL,
   `updated` datetime DEFAULT NULL COMMENT 'Updated time',
-  `updated_ip_address` varchar(15) DEFAULT NULL COMMENT 'Sould we do dataset intersection extraction or not'
+  `updated_ip_address` varchar(15) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Main Model Processing JOB/task queue';
 
 -- --------------------------------------------------------
@@ -144,9 +124,9 @@ CREATE TABLE `models` (
   `mpid` int(11) DEFAULT NULL COMMENT 'Model Packages ID',
   `mv_hash` char(32) DEFAULT NULL COMMENT 'models_variables MD5 signature hash',
   `status` tinyint(6) DEFAULT NULL COMMENT 'Analysis status\n0 - Model Training or Predict Failure\n1- Sucess\n3- In progress',
-  `error` longtext COMMENT 'Newline delimited list of errors',
-  `training_time` float DEFAULT NULL COMMENT 'Only model training time in sec',
-  `processing_time` int(11) DEFAULT NULL COMMENT 'Total models processing time. Training, testing etc.. in ms',
+  `error` longtext COMMENT 'JSON encoded array of errors',
+  `training_time` int(11) DEFAULT NULL COMMENT 'Only model training time - miliseconds',
+  `processing_time` int(11) DEFAULT NULL COMMENT 'Total models processing time. Training, testing etc.. - miliseconds',
   `credits` int(11) DEFAULT NULL COMMENT 'Used credits in specific analysis',
   `created` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'time created',
   `updated` datetime DEFAULT CURRENT_TIMESTAMP
@@ -257,6 +237,92 @@ CREATE TABLE `organization_details` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `public_databases`
+--
+
+CREATE TABLE `public_databases` (
+  `id` int(11) NOT NULL,
+  `uid` int(11) DEFAULT NULL COMMENT 'User ID of the dataset uploader',
+  `title` varchar(255) DEFAULT NULL,
+  `description` text COMMENT 'Description of the dataset.\nMust have following sections: Description, Format, Source',
+  `format` text,
+  `source` text,
+  `references` text,
+  `example` text COMMENT 'This column must contain CSV header and 5 rows of values',
+  `rows` int(11) DEFAULT NULL COMMENT 'Total number of rows in the dataset',
+  `columns` int(11) DEFAULT NULL COMMENT 'Number of columns in the dataset',
+  `hash` char(32) DEFAULT NULL COMMENT 'MD5 hash of the data csv file, this hash is also filename',
+  `sparsity` float DEFAULT NULL COMMENT 'Sparsity of a dataframe',
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP,
+  `created` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Database of example datasets that once can use';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `public_databases_buckets`
+--
+
+CREATE TABLE `public_databases_buckets` (
+  `id` int(11) NOT NULL,
+  `pdmid` int(11) DEFAULT NULL,
+  `internal_id` int(11) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `variable` varchar(255) DEFAULT NULL,
+  `mesurment_value` int(11) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Bucket calculation for databases';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `public_databases_mappings`
+--
+
+CREATE TABLE `public_databases_mappings` (
+  `id` int(11) NOT NULL,
+  `pdid` int(11) DEFAULT NULL,
+  `original` varchar(255) DEFAULT NULL,
+  `position` int(11) DEFAULT NULL,
+  `remapped` varchar(255) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Column mappings for the dataset';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `public_databases_statistics`
+--
+
+CREATE TABLE `public_databases_statistics` (
+  `id` int(11) NOT NULL,
+  `pdmid` int(11) DEFAULT NULL,
+  `variable` varchar(45) DEFAULT NULL,
+  `mesurment_value` varchar(45) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Column statistics for the given dataset';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `public_databases_votes`
+--
+
+CREATE TABLE `public_databases_votes` (
+  `id` int(11) NOT NULL,
+  `pdid` int(11) DEFAULT NULL COMMENT 'Public Databases ID',
+  `uid` int(11) DEFAULT NULL,
+  `direction` tinyint(1) DEFAULT NULL COMMENT 'Vote direction. 1/-1',
+  `updated` datetime DEFAULT CURRENT_TIMESTAMP,
+  `created` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Upvote/Downvote table for databases';
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `servers`
 --
 
@@ -342,16 +408,15 @@ CREATE TABLE `users_files` (
   `id` int(11) NOT NULL,
   `uid` int(11) DEFAULT NULL COMMENT 'User ID',
   `ufsid` int(11) DEFAULT NULL COMMENT 'users_file_servers_id connection, if is NULL default is used',
-  `item_type` tinyint(6) DEFAULT NULL COMMENT '1 - user file\n2 - system file',
-  `path_initial` text,
-  `path_renamed` text COMMENT 'Item name without extension',
-  `path_remote` text,
-  `display_filename` varchar(255) DEFAULT NULL,
-  `upload_directory` varchar(255) DEFAULT NULL,
+  `item_type` tinyint(6) DEFAULT NULL COMMENT '1 - user uploaded the file\n2 - system created file (cron, data partitions etc.)',
+  `file_path` text COMMENT 'Full path to the file with a filename, without base directory',
+  `base_directory` varchar(255) DEFAULT NULL COMMENT 'Upload base directory',
+  `filename` char(32) DEFAULT NULL COMMENT 'MD5 safe filename ',
+  `display_filename` varchar(255) DEFAULT NULL COMMENT 'Display filename',
   `size` int(11) DEFAULT '0' COMMENT 'Filesize in bytes',
   `extension` varchar(25) DEFAULT NULL COMMENT 'file extension',
   `mime_type` varchar(75) DEFAULT NULL,
-  `details` longtext COMMENT 'File details currently in following format:\n\n{\n	"header": {\n		"raw": "",\n		"formatted": ""\n	}\n}',
+  `details` longtext COMMENT 'File details currently in following format:\n{\n	"header": {\n		"original": "",\n		"formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n	}\n}',
   `file_hash` char(64) DEFAULT NULL COMMENT 'SHA256 HASH of a specific file!',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL COMMENT 'users_file_servers_id'
@@ -402,14 +467,6 @@ CREATE TABLE `users_sessions` (
 --
 -- Indexes for dumped tables
 --
-
---
--- Indexes for table `dataset_database`
---
-ALTER TABLE `dataset_database`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `hash_UNIQUE` (`hash`);
-ALTER TABLE `dataset_database` ADD FULLTEXT KEY `description` (`description_latex`);
 
 --
 -- Indexes for table `dataset_proportions`
@@ -496,6 +553,44 @@ ALTER TABLE `organization_details`
   ADD UNIQUE KEY `oid_UNIQUE` (`oid`);
 
 --
+-- Indexes for table `public_databases`
+--
+ALTER TABLE `public_databases`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `hash_UNIQUE` (`hash`);
+ALTER TABLE `public_databases` ADD FULLTEXT KEY `search_idx` (`description`,`format`,`source`,`references`,`title`);
+
+--
+-- Indexes for table `public_databases_buckets`
+--
+ALTER TABLE `public_databases_buckets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `pdmid_idx` (`pdmid`);
+
+--
+-- Indexes for table `public_databases_mappings`
+--
+ALTER TABLE `public_databases_mappings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_idx` (`pdid`,`position`);
+
+--
+-- Indexes for table `public_databases_statistics`
+--
+ALTER TABLE `public_databases_statistics`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_idx` (`pdmid`,`variable`),
+  ADD KEY `pdmid_idx` (`pdmid`);
+
+--
+-- Indexes for table `public_databases_votes`
+--
+ALTER TABLE `public_databases_votes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_idx` (`pdid`,`uid`),
+  ADD KEY `pdid_idx` (`pdid`);
+
+--
 -- Indexes for table `servers`
 --
 ALTER TABLE `servers`
@@ -530,7 +625,7 @@ ALTER TABLE `users_files`
   ADD PRIMARY KEY (`id`),
   ADD KEY `users_files_uidx` (`uid`);
 ALTER TABLE `users_files` ADD FULLTEXT KEY `display_filename_idx` (`display_filename`);
-ALTER TABLE `users_files` ADD FULLTEXT KEY `upload_directory_idx` (`upload_directory`);
+ALTER TABLE `users_files` ADD FULLTEXT KEY `base_directory_idx` (`base_directory`);
 
 --
 -- Indexes for table `users_files_servers`
@@ -555,12 +650,6 @@ ALTER TABLE `users_sessions`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `dataset_database`
---
-ALTER TABLE `dataset_database`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `dataset_proportions`
@@ -626,6 +715,36 @@ ALTER TABLE `organization`
 -- AUTO_INCREMENT for table `organization_details`
 --
 ALTER TABLE `organization_details`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `public_databases`
+--
+ALTER TABLE `public_databases`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `public_databases_buckets`
+--
+ALTER TABLE `public_databases_buckets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `public_databases_mappings`
+--
+ALTER TABLE `public_databases_mappings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `public_databases_statistics`
+--
+ALTER TABLE `public_databases_statistics`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `public_databases_votes`
+--
+ALTER TABLE `public_databases_votes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

@@ -26,6 +26,9 @@ options(stringsAsFactors=FALSE)
 ## request a new limit, in Mb
 ## memory.limit(size = 48000)
 
+## Dataset queue status
+global_status <- 6
+
 ## Set 7 days time limit!
 # setTimeLimit(cpu = 604800, elapsed = 604800, transient=FALSE)
 globalTimeLimit <- 300
@@ -187,6 +190,11 @@ for (dataset in datasets) {
 
     filePathTraining <- downloadDataset(dataset$remotePathTrain, FALSE)
     filePathTesting <- downloadDataset(dataset$remotePathTest, FALSE)
+
+    if(filePathTraining == FALSE || filePathTraining == FALSE){
+        cat(paste0("===> ERROR: SKIPPING Dataset processing cannot locate Training or Testing files \r\n"))
+        next()
+    }
 
     cat(paste0("===> INFO: Reading datasets: Training: ",dataset$remotePathTrain," Testing: ",dataset$remotePathTest," \n"))
 

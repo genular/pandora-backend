@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:21
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-13 09:28:08
+ * @Last Modified time: 2019-03-11 15:21:44
  */
 
 use Slim\Http\Request;
@@ -120,12 +120,15 @@ $app->get('/backend/dataset/import/public/import/{submitData:.*}', function (Req
 			}
 			// Validate File Header and rename it t standardize column names!
 			$details = $Helpers->validateCSVFileHeader($initial_path);
-			// Compress original file tot GZ
-			list($renamed_path, $gzipped_path) = $Helpers->compressPath($initial_path);
-			// Upload compressed file to the S3 Storage
+
+			$renamed_path = $Helpers->renamePathToHash($details);
+			// Compress original file to GZ archive format
+			$gzipped_path = $Helpers->compressPath($renamed_path);
+			// Upload compressed file to the Storage
 			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
 			// Save reference to Database
-			$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $initial_path, $renamed_path, $remote_path, "uploads");
+			$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
+
 			// Delete and cleanup local files
 			if (file_exists($initial_path)) {
 				@unlink($initial_path);
