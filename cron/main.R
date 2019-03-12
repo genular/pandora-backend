@@ -337,7 +337,7 @@ for (dataset in datasets) {
         results_varImportance <- NULL
 
         if (trainModel$status == TRUE) {
-            cat(paste0("===> INFO: Training finished: ",model," at: ", Sys.time()," \r\n"))
+            cat(paste0("===> INFO: Training of ",model," finished at ", Sys.time(),". Starting predictions: \r\n"))
 
             ## Test prediction with prediction dataset on our newly training model
             prediction <- caretPredict(trainModel$data, modelData$testing)

@@ -89,10 +89,7 @@ simon$handle$plots$heatmap$renderPlot <- expression(
         data <- data[, names(data) %in% c(settings$selectedRows, settings$selectedColumns)]
 
         tmp <- tempfile()
-        svg(tmp,
-            width = 8, height = 8, pointsize = 12,
-            onefile = TRUE, family = "Arial", bg = "white",
-            antialias = "default")
+        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
         print(plot.heatmap(data, 
                             resampleDetails,

@@ -27,9 +27,7 @@ simon$filter$authentication <- function(req, res){
 
     if("HTTP_X_TOKEN" %in% names(req)){
         auth_token <- req$HTTP_X_TOKEN
-        print("test 1")
         results <- db.checkUserAuthToken(auth_token)
-        print("test 2")
     }
 
     if(!is.null(auth_token) && nrow(results) > 0){

@@ -51,6 +51,8 @@ set.seed(1337)
 ## If warn is two or larger all warnings are turned into errors.
 ## https://stat.ethz.ch/R-manual/R-devel/library/base/html/options.html
 options(warn=1, warning.length=8170)
+options(scipen=999)  # turn-off scientific notation like 1e+48
+
 error_path <- paste0(DATA_PATH,"/error_dump_", SERVER_NAME)
 options(error = quote(dump.frames(error_path, TRUE)))
 

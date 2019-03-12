@@ -50,7 +50,7 @@ simon$handle$plots$summary$renderPlot <- expression(
 
             ## 1. BOX PLOT
             tmp <- tempfile()
-            svg(tmp,  width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "mono", bg = "white", antialias = "default")
+            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
                 plot <- lattice::bwplot(resamps, metric = c("Accuracy", "Sensitivity", "Specificity", "F1", "Recall", "AUC"), scales = list(x = list(relation="free")), par.settings = my.settings)
                 print(plot)
             dev.off()

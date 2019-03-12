@@ -102,10 +102,7 @@ simon$handle$plots$correlation$renderPlot <- expression(
 
         # Modify the default png size.
         tmp <- tempfile() 
-        svg(tmp,
-            width = 8, height = 8, pointsize = 12,
-            onefile = TRUE, family = "Arial", bg = "white",
-            antialias = "default")
+        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
         if(settings$confidence$enable == TRUE) {
           print(do.call(corrplot, c(list(type = settings$plot_type), args)))

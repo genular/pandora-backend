@@ -51,15 +51,13 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
 
         # Modify the default image size.
         tmp <- tempfile()
-        svg(tmp,
-            width = 8, height = 8, pointsize = 12,
-            onefile = TRUE, family = "Arial", bg = "white",
-            antialias = "default")
+        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
         theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
         g_plot <- ggplot(data, aes_string(x = resampleDetails[[1]]$outcome$remapped, fill = resampleDetails[[1]]$outcome$remapped, y = "value")) +
-                        geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5, dotsize=settings$dotsize) + 
+                        ## https://ggplot2.tidyverse.org/reference/geom_dotplot.html
+                        geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5, dotsize=settings$dotsize, colour=NA, na.rm = TRUE) + 
                         stat_summary(geom = "crossbar", width=0.65, fatten=0, color="black", fun.data = function(x){ return(c(y=median(x), ymin=median(x), ymax=median(x))) }) +
                         #coord_cartesian(ylim=c(min(data$value), max(data$value) )) + 
                         facet_wrap(~variable, scales="free", labeller = labeller(variable = function(inputValue) {

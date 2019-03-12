@@ -9,10 +9,11 @@ initilizeDatasetDirectory <- function(dataset){
     for (output_dir in output_directories) {
         full_path <- file.path(JOB_DIR, output_dir)
 
-        ## Lets split path into vector of all recursive paths
+        ## Lets split path into vector of all recursive paths and create one by one
         parts <- unlist(strsplit(full_path, "/", fixed = FALSE, perl = FALSE, useBytes = FALSE))
         parts <- parts[parts != ""]
 
+        ## Construct the vector
         paths <- c()
         i <- 1
         for (part in parts) {
@@ -21,6 +22,7 @@ initilizeDatasetDirectory <- function(dataset){
             paths <- c(paths, path)
             i <- i +1
         }
+        ## Loop paths and create directory
         for(path in unique(paths)){
             if(!dir.exists(path)){
                 dir.create(path, showWarnings = FALSE, recursive = TRUE, mode = "0777")
