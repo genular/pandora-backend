@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-12 11:01:52
+ * @Last Modified time: 2019-03-12 16:03:05
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -378,31 +378,5 @@ class FileSystem {
 		}
 
 		return $file_path;
-	}
-
-	/**
-	 * Initialize user workspace directory on file-system
-	 * @param  [int] $user_id [description]
-	 * @return [string]
-	 */
-	public function initilizeUserWorkspace($user_id) {
-		$workspace_directory = $user_id;
-
-		$sub_directories = array('tasks', 'uploads', 'public');
-
-		// Create user workspace sub-directories
-		foreach ($sub_directories as $sub_directory) {
-			$path = $workspace_directory . "/" . $sub_directory;
-			$exists = $this->filesystem->has($path);
-
-			if (!$exists) {
-				$response = $this->filesystem->createDir($path);
-				if ($this->storage_type === "local") {
-					chmod($path, 0777);
-				}
-			}
-		}
-
-		return $workspace_directory;
 	}
 }

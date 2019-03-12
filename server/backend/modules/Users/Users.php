@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-02-06 11:02:11
+ * @Last Modified time: 2019-03-12 16:04:33
  */
 namespace SIMON\Users;
 
@@ -176,16 +176,12 @@ class Users {
 				$this->logger->addInfo("User users_organization created: " . $user_id);
 			}
 
-			$workspace_directory = $this->FileSystem->initilizeUserWorkspace($user_id);
-
 			$this->database->insert("users_details", [
 				"uid" => $user_id,
 				"first_name" => $firstName,
 				"last_name" => $lastName,
 				"email" => $email_adress,
 				"phone" => $phoneNumber,
-				"profile_picture" => null,
-				"workspace_directory" => $workspace_directory,
 				"account_type" => $account_type,
 				"created" => Medoo::raw("NOW()"),
 				"updated" => Medoo::raw("NOW()"),
@@ -227,7 +223,6 @@ class Users {
 			"users_details.last_name",
 			"users_details.email",
 			"users_details.phone",
-			"users_details.profile_picture",
 			"users_details.account_type [Int]",
 			"users_organization.oid [Int]",
 		];

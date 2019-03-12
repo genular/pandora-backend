@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 95.216.176.70:3307
--- Generation Time: Mar 11, 2019 at 11:38 PM
+-- Generation Time: Mar 13, 2019 at 12:05 AM
 -- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
@@ -85,7 +85,7 @@ CREATE TABLE `dataset_resamples` (
   `selectedOptions` longtext COMMENT 'JSON Remapped Predictor Variables for specific intersection if extraction is used',
   `datapoints` int(11) DEFAULT NULL COMMENT '(Features * rows)',
   `problemType` tinyint(6) DEFAULT NULL COMMENT 'Type of problem:\n1- classification\n2- regression\n3- nn',
-  `status` tinyint(6) DEFAULT NULL COMMENT '0 Created/Selected - Active\n1  Deselected - Inactive\n2 R partitions Created\n3 R Cron Processing\n4 Error - Inactive',
+  `status` tinyint(6) DEFAULT NULL COMMENT '0 Created/Selected - Active\n1  Deselected - Inactive\n2 R partitions Created\n3 R Cron Processing\n4 Finished',
   `servers_finished` int(11) DEFAULT '0' COMMENT 'Total number of cloud servers that finished processing',
   `processing_time` int(11) DEFAULT NULL COMMENT 'Total processing time in miliseconds',
   `error` longtext COMMENT 'Errors regarding dataset. Zero Variance etc..',
@@ -391,8 +391,6 @@ CREATE TABLE `users_details` (
   `last_name` varchar(255) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(255) DEFAULT NULL,
-  `profile_picture` blob,
-  `workspace_directory` varchar(255) DEFAULT NULL,
   `account_type` tinyint(1) DEFAULT NULL COMMENT '1 - Global Administrator\n2 - User\n3 - Organization Administrator\n4 - Organization User',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
@@ -409,17 +407,17 @@ CREATE TABLE `users_files` (
   `uid` int(11) DEFAULT NULL COMMENT 'User ID',
   `ufsid` int(11) DEFAULT NULL COMMENT 'users_file_servers_id connection, if is NULL default is used',
   `item_type` tinyint(6) DEFAULT NULL COMMENT '1 - user uploaded the file\n2 - system created file (cron, data partitions etc.)',
-  `file_path` text COMMENT 'Full path to the file with a filename, without base directory',
   `base_directory` varchar(255) DEFAULT NULL COMMENT 'Upload base directory',
+  `file_path` text COMMENT 'Full path to the file with a filename, without base directory',
   `filename` char(32) DEFAULT NULL COMMENT 'MD5 safe filename ',
   `display_filename` varchar(255) DEFAULT NULL COMMENT 'Display filename',
-  `size` int(11) DEFAULT '0' COMMENT 'Filesize in bytes',
+  `size` int(11) DEFAULT '0' COMMENT 'Filesize in bytes ot the original file not gzipped one',
   `extension` varchar(25) DEFAULT NULL COMMENT 'file extension',
   `mime_type` varchar(75) DEFAULT NULL,
   `details` longtext COMMENT 'File details currently in following format:\n{\n	"header": {\n		"original": "",\n		"formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n	}\n}',
-  `file_hash` char(64) DEFAULT NULL COMMENT 'SHA256 HASH of a specific file!',
-  `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT NULL COMMENT 'users_file_servers_id'
+  `file_hash` char(64) DEFAULT NULL COMMENT 'SHA256 hash of original file not gzipped one',
+  `created` datetime DEFAULT NULL COMMENT 'timestamp',
+  `updated` datetime DEFAULT NULL COMMENT 'timestamp'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Filestructure Table for all block storage Objects';
 
 -- --------------------------------------------------------
@@ -623,7 +621,8 @@ ALTER TABLE `users_details`
 --
 ALTER TABLE `users_files`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `users_files_uidx` (`uid`);
+  ADD UNIQUE KEY `users_files_unique` (`uid`,`item_type`,`filename`,`file_hash`),
+  ADD KEY `uid_idx` (`uid`);
 ALTER TABLE `users_files` ADD FULLTEXT KEY `display_filename_idx` (`display_filename`);
 ALTER TABLE `users_files` ADD FULLTEXT KEY `base_directory_idx` (`base_directory`);
 
