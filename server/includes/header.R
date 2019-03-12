@@ -1,8 +1,10 @@
 #!/usr/bin/Rscript
+require(pacman)
 
 ## Variables defined in this file should be always globally accessible in any other R file/script
 ## This file must be always included as a start point in any other R process
-require(config)
+p_load(config)
+
 args <- commandArgs(TRUE)
 
 SERVER_NAME <- args[1]
@@ -28,10 +30,9 @@ if(!dir.exists(DATA_PATH)){
 UPTIME_PID <- paste0(DATA_PATH,"/uptime_",SERVER_NAME,".pid")
 
 ## Load libraries that are commonly used
-require(DBI)
-require(pool)
-
-require(urltools)
+p_load(DBI)
+p_load(pool)
+p_load(urltools)
 
 databasePool <- pool::dbPool(
         drv = RMySQL::MySQL(), ## RMySQL::MySQL() --- RMariaDB::MariaDB()
@@ -61,7 +62,7 @@ WORKING_MODE <- get_working_mode(simonConfig)
 
 source("server/includes/functions/file_system/main.R")
 
- cat(paste0("===> INFO: LOCAL WORKING MODE: ",WORKING_MODE," \r\n"))
+ cat(paste0("===> INFO: WORKING MODE: ",WORKING_MODE," \r\n"))
 
 if(WORKING_MODE == "local"){
     source("server/includes/functions/file_system/adapters/local.R")

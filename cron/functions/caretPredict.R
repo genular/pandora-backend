@@ -183,7 +183,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
 
     # TODO: Add indexes to trControl if they are missing
     if (!is.null(trControl) && is.null(trControl$index) && problemType == "classification") {
-        cachePath <- paste0(dataDir,"/data/specific/folds_",resampleID,".RData")
+        cachePath <- paste0(dataDir,"/folds/train_control_folds.RData")
         trainFormula <- as.formula(paste0("factor(", outcomeColumn, ") ~."))
         target <- extractCaretTarget(trainFormula, data)
         folds <- checkCachedList(cachePath)

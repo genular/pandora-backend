@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 16:05:03
+ * @Last Modified time: 2019-03-12 11:03:09
  */
 namespace SIMON\Dataset;
 
@@ -40,7 +40,7 @@ class DatasetIntersection {
 		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed: " . $this->temp_upload_dir);
 
 		if (!file_exists($this->temp_upload_dir)) {
-			mkdir($this->temp_upload_dir, 0777, true);
+			$this->Helpers->createDirectory($this->temp_upload_dir);
 		}
 	}
 

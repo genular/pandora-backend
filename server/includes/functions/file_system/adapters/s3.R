@@ -5,8 +5,15 @@
 #' @return string
 downloadFile <- function(file_path_from, file_path_to){
    cat(paste0("===> INFO: file download start: ",file_path_from," - ",file_path_to," \r\n"))
-   start_time <- Sys.time()
-   downloaded_path <- save_object(file_path_from,
+
+    file_path_to_basedir <- dirname(file_path_to)
+     ## Create directory if doesn't exist
+    if(!dir.exists(file_path_to_basedir)){
+        dir.create(file_path_to_basedir, showWarnings = FALSE, recursive = TRUE, mode = "0777")
+        Sys.chmod(file_path_to_basedir, "777", use_umask = FALSE)
+    }
+
+    downloaded_path <- save_object(file_path_from,
                          bucket = simonConfig$storage$s3$bucket,
                          file = file_path_to,
                          overwrite = TRUE,
@@ -19,9 +26,8 @@ downloadFile <- function(file_path_from, file_path_to){
                          base_url = simonConfig$storage$s3$endpoint,
                          region = simonConfig$storage$s3$region,
                          verbose = FALSE)
-   end_time <- Sys.time()
-   time_diff <- end_time - start_time
-   cat(paste0("===> INFO: file download end: ",file_path_from," time: ",time_diff," \r\n"))
+
+   cat(paste0("===> INFO: file download end: ",downloaded_path," \r\n"))
    return(downloaded_path)
 }
 
@@ -56,25 +62,25 @@ checkFileExists <- function(file_path){
 #' @title  Upload local file
 #' @description Uploads local file object to remote S3 filesystem
 #' @param user_id
-#' @param filepath_local
+#' @param file_from Full path to the local file-system file
 #' @param upload_directory
 #' @return string
-uploadFile <- function(user_id, filepath_local, upload_directory, retry_count = 0){
-    cat(paste0("===> INFO: upload file start: ",filepath_local," \r\n"))
+uploadFile <- function(user_id, file_from, upload_directory, retry_count = 0){
+    cat(paste0("===> INFO: upload file start from: ",file_from," \r\n"))
     start_time <- Sys.time()
 
-    filename <- basename(filepath_local)
-    filepath_remote = paste0(user_id , "/" , upload_directory , "/" , filename)
+    filename <- basename(file_from)
+    file_to = paste0(user_id , "/" , upload_directory , "/" , filename)
 
-    exists <- checkFileExists(filepath_remote)
+    exists <- checkFileExists(file_to)
     if(exists == TRUE){
         uniqueID <- as.numeric(format(Sys.time(), "%OS3")) * 1000
-        uniqueIDHash <- digest::digest(basename(filepath_local), algo="crc32", serialize=F)
-        filepath_remote = paste0(user_id , "/" , upload_directory , "/", uniqueIDHash , "_" , filename)
+        uniqueIDHash <- digest::digest(filename, algo="crc32", serialize=F)
+        file_to = paste0(user_id , "/" , upload_directory , "/", uniqueIDHash , "_" , filename)
     }
-
-    status <- put_object(filepath_local, 
-                        object = filepath_remote, 
+    ## Lets make actual upload
+    status <- put_object(file_from, 
+                        object = file_to, 
                         bucket = simonConfig$storage$s3$bucket,
                         multipart = TRUE,
                         show_progress = FALSE,
@@ -90,13 +96,13 @@ uploadFile <- function(user_id, filepath_local, upload_directory, retry_count = 
 
     end_time <- Sys.time()
     time_diff <- end_time - start_time
-    cat(paste0("===> INFO: upload file end: ",filepath_local," time: ",round(time_diff, digits = 2)," \r\n"))
+    cat(paste0("===> INFO: upload file end: ",file_from," time: ",round(time_diff, digits = 2)," \r\n"))
 
     ## Retry to upload file if upload failed!
     if(status != TRUE && retry_count < 5){
-        cat(paste0("===> ERROR: upload file failed: ",filepath_local," status: ",status," retry_count: ",retry_count," \r\n"))
-        uploadFile(user_id, filepath_local, upload_directory, retry_count + 1)
+        cat(paste0("===> ERROR: upload file failed: ",file_from," status: ",status," retry_count: ",retry_count," \r\n"))
+        uploadFile(user_id, file_from, upload_directory, retry_count + 1)
     }
 
-    return(filepath_remote)
+    return(file_to)
 }

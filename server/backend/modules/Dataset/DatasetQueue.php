@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-30 12:46:41
+ * @Last Modified time: 2019-03-12 14:21:43
  */
 namespace SIMON\Dataset;
 
@@ -288,6 +288,7 @@ class DatasetQueue {
 				    dataset_queue.status AS status,
 				    dataset_queue.extraction AS queueExtraction,
 				    dataset_queue.sparsity AS sparsity,
+				    dataset_queue.packages AS packages,
 				    dataset_queue.ufid AS fileID,
 				    users_files.display_filename AS queueName,
 				    users.username  AS username,

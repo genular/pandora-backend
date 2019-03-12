@@ -1,5 +1,5 @@
 #' @title getProcessingEntries
-#' @description Returns next processing queue. This is used if cron is used in single server mode.
+#' @description Returns next processing queue from database. Used if cron is used in single server mode.
 #' Otherwise base64 encoded data from SIMON_DATA that is created by could.init script is used
 #' @return data-frame
 getProcessingEntries <- function(){
@@ -297,39 +297,39 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
 #' @title Save new generated file to database
 #' @description Used to save newly generated Test/Train partitions files to MySQL
 #' @return string
-db.apps.simon.saveFileInfo <- function(userID, paths){
+db.apps.simon.saveFileInfo <- function(uid, paths){
     ufid <- NULL
     sql <- "INSERT IGNORE INTO `users_files`
-            (`id`, `uid`, `ufsid`, `item_type`, `path_initial`, `path_renamed`, `path_remote`, `display_filename`, 
-            `upload_directory`, `size`, `extension`, `mime_type`, `details`, `file_hash`, `created`, `updated`)
+            (`id`, `uid`, `ufsid`, `item_type`, `file_path`, `base_directory`, `filename`, `display_filename`, 
+            `size`, `extension`, `mime_type`, `details`, `file_hash`, `created`, `updated`)
             VALUES (NULL,
-                    ?userID,
+                    ?uid,
                     1,
                     2,
-                    ?path_initial,
-                    ?path_renamed,
-                    ?path_remote,
+                    ?file_path,
+                    ?base_directory,
+                    ?filename,
                     ?display_filename,
-                    ?upload_directory,
                     ?size,
-                    '.csv',
-                    'text/plain',
+                    ?extension,
+                    ?mime_type,
                     NULL,
                     ?file_hash,
                     NOW(), NOW())
             ON DUPLICATE KEY UPDATE 
-                uid=?userID, path_initial=?path_initial, path_renamed=?path_renamed, path_remote=?path_remote, 
-                display_filename=?display_filename, upload_directory=?upload_directory, size=?size, file_hash=?file_hash, updated=NOW()"
+                uid=?uid, file_path=?file_path, base_directory=?base_directory, filename=?filename, 
+                display_filename=?display_filename, size=?size, extension=?extension, mime_type=?mime_type, file_hash=?file_hash"
 
     query <- sqlInterpolate(databasePool, sql, 
-            userID=userID, 
-            path_initial=paths$path_initial, 
-            path_renamed=paths$path_renamed, 
-            path_remote=paths$path_remote, 
-            display_filename=basename(paths$path_initial), 
-            upload_directory=paths$path_remote, 
-            size=file.info(paths$path_renamed)$size, 
-            file_hash=digest::digest(paths$path_renamed, algo="sha256", serialize=F, file=TRUE)
+            uid=uid, 
+            file_path=paths$file_path,
+            base_directory=simonConfig$backend$data_path,
+            filename=basename(paths$renamed_path),
+            display_filename=sub('\\..*$', '', basename(paths$path_initial)),
+            size=file.info(paths$renamed_path)$size, 
+            extension='.csv',
+            mime_type='text/plain',
+            file_hash=digest::digest(paths$renamed_path, algo="sha256", serialize=F, file=TRUE)
     )
     results <- dbExecute(databasePool, query)
     if(results == 1){

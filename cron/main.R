@@ -8,9 +8,9 @@ source("server/includes/header.R")
 SIMON_PID <- paste0(DATA_PATH,"/simon_r_cron_",SERVER_NAME,".pid")
 
 # for parallel CPU processing
-library(doMC)
-library(caret)
-library(ggplot2)
+p_load(doMC)
+p_load(caret)
+p_load(ggplot2)
 
 source("cron/functions/database.R")
 source("cron/functions/helpers.R")
@@ -26,14 +26,13 @@ options(stringsAsFactors=FALSE)
 ## request a new limit, in Mb
 ## memory.limit(size = 48000)
 
-## Dataset queue status
-global_status <- 6
+## Dataset queue status: 3 Marked for processing 
+global_status <- 3
 
-## Set 7 days time limit!
-# setTimeLimit(cpu = 604800, elapsed = 604800, transient=FALSE)
-globalTimeLimit <- 300
+# Set global execution time limit in seconds!
+# 604800 <- 7 days
+globalTimeLimit <- 604800
 setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
-
 
 cpu_cores <- detectCores(logical = TRUE)
 cpu_cores <- as.numeric(cpu_cores)
@@ -86,11 +85,6 @@ if(isStandAlone == FALSE){
 }else{
     cat(paste0("===> INFO: CRON mode: stand-alone \r\n"))
     serverData <- getProcessingEntries()
-
-    if(length(serverData) > 0){
-        # TODO: Testing
-        updateDatabaseFiled("dataset_queue", "status", 3, "id", serverData$queueID)
-    }
 }
 
 if(length(serverData) < 1){
@@ -105,7 +99,6 @@ if(length(serverData) < 1){
         pid_time_diff <- round(difftime(Sys.time(), pid_info$mtime, units="secs"), digits = 0)
 
         cat(paste0("===> ERROR: Found PID file ", SIMON_PID, " Age: ", pid_time_diff," sec. Waiting for existing cron task to finish.\r\n"))
-        updateDatabaseFiled("dataset_queue", "status", 1, "id", serverData$queueID)
 
         # if(pid_time_diff > globalTimeLimit){
         #     cat(paste0("===> INFO: Deleting PID file since exceeded global time limit of ", globalTimeLimit ," sec \r\n"))
@@ -118,6 +111,9 @@ if(length(serverData) < 1){
         quit()
     }
 }
+
+## At this stage status og the queue should be changed to 3 - Marked for processing
+updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 
 ## If more than 1 server is started for specific dataset one must wait while 
 ## 1st one makes train and test partitions and save them into database, 
@@ -166,6 +162,8 @@ datasets <- generateData(serverData)
 performanceVariables <- NULL
 if(length(datasets) > 0){
     performanceVariables <- getAllPerformanceVariables()
+    ## At this stage status of the queue should be changed to 4 - Processing
+    updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 }
 
 ## MAIN DATASET LOOP START
@@ -183,7 +181,7 @@ for (dataset in datasets) {
     cat(paste0("+++> INFO: Started resampleID: ",dataset$resampleID," at: ", resample_time_start," Local-path: ",JOB_DIR," <+++\r\n"))
 
     ## Mark re-sample in database that is currently processing
-    ## updateDatabaseFiled("dataset_resamples", "status", 3, "id", dataset$resampleID)
+    updateDatabaseFiled("dataset_resamples", "status", 3, "id", dataset$resampleID)
 
     data = list(training = "",testing = "")
     outcome_and_classes <- c(dataset$outcome, dataset$classes)
@@ -225,9 +223,6 @@ for (dataset in datasets) {
     ## models_restrict <- c("awnb", "awtan", "bag", "bagEarth", "bagEarthGCV", "bagFDA", "bagFDAGCV", "bam", "bartMachine", "extraTrees", "gbm_h2o", "hdrda", "RWeka", "J48", "JRip", "LMT", "PART", "OneR", "oblique.tree","xyf", "glmnet_h2o", "mlpSGD")
     models_restrict <- c("null", "mxnet")
 
-    ## Global Processing Queue JOB status
-    ## 4 - Finished
-    global_status <- 4
     loaded_libraries_for_model <- NULL
     ## Loop all user selected methods and make models
     for (model in rev(models_to_process)) {
@@ -298,8 +293,8 @@ for (dataset in datasets) {
             for (package in c(model_info$library)) {
                 if(package %!in% (.packages())){
                     cat(paste0("===> WARNING: Package is not loaded: ",package," - trying to load it! \r\n"))
-                    if (!require(package, character.only=T, quietly=T)) {
-                        cat(paste0("===> ERROR: SKIPPING Package not found: ",package," \r\n"))
+                    if (!p_load(c(package), install = TRUE, character.only = TRUE)) {
+                        cat(paste0("===> ERROR: Package not found: ",package," \r\n"))
                         break()
                         ## Development override
                         ## install.packages(package, dependencies = TRUE, repos="http://cran.us.r-project.org")
@@ -308,6 +303,7 @@ for (dataset in datasets) {
                         ##     loaded_libraries_for_model <- c(loaded_libraries_for_model, package)
                         ## }
                     }else{
+                        cat(paste0("===> SUCESS: Package is successfully loaded: ",package," \r\n"))
                         is_loaded <- TRUE
                         loaded_libraries_for_model <- c(loaded_libraries_for_model, package)
                     }
@@ -324,11 +320,11 @@ for (dataset in datasets) {
 
         if(is_loaded == FALSE){
             cat(paste0("===> ERROR: SKIPPING Package could not be loaded, skipping: ",package," \r\n"))
-            ## mxnet is pain in the ***!
-            if(package != "mxnet"){
-                invisible(file.remove(SIMON_PID))
-                quit()
-            }
+            # mxnet is pain in the ***!
+            # if(package != "mxnet"){
+            #     invisible(file.remove(SIMON_PID))
+            #     quit()
+            # }
             next()
         }
         cat(paste0("===> INFO: model training start: ",model_details$internal_id," \r\n"))
@@ -416,6 +412,7 @@ for (dataset in datasets) {
                                                       model_time_start)
 
         if(sucess != FALSE){
+            global_status <- 5 # Finished - Sucess
 
             db.apps.simon.saveVariableImportance(
                 results_varImportance,
@@ -430,28 +427,30 @@ for (dataset in datasets) {
                 varImportance = results_varImportance
             )
 
-            saveDataPaths = list(path_initial = "", path_renamed = "", gzipped_path = "", path_remote = "", ufid = "")
-            saveDataPaths$path_initial <- paste0(JOB_DIR,"/data/models/results_", methodDetails$modelID, ".RData")
+            saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
+            ## JOB_DIR is temporarily directory on our local file-system
+            saveDataPaths$path_initial <- paste0(JOB_DIR,"/models/modelID_", methodDetails$modelID, ".RData")
 
             ## Save data in .RData since write_feather supports only data-frames
             save(saveData, file = saveDataPaths$path_initial)
             rm(saveData)
 
-            fileDetails = compressPath(saveDataPaths$path_initial)
-            saveDataPaths$path_renamed = fileDetails$renamed_path
-            saveDataPaths$gzipped_path = fileDetails$gzipped_path
+            path_details = compressPath(saveDataPaths$path_initial)
+            
+            saveDataPaths$renamed_path = path_details$renamed_path
+            saveDataPaths$gzipped_path = path_details$gzipped_path
 
-            saveDataPaths$path_remote = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("uploads/datasets/",dataset$resampleID))
-            ufid <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+            saveDataPaths$file_path = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/models"))
 
-            updateDatabaseFiled("models", "ufid", ufid, "id", methodDetails$modelID)
+            file_id <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
 
-            invisible(file.remove(saveDataPaths$path_renamed))
-            invisible(file.remove(saveDataPaths$gzipped_path))
+            updateDatabaseFiled("models", "ufid", file_id, "id", methodDetails$modelID)
+
+            if(file.exists(saveDataPaths$gzipped_path)){ file.remove(saveDataPaths$gzipped_path) }
+            if(file.exists(saveDataPaths$renamed_path)){ file.remove(saveDataPaths$renamed_path) }
 
         }else{
-            ## R Finished - Errors 
-            global_status <- 6  
+            global_status <- 6 ## Finished - Errors 
         }
         rm(trainModel)
     } ## END caret model/algorithm loop
@@ -460,6 +459,8 @@ for (dataset in datasets) {
     resample_total_time <- as.numeric(difftime(resample_time_end, resample_time_start,  units = c("secs")))
     resample_total_time_ms <- ceiling(resample_total_time * 1000)
     updateDatabaseFiled("dataset_resamples", "processing_time", resample_total_time_ms, "id", dataset$resampleID)
+    ## 4 - Finished Success
+    updateDatabaseFiled("dataset_resamples", "status", 4, "id", dataset$resampleID)
 
 } ## MAIN DATASET LOOP END
 
@@ -468,7 +469,6 @@ total_time <- as.numeric(difftime(end_time, start_time,  units = c("secs")))
 total_time_ms <- ceiling(total_time * 1000)
 
 updateDatabaseFiled("dataset_queue", "processing_time", total_time_ms, "id", serverData$queueID)
-## TODO: fix global status
 updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 
 cat(paste0("======> INFO: PROCESSING END (",total_time," sec) \r\n"))

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 15:14:00
+ * @Last Modified time: 2019-03-12 14:03:27
  */
 namespace SIMON\Helpers;
 
@@ -348,6 +348,39 @@ class Helpers {
 
 		return $length === 0 ||
 			(substr($haystack, -$length) === $needle);
+	}
+	/**
+	 * The directory permissions are affected by the current umask. Set the umask for your webserver,
+	 * use PHP's umask function or use the chmod function after the directory has been created.
+	 * @param  [type] $path [description]
+	 * @return [type]       [description]
+	 */
+	public function createDirectory($uri) {
+
+		$chunks = explode('/', $uri);
+		// remove first element since its empty
+		array_splice($chunks, 0, 1);
+
+		$recursive_paths = [];
+
+		foreach ($chunks as $i => $chunk) {
+			$recursive_paths[] = '/' . implode('/', array_slice($chunks, 0, $i + 1));
+
+		}
+		$old = umask(0);
+		$recursive_paths = array_unique($recursive_paths);
+		foreach ($recursive_paths as $path) {
+			if (!is_dir($path)) {
+				if (!mkdir($path, 0777, FALSE)) {
+					return FALSE;
+				}
+				if (!chmod($path, 0777)) {
+					return FALSE;
+				}
+			}
+		}
+		umask($old);
+
 	}
 
 	/**

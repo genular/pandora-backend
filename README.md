@@ -21,11 +21,6 @@ our focus here is scientific community so we can enable scientist and other rese
 ## License
 Please check `LICENCE` file for more information.
 
-This software can be used for research purposes, you should cite
-the aforementioned papers in any resulting publication.
-
-The Software is provided "as is", without warranty of any kind.
-
 ## Citation
 ```
 @article {Tomic545186,

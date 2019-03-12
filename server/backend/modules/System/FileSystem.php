@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 16:06:55
+ * @Last Modified time: 2019-03-12 11:01:52
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -15,6 +15,7 @@ use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
 use \SIMON\Helpers\Cache as Cache;
+use \SIMON\Helpers\Helpers as Helpers;
 
 class FileSystem {
 
@@ -27,6 +28,7 @@ class FileSystem {
 
 	protected $Config;
 	protected $Cache;
+	protected $Helpers;
 
 	protected $temp_download_dir = "/tmp/downloads";
 	protected $storage_type = "remote";
@@ -36,23 +38,25 @@ class FileSystem {
 		Logger $logger,
 
 		Config $Config,
-		Cache $Cache
+		Cache $Cache,
+		Helpers $Helpers
 	) {
 		$this->database = $database;
 		$this->logger = $logger;
 		$this->Config = $Config;
 		$this->Cache = $Cache;
+		$this->Helpers = $Helpers;
 
 		$this->temp_download_dir = $this->Config->get('default.backend.data_path') . "/tmp/downloads";
 
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->Config->get('default.backend.data_path'));
 
 		if (!file_exists($this->Config->get('default.backend.data_path'))) {
-			mkdir($this->Config->get('default.backend.data_path'));
+			$this->Helpers->createDirectory($this->Config->get('default.backend.data_path'));
 		}
 
 		if (!file_exists($this->temp_download_dir)) {
-			mkdir($this->temp_download_dir, 0777, true);
+			$this->Helpers->createDirectory($this->temp_download_dir);
 		}
 
 		// Check if S3 storage is configured!

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 15:12:24
+ * @Last Modified time: 2019-03-12 11:03:27
  */
 namespace SIMON\System;
 use Noodlehaus\Config as Config;
@@ -39,7 +39,7 @@ class ResumableUpload {
 		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed: " . $this->temp_upload_dir);
 
 		if (!file_exists($this->temp_upload_dir)) {
-			mkdir($this->temp_upload_dir, 0777, true);
+			$this->Helpers->createDirectory($this->temp_upload_dir);
 		}
 	}
 	/**
@@ -78,7 +78,7 @@ class ResumableUpload {
 		$identifier = (isset($post['dzuuid'])) ? trim($post['dzuuid']) : '';
 		$file_chunks_folder = $this->temp_upload_dir . "/" . $identifier;
 		if (!is_dir($file_chunks_folder)) {
-			mkdir($file_chunks_folder, 0777, true);
+			$this->Helpers->createDirectory($file_chunks_folder);
 		}
 
 		$filename = $this->Helpers->sanitizeFileName($filename); # remove problematic symbols

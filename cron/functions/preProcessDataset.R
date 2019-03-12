@@ -5,16 +5,16 @@
 #' @return 
 preProcessDataset <- function(dataset) {
 
-    cat(paste0("===> INFO: Preprocessing: splitting into partitions.. path: ", dataset$remotePathMain,"\r\n"))
+    cat(paste0("===> INFO: preProcessDataset: started: ", dataset$remotePathMain,"\r\n"))
 
     filepath_extracted <- downloadDataset(dataset$remotePathMain)
-    ## If data is missing cancel processing!
+    ## If data is missing cancel processing! 
     if(filepath_extracted == FALSE){
         cat(paste0("===> ERROR: Cannot download remote dataset data\r\n"))
-        updateDatabaseFiled("dataset_queue", "status", 6, "id", dataset$queueID)
+        updateDatabaseFiled("dataset_queue", "status", 1, "id", dataset$queueID)
         ## Remove PID file
         if(file.exists(SIMON_PID)){
-            cat(paste0("===> INFO: Deleting SIMON_PID file \r\n"))
+            cat(paste0("===> ERROR: Deleting SIMON_PID file \r\n"))
             invisible(file.remove(SIMON_PID))
         }
         quit()
@@ -34,7 +34,6 @@ preProcessDataset <- function(dataset) {
 
     ## Create local job processing dir /tmp/xyz
     JOB_DIR <- initilizeDatasetDirectory(dataset)
-
 
     fs_status <- list(error = c(), info = c())
 
@@ -114,34 +113,36 @@ preProcessDataset <- function(dataset) {
 
     ## Make a backup of partitioned data
     splits = list(
-        training = list(path_initial = "", path_renamed = "", gzipped_path = "", path_remote = "", ufid = ""),
-        testing = list(path_initial = "", path_renamed = "", gzipped_path = "", path_remote = "", ufid = "")
+        training =  list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "", ufid = ""),
+        testing =  list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "", ufid = "")
     )
-
-    splits$training$path_initial <- paste0(JOB_DIR,"/data/training.csv")
+    #######################
+    splits$training$path_initial <- paste0(JOB_DIR,"/data/training_partition.csv")
     data.table::fwrite(data$training, file = splits$training$path_initial, showProgress = FALSE)
 
-
     fileDetails = compressPath(splits$training$path_initial)
-    splits$training$path_renamed = fileDetails$renamed_path
+    splits$training$renamed_path = fileDetails$renamed_path
     splits$training$gzipped_path = fileDetails$gzipped_path
 
-    splits$training$path_remote <- uploadFile(dataset$userID, splits$training$gzipped_path, paste0("uploads/datasets/",dataset$resampleID))
-
+    splits$training$file_path <- uploadFile(dataset$userID, splits$training$gzipped_path, paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"))
     splits$training$ufid <- db.apps.simon.saveFileInfo(dataset$userID, splits$training)
-    file.remove(splits$training$path_renamed)
-    file.remove(splits$training$gzipped_path)
 
-    splits$testing$path_initial <- paste0(JOB_DIR,"/data/testing.csv")
+    if(file.exists(splits$training$renamed_path)){ file.remove(splits$training$renamed_path) }
+    if(file.exists(splits$training$gzipped_path)){ file.remove(splits$training$gzipped_path) }
+    #######################
+    splits$testing$path_initial <- paste0(JOB_DIR,"/data/testing_partition.csv")
     data.table::fwrite(data$testing, file = splits$testing$path_initial, showProgress = FALSE)
+
     fileDetails = compressPath(splits$testing$path_initial)
-    splits$testing$path_renamed = fileDetails$renamed_path
+    splits$testing$renamed_path = fileDetails$renamed_path
     splits$testing$gzipped_path = fileDetails$gzipped_path
 
-    splits$testing$path_remote <- uploadFile(dataset$userID, splits$testing$gzipped_path, paste0("uploads/datasets/",dataset$resampleID))
+    splits$testing$file_path <- uploadFile(dataset$userID, splits$testing$gzipped_path, paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"))
     splits$testing$ufid <- db.apps.simon.saveFileInfo(dataset$userID, splits$testing)
-    file.remove(splits$testing$path_renamed)
-    file.remove(splits$testing$gzipped_path)
+
+    if(file.exists(splits$testing$renamed_path)){ file.remove(splits$testing$renamed_path) }
+    if(file.exists(splits$testing$gzipped_path)){ file.remove(splits$testing$gzipped_path) }
+    #######################
     
     sql <- paste0("UPDATE dataset_resamples SET 
                     ufid_train=?ufid_train,

@@ -60,9 +60,9 @@ db.apps.getCronJobQueue <- function(data){
                         dataset_resamples.id AS resampleID,
                         dataset_resamples.selectedOptions AS resampleOptions,
                         dataset_resamples.samples_total AS samples_total,
-                        users_files_main.path_remote AS remotePathMain,
-                        users_files_train.path_remote AS remotePathTrain,
-                        users_files_test.path_remote AS remotePathTest
+                        users_files_main.file_path AS remotePathMain,
+                        users_files_train.file_path AS remotePathTrain,
+                        users_files_test.file_path AS remotePathTest
 
                     FROM dataset_queue
                     INNER JOIN dataset_resamples ON dataset_queue.id = dataset_resamples.dqid
@@ -130,7 +130,7 @@ db.apps.getCronJobQueue <- function(data){
 db.apps.getModelsDetailsData <-function(modelsIDs){
     sql <- paste0("SELECT models.id                   AS modelID,
                            models_packages.internal_id AS modelInternalID,
-                           users_files.path_remote     AS remotePathMain
+                           users_files.file_path     AS remotePathMain
                     FROM   models
                            LEFT JOIN models_packages
                                   ON models_packages.id = models.mpid
@@ -159,9 +159,9 @@ db.apps.getFeatureSetData <- function(resamplesID){
                 dataset_resamples.id AS resampleID,
                 dataset_resamples.selectedOptions AS resampleOptions,
                 dataset_resamples.samples_total AS samples_total,
-                users_files_main.path_remote AS remotePathMain,
-                users_files_train.path_remote AS remotePathTrain,
-                users_files_test.path_remote AS remotePathTest
+                users_files_main.file_path AS remotePathMain,
+                users_files_train.file_path AS remotePathTrain,
+                users_files_test.file_path AS remotePathTest
 
             FROM dataset_queue
             INNER JOIN dataset_resamples ON dataset_queue.id = dataset_resamples.dqid
