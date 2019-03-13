@@ -5,8 +5,6 @@
 
 source("server/includes/header.R")
 
-SIMON_PID <- paste0(DATA_PATH,"/simon_r_cron_",SERVER_NAME,".pid")
-
 # for parallel CPU processing
 p_load(doMC)
 p_load(caret)
@@ -92,18 +90,18 @@ if(length(serverData) < 1){
     quit()
 }else{
     ## Important: when processing is done delete PID file otherwise cron.R will not run next time
-    if(!file.exists(SIMON_PID)){
-        file.create(SIMON_PID)
+    if(!file.exists(UPTIME_PID)){
+        file.create(UPTIME_PID)
     }else{
-        pid_info <- file.info(SIMON_PID)
+        pid_info <- file.info(UPTIME_PID)
         pid_time_diff <- round(difftime(Sys.time(), pid_info$mtime, units="secs"), digits = 0)
 
-        cat(paste0("===> ERROR: Found PID file ", SIMON_PID, " Age: ", pid_time_diff," sec. Waiting for existing cron task to finish.\r\n"))
+        cat(paste0("===> ERROR: Found PID file ", UPTIME_PID, " Age: ", pid_time_diff," sec. Waiting for existing cron task to finish.\r\n"))
 
         # if(pid_time_diff > globalTimeLimit){
         #     cat(paste0("===> INFO: Deleting PID file since exceeded global time limit of ", globalTimeLimit ," sec \r\n"))
-        #     if(file.exists(SIMON_PID)){
-        #         invisible(file.remove(SIMON_PID))
+        #     if(file.exists(UPTIME_PID)){
+        #         invisible(file.remove(UPTIME_PID))
         #     }
         # }else{
         #     quit()
@@ -124,7 +122,7 @@ generateData <- function(serverData){
 
     if(length(datasets) < 1){
         cat(paste0("===> INFO: Nothing to analyze! No datasets found in database for queueID: ",serverData$queueID," \r\n"))
-        invisible(file.remove(SIMON_PID))
+        invisible(file.remove(UPTIME_PID))
         quit()
     }
     ## Loop all datasets and make Train and Test Sets if initial server
@@ -322,7 +320,7 @@ for (dataset in datasets) {
             cat(paste0("===> ERROR: SKIPPING Package could not be loaded, skipping: ",package," \r\n"))
             # mxnet is pain in the ***!
             # if(package != "mxnet"){
-            #     invisible(file.remove(SIMON_PID))
+            #     invisible(file.remove(UPTIME_PID))
             #     quit()
             # }
             next()
@@ -473,7 +471,7 @@ updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$q
 
 cat(paste0("======> INFO: PROCESSING END (",total_time," sec) \r\n"))
 ## Remove PID file
-if(file.exists(SIMON_PID)){
-    cat(paste0("======> INFO: Deleting SIMON_PID file \r\n"))
-    invisible(file.remove(SIMON_PID))
+if(file.exists(UPTIME_PID)){
+    cat(paste0("======> INFO: Deleting UPTIME_PID file \r\n"))
+    invisible(file.remove(UPTIME_PID))
 }

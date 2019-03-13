@@ -7,11 +7,7 @@ downloadFile <- function(file_path_from, file_path_to){
    cat(paste0("===> INFO: file download start: ",file_path_from," - ",file_path_to," \r\n"))
 
     file_path_to_basedir <- dirname(file_path_to)
-     ## Create directory if doesn't exist
-    if(!dir.exists(file_path_to_basedir)){
-        dir.create(file_path_to_basedir, showWarnings = FALSE, recursive = TRUE, mode = "0777")
-        Sys.chmod(file_path_to_basedir, "777", use_umask = FALSE)
-    }
+    create_directory(file_path_to_basedir)
 
     downloaded_path <- save_object(file_path_from,
                          bucket = simonConfig$storage$s3$bucket,

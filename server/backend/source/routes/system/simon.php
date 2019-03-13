@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 16:15:02
+ * @Last Modified time: 2019-03-13 15:13:56
  */
 
 use Slim\Http\Request;
@@ -180,7 +180,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	$queueID = 0;
 	$sparsity = 0;
 
-	if (file_exists($tempFilePath)) {
+	if ($tempFilePath !== false && file_exists($tempFilePath)) {
 		$totalDatasetsGenerated = 0;
 
 		$mainFileDetails = $FileSystem->getFileDetails($submitData["selectedFiles"][0]);
@@ -234,6 +234,13 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 			foreach ($submitData["selectedOutcome"] as $selectedOutcome) {
 
 				$datasetResample = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"]);
+				if (count($datasetResample["info"]["invalidColumns"]) > 0) {
+					foreach ($datasetResample["info"]["invalidColumns"] as $invalidColumn) {
+						array_push($message, ["msg_info" => "invalid_columns", "data" => $invalidColumn]);
+					}
+					// remove resamples and force user needs to select new columns since some have non  numeric data
+					continue;
+				}
 
 				// Update sparsity values only once per queue
 				if ($sparsityUpdate === true) {
@@ -246,9 +253,9 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 			}
 
 			if ($totalDatasetsGenerated > 0) {
-				// Create Re-sample Files and Upload them to Spaces!
+				// Create Re-sample Files to temporary place on file-system
 				$resamples = $DatasetIntersection->generateResamples($queueID, $tempFilePath, $resamples, $allOtherSelections);
-
+				// Upload each of them to the storage
 				foreach ($resamples as $resampleGroupKey => $resampleGroupValue) {
 
 					foreach ($resampleGroupValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
@@ -286,14 +293,16 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 					}
 				}
 			} else {
-				array_push($message, "Unable to generate any re-samples for the given data.");
+				array_push($message, ["msg_info" => "no_resamples"]);
 			}
 			// @unlink($tempFilePath);
 		} else {
 			$success = false;
-			array_push($message, "Queue already exists");
+			array_push($message, ["msg_info" => "queue_exists"]);
 		}
 
+	} else {
+		array_push($message, ["msg_info" => "source_not_found"]);
 	}
 	$time_elapsed_secs = microtime(true) - $start;
 

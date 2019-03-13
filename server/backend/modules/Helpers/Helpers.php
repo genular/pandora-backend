@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-12 14:03:27
+ * @Last Modified time: 2019-03-13 14:51:36
  */
 namespace SIMON\Helpers;
 
@@ -367,11 +367,10 @@ class Helpers {
 			$recursive_paths[] = '/' . implode('/', array_slice($chunks, 0, $i + 1));
 
 		}
-		$old = umask(0);
 		$recursive_paths = array_unique($recursive_paths);
 		foreach ($recursive_paths as $path) {
 			if (!is_dir($path)) {
-				if (!mkdir($path, 0777, FALSE)) {
+				if (!mkdir($path, 0777, true)) {
 					return FALSE;
 				}
 				if (!chmod($path, 0777)) {
@@ -379,8 +378,6 @@ class Helpers {
 				}
 			}
 		}
-		umask($old);
-
 	}
 
 	/**

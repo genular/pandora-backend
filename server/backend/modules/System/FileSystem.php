@@ -4,12 +4,13 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-12 16:03:05
+ * @Last Modified time: 2019-03-13 16:22:15
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
 use League\Flysystem\Adapter\Local as Local;
 use League\Flysystem\AwsS3v3\AwsS3Adapter as AwsS3Adapter;
+use League\Flysystem\Config as FConfig;
 use League\Flysystem\Filesystem as Flysystem;
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
@@ -29,9 +30,9 @@ class FileSystem {
 	protected $Config;
 	protected $Cache;
 	protected $Helpers;
-
-	protected $temp_download_dir = "/tmp/downloads";
-	protected $storage_type = "remote";
+	// Used for saving temporary files
+	private $temp_dir = "/tmp";
+	private $storage_type = "remote";
 
 	public function __construct(
 		Medoo $database,
@@ -47,16 +48,11 @@ class FileSystem {
 		$this->Cache = $Cache;
 		$this->Helpers = $Helpers;
 
-		$this->temp_download_dir = $this->Config->get('default.backend.data_path') . "/tmp/downloads";
-
-		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->Config->get('default.backend.data_path'));
-
-		if (!file_exists($this->Config->get('default.backend.data_path'))) {
-			$this->Helpers->createDirectory($this->Config->get('default.backend.data_path'));
-		}
-
-		if (!file_exists($this->temp_download_dir)) {
-			$this->Helpers->createDirectory($this->temp_download_dir);
+		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/downloads";
+		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->temp_dir);
+		// Create temporary directory if it doesn't exists
+		if (!file_exists($this->temp_dir)) {
+			$this->Helpers->createDirectory($this->temp_dir);
 		}
 
 		// Check if S3 storage is configured!
@@ -71,15 +67,28 @@ class FileSystem {
 			$this->Config->get('settings')["is_connected"] === false ||
 			$s3_configured === false) {
 
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using local storage: " . $this->Config->get('default.backend.data_path'));
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using local storage: " . $this->Config->get('default.storage.local.data_path'));
 
 			$this->storage_type = "local";
-			$adapter = new Local($this->Config->get('default.backend.data_path'));
+			$adapter = new Local(
+				$this->Config->get('default.storage.local.data_path'),
+				0,
+				Local::DISALLOW_LINKS,
+				[
+					'file' => [
+						'public' => 0777,
+						'private' => 0777,
+					],
+					'dir' => [
+						'public' => 0777,
+						'private' => 0777,
+					],
+				]);
 
 			// Otherwise use remote s3 storage
 		} else if ($this->Config->get('settings')["is_connected"] === true && $s3_configured === true) {
 
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using S3 remote storage: " . $this->Config->get('default.backend.data_path'));
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using S3 remote storage");
 
 			$this->client = new S3Client([
 				'credentials' => [
@@ -96,8 +105,9 @@ class FileSystem {
 			throw new Exception("Error: SIMON\System\FileSystem Cannot configure file-system", 1);
 		}
 
-		$this->filesystem = new Flysystem($adapter);
-
+		$this->filesystem = new Flysystem($adapter, new FConfig([
+			'disable_asserts' => true,
+		]));
 	}
 	/**
 	 * Create a link to a S3 object from a bucket. If expiration is not empty, then it is used to create
@@ -141,7 +151,7 @@ class FileSystem {
 			// Clean old files
 			$this->deleteOldFiles($public_directory);
 
-			$copy_from = realpath($this->Config->get('default.backend.data_path') . "/" . $filesystem_path);
+			$copy_from = $this->Config->get('default.storage.local.data_path') . "/" . $filesystem_path;
 			$copy_to = $public_directory . "/" . basename($filesystem_path);
 
 			$downloadLink = $this->Config->get('default.backend.server.url') . "/downloads/" . basename($filesystem_path);
@@ -195,7 +205,6 @@ class FileSystem {
 			"ufsid" => 1,
 			"item_type" => $details['item_type'],
 			"file_path" => $remote_path,
-			"base_directory" => $this->Config->get('default.backend.data_path'),
 			"filename" => md5($details['basename']),
 			"display_filename" => $details['filename'],
 			"size" => $details['filesize'],
@@ -301,16 +310,13 @@ class FileSystem {
 	 * @param string $upload_directory Relative directory name: eg uploads
 	 */
 	public function uploadFile($user_id, $file_from, $upload_directory) {
+		$file_basename = basename($file_from);
 
-		$path_parts = pathinfo($file_from);
-
-		$extension = isset($path_parts['extension']) ? '.' . strtolower($path_parts['extension']) : '';
-		$file_to = $user_id . "/" . $upload_directory . "/" . $path_parts['filename'] . $extension;
+		$file_to = "users/" . $user_id . "/" . $upload_directory . "/" . $file_basename;
 
 		$exists = $this->filesystem->has($file_to);
-
 		if ($exists === true) {
-			$file_to = $user_id . "/" . $upload_directory . "/" . crc32(round(microtime(true) * 1000)) . "_" . $path_parts['filename'] . $extension;
+			$file_to = "users/" . $user_id . "/" . $upload_directory . "/" . crc32(round(microtime(true) * 1000)) . "_" . $file_basename;
 		}
 
 		$stream = fopen($file_from, 'r+');
@@ -332,6 +338,7 @@ class FileSystem {
 	 * @return [type]          [description]
 	 */
 	public function downloadFile($input, $new_file_name = false) {
+		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile: " . $input);
 
 		$remotePath = $input;
 		if (is_numeric($input)) {
@@ -343,8 +350,10 @@ class FileSystem {
 			}
 		}
 		$file = new \SplFileInfo($remotePath);
-		$file_path = $this->temp_download_dir . "/" . $file->getBasename('.tar.gz');
+		$file_path = $this->temp_dir . "/" . $file->getBasename('.tar.gz');
 		$file_path_gz = $file_path . ".tar.gz";
+
+		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile local file-path: " . $file_path);
 
 		// Skip downloading if file is already downloaded and extracted
 		if (file_exists($file_path)) {
@@ -352,13 +361,14 @@ class FileSystem {
 			return $file_path;
 		}
 
-		$ungz_cmd = "tar xf " . $file_path_gz . " -C " . $this->temp_download_dir;
+		$ungz_cmd = "tar xf " . $file_path_gz . " -C " . $this->temp_dir;
 		// Skip downloading if compressed file is already downloaded
 		if (file_exists($file_path_gz)) {
 			exec($ungz_cmd);
 			return $file_path;
 		}
 
+		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile remote file-path: " . $file_path);
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($remotePath);
 		$contents = stream_get_contents($stream);
@@ -371,7 +381,7 @@ class FileSystem {
 		@unlink($file_path_gz);
 
 		if ($new_file_name !== false) {
-			$new_file_name = $this->temp_download_dir . "/" . $new_file_name;
+			$new_file_name = $this->temp_dir . "/" . $new_file_name;
 			rename($file_path, $new_file_name);
 
 			$file_path = $new_file_name;

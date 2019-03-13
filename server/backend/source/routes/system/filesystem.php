@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 16:09:43
+ * @Last Modified time: 2019-03-13 14:34:23
  */
 
 use Slim\Http\Request;
@@ -23,6 +23,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
 	$ResumableUpload = $this->get('SIMON\System\ResumableUpload');
+
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
 	$user_details = $request->getAttribute('user');

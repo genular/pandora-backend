@@ -38,7 +38,7 @@ sudo docker run --dns 8.8.8.8 busybox nslookup google.com
 
 ## 2. Build docker image from Dockerfile
 
-### 2.1 Set configuration variables in Dockerfile
+### 2.1 Set configuration variables in Dockerfile 
 You can get example of configuration JSON by executing following command
 	- cd simon-backend/server/backend && composer generate-docker-config
 This will create a new file: documentation/docker_images/configuration.json where you can add/remove custom configuration variables

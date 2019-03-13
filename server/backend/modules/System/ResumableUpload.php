@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-12 11:03:27
+ * @Last Modified time: 2019-03-13 15:09:43
  */
 namespace SIMON\System;
 use Noodlehaus\Config as Config;
@@ -21,7 +21,8 @@ class ResumableUpload {
 	protected $Helpers;
 
 	protected $errors = [];
-	protected $temp_upload_dir = "/tmp/uploads";
+	// Used for saving temporary uploaded files
+	private $temp_dir = "/tmp";
 
 	public function __construct(
 		Medoo $database,
@@ -34,12 +35,12 @@ class ResumableUpload {
 		$this->Config = $Config;
 		$this->Helpers = $Helpers;
 
-		$this->temp_upload_dir = $this->Config->get('default.backend.data_path') . "/tmp/uploads";
+		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/uploads";
 
-		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed: " . $this->temp_upload_dir);
-
-		if (!file_exists($this->temp_upload_dir)) {
-			$this->Helpers->createDirectory($this->temp_upload_dir);
+		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed: " . $this->temp_dir);
+		// Create temporary directory if it doesn't exists
+		if (!file_exists($this->temp_dir)) {
+			$this->Helpers->createDirectory($this->temp_dir);
 		}
 	}
 	/**
@@ -54,8 +55,8 @@ class ResumableUpload {
 		$extension = isset($info['extension']) ? '.' . strtolower($info['extension']) : '';
 		$filename = $info['filename'];
 
-		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $filename, $extension);
-		$savePath = $this->temp_upload_dir . "/" . $saveName . $extension;
+		$saveName = $this->getNextAvailableFilename($this->temp_dir, $filename, $extension);
+		$savePath = $this->temp_dir . "/" . $saveName . $extension;
 
 		if (move_uploaded_file($tmp_file_path, $savePath)) {
 			return $savePath;
@@ -76,7 +77,7 @@ class ResumableUpload {
 		$warnings = array();
 
 		$identifier = (isset($post['dzuuid'])) ? trim($post['dzuuid']) : '';
-		$file_chunks_folder = $this->temp_upload_dir . "/" . $identifier;
+		$file_chunks_folder = $this->temp_dir . "/" . $identifier;
 		if (!is_dir($file_chunks_folder)) {
 			$this->Helpers->createDirectory($file_chunks_folder);
 		}
@@ -176,13 +177,13 @@ class ResumableUpload {
 	 */
 	public function createFileFromChunks($file_chunks_folder, $fileName, $extension, $total_size, $total_chunks,
 		&$successes, &$warnings) {
-		$saveName = $this->getNextAvailableFilename($this->temp_upload_dir, $fileName, $extension);
+		$saveName = $this->getNextAvailableFilename($this->temp_dir, $fileName, $extension);
 
 		if (!$saveName) {
 			return false;
 		}
 
-		$fp = fopen($this->temp_upload_dir . "/" . $saveName . $extension, 'w');
+		$fp = fopen($this->temp_dir . "/" . $saveName . $extension, 'w');
 		if ($fp === false) {
 			$this->errors[] = 'cannot create the destination file';
 			return false;
@@ -193,7 +194,7 @@ class ResumableUpload {
 		}
 		fclose($fp);
 
-		return $this->temp_upload_dir . "/" . $saveName . $extension;
+		return $this->temp_dir . "/" . $saveName . $extension;
 	}
 
 	/**

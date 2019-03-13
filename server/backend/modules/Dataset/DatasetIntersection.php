@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-12 11:03:09
+ * @Last Modified time: 2019-03-13 15:11:21
  */
 namespace SIMON\Dataset;
 
@@ -23,7 +23,8 @@ class DatasetIntersection {
 
 	public $outcomeColumn = "";
 	public $selectedFeatures = [];
-	protected $temp_upload_dir = "/tmp/uploads";
+	// Used for saving temporary uploaded files
+	private $temp_dir = "/tmp";
 
 	public function __construct(
 		Logger $logger,
@@ -35,12 +36,11 @@ class DatasetIntersection {
 		$this->Config = $Config;
 		$this->Helpers = $Helpers;
 
-		$this->temp_upload_dir = $this->Config->get('default.backend.data_path') . "/tmp/uploads";
+		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/uploads";
+		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed: " . $this->temp_dir);
 
-		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed: " . $this->temp_upload_dir);
-
-		if (!file_exists($this->temp_upload_dir)) {
-			$this->Helpers->createDirectory($this->temp_upload_dir);
+		if (!file_exists($this->temp_dir)) {
+			$this->Helpers->createDirectory($this->temp_dir);
 		}
 	}
 
@@ -92,7 +92,7 @@ class DatasetIntersection {
 
 					if (!isset($datasets[$resampleGroupDataKey])) {
 						$filename = 'genSysFile_queue_' . $queueID . '_group_' . $resampleGroupKey . '_resample_' . $resampleGroupDataKey . '.csv';
-						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"] = $this->temp_upload_dir . '/' . $filename;
+						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"] = $this->temp_dir . '/' . $filename;
 
 						$datasets[$resampleGroupDataKey] = array(
 							"header" => false,
@@ -210,6 +210,7 @@ class DatasetIntersection {
 		$totalDatapoints = 0;
 		$missingDatapoints = 0;
 		$sparsity = 0;
+		$invalidColumns = [];
 
 		if (count($records) > 0) {
 			foreach ($records as $sampleID => $record) {
@@ -234,6 +235,9 @@ class DatasetIntersection {
 
 					if (!$isNumeric) {
 						$missingDatapoints++;
+						if (!isset($invalidColumns[$recordID]) && ctype_alpha($recordValue)) {
+							$invalidColumns[$recordID] = true;
+						}
 					}
 					$totalDatapoints++;
 				}
@@ -245,6 +249,7 @@ class DatasetIntersection {
 		} else {
 			$sparsity = 1;
 		}
+		$invalidColumns = array_keys($invalidColumns);
 
 		/** Sort an array by key - Sort subjects by their ID */
 		ksort($samples, SORT_NATURAL);
@@ -334,7 +339,7 @@ class DatasetIntersection {
 			});
 		}
 
-		return array("resamples" => $data, "info" => array("sparsity" => $sparsity, "missingDatapoints" => $missingDatapoints, "totalDatapoints" => $totalDatapoints));
+		return array("resamples" => $data, "info" => array("sparsity" => $sparsity, "missingDatapoints" => $missingDatapoints, "totalDatapoints" => $totalDatapoints, "invalidColumns" => $invalidColumns));
 	}
 
 	/**

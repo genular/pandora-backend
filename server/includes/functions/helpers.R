@@ -1,3 +1,29 @@
+#' @title create_directory
+#' @description create directory recursively if directory does not exists
+#' @return
+create_directory <- function(path){
+    ## Lets split path into vector of all recursive paths and create one by one
+    parts <- unlist(strsplit(path, "/", fixed = FALSE, perl = FALSE, useBytes = FALSE))
+    parts <- parts[parts != ""]
+
+    ## Construct the vector
+    paths <- c()
+    i <- 1
+    for (part in parts) {
+        path_item <- parts[-(i:length(parts)+1 )]
+        path <- paste0("/", paste(path_item, collapse = "/"))
+        paths <- c(paths, path)
+        i <- i +1
+    }
+    ## Loop paths and create directory
+    for(path in unique(paths)){
+        if(!dir.exists(path)){
+            dir.create(path, showWarnings = FALSE, recursive = TRUE, mode = "0777")
+            Sys.chmod(path, "777", use_umask = FALSE)
+        }
+    }
+}
+
 #' @title thisFileLocation
 #' @description Returns the location of the current executing script file
 #' Full file path is returned with the filename included

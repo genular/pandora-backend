@@ -13,9 +13,9 @@ preProcessDataset <- function(dataset) {
         cat(paste0("===> ERROR: Cannot download remote dataset data\r\n"))
         updateDatabaseFiled("dataset_queue", "status", 1, "id", dataset$queueID)
         ## Remove PID file
-        if(file.exists(SIMON_PID)){
-            cat(paste0("===> ERROR: Deleting SIMON_PID file \r\n"))
-            invisible(file.remove(SIMON_PID))
+        if(file.exists(UPTIME_PID)){
+            cat(paste0("===> ERROR: Deleting UPTIME_PID file \r\n"))
+            invisible(file.remove(UPTIME_PID))
         }
         quit()
     }

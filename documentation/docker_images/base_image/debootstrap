@@ -345,14 +345,15 @@ echo "Installation of advanced dependencies START"
 	cd /tmp && curl -sS https://getcomposer.org/installer -o composer-setup.php
 	php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
+	## Set PHP session directory permissions
+	mkdir "/var/lib/php/sessions" && chmod 777 "/var/lib/php/sessions"
+	chgrp www-data /var/lib/php/*
+
 __EOS__
 )
 cp "$rootfsDir/../../configs/etc/php/7.3/fpm/php.ini" "$rootfsDir/etc/php/7.3/fpm/php.ini"
-## Set PHP session directory permissions
-mkdir "$rootfsDir/var/lib/php/sessions" && chmod 777 "$rootfsDir/var/lib/php/sessions"
 
 echo "Installation of advanced dependencies END"
-
 # prevent upstart scripts from running during install/update
 (
 	set -x

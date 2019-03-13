@@ -4,8 +4,11 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:16:35
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-24 09:22:32
+ * @Last Modified time: 2019-03-13 11:58:30
  */
+
+// Bootstrap the app environment.
+chdir(dirname(__DIR__));
 
 if (PHP_SAPI == 'cli-server') {
 	// To help the built-in PHP dev server, check if the request was actually for
@@ -16,14 +19,12 @@ if (PHP_SAPI == 'cli-server') {
 		return false;
 	}
 }
-require __DIR__ . '/../vendor/autoload.php';
-
-// Bootstrap the app environment.
-chdir(dirname(__DIR__));
+require 'vendor/autoload.php';
 
 // Turn on debug.
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-ini_set('display_errors', 'On');
 
 // Start the session.
 session_cache_limiter(false);

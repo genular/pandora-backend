@@ -300,14 +300,13 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
 db.apps.simon.saveFileInfo <- function(uid, paths){
     ufid <- NULL
     sql <- "INSERT IGNORE INTO `users_files`
-            (`id`, `uid`, `ufsid`, `item_type`, `file_path`, `base_directory`, `filename`, `display_filename`, 
+            (`id`, `uid`, `ufsid`, `item_type`, `file_path`, `filename`, `display_filename`, 
             `size`, `extension`, `mime_type`, `details`, `file_hash`, `created`, `updated`)
             VALUES (NULL,
                     ?uid,
                     1,
                     2,
                     ?file_path,
-                    ?base_directory,
                     ?filename,
                     ?display_filename,
                     ?size,
@@ -317,13 +316,12 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
                     ?file_hash,
                     NOW(), NOW())
             ON DUPLICATE KEY UPDATE 
-                uid=?uid, file_path=?file_path, base_directory=?base_directory, filename=?filename, 
+                id=LAST_INSERT_ID(id), uid=?uid, file_path=?file_path, filename=?filename, 
                 display_filename=?display_filename, size=?size, extension=?extension, mime_type=?mime_type, file_hash=?file_hash"
 
     query <- sqlInterpolate(databasePool, sql, 
             uid=uid, 
             file_path=paths$file_path,
-            base_directory=simonConfig$backend$data_path,
             filename=basename(paths$renamed_path),
             display_filename=sub('\\..*$', '', basename(paths$path_initial)),
             size=file.info(paths$renamed_path)$size, 
@@ -332,7 +330,8 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
             file_hash=digest::digest(paths$renamed_path, algo="sha256", serialize=F, file=TRUE)
     )
     results <- dbExecute(databasePool, query)
-    if(results == 1){
+    # 0 - ON DUPLICATE KEY
+    if(results == 0 || results == 1){
         ufid <- dbGetQuery(databasePool, "SELECT last_insert_id();")[1,1]
     }
     return(ufid)

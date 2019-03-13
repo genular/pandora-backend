@@ -3,32 +3,12 @@
 #' @param dataset dataset object
 #' @return string
 initilizeDatasetDirectory <- function(dataset){
-    JOB_DIR <- paste0(DATA_PATH,"/cron_data/",dataset$userID,"/",dataset$resampleID)
+    JOB_DIR <- paste0(TEMP_DIR,"/cron_data/",dataset$userID,"/",dataset$queueID,"/",dataset$resampleID)
   
     output_directories  = c('folds', 'models', 'data')
     for (output_dir in output_directories) {
         full_path <- file.path(JOB_DIR, output_dir)
-
-        ## Lets split path into vector of all recursive paths and create one by one
-        parts <- unlist(strsplit(full_path, "/", fixed = FALSE, perl = FALSE, useBytes = FALSE))
-        parts <- parts[parts != ""]
-
-        ## Construct the vector
-        paths <- c()
-        i <- 1
-        for (part in parts) {
-            path_item <- parts[-(i:length(parts)+1 )]
-            path <- paste0("/", paste(path_item, collapse = "/"))
-            paths <- c(paths, path)
-            i <- i +1
-        }
-        ## Loop paths and create directory
-        for(path in unique(paths)){
-            if(!dir.exists(path)){
-                dir.create(path, showWarnings = FALSE, recursive = TRUE, mode = "0777")
-                Sys.chmod(path, "777", use_umask = FALSE)
-            }
-        }
+        create_directory(full_path)
     }
 
     return (JOB_DIR)
@@ -42,13 +22,14 @@ initilizeDatasetDirectory <- function(dataset){
 downloadDataset <- function(file_from, useCache = TRUE){
     file_exist <- TRUE
 
+    ## Location to temporary directory where to download files
+    temp_directory <- paste0(TEMP_DIR, "/downloads")
     ## Path to the downloaded file
-    file_to <- paste0(simonConfig$backend$data_path, "/tmp/downloads/", basename(file_from))
+    file_to <- paste0(temp_directory, "/", basename(file_from))
     ## Path to the local extracted file
     file_path_local <- gsub(".tar.gz", "", file_to)
-
     ## in case of duplicated name, on uploading, also check for this one
-    file_path_local_dup <- paste0(simonConfig$backend$data_path, "/tmp/downloads/", gsub(".*_", "", file_path_local))
+    file_path_local_dup <- paste0(temp_directory, "/", gsub(".*_", "", file_path_local))
 
     if(useCache == TRUE){
         if(file.exists(file_path_local)){
@@ -72,7 +53,7 @@ downloadDataset <- function(file_from, useCache = TRUE){
         cat(paste0("===> ERROR: Cannot locate download gzipped file: ",file_to," \r\n"))
         file_exist <- FALSE
     }else{
-        untar(tarfile = file_to, list = FALSE, exdir = paste0(simonConfig$backend$data_path, "/tmp/downloads"), verbose = FALSE)
+        untar(tarfile = file_to, list = FALSE, exdir = temp_directory, verbose = FALSE)
         invisible(file.remove(file_to))
     }
     

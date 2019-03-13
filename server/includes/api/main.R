@@ -58,7 +58,7 @@ simon$handle$status <- expression(
         server_details <- list() 
 
         for(server_name in SERVER_TYPES){
-            server_details[[i]] <- list(ssl = simonConfig[[server_name]]$server$ssl, type = server_name, host = simonConfig[[server_name]]$server$host, port = simonConfig[[server_name]]$server$port)
+            server_details[[i]] <- list(type = server_name, host = simonConfig[[server_name]]$server$host, port = simonConfig[[server_name]]$server$port)
             i <- i + 1
         }
 

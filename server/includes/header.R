@@ -18,16 +18,13 @@ simonConfig <- config::get(file = "config.yml")
 
 
 if(!(SERVER_NAME %in% names(simonConfig))){
-    stop("Cannot find configuration for given server name!")
+    if(SERVER_NAME != "cron"){
+        stop("Cannot find configuration for given server name!")    
+    }
 }
 
-DATA_PATH <- simonConfig[[SERVER_NAME]]$data_path
-if(!dir.exists(DATA_PATH)){
-    dir.create(DATA_PATH, showWarnings = FALSE, recursive = TRUE, mode = "0777")
-    Sys.chmod(DATA_PATH, "777", use_umask = FALSE)
-}
-
-UPTIME_PID <- paste0(DATA_PATH,"/uptime_",SERVER_NAME,".pid")
+TEMP_DIR <- paste0(tempdir(), "/", simonConfig$salt)
+UPTIME_PID <- paste0(TEMP_DIR, "/uptime_",SERVER_NAME,".pid")
 
 ## Load libraries that are commonly used
 p_load(DBI)
@@ -52,16 +49,16 @@ set.seed(1337)
 ## https://stat.ethz.ch/R-manual/R-devel/library/base/html/options.html
 options(warn=1, warning.length=8170)
 options(scipen=999)  # turn-off scientific notation like 1e+48
-
-error_path <- paste0(DATA_PATH,"/error_dump_", SERVER_NAME)
-options(error = quote(dump.frames(error_path, TRUE)))
+# options(error = quote(dump.frames(paste0(TEMP_DIR,"/error_dump_", SERVER_NAME), TRUE)))
 
 source("server/includes/functions/helpers.R")
 source("server/includes/functions/database.R")
 
+create_directory(TEMP_DIR)
+
 ## local or remote
 WORKING_MODE <- get_working_mode(simonConfig)
-
+WORKING_MODE <- "local"
 source("server/includes/functions/file_system/main.R")
 
  cat(paste0("===> INFO: WORKING MODE: ",WORKING_MODE," \r\n"))
