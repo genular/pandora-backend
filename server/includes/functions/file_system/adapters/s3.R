@@ -66,7 +66,7 @@ uploadFile <- function(user_id, file_from, upload_directory, retry_count = 0){
     start_time <- Sys.time()
 
     filename <- basename(file_from)
-    file_to = paste0(user_id , "/" , upload_directory , "/" , filename)
+    file_to = paste0("users/",user_id , "/" , upload_directory , "/" , filename)
 
     exists <- checkFileExists(file_to)
     if(exists == TRUE){

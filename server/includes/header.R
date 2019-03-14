@@ -58,7 +58,6 @@ create_directory(TEMP_DIR)
 
 ## local or remote
 WORKING_MODE <- get_working_mode(simonConfig)
-WORKING_MODE <- "local"
 source("server/includes/functions/file_system/main.R")
 
  cat(paste0("===> INFO: WORKING MODE: ",WORKING_MODE," \r\n"))

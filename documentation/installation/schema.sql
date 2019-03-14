@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 95.216.176.70:3307
--- Generation Time: Mar 13, 2019 at 12:05 AM
+-- Generation Time: Mar 14, 2019 at 02:41 AM
 -- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
@@ -407,7 +407,6 @@ CREATE TABLE `users_files` (
   `uid` int(11) DEFAULT NULL COMMENT 'User ID',
   `ufsid` int(11) DEFAULT NULL COMMENT 'users_file_servers_id connection, if is NULL default is used',
   `item_type` tinyint(6) DEFAULT NULL COMMENT '1 - user uploaded the file\n2 - system created file (cron, data partitions etc.)',
-  `base_directory` varchar(255) DEFAULT NULL COMMENT 'Upload base directory',
   `file_path` text COMMENT 'Full path to the file with a filename, without base directory',
   `filename` char(32) DEFAULT NULL COMMENT 'MD5 safe filename ',
   `display_filename` varchar(255) DEFAULT NULL COMMENT 'Display filename',
@@ -624,7 +623,6 @@ ALTER TABLE `users_files`
   ADD UNIQUE KEY `users_files_unique` (`uid`,`item_type`,`filename`,`file_hash`),
   ADD KEY `uid_idx` (`uid`);
 ALTER TABLE `users_files` ADD FULLTEXT KEY `display_filename_idx` (`display_filename`);
-ALTER TABLE `users_files` ADD FULLTEXT KEY `base_directory_idx` (`base_directory`);
 
 --
 -- Indexes for table `users_files_servers`

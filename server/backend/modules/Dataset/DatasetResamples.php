@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:25:20
+ * @Last Modified time: 2019-03-13 17:39:51
  */
 namespace SIMON\Dataset;
 
@@ -118,13 +118,13 @@ class DatasetResamples {
 		];
 		$columns =
 			[
-			"dataset_resamples.dqid(resampleID) [Int]",
-			"dataset_resamples.ufid(fileID) [Int]",
-			"dataset_resamples.ufid_train(fileID_train) [Int]",
-			"dataset_resamples.ufid_test(fileID_test) [Int]",
+			"dataset_resamples.id(resampleID) [Int]",
+			"dataset_resamples.ufid(ufid) [Int]",
+			"dataset_resamples.ufid_train(ufid_train) [Int]",
+			"dataset_resamples.ufid_test(ufid_test) [Int]",
 		];
 		$conditions = [
-			"dataset_resamples.dqid" => $resampleID,
+			"dataset_resamples.id" => $resampleID,
 			"dataset_queue.uid" => $user_id,
 			"LIMIT" => 1,
 		];
@@ -142,9 +142,10 @@ class DatasetResamples {
 	 */
 	public function getDatasetResamples($queueID, $user_id) {
 
-		$sql = "SELECT dataset_resamples.id              AS resampleID,
-		               dataset_resamples.ufid_train       AS fileID_train,
-		               dataset_resamples.ufid_test        AS fileID_test,
+		$sql = "SELECT dataset_resamples.id               AS resampleID,
+		               dataset_resamples.ufid       	  AS ufid,
+		               dataset_resamples.ufid_train       AS ufid_train,
+		               dataset_resamples.ufid_test        AS ufid_test,
 		               dataset_resamples.data_source      AS dataSource,
 		               dataset_resamples.samples_total    AS samplesTotal,
 		               dataset_resamples.samples_training AS samplesTraining,

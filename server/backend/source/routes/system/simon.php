@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 15:13:56
+ * @Last Modified time: 2019-03-13 17:49:47
  */
 
 use Slim\Http\Request;
@@ -397,25 +397,34 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
 		$queueID = $submitData['queueID'];
 	}
 
+	$files = [];
+
 	if ($queueID !== false) {
 
 		$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
 		$resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
 		$resamplesListIDs = array_column($resamplesList, 'resampleID');
 
+		foreach ($resamplesList as $resample) {
+			$files[] = $resample['ufid'];
+			$files[] = $resample['ufid_train'];
+			$files[] = $resample['ufid_test'];
+		}
+
 		$Models = $this->get('SIMON\Models\Models');
 		$modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
 		$modelsListIDs = array_column($modelsList, 'modelID');
+
+		foreach ($modelsList as $model) {
+			$files[] = $model['ufid'];
+
+		}
 
 		// 2. models_performance
 		$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');
 		$ModelsPerformance->deleteByModelIDs($modelsListIDs);
 
-		// TODO
-		// $FileSystem = $this->get('SIMON\System\FileSystem');
-
 		// 3. models
-		$Models = $this->get('SIMON\Models\Models');
 		$Models->deleteByResampleIDs($resamplesListIDs);
 
 		$ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
@@ -435,6 +444,10 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
 		// 3. dataset_queue
 		$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 		$DatasetQueue->deleteByQueueIDs($queueID);
+
+		$FileSystem = $this->get('SIMON\System\FileSystem');
+
+		$FileSystem->deleteFilesByIDs(array_unique($files));
 
 		$success = true;
 	}

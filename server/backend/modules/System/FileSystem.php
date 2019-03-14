@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 16:22:15
+ * @Last Modified time: 2019-03-13 17:54:21
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -217,6 +217,21 @@ class FileSystem {
 		]);
 
 		return $this->database->id();
+	}
+	/**
+	 * [deleteFilesByIDs description]
+	 * @param  [type] $ids [description]
+	 * @return [type]      [description]
+	 */
+	public function deleteFilesByIDs($ids) {
+		foreach ($ids as $id) {
+			if (!is_numeric($id)) {
+				continue;
+			}
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem deleteFilesByIDs: " . $id);
+			$details = $this->getFileDetails($id);
+			$this->deleteFileByID($id, $details['file_path']);
+		}
 	}
 	/**
 	 * [deleteFileByID description]

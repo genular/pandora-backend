@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-30 13:51:21
+ * @Last Modified time: 2019-03-13 17:47:10
  */
 namespace SIMON\Models;
 
@@ -110,6 +110,7 @@ class Models {
 		$sql = " SELECT
 				       dataset_resamples.id AS resampleID,
 				       models.id         AS modelID,
+				       models.ufid         AS ufid,
 				       models.status     AS status,
 				       models.error      AS error,
 				       models.processing_time    AS processing_time,

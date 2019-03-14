@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 14:34:23
+ * @Last Modified time: 2019-03-13 17:40:02
  */
 
 use Slim\Http\Request;
@@ -220,7 +220,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		if ($recordDetails) {
 			// Loop all values and search for fileIDs
 			foreach ($recordDetails as $recordDetailsKey => $recordDetailsValue) {
-				if (strpos($recordDetailsKey, 'fileID') === 0) {
+				if (strpos($recordDetailsKey, 'ufid') === 0) {
 					if (!isset($downloadIDs[$recordDetailsValue])) {
 						$downloadIDs[$recordDetailsValue] = $recordDetailsValue;
 					}
