@@ -33,7 +33,7 @@ B_CONF[secret]=$(LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+= < /dev/uran
 B_CONF[details_title]="genular"
 B_CONF[details_email]="support@genular.com"
 
-B_CONF[data_path]="/tmp/g_temp"
+B_CONF[data_path]="/mnt/data"
 
 B_CONF[database_host]="localhost"
 B_CONF[database_port]=3306

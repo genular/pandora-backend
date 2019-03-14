@@ -349,6 +349,9 @@ echo "Installation of advanced dependencies START"
 	mkdir "/var/lib/php/sessions" && chmod 777 "/var/lib/php/sessions"
 	chgrp www-data /var/lib/php/*
 
+	## We will use this directory in SIMON to save data into
+	mkdir "/mnt/data" && chmod 777 "/mnt/data"
+
 __EOS__
 )
 cp "$rootfsDir/../../configs/etc/php/7.3/fpm/php.ini" "$rootfsDir/etc/php/7.3/fpm/php.ini"

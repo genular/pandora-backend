@@ -30,7 +30,7 @@ default:
             endpoint: "digitaloceanspaces.com" # Example: "https://ams3.digitaloceanspaces.com"
             bucket: PLACEHOLDER # Example: "genular"
         local:
-            ## Path to the storage directory (/tmp/g_temp) without trailing slash
+            ## Path to the storage directory (/mnt/data) without trailing slash
             data_path: PLACEHOLDER
     ## Database configuration
     database:
