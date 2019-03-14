@@ -23,7 +23,7 @@ if(!(SERVER_NAME %in% names(simonConfig))){
     }
 }
 
-TEMP_DIR <- paste0(tempdir(), "/", simonConfig$salt)
+TEMP_DIR <- paste0("/tmp/", simonConfig$salt)
 UPTIME_PID <- paste0(TEMP_DIR, "/uptime_",SERVER_NAME,".pid")
 
 ## Load libraries that are commonly used
