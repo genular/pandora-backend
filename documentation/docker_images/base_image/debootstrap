@@ -262,6 +262,7 @@ echo "Installation of basic dependencies END"
 mkdir -p "$rootfsDir/var/www/html"
 cp "$rootfsDir/../../configs/var/www/genular-info.php" "$rootfsDir/var/www/html/genular-info.php"
 
+cp "$rootfsDir/../../configs/etc/nginx/nginx.conf" "$rootfsDir/etc/nginx/nginx.conf"
 cp "$rootfsDir/../../configs/etc/nginx/sites-available/default" "$rootfsDir/etc/nginx/sites-available/default"
 cp "$rootfsDir/../../configs/etc/nginx/sites-available/genular.conf" "$rootfsDir/etc/nginx/sites-available/genular.conf"
 
@@ -269,10 +270,6 @@ cp "$rootfsDir/../../configs/etc/nginx/sites-available/genular.conf" "$rootfsDir
 cp "$rootfsDir/../../configs/etc/cron.d/genular" "$rootfsDir/etc/cron.d/genular"
 chmod +x "$rootfsDir/etc/cron.d/genular"
 touch "$rootfsDir/var/log/cron.log"
-
-if [ "$FRESH_START" == y ] ; then
-	echo "daemon off;" >> "$rootfsDir/etc/nginx/nginx.conf"
-fi
 
 echo "Installation of advanced dependencies START"
 ( rootfs_chroot /bin/sh << '__EOS__'

@@ -35,15 +35,17 @@ setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
 cpu_cores <- detectCores(logical = TRUE)
 cpu_cores <- as.numeric(cpu_cores)
 
-if(cpu_cores > 3){
-    CORES <- cpu_cores - 3    
+if(cpu_cores > 5){
+    CORES <- cpu_cores - 5    
 }else{
     CORES <- 1
 }
+cat(paste0("===> INFO: Starting SIMON with ",CORES," CPU cores! \r\n"))
 
 start_time <- Sys.time()
 
 # set up the parallel CPU processing
+## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
 registerDoMC(CORES)  #use X cores
 
 script.dir <- dirname(thisFileLocation())

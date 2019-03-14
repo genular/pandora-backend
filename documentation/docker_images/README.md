@@ -61,7 +61,7 @@ sudo docker run --rm \
 	--publish 3013:3013 \
 	--publish 3306:3014 \
 	genular:master
-## --volume /mnt/genular/simon-backend/SHARED_DATA:/tmp/genular \
+## --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/data \
 ```
 
 ## Helpers

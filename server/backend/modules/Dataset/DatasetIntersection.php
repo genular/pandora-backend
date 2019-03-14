@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 15:11:21
+ * @Last Modified time: 2019-03-14 12:05:31
  */
 namespace SIMON\Dataset;
 
@@ -111,6 +111,10 @@ class DatasetIntersection {
 					foreach ($listSamples as $sampleRange) {
 						$range = explode("-", $sampleRange);
 
+						if (isset($range[0]) && !isset($range[1])) {
+							$range[1] = $range[0];
+						}
+
 						if (($range[0] <= $recordID) && ($recordID <= $range[1])) {
 
 							foreach ($record as $recordKey => $recordValue) {
@@ -152,7 +156,7 @@ class DatasetIntersection {
 	}
 
 	/**
-	 * [removeEmptyValues description]
+	 * Removes all non numbers
 	 * @param  array  $record [description]
 	 * @return [type]         [description]
 	 */
@@ -200,7 +204,7 @@ class DatasetIntersection {
 			->offset(0)
 			->where([$this, 'removeEmptyOutcomeValues']);
 
-		// If we are not doing dataset extraction remove all samples/rows that have empty values
+		// If we are not doing dataset extraction remove all samples/rows that have empty values (non-numerc)
 		if ($extraction === false) {
 			$stmt = $stmt->where([$this, 'removeEmptyValues']);
 		}
