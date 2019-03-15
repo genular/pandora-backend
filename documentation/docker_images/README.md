@@ -47,6 +47,10 @@ This will create a new file: documentation/docker_images/configuration.json wher
 	- sudo docker build --network=host --tag "genular:master" --file ./Dockerfile .
 
 ## 3. Run Dockerfile
+
+Replace TZ=<timzone> with your timezone.
+You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
 ```bash
 sudo docker run --rm \
 	--detach \
@@ -55,6 +59,7 @@ sudo docker run --rm \
 	--tty \
 	--interactive \
 	--env IS_DOCKER='true' \
+	--env TZ=America/Los_Angeles \
 	--publish 3010:3010 \
 	--publish 3011:3011 \
 	--publish 3012:3012 \

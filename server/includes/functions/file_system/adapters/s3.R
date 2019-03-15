@@ -72,7 +72,7 @@ uploadFile <- function(user_id, file_from, upload_directory, retry_count = 0){
     if(exists == TRUE){
         uniqueID <- as.numeric(format(Sys.time(), "%OS3")) * 1000
         uniqueIDHash <- digest::digest(filename, algo="crc32", serialize=F)
-        file_to = paste0(user_id , "/" , upload_directory , "/", uniqueIDHash , "_" , filename)
+        file_to = paste0("users/",user_id , "/" , upload_directory , "/", uniqueIDHash , "_" , filename)
     }
     ## Lets make actual upload
     status <- put_object(file_from, 

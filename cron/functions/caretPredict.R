@@ -232,7 +232,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
             message <- geterrmessage()
             model.execution$message <- message
         }
-        cat(paste0("===> ERROR: caretTrainModel: ",model.execution$message," \r\n"))
+        # cat(paste0("===> ERROR: caretTrainModel: ",model.execution$message," \r\n"))
         results$data <- model.execution$message
     }
     # Restore default warning reporting
@@ -247,32 +247,37 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
 #' @param model Testing dataset with features and outcome
 #' @return data frame
 caretPredict <- function(trainingFit, data){
-    results <- list(type = NULL, preds = NULL)
+    results <- list(status = TRUE, type = NULL, preds = NULL)
 
     if (is.null(data)) {
         data <- trainingFit[[1]]$trainingData
         if (is.null(data)) {
-            stop("Could not find training data in the first model")
+            cat(paste0("===> ERROR: caretPredict: Could not find training data in the first model \r\n"))
+            results$status <- FALSE
         }
     }
 
-    type <- trainingFit$modelType
-    if (type == "Classification") {
-        if (trainingFit$control$classProbs) {
-            results$type <- "prob"
-            # Return probability predictions for only one of the classes as determined by
-            # configured default response class level
-            results$preds <- tryCatch( caret::predict.train(trainingFit, type = "prob", newdata = data) , error = function(e){ stop(e) } )
-        } else {
+    if(results$status == TRUE){
+        type <- trainingFit$modelType
+        if (type == "Classification") {
+            if (trainingFit$control$classProbs) {
+                results$type <- "prob"
+                # Return probability predictions for only one of the classes as determined by
+                # configured default response class level
+                results$preds <- tryCatch( caret::predict.train(trainingFit, type = "prob", newdata = data) , error = function(e){ return(e) } )
+            } else {
+                results$type <- "raw"
+                results$preds <- tryCatch( caret::predict.train(trainingFit, type = "raw", newdata = data) , error = function(e){ return(e) } )
+            }
+        } else if (type == "Regression") {
             results$type <- "raw"
-            results$preds <- tryCatch( caret::predict.train(trainingFit, type = "raw", newdata = data) , error = function(e){ stop(e) } )
+            results$preds <- tryCatch( caret::predict.train(trainingFit, type = "raw", newdata = data) , error = function(e){ return(e) } )
+        } else {
+            cat(paste0("===> ERROR: caretPredict: Unknown model type:", type," \r\n"))
+            results$status <- FALSE
         }
-    } else if (type == "Regression") {
-        results$type <- "raw"
-        results$preds <- tryCatch( caret::predict.train(trainingFit, type = "raw", newdata = data) , error = function(e){ stop(e) } )
-    } else {
-        stop(paste("Unknown model type:", type))
     }
+
 
     return(results)
 }

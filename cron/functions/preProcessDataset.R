@@ -10,17 +10,15 @@ preProcessDataset <- function(dataset) {
     filepath_extracted <- downloadDataset(dataset$remotePathMain)
     ## If data is missing cancel processing! 
     if(filepath_extracted == FALSE){
-        cat(paste0("===> ERROR: Cannot download remote dataset data\r\n"))
-        updateDatabaseFiled("dataset_queue", "status", 1, "id", dataset$queueID)
-        ## Remove PID file
-        if(file.exists(UPTIME_PID)){
-            cat(paste0("===> ERROR: Deleting UPTIME_PID file \r\n"))
-            invisible(file.remove(UPTIME_PID))
-        }
-        quit()
+        message <- paste0("===> ERROR: Cannot download remote dataset data\r\n")
+        cat(message)
+
+        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", message)
+        return(FALSE)
     }
 
-    glabalDataset <- data.table::fread(filepath_extracted, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+    glabalDataset <- data.table::fread(filepath_extracted, header = T, stringsAsFactors = FALSE, data.table = FALSE)
 
     #####################################################
     ## Combine Outcome and Classes
@@ -28,8 +26,13 @@ preProcessDataset <- function(dataset) {
     #####################################################
 
     if(length(dataset$outcome) != 1){
-        cat("===> ERROR: Invalid number of outcome columns detected")
-        quit()
+
+        message <- paste0("===> ERROR: Invalid number (",length(dataset$outcome),") of outcome columns detected. Currently only one is supported.")
+        cat(message)
+
+        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", message)
+        return(FALSE)
     }
 
     ## Create local job processing dir /tmp/xyz
@@ -46,7 +49,7 @@ preProcessDataset <- function(dataset) {
     if(length(outcome_unique) > 2 || length(outcome_unique) < 2){
         cat(paste0("===> ERROR: Only two unique outcome classes are currently supported. You have: ", length(outcome_unique), "\r\n"))
         print(outcome_unique)
-        updateDatabaseFiled("dataset_resamples", "status", 4, "id", dataset$resampleID)
+        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", paste0("Incorrect number of outcome levels in main dataset: ", length(outcome_unique)), "id", dataset$resampleID)
         return(FALSE)
     }
@@ -144,20 +147,32 @@ preProcessDataset <- function(dataset) {
     if(file.exists(splits$testing$gzipped_path)){ file.remove(splits$testing$gzipped_path) }
     #######################
     
+    if(is.null(splits$training$ufid) || is.null(splits$testing$ufid)){
+        message <- paste0("===> ERROR: Cannot save partitioned data into database, detected file ids: ",splits$training$ufid," - ", splits$testing$ufid)
+        cat(message)
+
+        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", message)
+        return(FALSE)
+    }
+
     sql <- paste0("UPDATE dataset_resamples SET 
-                    ufid_train=?ufid_train,
-                    ufid_test=?ufid_test,
-                    samples_training=?samples_training,
-                    samples_testing=?samples_testing,
-                    status=2
+                            ufid_train=?ufid_train,
+                            ufid_test=?ufid_test,
+                            samples_training=?samples_training,
+                            samples_testing=?samples_testing,
+                            status=?status
                     WHERE dataset_resamples.id=?resampleID;")
 
     query <- sqlInterpolate(databasePool, sql,
-                            ufid_train=splits$training$ufid,
-                            ufid_test=splits$testing$ufid,
-                            samples_training=samples$training, 
-                            samples_testing=samples$testing, 
-                            resampleID=dataset$resampleID)
+                            ufid_train=as.numeric(splits$training$ufid),
+                            ufid_test=as.numeric(splits$testing$ufid),
+                            samples_training=as.numeric(samples$training),
+                            samples_testing=as.numeric(samples$testing),
+                            status=as.numeric(2),
+                            resampleID=as.numeric(dataset$resampleID))
 
     dbExecute(databasePool, query)
+
+    return(TRUE)
 }

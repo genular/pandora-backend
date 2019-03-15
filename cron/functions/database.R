@@ -332,7 +332,10 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
     results <- dbExecute(databasePool, query)
     # 0 - ON DUPLICATE KEY
     if(results == 0 || results == 1){
-        ufid <- dbGetQuery(databasePool, "SELECT last_insert_id();")[1,1]
+        last_id <- dbGetQuery(databasePool, "SELECT last_insert_id();")
+        ufid <- last_id[1,1]
+    }else{
+        print(paste0("====>>> ERROR: db.apps.simon.saveFileInfo ", results))
     }
     return(ufid)
 }
@@ -387,33 +390,28 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
 #' @param model_details Data-frame with current model details
 #' @param roc List containing ROC measures roc$auc
 #' @param status Boolean, true or false
-#' @param error Character vector with listed errors that occurred during training
+#' @param errors Character vector with listed errors that occurred during training
 #' @param model_time_start Sys.time() object with model starting time
 #' @return list
-db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmatrix, model_details, performanceVariables, roc, status, error, model_time_start){
-
+db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmatrix, model_details, performanceVariables, roc, errors, model_time_start){
+    model_status <- 1
     training_time <- NULL
-
     ## Get total amount of time needed for model to process - time in DB should always be in milliseconds
     model_time_end <- Sys.time()
     processing_time <- as.numeric(difftime(model_time_end, model_time_start,  units = c("secs")))
     processing_time <- ceiling(processing_time * 1000)
 
+    if(length(errors) > 0){
+        model_status <- 0
+        errors <- paste(errors, collapse = "\n")
+    }else{
+        errors <- NULL
+    }
+
     if (trainModel$status == TRUE) {
         ## Get only model training time
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
-
-        if(length(error) < 1){
-            error <- NULL
-        }else{
-            error <- c(trainModel$data, error)
-            error <- jsonlite::toJSON(error)
-        }
-    }else{
-        error <- c(trainModel$data, error)
-        error <- jsonlite::toJSON(error)
     }
-
 
     sql <- "INSERT INTO `models`
                 (
@@ -443,15 +441,15 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmat
                 )   ON DUPLICATE KEY UPDATE
                 drid=?drid, mpid=?mpid, status=?status, error=?error, training_time=?training_time, processing_time=?processing_time, updated=NOW();"
 
-    query <- sqlInterpolate(databasePool, sql, drid=resampleID, mpid=model_details$id, status=status, 
-        error=toString(error), training_time=toString(training_time), processing_time=processing_time)
+    query <- sqlInterpolate(databasePool, sql, drid=resampleID, mpid=model_details$id, status=model_status, 
+        error=toString(errors), training_time=toString(training_time), processing_time=processing_time)
 
     results <- dbExecute(databasePool, query)
     modelID <- NULL
     if(results == 1){
         modelID <- dbGetQuery(databasePool, "SELECT last_insert_id();")[1,1]
     }else{
-        query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `resampleID` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=status)
+        query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `resampleID` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=model_status)
         results <- dbGetQuery(databasePool, query)
         if(nrow(results) > 0){
             modelID <- results$id

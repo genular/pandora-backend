@@ -1,0 +1,24 @@
+{
+    "default": {
+        "analysis": {
+            "server": {
+                "url": "http://localhost:3012"
+            }
+        },
+        "plots": {
+            "server": {
+                "url": "http://localhost:3013"
+            }
+        },
+        "backend": {
+            "server": {
+                "url": "http://localhost:3011"
+            }
+        },
+        "frontend": {
+            "server": {
+                "url": "http://localhost:3010"
+            }
+        }
+    }
+}

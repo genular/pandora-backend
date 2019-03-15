@@ -313,6 +313,13 @@ echo "Installation of advanced dependencies START"
 	## Socket location directory
 	mkdir -p "$rootfsDir/run/php"
 
+	## Set PHP session directory permissions
+	mkdir -p "/var/lib/php/sessions"
+	chown -hR root:www-data /var/lib/php
+	
+	chmod 777 "/var/lib/php/sessions"
+	chmod 776 "/var/lib/php"
+
 	mkdir -p "$rootfsDir/var/log/nginx"
 	mkdir -p "$rootfsDir/var/log/mysql"
 
@@ -342,9 +349,6 @@ echo "Installation of advanced dependencies START"
 	cd /tmp && curl -sS https://getcomposer.org/installer -o composer-setup.php
 	php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
-	## Set PHP session directory permissions
-	mkdir "/var/lib/php/sessions" && chmod 777 "/var/lib/php/sessions"
-	chgrp www-data /var/lib/php/*
 
 	## We will use this directory in SIMON to save data into
 	mkdir "/mnt/data" && chmod 777 "/mnt/data"

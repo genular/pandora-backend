@@ -60,6 +60,8 @@ db.apps.getCronJobQueue <- function(data){
                         dataset_resamples.id AS resampleID,
                         dataset_resamples.selectedOptions AS resampleOptions,
                         dataset_resamples.samples_total AS samples_total,
+                        dataset_resamples.samples_training AS samples_training,
+                        dataset_resamples.samples_testing  AS samples_testing,
                         users_files_main.file_path AS remotePathMain,
                         users_files_train.file_path AS remotePathTrain,
                         users_files_test.file_path AS remotePathTest

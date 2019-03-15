@@ -36,11 +36,11 @@ cpu_cores <- detectCores(logical = TRUE)
 cpu_cores <- as.numeric(cpu_cores)
 
 if(cpu_cores > 5){
-    CORES <- cpu_cores - 5    
+    CORES <- cpu_cores - 3    
 }else{
     CORES <- 1
 }
-cat(paste0("===> INFO: Starting SIMON with ",CORES," CPU cores! \r\n"))
+cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores! \r\n"))
 
 start_time <- Sys.time()
 
@@ -126,6 +126,8 @@ generateData <- function(serverData){
         cat(paste0("===> INFO: Nothing to analyze! No datasets found in database for queueID: ",serverData$queueID," \r\n"))
         invisible(file.remove(UPTIME_PID))
         quit()
+    }else{
+        cat(paste0("===> INFO: Found ",length(datasets)," resamples for queueID: ",serverData$queueID," \r\n"))
     }
     ## Loop all datasets and make Train and Test Sets if initial server
     for (d in 1:length(datasets)) {
@@ -147,20 +149,30 @@ generateData <- function(serverData){
         if(serverData$internalServerID == 0 && is.na(datasets[[d]]$remotePathTrain) == TRUE){
             cat(paste0("===> INFO: Generating Tran and Test data resampleID: ",datasets[[d]]$resampleID,"  \r\n"))
             ## If there is no data generated generate it now!!
-            preProcessDataset(datasets[[d]]);
-            datasets <- generateData(serverData)
-            break
+            preProcessStatus <- preProcessDataset(datasets[[d]]);
+            if(preProcessStatus == FALSE){
+                cat(paste0("===> ERROR: Cannot preProcess resample: ",datasets[[d]]$resampleID,", removing it from processing..\r\n"))
+                datasets[[d]]$status <- FALSE
+                next()
+            }else{
+                datasets <- generateData(serverData)
+                break
+            }
         }else{
-            cat(paste0("===> INFO: Train and Test sets are already generated for: ",datasets[[d]]$resampleID,"! Skipping...  \r\n"))
+            cat(paste0("===> INFO: Train and Test sets are already generated for: ",datasets[[d]]$resampleID,"! \r\n"))
         }
     }
     return (datasets);
 }
 ## Get data and generate data partitions if necessarily
 datasets <- generateData(serverData)
+# Simple total/skipped metrics
+total_datasets <- length(datasets)
+skipped_datasets <- 0
 
 performanceVariables <- NULL
-if(length(datasets) > 0){
+
+if(total_datasets > 0){
     performanceVariables <- getAllPerformanceVariables()
     ## At this stage status of the queue should be changed to 4 - Processing
     updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
@@ -170,6 +182,7 @@ if(length(datasets) > 0){
 for (dataset in datasets) {
 
     if(dataset$status == FALSE){
+        skipped_datasets = skipped_datasets + 1
         next()
     }
 
@@ -190,7 +203,11 @@ for (dataset in datasets) {
     filePathTesting <- downloadDataset(dataset$remotePathTest, FALSE)
 
     if(filePathTraining == FALSE || filePathTraining == FALSE){
-        cat(paste0("===> ERROR: SKIPPING Dataset processing cannot locate Training or Testing files \r\n"))
+        message <- paste0("===> ERROR: SKIPPING Dataset processing cannot locate Training or Testing files \r\n")
+        cat(message)
+        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", message)
+
         next()
     }
 
@@ -237,8 +254,6 @@ for (dataset in datasets) {
             cat(paste0("===> WARNING: RESTRICTED. Skipping model: ",model," \r\n"))
             next()
         }
-
-        sucess <- TRUE
         error_models <- c()
 
         cat(paste0("===> INFO: STARTING Model: ",paste0(model_details$internal_id, " " ,model_details$id," S: ",dataset$samples_total," F: ",length(dataset$features))," analysis at: ", Sys.time(),"\r\n"))
@@ -335,90 +350,102 @@ for (dataset in datasets) {
         results_auc <- NULL
         results_confusionMatrix <- NULL
         results_varImportance <- NULL
+        prediction <- NULL
 
-        if (trainModel$status == TRUE) {
-            cat(paste0("===> INFO: Training of ",model," finished at ", Sys.time(),". Starting predictions: \r\n"))
-
-            ## Test prediction with prediction dataset on our newly training model
-            prediction <- caretPredict(trainModel$data, modelData$testing)
-
-            ## RAW predictions
-            prediction_raw <- NULL
-            ## Probability predictions
-            prediction_prob <- NULL
-
-            if(prediction$type == "prob"){
-                prediction_prob <- prediction$preds
-
-                ## Cass prediction is based on a 50% probability cutoff. 
-                threshold <- 0.5
-                prediction_raw <- factor( ifelse(prediction_prob[, outcome_mapping[1, ]$class_remapped] > threshold, outcome_mapping[1, ]$class_remapped, outcome_mapping[2, ]$class_remapped) )
-   
-                ## More than one class is successfully calculated
-                if(length(unique(prediction_raw)) > 1){
-                    prediction_raw      <- relevel(prediction_raw, outcome_mapping[1, ]$class_remapped)
-                ## Only one unique class is calculated
-                } else if(length(prediction_raw) > 1){
-                    prediction_raw      <- prediction_raw
-                }else{
-                    prediction_raw <- NULL
-                }
-
-            }else if(prediction$type == "raw"){
-                prediction_raw <- prediction$preds
+        if(trainModel$status == TRUE){
+            results_varImportance <- prepareVariableImportance(trainModel$data)
+            if (is.null(results_varImportance)) { 
+                error_models <- c(error_models, "Cannot calculate variable importance")
             }
-
-            if(!is.null(prediction_raw) || !is.null(prediction_prob)){
-                if(problemType == "regression" && !is.null(prediction_prob)){
-                    ## Calculates performance across resamples
-                    ## Given two numeric vectors of data, the mean squared error and R-squared are calculated. For two factors, the overall agreement rate and Kappa are determined.
-                    t <- apply(prediction_prob, 2, caret::postResample, obs = modelData$testing[[dataset$outcome]])
-                }
-
-                if(!is.null(prediction_raw)){
-                    results_confusionMatrix <- caret::confusionMatrix(prediction_raw, modelData$testing[[dataset$outcome]])
-                }
-
-                if(!is.null(prediction_prob)){
-                    roc_p <- pROC::roc(modelData$testing[[dataset$outcome]], prediction_prob[, outcome_mapping[1, ]$class_remapped], levels = levels(modelData$testing[[dataset$outcome]]))
-                    results_auc <- list(roc = roc_p, auc = pROC::auc(roc_p))
-                }
-
-                results_varImportance <- prepareVariableImportance(trainModel$data)
-
-                if (is.null(results_varImportance)) { 
-                    sucess <- FALSE
-                    error_models <- c(error_models, "Cannot calculate variable importance")
-                }
-            }else{
-                sucess <- FALSE
-                error_models <- c(error_models, "Cannot calculate predict probabilities")
-            }
-
         }else{
-            sucess <- FALSE
-            error_models <- c(error_models, "Could not train model, errors occurred")
+            error_models <- c(error_models, paste0("Could not train model, error occurred: ", trainModel$data))
         }
+        if(trainModel$status == TRUE){
+            ## Don't try to make predictions if Training failed or we have less than 10 samples in testing dataset
+            if (!is.null(dataset$samples_testing) && as.numeric(dataset$samples_testing) >= 10) {
+                cat(paste0("===> INFO: Training of ",model," finished at ", Sys.time(),". Starting with predictions \r\n"))
+                ## Test prediction with prediction dataset on our newly training model
+                prediction <- caretPredict(trainModel$data, modelData$testing)
+                cat(paste0("===> INFO: Predictions of ",model," finished \r\n"))
+
+                ## Go to following step only if predictions are successful
+                if (prediction$status == TRUE) {
+                    ## RAW predictions
+                    prediction_raw <- NULL
+                    ## Probability predictions
+                    prediction_prob <- NULL
+
+                    if(prediction$type == "prob"){
+                        prediction_prob <- prediction$preds
+
+                        ## Cass prediction is based on a 50% probability cutoff. 
+                        threshold <- 0.5
+                        prediction_raw <- factor( ifelse(prediction_prob[, outcome_mapping[1, ]$class_remapped] > threshold, outcome_mapping[1, ]$class_remapped, outcome_mapping[2, ]$class_remapped) )
+           
+                        ## More than one class is successfully calculated
+                        if(length(unique(prediction_raw)) > 1){
+                            prediction_raw      <- relevel(prediction_raw, outcome_mapping[1, ]$class_remapped)
+                        ## Only one unique class is calculated
+                        } else if(length(prediction_raw) > 1){
+                            prediction_raw      <- prediction_raw
+                        }else{
+                            prediction_raw <- NULL
+                        }
+
+                    }else if(prediction$type == "raw"){
+                        prediction_raw <- prediction$preds
+                    }
+
+                    if(!is.null(prediction_raw) || !is.null(prediction_prob)){
+                        if(problemType == "regression" && !is.null(prediction_prob)){
+                            ## Calculates performance across resamples
+                            ## Given two numeric vectors of data, the mean squared error and R-squared are calculated. For two factors, the overall agreement rate and Kappa are determined.
+                            t <- apply(prediction_prob, 2, caret::postResample, obs = modelData$testing[[dataset$outcome]])
+                        }
+
+                        if(!is.null(prediction_raw)){
+                            results_confusionMatrix <- caret::confusionMatrix(prediction_raw, modelData$testing[[dataset$outcome]])
+                        }
+
+                        if(!is.null(prediction_prob)){
+                            roc_p <- pROC::roc(modelData$testing[[dataset$outcome]], prediction_prob[, outcome_mapping[1, ]$class_remapped], levels = levels(modelData$testing[[dataset$outcome]]))
+                            results_auc <- list(roc = roc_p, auc = pROC::auc(roc_p))
+                        }
+                    }else{
+                        error_models <- c(error_models, "Cannot calculate predict probabilities")
+                    }
+                }else{ ## Predict status check
+                    error_models <- c(error_models, "Cannot make predictions on the trained model")
+                }
+
+            }else{ ## Sample SIZE check
+                error_models <- c(error_models, paste0("Cannot make predictions on the model, not enough samples in test set (>=10): ", as.numeric(dataset$samples_testing)))
+            }  
+        } ## Model FAILED check
+
+        ## If we are here we must have something
+        # 1. everything is okay length(error_models) == 0
+        # 2. something failed length(error_models) > 0
         
         ## Save failed model so we don't process it again
-        methodDetails <- db.apps.simon.saveMethodAnalysisData(dataset$resampleID, 
-                                                      trainModel,
-                                                      results_confusionMatrix,
-                                                      model_details,
-                                                      performanceVariables,
-                                                      results_auc, 
-                                                      as.numeric(sucess),
-                                                      error_models,
-                                                      model_time_start)
+        methodDetails <- db.apps.simon.saveMethodAnalysisData(
+                                                                dataset$resampleID, 
+                                                                trainModel,
+                                                                results_confusionMatrix,
+                                                                model_details,
+                                                                performanceVariables,
+                                                                results_auc,
+                                                                error_models,
+                                                                model_time_start
+                                                            )
 
-        if(sucess != FALSE){
-            global_status <- 5 # Finished - Sucess
-
-            db.apps.simon.saveVariableImportance(
-                results_varImportance,
-                methodDetails$modelID
-            )
-
+        if(trainModel$status == TRUE){
+            if(!is.null(results_varImportance)){
+                db.apps.simon.saveVariableImportance(
+                    results_varImportance,
+                    methodDetails$modelID
+                )
+            }
             saveData <- list(
                 training = trainModel,
                 prediction = prediction, 
@@ -426,22 +453,17 @@ for (dataset in datasets) {
                 confusionMatrix = results_confusionMatrix,
                 varImportance = results_varImportance
             )
-
             saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
             ## JOB_DIR is temporarily directory on our local file-system
             saveDataPaths$path_initial <- paste0(JOB_DIR,"/models/modelID_", methodDetails$modelID, ".RData")
-
             ## Save data in .RData since write_feather supports only data-frames
             save(saveData, file = saveDataPaths$path_initial)
-            rm(saveData)
-
             path_details = compressPath(saveDataPaths$path_initial)
             
             saveDataPaths$renamed_path = path_details$renamed_path
             saveDataPaths$gzipped_path = path_details$gzipped_path
 
             saveDataPaths$file_path = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/models"))
-
             file_id <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
 
             updateDatabaseFiled("models", "ufid", file_id, "id", methodDetails$modelID)
@@ -449,9 +471,13 @@ for (dataset in datasets) {
             if(file.exists(saveDataPaths$gzipped_path)){ file.remove(saveDataPaths$gzipped_path) }
             if(file.exists(saveDataPaths$renamed_path)){ file.remove(saveDataPaths$renamed_path) }
 
-        }else{
-            global_status <- 6 ## Finished - Errors 
         }
+
+        if(length(error_models) > 0){
+            cat(paste0("===> ERROR: Training of ",model," failed with ",length(error_models)," following errors \r\n"))
+            cat(paste0("===> ERROR: ", paste(errors, collapse = " | ")))
+        }
+
         rm(trainModel)
     } ## END caret model/algorithm loop
 
@@ -469,6 +495,12 @@ total_time <- as.numeric(difftime(end_time, start_time,  units = c("secs")))
 total_time_ms <- ceiling(total_time * 1000)
 
 updateDatabaseFiled("dataset_queue", "processing_time", total_time_ms, "id", serverData$queueID)
+
+## If we skipped all resamples mare queue as failed!
+if(skipped_datasets >= total_datasets){
+    global_status <- 6
+}
+
 updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 
 cat(paste0("======> INFO: PROCESSING END (",total_time," sec) \r\n"))
