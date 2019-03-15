@@ -237,9 +237,7 @@ for (dataset in datasets) {
     models_to_process <- dataset$packages$internal_id
 
     ## list of models that are completely unsupported
-    ## models_restrict <- c("awnb", "awtan", "bag", "bagEarth", "bagEarthGCV", "bagFDA", "bagFDAGCV", "bam", "bartMachine", "extraTrees", "gbm_h2o", "hdrda", "RWeka", "J48", "JRip", "LMT", "PART", "OneR", "oblique.tree","xyf", "glmnet_h2o", "mlpSGD")
     models_restrict <- c("null", "mxnet")
-
     loaded_libraries_for_model <- NULL
     ## Loop all user selected methods and make models
     for (model in rev(models_to_process)) {
@@ -311,18 +309,24 @@ for (dataset in datasets) {
             for (package in c(model_info$library)) {
                 if(package %!in% (.packages())){
                     cat(paste0("===> WARNING: Package is not loaded: ",package," - trying to load it! \r\n"))
-                    # Error in system(paste(which, shQuote(names[i])), intern = TRUE, ignore.stderr = TRUE) : 
-                    # cannot popen '/usr/bin/which 'uname' 2>/dev/null', probable reason 'Cannot allocate memory'
-                    # Calls: p_load ... FUN -> p_install -> p_loaded -> <Anonymous> -> Sys.which
-                    if (!p_load(c(package), install = TRUE, update=FALSE, character.only = TRUE)) {
-                        cat(paste0("===> ERROR: Package not found: ",package," \r\n"))
-                        break()
-                        ## Development override
-                        ## install.packages(package, dependencies = TRUE, repos="http://cran.us.r-project.org")
-                        ## if (require(package, character.only=T, quietly=T)) {
-                        ##     is_loaded <- TRUE
-                        ##     loaded_libraries_for_model <- c(loaded_libraries_for_model, package)
-                        ## }
+
+                    if (!require(package, character.only=T, quietly=T)) {
+                        cat(paste0("===> ERROR: Package not found: ",package," trying to install it:\r\n"))
+                        github_path <- paste0("cran/", package)
+                        if(try(RCurl::url.exists(paste0("https://github.com/",github_path)))){
+                            if(!p_load_gh(c(github_path), install = TRUE, update = FALSE, dependencies = TRUE)){
+                                cat(paste0("===> ERROR: Package : ",package," could not be installed from github \r\n"))
+                                break()
+                            }else{
+                                cat(paste0("===> SUCESS: Package is successfully loaded: ",package," \r\n"))
+                                is_loaded <- TRUE
+                                loaded_libraries_for_model <- c(loaded_libraries_for_model, package)
+                            }
+                        }else{
+                            cat(paste0("===> ERROR: Package : ",github_path," not found on github \r\n"))
+                            break()
+                        }
+
                     }else{
                         cat(paste0("===> SUCESS: Package is successfully loaded: ",package," \r\n"))
                         is_loaded <- TRUE
@@ -494,7 +498,7 @@ for (dataset in datasets) {
     ## 4 - Finished Success
     updateDatabaseFiled("dataset_resamples", "status", 4, "id", dataset$resampleID)
 
-} ## MAIN DATASET LOOP END
+} ## MAIN RESAMPLE DATASET LOOP END
 
 end_time <- Sys.time()
 total_time <- as.numeric(difftime(end_time, start_time,  units = c("secs")))

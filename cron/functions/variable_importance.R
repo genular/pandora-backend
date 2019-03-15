@@ -1,5 +1,5 @@
-#' @title  
-#' @description 
+#' @title  getVariableImportance
+#' @description Calculation of variable importance for regression and classification models
 #' @param model Model Fit from caret::train function
 #' @param scale 
 #' @return data frame
@@ -21,7 +21,7 @@ getVariableImportance <- function(model, scale = TRUE) {
     return(out)
 }
 
-#' @title  
+#' @title  prepareVariableImportance
 #' @description 
 #' @param model Model Fit from caret::train function
 #' @return data frame

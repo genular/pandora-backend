@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:27:48
+ * @Last Modified time: 2019-03-15 12:09:37
  */
 namespace SIMON\Dataset;
 
@@ -25,6 +25,33 @@ class DatasetCalculations {
 		$this->logger = $logger;
 		// Log anything.
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetCalculations constructed");
+	}
+	/**
+	 * Checks if we have good sample size
+	 * @param  [type] $resamples      [description]
+	 * @param  [type] $partitionSplit [description]
+	 * @return [type]                 [description]
+	 */
+	public function validateSampleSize($resamples, $partitionSplit) {
+		// Loop all created intersections
+		foreach ($resamples as $resampleGroupDataKey => $resampleGroupDataValue) {
+			$isResampleValid = true;
+			$message = [];
+			$totalSamples = $resampleGroupDataValue["totalSamples"];
+
+			// Number of samples in Test set
+			$minimumSamples = ($totalSamples * (100 - $partitionSplit)) / 100;
+			if ($minimumSamples < 10) {
+				array_push($message, ["msg_info" => "invalid_sample_count_test", "data" => $minimumSamples]);
+				$isResampleValid = false;
+			}
+			if ($isResampleValid === false) {
+				$resamples[$resampleGroupDataKey]["isValid"] = false;
+				$resamples[$resampleGroupDataKey]["isSelected"] = false;
+				$resamples[$resampleGroupDataKey]["message"] = $message;
+			}
+		}
+		return $resamples;
 	}
 
 	/**

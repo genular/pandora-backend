@@ -426,7 +426,12 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "BiocManager::install('vbmp', version = '3.8', update = FALSE, ask = FALSE)"
             sudo Rscript -e "BiocManager::install('gpls', version = '3.8', update = FALSE, ask = FALSE)"
             sudo Rscript -e "BiocManager::install('logicFS', version = '3.8', update = FALSE, ask = FALSE)"
-            sudo Rscript -e "devtools::install_github(c('cran/adaptDA', 'ramhiser/sparsediscrim', 'cran/elmNN', 'cran/FCNN4R'))"
+            sudo Rscript -e "devtools::install_github(c('cran/adaptDA', 'ramhiser/sparsediscrim', 'cran/elmNN', 'cran/FCNN4R', 'rstudio/tensorflow'))"
+            
+            echo "${yellow}Trying to install tensorflow${clear}"
+            echo ""
+            ## https://tensorflow.rstudio.com/tensorflow/reference/install_tensorflow.html
+            sudo Rscript -e "tensorflow::install_tensorflow(method='auto')"
         fi 
     fi
 fi

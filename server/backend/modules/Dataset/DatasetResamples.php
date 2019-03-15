@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 17:39:51
+ * @Last Modified time: 2019-03-15 10:41:06
  */
 namespace SIMON\Dataset;
 
@@ -55,7 +55,7 @@ class DatasetResamples {
 	 */
 	public function updateStatus($resample) {
 
-		if ($resample['selected'] === true) {
+		if ($resample['isSelected'] === true) {
 			$status = 0;
 		} else {
 			$status = 1;

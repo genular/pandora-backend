@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-14 11:47:14
+ * @Last Modified time: 2019-03-15 12:26:15
  */
 
 use Slim\Http\Request;
@@ -154,6 +154,7 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*
 $app->post('/backend/system/simon/pre-analysis', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = [];
+	$queue_message = [];
 
 	$start = microtime(true);
 
@@ -163,6 +164,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	$DatasetIntersection = $this->get('SIMON\Dataset\DatasetIntersection');
 	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 	$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+	$DatasetCalculations = $this->get('SIMON\Dataset\DatasetCalculations');
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
 	$user_details = $request->getAttribute('user');
@@ -172,11 +174,12 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	$post = $request->getParsedBody();
 	if (isset($post['submitData'])) {
 		$submitData = json_decode(base64_decode(urldecode($post['submitData'])), true);
+		$submitData["selectedPartitionSplit"] = (int) $submitData["selectedPartitionSplit"];
 	}
 
 	$tempFilePath = $FileSystem->downloadFile($submitData["selectedFiles"][0]);
 
-	$resamples = [];
+	$dataset_queues = [];
 	$queueID = 0;
 	$sparsity = 0;
 
@@ -228,38 +231,40 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 		$queueID = $DatasetQueue->createQueue($user_id, $submitData, $allOtherSelections, $allSelectedFeatures);
 
-		$sparsityUpdate = true;
+		$queueSparsity = true;
 		if ($queueID !== 0) {
 			// CALCULATE INTERSECTIONS
 			foreach ($submitData["selectedOutcome"] as $selectedOutcome) {
-
 				$datasetResample = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"]);
 				// If we didn't do multi-set intersection check if some of the columns contain Invalid data
 				if ($submitData["extraction"] === false && count($datasetResample["info"]["invalidColumns"]) > 0) {
 					foreach ($datasetResample["info"]["invalidColumns"] as $invalidColumn) {
-						array_push($message, ["msg_info" => "invalid_columns", "data" => $invalidColumn]);
+						array_push($queue_message, ["msg_info" => "invalid_columns", "data" => $invalidColumn]);
 					}
 					// remove resamples and force user needs to select new columns since some have non  numeric data
 					continue;
 				}
+				// Check if have good amount of samples and adjust appropriate status and message variables
+				$datasetResample["resamples"] = $DatasetCalculations->validateSampleSize($datasetResample["resamples"], $submitData["selectedPartitionSplit"]);
 
-				// Update sparsity values only once per queue
-				if ($sparsityUpdate === true) {
+				// Update sparsity values only once per main queue not for each resample
+				if ($queueSparsity === true) {
 					$sparsity = $datasetResample["info"]["sparsity"];
-					$sparsityUpdate = $DatasetQueue->updateTable("sparsity", $sparsity, "id", $queueID);
+					$queueSparsity = $DatasetQueue->updateTable("sparsity", $sparsity, "id", $queueID);
 				}
 
-				$resamples[] = ["outcome" => $selectedOutcome, "data" => $datasetResample["resamples"]];
+				$dataset_queues[] = ["outcome" => $selectedOutcome, "data" => $datasetResample["resamples"]];
 				$totalDatasetsGenerated += count($datasetResample["resamples"]);
 			}
 
 			if ($totalDatasetsGenerated > 0) {
 				// Create Re-sample Files to temporary place on file-system
-				$resamples = $DatasetIntersection->generateResamples($queueID, $tempFilePath, $resamples, $allOtherSelections);
+				$dataset_queues = $DatasetIntersection->generateResamples($queueID, $tempFilePath, $dataset_queues, $allOtherSelections);
 				// Upload each of them to the storage
-				foreach ($resamples as $resampleGroupKey => $resampleGroupValue) {
+				foreach ($dataset_queues as $resampleGroupKey => $resampleGroupValue) {
 
 					foreach ($resampleGroupValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
+
 						$uploaded_path = $resampleGroupDataValue["resamplePath"];
 						// Validate File Header and rename it to standardize column names!
 						$details = $Helpers->validateCSVFileHeader($uploaded_path);
@@ -286,20 +291,20 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 						$resampleID = $DatasetResamples->createResample($queueID, $file_id, $resampleGroupDataValue, $resampleGroupValue["outcome"], $submitData);
 
-						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["id"] = $resampleID;
-						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["fileID"] = $file_id;
+						$dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["id"] = $resampleID;
+						$dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["fileID"] = $file_id;
 
-						unset($resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["listFeatures"]);
-						unset($resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"]);
+						unset($dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["listFeatures"]);
+						unset($dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"]);
 					}
 				}
 			} else {
-				array_push($message, ["msg_info" => "no_resamples"]);
+				array_push($queue_message, ["msg_info" => "no_resamples"]);
 			}
 			// @unlink($tempFilePath);
 		} else {
 			$success = false;
-			array_push($message, ["msg_info" => "queue_exists"]);
+			array_push($queue_message, ["msg_info" => "queue_exists"]);
 		}
 
 	} else {
@@ -308,11 +313,12 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	$time_elapsed_secs = microtime(true) - $start;
 
 	return $response->withJson(["success" => $success,
-		"message" => array(
+		"details" => array(
 			"queueID" => $queueID,
 			"sparsity" => $sparsity,
-			"resamples" => $resamples,
-			"message" => $message),
+			"dataset_queues" => $dataset_queues,
+			"message" => $queue_message),
+		"message" => $message,
 		"time_elapsed_secs" => $time_elapsed_secs,
 		"initial_db_connect" => $initial_db_connect]);
 

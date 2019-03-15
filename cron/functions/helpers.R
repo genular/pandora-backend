@@ -1,30 +1,3 @@
-# Function eval_fork() of opencpu package modified
-# Original code by Jeroen Ooms <jeroen.ooms at stat.ucla.edu> of OpenCPU package
-# 
-predictTimeout <- function(..., seconds) {
-
-    fork_to_check <- parallel::mcparallel(
-        {eval(...)},
-        silent = FALSE)
-    # call mccollect to wait "seconds" for returning result of mcparallel.
-    result <- parallel::mccollect(fork_to_check, wait = FALSE, timeout = seconds)
-    # If result is returned kill fork
-    tools::pskill(fork_to_check$pid, tools::SIGKILL)
-    tools::pskill(-1 * fork_to_check$pid, tools::SIGKILL)
-    # kill the fork of forks if they were spawned
-    parallel::mccollect(fork_to_check, wait = FALSE)
-    # If the function mccollect had NULL (timedout), make stop
-    if (is.null(result)){
-        result <- paste0("INFO: predictTimeout limit ",seconds," sec has been reached!")
-    }else{
-        # remove list format
-        result <- result[[1]]
-    }
-
-    # return result
-    return(result)
-}
-
 MSE <-function(vect1, vect2, rows_no){
     result=0
     pred<-0

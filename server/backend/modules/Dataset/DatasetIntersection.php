@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-14 12:05:31
+ * @Last Modified time: 2019-03-15 13:13:27
  */
 namespace SIMON\Dataset;
 
@@ -311,7 +311,9 @@ class DatasetIntersection {
 							'listSamples' => [],
 							'totalSamples' => 0,
 							'totalDatapoints' => 0,
-							'selected' => true, // Is the set preselected in GUI?
+							'isSelected' => true, // Is preselected on front-end?
+							'isValid' => true, // False if there are some errors
+							'message' => [], // Array of errors in question
 						);
 						$totalMultiSetsIntersections++;
 					}
@@ -337,9 +339,9 @@ class DatasetIntersection {
 
 		if (!empty($featureSetsShared)) {
 			$data = array_values($featureSetsShared);
-			// Sort data by number of totalSamples
+			// Sort data by number of totalSamples (more samples first!)
 			usort($data, function ($item1, $item2) {
-				return $item1['totalSamples'] <=> $item2['totalSamples'];
+				return $item2['totalSamples'] <=> $item1['totalSamples'];
 			});
 		}
 
