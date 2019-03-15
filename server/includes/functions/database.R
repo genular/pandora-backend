@@ -68,7 +68,7 @@ db.apps.getCronJobQueue <- function(data){
 
                     FROM dataset_queue
                     INNER JOIN dataset_resamples ON dataset_queue.id = dataset_resamples.dqid
-                         ## Select only re-samples that are marked for processing
+                         ## Select only re-samples that are user activated or 2 R (train/test)partitions Created
                          AND dataset_resamples.status IN (0,2)
                          AND dataset_resamples.servers_finished != dataset_queue.servers_total
 
@@ -80,7 +80,7 @@ db.apps.getCronJobQueue <- function(data){
 
                     LEFT JOIN users_files users_files_test ON dataset_resamples.ufid_test = users_files_test.id
                          AND users_files_test.uid = dataset_queue.uid
-
+                    ## Select datasets that are marked for processing or already processing
                     WHERE dataset_queue.id = ",data$queueID," AND dataset_queue.status IN(3, 4)
 
                     ORDER BY dataset_resamples.id ASC")
@@ -97,6 +97,8 @@ db.apps.getCronJobQueue <- function(data){
             userID <- results[i, ]$userID
 
             samples_total <- results[i, ]$samples_total
+            samples_training <- results[i, ]$samples_training
+            samples_testing <- results[i, ]$samples_testing
 
             remotePathMain <-  results[i, ]$remotePathMain
             remotePathTrain <-  results[i, ]$remotePathTrain
@@ -119,6 +121,8 @@ db.apps.getCronJobQueue <- function(data){
                     partitionSplit = (partitionSplit / 100),
                     regressionFormula = regressionFormula,
                     samples_total = samples_total,
+                    samples_training = samples_training,
+                    samples_testing = samples_testing,
                     classes = classes,
                     features = features,
                     outcome = outcome,

@@ -191,7 +191,7 @@ for (dataset in datasets) {
     JOB_DIR <- initilizeDatasetDirectory(dataset)
     ## Development overwrite
     ## sink(paste0(JOB_DIR,"/logs/output.txt"))
-    cat(paste0("+++> INFO: Started resampleID: ",dataset$resampleID," at: ", resample_time_start," Local-path: ",JOB_DIR," <+++\r\n"))
+    cat(paste0("+++> INFO: Started resampleID: ",dataset$resampleID," outcome: ",dataset$outcome," at: ", resample_time_start," Local-path: ",JOB_DIR," <+++\r\n"))
 
     ## Mark re-sample in database that is currently processing
     updateDatabaseFiled("dataset_resamples", "status", 3, "id", dataset$resampleID)
@@ -368,7 +368,7 @@ for (dataset in datasets) {
                 error_models <- c(error_models, "Cannot calculate variable importance")
             }
         }else{
-            error_models <- c(error_models, paste0("Could not train model, error occurred: ", trainModel$data))
+            error_models <- c(error_models, trainModel$data)
         }
         if(trainModel$status == TRUE){
             ## Don't try to make predictions if Training failed or we have less than 10 samples in testing dataset
@@ -484,8 +484,8 @@ for (dataset in datasets) {
         }
 
         if(length(error_models) > 0){
-            cat(paste0("===> ERROR: Training of ",model," failed with ",length(error_models)," following errors \r\n"))
-            cat(paste0("===> ERROR: ", paste(error_models, collapse = " | "), "\r\n"))
+            cat(paste0("===> ERROR: Training of ",model," failed with ",length(error_models)," following errors: \r\n"))
+            cat(paste0("===>        ", paste(error_models, collapse = " | "), "\r\n"))
         }
 
         rm(trainModel)
