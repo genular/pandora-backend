@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-15 12:26:15
+ * @Last Modified time: 2019-03-15 15:01:53
  */
 
 use Slim\Http\Request;
@@ -179,7 +179,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 	$tempFilePath = $FileSystem->downloadFile($submitData["selectedFiles"][0]);
 
-	$dataset_queues = [];
+	$queuesGenerated = [];
 	$queueID = 0;
 	$sparsity = 0;
 
@@ -235,33 +235,33 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 		if ($queueID !== 0) {
 			// CALCULATE INTERSECTIONS
 			foreach ($submitData["selectedOutcome"] as $selectedOutcome) {
-				$datasetResample = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"]);
+				$resamples = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"]);
 				// If we didn't do multi-set intersection check if some of the columns contain Invalid data
-				if ($submitData["extraction"] === false && count($datasetResample["info"]["invalidColumns"]) > 0) {
-					foreach ($datasetResample["info"]["invalidColumns"] as $invalidColumn) {
+				if ($submitData["extraction"] === false && count($resamples["info"]["invalidColumns"]) > 0) {
+					foreach ($resamples["info"]["invalidColumns"] as $invalidColumn) {
 						array_push($queue_message, ["msg_info" => "invalid_columns", "data" => $invalidColumn]);
 					}
 					// remove resamples and force user needs to select new columns since some have non  numeric data
 					continue;
 				}
 				// Check if have good amount of samples and adjust appropriate status and message variables
-				$datasetResample["resamples"] = $DatasetCalculations->validateSampleSize($datasetResample["resamples"], $submitData["selectedPartitionSplit"]);
+				$resamples["resamples"] = $DatasetCalculations->validateSampleSize($resamples["resamples"], $submitData["selectedPartitionSplit"]);
 
 				// Update sparsity values only once per main queue not for each resample
 				if ($queueSparsity === true) {
-					$sparsity = $datasetResample["info"]["sparsity"];
+					$sparsity = $resamples["info"]["sparsity"];
 					$queueSparsity = $DatasetQueue->updateTable("sparsity", $sparsity, "id", $queueID);
 				}
 
-				$dataset_queues[] = ["outcome" => $selectedOutcome, "data" => $datasetResample["resamples"]];
-				$totalDatasetsGenerated += count($datasetResample["resamples"]);
+				$queuesGenerated[] = ["outcome" => $selectedOutcome, "data" => $resamples["resamples"]];
+				$totalDatasetsGenerated += count($resamples["resamples"]);
 			}
 
 			if ($totalDatasetsGenerated > 0) {
 				// Create Re-sample Files to temporary place on file-system
-				$dataset_queues = $DatasetIntersection->generateResamples($queueID, $tempFilePath, $dataset_queues, $allOtherSelections);
+				$queuesGenerated = $DatasetIntersection->generateResamples($queueID, $tempFilePath, $queuesGenerated, $allOtherSelections);
 				// Upload each of them to the storage
-				foreach ($dataset_queues as $resampleGroupKey => $resampleGroupValue) {
+				foreach ($queuesGenerated as $resampleGroupKey => $resampleGroupValue) {
 
 					foreach ($resampleGroupValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
 
@@ -291,11 +291,11 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 						$resampleID = $DatasetResamples->createResample($queueID, $file_id, $resampleGroupDataValue, $resampleGroupValue["outcome"], $submitData);
 
-						$dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["id"] = $resampleID;
-						$dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["fileID"] = $file_id;
+						$queuesGenerated[$resampleGroupKey]["data"][$resampleGroupDataKey]["id"] = $resampleID;
+						$queuesGenerated[$resampleGroupKey]["data"][$resampleGroupDataKey]["fileID"] = $file_id;
 
-						unset($dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["listFeatures"]);
-						unset($dataset_queues[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"]);
+						unset($queuesGenerated[$resampleGroupKey]["data"][$resampleGroupDataKey]["listFeatures"]);
+						unset($queuesGenerated[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"]);
 					}
 				}
 			} else {
@@ -316,7 +316,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 		"details" => array(
 			"queueID" => $queueID,
 			"sparsity" => $sparsity,
-			"dataset_queues" => $dataset_queues,
+			"dataset_queues" => $queuesGenerated,
 			"message" => $queue_message),
 		"message" => $message,
 		"time_elapsed_secs" => $time_elapsed_secs,

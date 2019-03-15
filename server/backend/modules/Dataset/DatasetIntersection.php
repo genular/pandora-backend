@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-15 13:13:27
+ * @Last Modified time: 2019-03-15 15:42:57
  */
 namespace SIMON\Dataset;
 
@@ -70,7 +70,7 @@ class DatasetIntersection {
 	 * @param  [type] $allOtherSelections [description]
 	 * @return [type]                     [description]
 	 */
-	public function generateResamples($queueID, $tempFilePath, $resamples, $allOtherSelections) {
+	public function generateResamples($queueID, $tempFilePath, $queuesGenerated, $allOtherSelections) {
 		$datasets = array();
 
 		$reader = Reader::createFromPath($tempFilePath, 'r');
@@ -84,30 +84,40 @@ class DatasetIntersection {
 
 		// Loop all records in original FILE
 		foreach ($records as $recordID => $record) {
+			$recordColumns = array_keys($record);
 
-			// Loop all created intersections
-			foreach ($resamples as $resampleGroupKey => $resampleGroupValue) {
+			// Loop all different queues
+			foreach ($queuesGenerated as $queueKey => $queueValue) {
 
-				foreach ($resampleGroupValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
-
+				// Loop all created intersections
+				foreach ($queueValue["data"] as $resampleGroupDataKey => $resampleGroupDataValue) {
 					if (!isset($datasets[$resampleGroupDataKey])) {
-						$filename = 'genSysFile_queue_' . $queueID . '_group_' . $resampleGroupKey . '_resample_' . $resampleGroupDataKey . '.csv';
-						$resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"] = $this->temp_dir . '/' . $filename;
+						$filename = 'genSysFile_queue_' . $queueID . '_group_' . $queueKey . '_resample_' . $resampleGroupDataKey . '.csv';
+						$queuesGenerated[$queueKey]["data"][$resampleGroupDataKey]["resamplePath"] = $this->temp_dir . '/' . $filename;
 
 						$datasets[$resampleGroupDataKey] = array(
 							"header" => false,
-							"writer" => Writer::createFromPath($resamples[$resampleGroupKey]["data"][$resampleGroupDataKey]["resamplePath"], 'w+'),
+							"writer" => Writer::createFromPath($queuesGenerated[$queueKey]["data"][$resampleGroupDataKey]["resamplePath"], 'w+'),
 						);
 					}
 
 					$listFeatures = $resampleGroupDataValue["listFeatures"];
 
-					$keepColumns = array_merge($listFeatures, $allOtherSelections);
-					$keepColumns = array_intersect($keepColumns, array_keys($record));
+					$ourColumns = array_merge($listFeatures, $allOtherSelections);
+					$keepColumns = array_intersect($ourColumns, $recordColumns);
 					$keepColumns = array_flip($keepColumns);
 
-					$listSamples = $resampleGroupDataValue["listSamples"];
+					// Every resample has different record header! Make a copy
+					$recordCopy = $record;
+					foreach ($recordCopy as $recordKey => $recordValue) {
 
+						if (!isset($keepColumns[$recordKey])) {
+							unset($recordCopy[$recordKey]);
+						}
+					}
+					ksort($recordCopy, SORT_NATURAL);
+
+					$listSamples = $resampleGroupDataValue["listSamples"];
 					foreach ($listSamples as $sampleRange) {
 						$range = explode("-", $sampleRange);
 
@@ -115,32 +125,28 @@ class DatasetIntersection {
 							$range[1] = $range[0];
 						}
 
-						if (($range[0] <= $recordID) && ($recordID <= $range[1])) {
+						$range = array_map('intval', $range);
 
-							foreach ($record as $recordKey => $recordValue) {
-								if (!isset($keepColumns[$recordKey])) {
-									unset($record[$recordKey]);
-								}
-							}
-							ksort($record, SORT_NATURAL);
+						if (($range[0] <= $recordID) && ($recordID <= $range[1])) {
 
 							if ($datasets[$resampleGroupDataKey]["header"] === false) {
 								$datasets[$resampleGroupDataKey]["header"] = true;
-								$datasets[$resampleGroupDataKey]["writer"]->insertOne(array_keys($record));
+								$datasets[$resampleGroupDataKey]["writer"]->setFlushThreshold(1);
+								$datasets[$resampleGroupDataKey]["writer"]->insertOne(array_keys($recordCopy));
 							}
 
 							try {
-								$datasets[$resampleGroupDataKey]["writer"]->insertOne(array_values($record));
+								$datasets[$resampleGroupDataKey]["writer"]->insertOne(array_values($recordCopy));
 							} catch (CannotInsertRecord $e) {
 								$this->logger->addInfo("==> ERROR => SIMON\Dataset\DatasetIntersection CannotInsertRecord " . $queueID . ": " . json_encode($e->getData()));
 							}
 						}
 					}
-				}
+
+				} // resample loop
 			}
 		}
-
-		return ($resamples);
+		return ($queuesGenerated);
 	}
 
 	/**
@@ -314,6 +320,7 @@ class DatasetIntersection {
 							'isSelected' => true, // Is preselected on front-end?
 							'isValid' => true, // False if there are some errors
 							'message' => [], // Array of errors in question
+							'resamplePath' => false
 						);
 						$totalMultiSetsIntersections++;
 					}

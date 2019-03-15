@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 14:51:36
+ * @Last Modified time: 2019-03-15 15:09:36
  */
 namespace SIMON\Helpers;
 
@@ -369,7 +369,7 @@ class Helpers {
 		}
 		$recursive_paths = array_unique($recursive_paths);
 		foreach ($recursive_paths as $path) {
-			if (!is_dir($path)) {
+			if (!file_exists($path) || !is_dir($path)) {
 				if (!mkdir($path, 0777, true)) {
 					return FALSE;
 				}
