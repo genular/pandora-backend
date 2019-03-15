@@ -243,6 +243,9 @@ for (dataset in datasets) {
     loaded_libraries_for_model <- NULL
     ## Loop all user selected methods and make models
     for (model in rev(models_to_process)) {
+        ## make garbage collection to take place
+        gc()
+
         ## Used when saving model to models DB table to set training_time value
         model_time_start <- Sys.time()
 
@@ -308,7 +311,10 @@ for (dataset in datasets) {
             for (package in c(model_info$library)) {
                 if(package %!in% (.packages())){
                     cat(paste0("===> WARNING: Package is not loaded: ",package," - trying to load it! \r\n"))
-                    if (!p_load(c(package), install = TRUE, character.only = TRUE)) {
+                    # Error in system(paste(which, shQuote(names[i])), intern = TRUE, ignore.stderr = TRUE) : 
+                    # cannot popen '/usr/bin/which 'uname' 2>/dev/null', probable reason 'Cannot allocate memory'
+                    # Calls: p_load ... FUN -> p_install -> p_loaded -> <Anonymous> -> Sys.which
+                    if (!p_load(c(package), install = TRUE, update=FALSE, character.only = TRUE)) {
                         cat(paste0("===> ERROR: Package not found: ",package," \r\n"))
                         break()
                         ## Development override
@@ -475,7 +481,7 @@ for (dataset in datasets) {
 
         if(length(error_models) > 0){
             cat(paste0("===> ERROR: Training of ",model," failed with ",length(error_models)," following errors \r\n"))
-            cat(paste0("===> ERROR: ", paste(errors, collapse = " | ")))
+            cat(paste0("===> ERROR: ", paste(error_models, collapse = " | "), "\r\n"))
         }
 
         rm(trainModel)
