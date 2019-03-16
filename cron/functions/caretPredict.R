@@ -215,7 +215,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     train_args <- list(as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
     train_args <- c(train_args, tuneList)
         
-    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=120, onTimeout = "error") ), error = function(e){ return(e) } )
+    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=1800, onTimeout = "error") ), error = function(e){ return(e) } )
 
     # Ignore warnings while processing errors
     options(warn = -1)

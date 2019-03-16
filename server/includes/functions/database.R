@@ -69,7 +69,8 @@ db.apps.getCronJobQueue <- function(data){
                     FROM dataset_queue
                     INNER JOIN dataset_resamples ON dataset_queue.id = dataset_resamples.dqid
                          ## Select only re-samples that are user activated or 2 R (train/test)partitions Created
-                         AND dataset_resamples.status IN (0,2)
+                         ## If processing is canceled unexpectedly status will be 3 (In Processing)
+                         AND dataset_resamples.status IN (0,2,3)
                          AND dataset_resamples.servers_finished != dataset_queue.servers_total
 
                     LEFT JOIN users_files users_files_main ON dataset_resamples.ufid = users_files_main.id

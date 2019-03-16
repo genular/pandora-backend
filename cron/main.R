@@ -233,6 +233,19 @@ for (dataset in datasets) {
     data$training <- data$training[, names(data$training) %in% c(dataset$features, dataset$outcome)]
     data$testing <- data$testing[, names(data$testing) %in% c(dataset$features, dataset$outcome)]
 
+    modelData = list(training = data$training, testing = data$testing)
+
+    ## Establish factors for outcome column
+    modelData$training[[dataset$outcome]] <- as.factor(modelData$training[[dataset$outcome]])
+    modelData$training[[dataset$outcome]] <- factor(
+        modelData$training[[dataset$outcome]], levels = levels(modelData$training[[dataset$outcome]])
+    )
+    modelData$testing[[dataset$outcome]] <- as.factor(modelData$testing[[dataset$outcome]])
+    modelData$testing[[dataset$outcome]] <- factor(
+        modelData$testing[[dataset$outcome]], levels = levels(modelData$testing[[dataset$outcome]])
+    )
+    
+
     ## User selected methods
     models_to_process <- dataset$packages$internal_id
 
@@ -274,21 +287,6 @@ for (dataset in datasets) {
         }else{
             model_details$prob <- TRUE
         }
-
-        ## TODO: make this as little times as possible
-        modelData = list(training = data$training, testing = data$testing)
-        if(problemType == "classification"){
-            ## Establish factors for outcome column, but only for classification problems
-            modelData$training[[dataset$outcome]] <- as.factor(modelData$training[[dataset$outcome]])
-            modelData$training[[dataset$outcome]] <- factor(
-                modelData$training[[dataset$outcome]], levels = levels(modelData$training[[dataset$outcome]])
-            )
-            modelData$testing[[dataset$outcome]] <- as.factor(modelData$testing[[dataset$outcome]])
-            modelData$testing[[dataset$outcome]] <- factor(
-                modelData$testing[[dataset$outcome]], levels = levels(modelData$testing[[dataset$outcome]])
-            )
-        }
-
 
         ## Check if specific model for current feature set is already processed
         model_processed <- db.apps.checkIfModelProcessed(dataset$resampleID, model_details$id)
