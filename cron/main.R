@@ -226,23 +226,24 @@ for (dataset in datasets) {
     outcome_mapping <- getDatasetResamplesMappings(dataset$queueID, dataset$resampleID, dataset$outcome)
     
     ## Coerce data to a standard data.frame
-    data$training <- as.data.frame(data$training)
-    data$testing <- as.data.frame(data$testing)
+    data$training <- base::as.data.frame(data$training)
+    data$testing <- base::as.data.frame(data$testing)
 
     ## Remove all columns expect selected features and outcome
-    data$training <- data$training[, names(data$training) %in% c(dataset$features, dataset$outcome)]
-    data$testing <- data$testing[, names(data$testing) %in% c(dataset$features, dataset$outcome)]
+    data$training <- data$training[, base::names(data$training) %in% c(dataset$features, dataset$outcome)]
+    data$testing <- data$testing[, base::names(data$testing) %in% c(dataset$features, dataset$outcome)]
 
     modelData = list(training = data$training, testing = data$testing)
 
     ## Establish factors for outcome column
-    modelData$training[[dataset$outcome]] <- as.factor(modelData$training[[dataset$outcome]])
-    modelData$training[[dataset$outcome]] <- factor(
-        modelData$training[[dataset$outcome]], levels = levels(modelData$training[[dataset$outcome]])
+    ## Specify library ("base") since some other libraries overwrite this functions like h2o
+    modelData$training[[dataset$outcome]] <- base::as.factor(modelData$training[[dataset$outcome]])
+    modelData$training[[dataset$outcome]] <- base::factor(
+        modelData$training[[dataset$outcome]], levels = base::levels(modelData$training[[dataset$outcome]])
     )
-    modelData$testing[[dataset$outcome]] <- as.factor(modelData$testing[[dataset$outcome]])
-    modelData$testing[[dataset$outcome]] <- factor(
-        modelData$testing[[dataset$outcome]], levels = levels(modelData$testing[[dataset$outcome]])
+    modelData$testing[[dataset$outcome]] <- base::as.factor(modelData$testing[[dataset$outcome]])
+    modelData$testing[[dataset$outcome]] <- base::factor(
+        modelData$testing[[dataset$outcome]], levels = base::levels(modelData$testing[[dataset$outcome]])
     )
     
 
@@ -251,12 +252,11 @@ for (dataset in datasets) {
 
     ## list of models that are completely unsupported
     models_restrict <- c("null", "mxnet")
-    loaded_libraries_for_model <- NULL
+    loaded_libraries_for_model <- c()
+    ## make garbage collection to take place
+    gc()
     ## Loop all user selected methods and make models
     for (model in rev(models_to_process)) {
-        ## make garbage collection to take place
-        gc()
-
         ## Used when saving model to models DB table to set training_time value
         model_time_start <- Sys.time()
 
@@ -282,7 +282,7 @@ for (dataset in datasets) {
             ## next()
             problemType <- "regression"
         }
-        if(is.null(model_info$prob) || class(model_info$prob) != "function"){
+        if(is.null(model_info$prob) || base::class(model_info$prob) != "function"){
             model_details$prob <- FALSE
         }else{
             model_details$prob <- TRUE
@@ -295,12 +295,12 @@ for (dataset in datasets) {
             next()
         }
         ### Remove previously loaded libraries for previous model
-        if(!is.null(loaded_libraries_for_model)){
+        if(length(loaded_libraries_for_model) > 0){
              cat(paste0("===> INFO: Unloading packages of previous model: ",paste(loaded_libraries_for_model, collapse = ",")," \r\n"))
             for (prev_package in loaded_libraries_for_model) {
-                detach_package(prev_package)
+                detach_package(prev_package, character.only = TRUE)
             }
-            loaded_libraries_for_model <- NULL
+            loaded_libraries_for_model <- c()
         }
         if(!is.null(model_info$library)){
             ## Try to load model libraries 
