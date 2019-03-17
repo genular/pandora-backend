@@ -265,6 +265,9 @@ for (dataset in datasets) {
         model_time_start <- Sys.time()
 
         model_details <- dataset$packages[dataset$packages$internal_id %in% model,]
+
+        ## Set timeout for 5min - used for model training
+        model_details$process_timeout <- 300
         ##   id internal_id classification regression
         ## 3854          lm              0          1
 
@@ -347,11 +350,6 @@ for (dataset in datasets) {
 
         if(is_loaded == FALSE){
             cat(paste0("===> ERROR: SKIPPING Package could not be loaded, skipping: ",package," \r\n"))
-            # mxnet is pain in the ***!
-            # if(package != "mxnet"){
-            #     invisible(file.remove(UPTIME_PID))
-            #     quit()
-            # }
             next()
         }
         cat(paste0("===> INFO: model training start: ",model_details$internal_id," \r\n"))

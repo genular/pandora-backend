@@ -184,7 +184,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     # TODO: Add indexes to trControl if they are missing
     if (!is.null(trControl) && is.null(trControl$index) && problemType == "classification") {
         cachePath <- paste0(dataDir,"/folds/train_control_folds.RData")
-        trainFormula <- as.formula(paste0("base::factor(", outcomeColumn, ") ~."))
+        trainFormula <- stats::as.formula(paste0("base::factor(", outcomeColumn, ") ~."))
         target <- extractCaretTarget(trainFormula, data)
         folds <- checkCachedList(cachePath)
         if(!is.null(folds)){
@@ -212,10 +212,10 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     ## trControl$seeds <- mseeds
 
 
-    train_args <- list(as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
+    train_args <- list(stats::as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
     train_args <- c(train_args, tuneList)
         
-    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=1800, onTimeout = "error") ), error = function(e){ return(e) } )
+    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
 
     # Ignore warnings while processing errors
     options(warn = -1)
@@ -229,7 +229,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
         }
     }else{
         if(inherits(results$data, 'try-error')){
-            message <- geterrmessage()
+            message <- base::geterrmessage()
             model.execution$message <- message
         }
         # cat(paste0("===> ERROR: caretTrainModel: ",model.execution$message," \r\n"))
