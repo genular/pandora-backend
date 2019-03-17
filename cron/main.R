@@ -35,8 +35,10 @@ setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
 cpu_cores <- detectCores(logical = TRUE)
 cpu_cores <- as.numeric(cpu_cores)
 
+## Set max number of CPU cores to be used.
+## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
 if(cpu_cores > 5){
-    CORES <- cpu_cores - 3    
+    CORES <- cpu_cores - 1
 }else{
     CORES <- 1
 }
@@ -45,8 +47,7 @@ cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores! \r\n"))
 start_time <- Sys.time()
 
 # set up the parallel CPU processing
-## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
-registerDoMC(CORES)  #use X cores
+registerDoMC(CORES)
 
 script.dir <- dirname(thisFileLocation())
 sourceFile <- paste0(script.dir, "/SIMON_DATA")
@@ -309,7 +310,7 @@ for (dataset in datasets) {
             ## Try to load model libraries 
             for (package in c(model_info$library)) {
                 if(package %!in% (.packages())){
-                    cat(paste0("===> WARNING: Package is not loaded: ",package," - trying to load it! \r\n"))
+                    cat(paste0("===> WARNING: Package is not loaded: ",package," - trying to load it \r\n"))
 
                     if (!require(package, character.only=T, quietly=T)) {
                         cat(paste0("===> ERROR: Package not found: ",package," trying to install it:\r\n"))

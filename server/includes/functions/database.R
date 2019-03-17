@@ -32,8 +32,8 @@ db.getTotalCount <- function(tables, where_clause = NULL){
 
 #' @title  db.apps.getCronJobQueue
 #' @description Returns list of datasets that needs to be processed by a CRON script
-#' @param data
-#' @return list
+#' @param data serverData
+#' @return list List of data-frames
 db.apps.getCronJobQueue <- function(data){
     datasets = list()
 
@@ -42,12 +42,9 @@ db.apps.getCronJobQueue <- function(data){
     packagesQuery <- sqlInterpolate(databasePool, packagesSQL)
     packages <- dbGetQuery(databasePool, packagesQuery)
 
-    ## Development overwrite
-    ## testing_sql <- paste0("UPDATE dataset_queue SET status = 4 WHERE id = ", data$queueID)
-    ## dbExecute(databasePool, testing_sql)
-
+    ## Order by samples_total descending so we process first resamples with mode data
     sql <- paste0("## One Queue can have multiple resamples, resamples are datasets that needs to be processed on the server
-                    ## Select queue needed for processing and all resamples that did not processed on all servers
+                   ## Select queue needed for processing and all resamples that did not processed on all servers
                     SELECT 
                         dataset_queue.id AS queueID,
                         dataset_queue.uid AS userID,
@@ -68,7 +65,7 @@ db.apps.getCronJobQueue <- function(data){
 
                     FROM dataset_queue
                     INNER JOIN dataset_resamples ON dataset_queue.id = dataset_resamples.dqid
-                         ## Select only re-samples that are user activated or 2 R (train/test)partitions Created
+                         ## Select only re-samples that are user activated or 2 R (train/test) partitions Created
                          ## If processing is canceled unexpectedly status will be 3 (In Processing)
                          AND dataset_resamples.status IN (0,2,3)
                          AND dataset_resamples.servers_finished != dataset_queue.servers_total
@@ -84,51 +81,35 @@ db.apps.getCronJobQueue <- function(data){
                     ## Select datasets that are marked for processing or already processing
                     WHERE dataset_queue.id = ",data$queueID," AND dataset_queue.status IN(3, 4)
 
-                    ORDER BY dataset_resamples.id ASC")
+                    ORDER BY dataset_resamples.samples_total DESC")
 
     query <- sqlInterpolate(databasePool, sql)
     results <- dbGetQuery(databasePool, query)
+    ## If we found any re-samples on selected queue lets construct list of data-frames
     if(nrow(results) > 0){
         for (i in 1:nrow(results)) {
             queueOptions <- list(jsonlite::fromJSON(results[i, ]$queueOptions))
             resampleOptions <- list(jsonlite::fromJSON(results[i, ]$resampleOptions))
-
-            queueID <- results[i, ]$queueID
-            resampleID <- results[i, ]$resampleID
-            userID <- results[i, ]$userID
-
-            samples_total <- results[i, ]$samples_total
-            samples_training <- results[i, ]$samples_training
-            samples_testing <- results[i, ]$samples_testing
-
-            remotePathMain <-  results[i, ]$remotePathMain
-            remotePathTrain <-  results[i, ]$remotePathTrain
-            remotePathTest <-  results[i, ]$remotePathTest
-            preProcess <- queueOptions[[1]]$preProcess
             partitionSplit <- queueOptions[[1]]$partitionSplit
-            regressionFormula <- queueOptions[[1]]$formula$remapped
-            classes <- queueOptions[[1]]$classes$remapped
-            features <- resampleOptions[[1]]$features
-            outcome <- resampleOptions[[1]]$outcome$remapped
 
             datasets[[i]] <- list(
-                    queueID = queueID,
-                    resampleID = resampleID,
-                    userID = userID,
-                    remotePathMain =  remotePathMain,
-                    remotePathTrain =  remotePathTrain,
-                    remotePathTest =  remotePathTest,
-                    preProcess = preProcess,
+                    queueID = results[i, ]$queueID,
+                    resampleID = results[i, ]$resampleID,
+                    userID = results[i, ]$userID,
+                    remotePathMain =  results[i, ]$remotePathMain,
+                    remotePathTrain =  results[i, ]$remotePathTrain,
+                    remotePathTest =  results[i, ]$remotePathTest,
+                    preProcess = queueOptions[[1]]$preProcess,
                     partitionSplit = (partitionSplit / 100),
-                    regressionFormula = regressionFormula,
-                    samples_total = samples_total,
-                    samples_training = samples_training,
-                    samples_testing = samples_testing,
-                    classes = classes,
-                    features = features,
-                    outcome = outcome,
+                    regressionFormula = queueOptions[[1]]$formula$remapped,
+                    samples_total = results[i, ]$samples_total,
+                    samples_training = results[i, ]$samples_training,
+                    samples_testing = results[i, ]$samples_testing,
+                    classes = queueOptions[[1]]$classes$remapped,
+                    features = resampleOptions[[1]]$features,
+                    outcome = resampleOptions[[1]]$outcome$remapped,
                     packages = packages
-                )       
+                )
         }
     }
     return(datasets)
