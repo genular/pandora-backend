@@ -178,6 +178,9 @@ if(total_datasets > 0){
     updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 }
 
+## Lets sort resample datasets by number of samples so we process one with more samples first
+# datasets <- datasets[order(-as.numeric(datasets$samples_total)),]
+
 ## MAIN DATASET LOOP START
 for (dataset in datasets) {
 

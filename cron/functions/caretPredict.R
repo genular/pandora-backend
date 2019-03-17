@@ -159,7 +159,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
             number=10, repeats=5, 
             savePredictions = "final", 
             classProbs = classProbs, 
-            summaryFunction = multiClassSummary, 
+            summaryFunction = caret::multiClassSummary, 
 
             verboseIter = TRUE, 
             allowParallel = TRUE)
@@ -168,7 +168,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
             number=10, repeats=5, 
             savePredictions = "final", 
             # classProbs = TRUE, 
-            # summaryFunction = multiClassSummary, 
+            # summaryFunction = caret::multiClassSummary, 
             verboseIter = TRUE, 
             allowParallel = TRUE)
     }
@@ -184,7 +184,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     # TODO: Add indexes to trControl if they are missing
     if (!is.null(trControl) && is.null(trControl$index) && problemType == "classification") {
         cachePath <- paste0(dataDir,"/folds/train_control_folds.RData")
-        trainFormula <- as.formula(paste0("factor(", outcomeColumn, ") ~."))
+        trainFormula <- as.formula(paste0("base::factor(", outcomeColumn, ") ~."))
         target <- extractCaretTarget(trainFormula, data)
         folds <- checkCachedList(cachePath)
         if(!is.null(folds)){
