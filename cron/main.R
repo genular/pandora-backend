@@ -18,7 +18,7 @@ source("cron/functions/preProcessDataset.R")
 
 ## options(warn=0)
 options(max.print=1000000)
-##  maximum size of memory allocation pool
+##  Java - maximum size of memory allocation pool 16BG
 options(java.parameters = "-Xmx16000M")
 options(stringsAsFactors=FALSE)
 ## request a new limit, in Mb
@@ -189,6 +189,8 @@ for (dataset in datasets) {
         skipped_datasets = skipped_datasets + 1
         next()
     }
+    ## make garbage collection to take place
+    gc()
 
     resample_time_start <- Sys.time()
 
@@ -239,6 +241,8 @@ for (dataset in datasets) {
 
     modelData = list(training = data$training, testing = data$testing)
 
+    cat(paste0("===> INFO: Setting factors for datasets on: ",dataset$outcome," column. \n"))
+
     ## Establish factors for outcome column
     ## Specify library ("base") since some other libraries overwrite this functions like h2o
     modelData$training[[dataset$outcome]] <- base::as.factor(modelData$training[[dataset$outcome]])
@@ -250,15 +254,14 @@ for (dataset in datasets) {
         modelData$testing[[dataset$outcome]], levels = base::levels(modelData$testing[[dataset$outcome]])
     )
     
-
     ## User selected methods
     models_to_process <- dataset$packages$internal_id
 
     ## list of models that are completely unsupported
     models_restrict <- c("null", "mxnet")
     loaded_libraries_for_model <- c()
-    ## make garbage collection to take place
-    gc()
+
+    cat(paste0("===> INFO: Starting to process models for the resample \n"))
     ## Loop all user selected methods and make models
     for (model in rev(models_to_process)) {
         ## Used when saving model to models DB table to set training_time value
@@ -490,6 +493,8 @@ for (dataset in datasets) {
 
         rm(trainModel)
     } ## END caret model/algorithm loop
+
+    cat(paste0("===> INFO: Processing of resample ID: ",dataset$resampleID," end \r\n"))
 
     resample_time_end <- Sys.time()
     resample_total_time <- as.numeric(difftime(resample_time_end, resample_time_start,  units = c("secs")))
