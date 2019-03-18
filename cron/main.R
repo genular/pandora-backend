@@ -244,7 +244,7 @@ for (dataset in datasets) {
     cat(paste0("===> INFO: Setting factors for datasets on: ",dataset$outcome," column. \n"))
 
     ## Establish factors for outcome column
-    ## Specify library ("base") since some other libraries overwrite this functions like h2o
+    ## Specify library ("base") since some other libraries overwrite as.factor functions like h2o
     modelData$training[[dataset$outcome]] <- base::as.factor(modelData$training[[dataset$outcome]])
     modelData$training[[dataset$outcome]] <- base::factor(
         modelData$training[[dataset$outcome]], levels = base::levels(modelData$training[[dataset$outcome]])
