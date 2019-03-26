@@ -27,9 +27,9 @@ downloadDataset <- function(file_from, useCache = TRUE){
     ## Path to the downloaded file
     file_to <- paste0(temp_directory, "/", basename(file_from))
     ## Path to the local extracted file
-    file_path_local <- gsub(".tar.gz", "", file_to)
+    file_path_local <- base::gsub(".tar.gz", "", file_to, fixed = TRUE)
     ## in case of duplicated name, on uploading, also check for this one
-    file_path_local_dup <- paste0(temp_directory, "/", gsub(".*_", "", file_path_local))
+    file_path_local_dup <- base::gsub(".*_", "", file_path_local)
 
     if(useCache == TRUE){
         if(file.exists(file_path_local)){
@@ -43,7 +43,9 @@ downloadDataset <- function(file_from, useCache = TRUE){
     ## Download requested file from S3 compatible object storage
     exists <- checkFileExists(file_from)
     if(exists == TRUE){
+        ## Returns downloaded file path: /tmp/n72qNQFX/downloads/90b1125bfcee4b7e7266a048fd4eb8e3.tar.gz
         file_to <- downloadFile(file_from, file_to)
+        Sys.sleep(2)
     }else{
         cat(paste0("===> ERROR: Cannot locate remote file: ",file_from," \r\n"))
         file_exist <- FALSE
@@ -53,15 +55,23 @@ downloadDataset <- function(file_from, useCache = TRUE){
         cat(paste0("===> ERROR: Cannot locate download gzipped file: ",file_to," \r\n"))
         file_exist <- FALSE
     }else{
-        untar(tarfile = file_to, list = FALSE, exdir = temp_directory, verbose = FALSE)
-        invisible(file.remove(file_to))
+        utils::untar(tarfile = file_to, list = FALSE, exdir = temp_directory, verbose = T, tar = "/usr/bin/tar")
+        
+        if(file.exists(file_path_local) || file.exists(file_path_local_dup)){
+            cat(paste0("===> INFO: Deleting local tar.gz file since its extracted \r\n"))
+            invisible(file.remove(file_to))
+        }
     }
-    
+
+    file_path_local <- base::gsub(".tar.gz", "", file_to, fixed = TRUE)
+
     if(!file.exists(file_path_local)){
-        file_path_local <- file_path_local_dup
-        if(!file.exists(file_path_local)){
-            cat(paste0("===> ERROR: Cannot locate extracted file: ",file_path_local," \r\n"))
+        file_path_local_dup <- gsub(".*_", "", file_path_local)
+        if(!file.exists(file_path_local_dup)){
+            cat(paste0("===> ERROR: Cannot locate extracted file: ",file_path_local," nor ",file_path_local_dup," \r\n"))
             file_exist <- FALSE
+        }else{
+            file_path_local <- file_path_local_dup
         }
     }
 

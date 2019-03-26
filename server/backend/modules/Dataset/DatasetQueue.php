@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 17:40:18
+ * @Last Modified time: 2019-03-25 10:02:07
  */
 namespace SIMON\Dataset;
 
@@ -190,7 +190,7 @@ class DatasetQueue {
 				"sparsity" => 0,
 				"packages" => json_encode($packages),
 				"status" => 0,
-				"processing_time" => Medoo::raw("NULL"),
+				"processing_time" => 0,
 				"servers_total" => $serverGroups,
 				"created" => Medoo::raw("NOW()"),
 				"created_ip_address" => Medoo::raw("NULL"),

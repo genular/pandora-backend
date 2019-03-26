@@ -22,6 +22,8 @@ getProcessingEntries <- function(){
 
 #' @title getPerformanceVariable
 #' @description 
+#' @param variableValue 
+#' @param performanceVariables 
 #' @return data-frame
 getPerformanceVariable <- function(variableValue, performanceVariables){
     details <- performanceVariables[performanceVariables$value %in% variableValue,]
@@ -36,6 +38,7 @@ getPerformanceVariable <- function(variableValue, performanceVariables){
 
 #' @title createPerformanceVariable
 #' @description 
+#' @param variableValue 
 #' @return data-frame
 createPerformanceVariable <- function(variableValue){
     pvID <- NULL
@@ -76,15 +79,45 @@ getDatasetResamplesMappings <- function(queueID, resampleID, class_column){
     return(results)
 }
 
+#' @title updateDatabaseFiled
+#' @description 
+#' @param table 
+#' @param column
+#' @param value
+#' @param whereColumn
+#' @param whereValue
+#' @return 
 updateDatabaseFiled <- function(table, column, value, whereColumn, whereValue){
     update_sql <- paste0("UPDATE ",table," SET ",column," = ?value WHERE ",whereColumn," = ?whereValue;")
     update_query <- sqlInterpolate(databasePool, update_sql, value=value, whereValue=whereValue)
     dbExecute(databasePool, update_query)
 }
 
+#' @title appendDatabaseFiled
+#' @description 
+#' @param table 
+#' @param column
+#' @param value
+#' @param whereColumn
+#' @param whereValue
+#' @return 
 appendDatabaseFiled <- function(table, column, value, whereColumn, whereValue){
     value <- paste0(value, "\r\n")
     update_sql <- paste0("UPDATE ",table," SET ",column," = if(",column," is null, ?value, concat(",column,", ?value)) WHERE ",whereColumn," = ?whereValue;")
+    update_query <- sqlInterpolate(databasePool, update_sql, value=value, whereValue=whereValue)
+    dbExecute(databasePool, update_query)
+}
+
+#' @title appendDatabaseFiled
+#' @description 
+#' @param table 
+#' @param column
+#' @param value
+#' @param whereColumn
+#' @param whereValue
+#' @return 
+incrementDatabaseFiled <- function(table, column, value, whereColumn, whereValue){
+    update_sql <- paste0("UPDATE ",table," SET ",column," = ",column," + ?value WHERE ",whereColumn," = ?whereValue;")
     update_query <- sqlInterpolate(databasePool, update_sql, value=value, whereValue=whereValue)
     dbExecute(databasePool, update_query)
 }
@@ -296,6 +329,8 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
 }
 #' @title Save new generated file to database
 #' @description Used to save newly generated Test/Train partitions files to MySQL
+#' @param uid 
+#' @param paths 
 #' @return string
 db.apps.simon.saveFileInfo <- function(uid, paths){
     ufid <- NULL
@@ -396,10 +431,9 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
 db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmatrix, model_details, performanceVariables, roc, errors, model_time_start){
     model_status <- 1
     training_time <- NULL
+
     ## Get total amount of time needed for model to process - time in DB should always be in milliseconds
-    model_time_end <- Sys.time()
-    processing_time <- as.numeric(difftime(model_time_end, model_time_start,  units = c("secs")))
-    processing_time <- ceiling(processing_time * 1000)
+    processing_time <- calculateTimeDifference(model_time_start, unit = "ms")
 
     if(length(errors) > 0){
         model_status <- 0

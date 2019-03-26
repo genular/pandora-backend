@@ -16,16 +16,14 @@ source("cron/functions/caretPredict.R")
 source("cron/functions/variable_importance.R")
 source("cron/functions/preProcessDataset.R")
 
+maximum_memory <- getUseableFreeMemory()
 ## options(warn=0)
 options(max.print=1000000)
-##  Java - maximum size of memory allocation pool 16BG
-options(java.parameters = "-Xmx16000M")
 options(stringsAsFactors=FALSE)
+##  Java - maximum size of memory allocation pool
+options(java.parameters=paste0("-Xmx",maximum_memory,"M"))
 ## request a new limit, in Mb
-## memory.limit(size = 48000)
-
-## Dataset queue status: 3 Marked for processing 
-global_status <- 3
+memory.limit(size = maximum_memory)
 
 # Set global execution time limit in seconds!
 # 604800 <- 7 days
@@ -42,9 +40,9 @@ if(cpu_cores > 5){
 }else{
     CORES <- 1
 }
-cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores! \r\n"))
+cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores and ",maximum_memory," MB allocated \r\n"))
 
-start_time <- Sys.time()
+queue_start_time <- Sys.time()
 
 # set up the parallel CPU processing
 registerDoMC(CORES)
@@ -101,18 +99,19 @@ if(length(serverData) < 1){
 
         cat(paste0("===> ERROR: Found PID file ", UPTIME_PID, " Age: ", pid_time_diff," sec. Waiting for existing cron task to finish.\r\n"))
 
-        # if(pid_time_diff > globalTimeLimit){
-        #     cat(paste0("===> INFO: Deleting PID file since exceeded global time limit of ", globalTimeLimit ," sec \r\n"))
-        #     if(file.exists(UPTIME_PID)){
-        #         invisible(file.remove(UPTIME_PID))
-        #     }
-        # }else{
-        #     quit()
-        # }
-        quit()
+        if(pid_time_diff > globalTimeLimit){
+            cat(paste0("===> INFO: Deleting PID file since exceeded global time limit of ", globalTimeLimit ," sec \r\n"))
+            if(file.exists(UPTIME_PID)){
+                invisible(file.remove(UPTIME_PID))
+            }
+        }else{
+            quit()
+        }
     }
 }
 
+## Dataset queue status: 3 Marked for processing 
+global_status <- 3
 ## At this stage status og the queue should be changed to 3 - Marked for processing
 updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 
@@ -193,7 +192,6 @@ for (dataset in datasets) {
     gc()
 
     resample_time_start <- Sys.time()
-
     JOB_DIR <- initilizeDatasetDirectory(dataset)
     ## Development overwrite
     ## sink(paste0(JOB_DIR,"/logs/output.txt"))
@@ -209,10 +207,10 @@ for (dataset in datasets) {
     filePathTesting <- downloadDataset(dataset$remotePathTest, FALSE)
 
     if(filePathTraining == FALSE || filePathTraining == FALSE){
-        message <- paste0("===> ERROR: SKIPPING Dataset processing cannot locate Training or Testing files \r\n")
+        message <- paste0("===> ERROR: SKIPPING Dataset processing cannot locate downloaded Training or Testing files \r\n")
         cat(message)
         updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
-        appendDatabaseFiled("dataset_resamples", "error", message)
+        appendDatabaseFiled("dataset_resamples", "error", message, "id", dataset$resampleID)
 
         next()
     }
@@ -496,29 +494,26 @@ for (dataset in datasets) {
 
     cat(paste0("===> INFO: Processing of resample ID: ",dataset$resampleID," end \r\n"))
 
-    resample_time_end <- Sys.time()
-    resample_total_time <- as.numeric(difftime(resample_time_end, resample_time_start,  units = c("secs")))
-    resample_total_time_ms <- ceiling(resample_total_time * 1000)
-    updateDatabaseFiled("dataset_resamples", "processing_time", resample_total_time_ms, "id", dataset$resampleID)
+    resample_total_time <- calculateTimeDifference(resample_time_start, unit = "ms")
+    incrementDatabaseFiled("dataset_resamples", "processing_time", resample_total_time, "id", dataset$resampleID)
     ## 4 - Finished Success
     updateDatabaseFiled("dataset_resamples", "status", 4, "id", dataset$resampleID)
 
 } ## MAIN RESAMPLE DATASET LOOP END
 
-end_time <- Sys.time()
-total_time <- as.numeric(difftime(end_time, start_time,  units = c("secs")))
-total_time_ms <- ceiling(total_time * 1000)
+queue_total_time <- calculateTimeDifference(queue_start_time, unit = "ms")
+incrementDatabaseFiled("dataset_queue", "processing_time", queue_total_time, "id", serverData$queueID)
 
-updateDatabaseFiled("dataset_queue", "processing_time", total_time_ms, "id", serverData$queueID)
-
-## If we skipped all resamples mare queue as failed!
+## If we skipped all resamples mark queue as failed
 if(skipped_datasets >= total_datasets){
-    global_status <- 6
+    global_status <- 6 # Finished - Errors
+}else{
+    global_status <- 5 # Finished - Success
 }
 
 updateDatabaseFiled("dataset_queue", "status", global_status, "id", serverData$queueID)
 
-cat(paste0("======> INFO: PROCESSING END (",total_time," sec) \r\n"))
+cat(paste0("======> INFO: PROCESSING END (",queue_total_time," ms)  \r\n"))
 ## Remove PID file
 if(file.exists(UPTIME_PID)){
     cat(paste0("======> INFO: Deleting UPTIME_PID file \r\n"))

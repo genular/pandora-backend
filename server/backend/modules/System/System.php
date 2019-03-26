@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-06 10:45:53
+ * @Last Modified time: 2019-03-25 10:56:30
  */
 namespace SIMON\System;
 
@@ -205,6 +205,7 @@ class System {
 					"tags" => (count($tags) > 0 ? json_encode($tags) : Medoo::raw("NULL")),
 					"tuning_parameters" => (count($tuning_parameters) > 0 ? json_encode($tuning_parameters) : Medoo::raw("NULL")),
 					"citations" => json_encode($package_value["citations"]),
+					"licenses" => json_encode($package_value["licenses"]),
 					"time_per_million" => Medoo::raw("NULL"),
 					"documentation" => Medoo::raw("NULL"),
 					"r_version" => $package_value["r_version"],

@@ -50,22 +50,24 @@ This will create a new file: documentation/docker_images/configuration.json wher
 
 Replace TZ=<timzone> with your timezone.
 You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
-
 ```bash
 sudo docker run --rm \
 	--detach \
-	--network=host \
 	--name genular \
 	--tty \
 	--interactive \
 	--env IS_DOCKER='true' \
 	--env TZ=America/Los_Angeles \
-	--publish 3010:3010 \
 	--publish 3011:3011 \
 	--publish 3012:3012 \
 	--publish 3013:3013 \
-	--publish 3306:3014 \
 	genular:master
+## --network=host \
+## --publish 3010:3010 \
+## --publish 3011:3011 \
+## --publish 3012:3012 \
+## --publish 3013:3013 \
+## --publish 3306:3014 \
 ## --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/data \
 ```
 

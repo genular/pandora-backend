@@ -1,8 +1,7 @@
-#' @title  
-#' @description 
-#' @param 
-#' @param  
-#' @return 
+#' @title preProcessDataset
+#' @description Makes Train and Testing sets for the given dataset.
+#' @param dataset
+#' @return boolean
 preProcessDataset <- function(dataset) {
 
     cat(paste0("===> INFO: preProcessDataset: started: ", dataset$remotePathMain,"\r\n"))
@@ -119,8 +118,11 @@ preProcessDataset <- function(dataset) {
         training =  list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "", ufid = ""),
         testing =  list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "", ufid = "")
     )
+
     #######################
-    splits$training$path_initial <- paste0(JOB_DIR,"/data/training_partition.csv")
+    # Give it a unique filename to prevent filename clashes
+    # since when processing happens all files from all resamples are downloaded in same /tmp directory on file-system
+    splits$training$path_initial <- paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_training_partition.csv")
     data.table::fwrite(data$training, file = splits$training$path_initial, showProgress = FALSE)
 
     fileDetails = compressPath(splits$training$path_initial)
@@ -133,7 +135,7 @@ preProcessDataset <- function(dataset) {
     if(file.exists(splits$training$renamed_path)){ file.remove(splits$training$renamed_path) }
     if(file.exists(splits$training$gzipped_path)){ file.remove(splits$training$gzipped_path) }
     #######################
-    splits$testing$path_initial <- paste0(JOB_DIR,"/data/testing_partition.csv")
+    splits$testing$path_initial <- paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_testing_partition.csv")
     data.table::fwrite(data$testing, file = splits$testing$path_initial, showProgress = FALSE)
 
     fileDetails = compressPath(splits$testing$path_initial)

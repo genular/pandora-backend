@@ -8,6 +8,7 @@ simon$handle$analysis$other$availablePackages <- expression(
                             classification <- 0
                             regression <- 0
                             citations <- list()
+                            licenses <- list()
 
                             if("Classification" %in% x$type){
                                 classification <- 1
@@ -20,8 +21,8 @@ simon$handle$analysis$other$availablePackages <- expression(
                             if(installed != 0 && !is.null(x$library) && x$library %!in% rownames(installed.packages())){
                                 installed <- 0
                             }
-
-                               if (installed != 0){
+                            ## For-each library gather some basic info
+                            if (installed != 0){
                                 for(library in x$library){
                                     lib_data <- tryCatch(citation(library),
                                         error = function(e) {
@@ -29,6 +30,9 @@ simon$handle$analysis$other$availablePackages <- expression(
                                     lib_tmp <- unclass(lib_data)
                                     if(is.null(citations[[library]])){
                                         citations[[library]] <-  attr(lib_tmp[[1]], "textVersion")
+                                    }
+                                    if(is.null(licenses[[library]])){
+                                        licenses[[library]] <- getLibraryLicense(library)
                                     }
                                 }
                             }
@@ -42,6 +46,7 @@ simon$handle$analysis$other$availablePackages <- expression(
                                     tuning_parameters = c(x$parameters),
                                     r_version = r_version,
                                     citations = citations,
+                                    licenses = licenses,
                                     installed = installed
                                 ))
                         }

@@ -1,6 +1,21 @@
+#' @title calculateTimeDifference
+#' @description Returns the time difference in different units
+#' @param start_time Object returned from Sys.time()
+#' @param unit secs or ms
+#' @return numeric
+calculateTimeDifference <- function(start_time, unit = "ms"){
+    current_time <- Sys.time()
+    time_passed <- as.numeric(difftime(current_time, start_time,  units = c("secs")))
+    if(unit == "ms"){
+        time_passed <- ceiling(time_passed * 1000)  
+    }
+    return (time_passed)
+}
+
 #' @title create_directory
 #' @description create directory recursively if directory does not exists
-#' @return
+#' @param path Full directory path
+#' @return null
 create_directory <- function(path){
     ## Lets split path into vector of all recursive paths and create one by one
     parts <- unlist(strsplit(path, "/", fixed = FALSE, perl = FALSE, useBytes = FALSE))
@@ -47,8 +62,57 @@ has_internet <- function(){
     return (out)
 }
 
+#' @title getLibraryLicense
+#' @description Extracts the license from the R package
+#' @param package Valid R installed package name
+#' @return string
+getLibraryLicense <- function(package){
+    license1 <- packageDescription(package, fields="License")
+    license2 <- ""
+    ## Check if there is additional license in the LICENSE file
+    if(grepl("file LICENSE", license1, fixed=TRUE) == TRUE){
+      licenseFile <- system.file("LICENSE",package=package)
+      if(file.exists(licenseFile)){
+        license2 <- paste(readLines(licenseFile), collapse=" ")
+      }
+      license1 <- gsub(" + file LICENSE","",license1, fixed = TRUE)
+      license1 <- gsub(" | file LICENSE","",license1, fixed = TRUE)
+      license1 <- gsub(" file LICENSE","",license1, fixed = TRUE)
+    }
+
+    if(license2 != ""){
+      if(nchar(license2) > 50){
+        license2 <- substr(license2, start = 1, stop = 50)
+        license2 <- paste(license2, "...", sep = "", collapse = NULL)
+      }
+      license <- paste(trimws(license1), trimws(license2), sep = " - ", collapse = NULL)
+    }else{
+      license <- license1
+    }
+    ## Merge Multiple spaces to single space
+    license <- gsub("(?<=[\\s])\\s*|^\\s+|\\s+$", "", license, perl=TRUE)
+
+    return(license)
+}
+
+#' @title getFreeMemory
+#' @description
+#' @param basePoint Get amount of memory in base-point - 1000 = megabytes
+#' @param systemReserved How much to reserve additionally for the OS in KB
+#' @return numeric
+getUseableFreeMemory <- function(basePoint = 1000, systemReserved = 2000000){
+    systemReserved <-  round((systemReserved  / basePoint), digits = 0)
+
+    total_free_memory <- as.numeric(system("awk '/MemTotal/ {print $2}' /proc/meminfo", intern=TRUE))
+    total_free_memory <- round((total_free_memory  / basePoint), digits = 0)
+
+    memory_free <- (total_free_memory - systemReserved)
+    return(memory_free)
+}
+
 #' @title get_working_mode
 #' @description Returns current mode of operation. So we know what file-system adapter to use
+#' @param global_configuration Configuration object from config.yml
 #' @return string
 get_working_mode <- function(global_configuration){
     working_mode <- "remote"
@@ -123,11 +187,12 @@ hp.write.aes <- function(content, filename, encryptKey) {
     return(contentLength)
 }
 
-# read encrypted data frame from file
+#' @title hp.read.aes
+#' @description read encrypted data frame from file
+#' @return string
 hp.read.aes <- function(filename, encryptKey, contentLength) {
 
     dat <- readBin(filename, "raw", n=contentLength)
-
     aes <- digest::AES(encryptKey, mode="ECB")
 
     contentRaw <- aes$decrypt(dat, raw=TRUE)

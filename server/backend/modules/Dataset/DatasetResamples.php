@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-15 10:41:06
+ * @Last Modified time: 2019-03-26 14:06:15
  */
 namespace SIMON\Dataset;
 
@@ -94,7 +94,7 @@ class DatasetResamples {
 			"datapoints" => intval($resample["totalDatapoints"]),
 			"status" => 1, // 1 - Active, activate/deactivate it based on user selection
 			"servers_finished" => 0,
-			"processing_time" => Medoo::raw("NULL"),
+			"processing_time" => 0,
 			"error" => Medoo::raw("NULL"),
 			"created" => Medoo::raw("NOW()"),
 			"updated" => Medoo::raw("NOW()"),
