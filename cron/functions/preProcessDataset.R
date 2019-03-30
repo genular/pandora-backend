@@ -96,7 +96,11 @@ preProcessDataset <- function(dataset) {
 
     # ==> 2 PREPROCCESING: Skewness and normalizing of the numeric predictors
     if(length(dataset$preProcess) > 0 ){
-        fs_status$info <- c(fs_status$info, paste0("Pre-processing transformation (centering, scaling, pca ... )"))
+        transformations <- paste(dataset$preProcess, sep=",")
+        message <- paste0("===> INFO: Pre-processing transformation (",transformations,")")
+        cat(message)
+
+        fs_status$info <- c(fs_status$info, message)
         datasetData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
     }
 

@@ -4,8 +4,11 @@
 #' @return a list of lists
 #' @examples
 #' caretModelSpec("rf", tuneLength=5, preProcess="ica")
-caretModelSpec <- function(method="rf", ...){
-    out <- c(list(method=method), list(...))
+caretModelSpec <- function(methodInclude="rf", ...){
+    if(methodInclude == "catboost.caret"){
+        methodInclude = base::get(methodInclude)
+    }
+    out <- c(list(method=methodInclude), list(...))
     return(out)
 }
 
@@ -154,18 +157,21 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
 
 
     if(problemType == "classification"){
-        classProbs = model_details$prob
         trControl <- caret::trainControl(method="repeatedcv", 
-            number=10, repeats=5, 
+            ## Either the number of folds or number of resampling iterations
+            number=10,
+            ## For repeated k-fold cross-validation only: the number of complete sets of folds to compute
+            repeats=5, 
             savePredictions = "final", 
-            classProbs = classProbs, 
+            classProbs = model_details$prob, 
             summaryFunction = caret::multiClassSummary, 
 
             verboseIter = TRUE, 
             allowParallel = TRUE)
     }else{
         trControl <- caret::trainControl(method="repeatedcv", 
-            number=10, repeats=5, 
+            number=10,
+            repeats=5, 
             savePredictions = "final", 
             # classProbs = TRUE, 
             # summaryFunction = caret::multiClassSummary, 
@@ -174,13 +180,23 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     }
 
     # Add arguments specific to models
-    if (model_details$internal_id == "ranger") {
+    if (is.character(model_details$internal_id) && model_details$internal_id == "ranger") {
         trControl$importance <- "impurity"
     }
 
     # Make a tuneList
-    tuneList <- caretModelSpec(model_details$internal_id, tuneLength=NULL, preProcess=preProcess)
+    # The tuneLength parameter tells the algorithm to try different default values for the main parameter
+    tuneList <- caretModelSpec(model_details$internal_id, tuneLength=2, preProcess=preProcess)
 
+    # Maybe we want to add model specific arguments
+    model_specific_args <- NULL
+    if(!is.null(model_details[["model_specific_args"]])){
+        model_specific_args <- model_details$model_specific_args
+    }
+
+    if(!is.null(model_specific_args)){
+        tuneList <- c(tuneList, model_specific_args)
+    }
     # TODO: Add indexes to trControl if they are missing
     if (!is.null(trControl) && is.null(trControl$index) && problemType == "classification") {
         cachePath <- paste0(dataDir,"/folds/train_control_folds.RData")
@@ -211,10 +227,17 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     ## }
     ## trControl$seeds <- mseeds
 
+    ## Use matrix interface for classification problems
+    if(problemType == "classification"){
+        x <- data[,!(names(data) %in% outcomeColumn)]
+        y <- data[,c(outcomeColumn)]
 
-    train_args <- list(stats::as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
+        train_args <- list(x, as.factor(make.names(y)), trControl = trControl)
+    }else{
+        train_args <- list(stats::as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
+    }
+
     train_args <- c(train_args, tuneList)
-        
     model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
 
     # Ignore warnings while processing errors

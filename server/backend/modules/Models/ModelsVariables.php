@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:19:06
+ * @Last Modified time: 2019-03-29 14:36:44
  */
 namespace SIMON\Models;
 
@@ -78,11 +78,16 @@ class ModelsVariables {
 		$mids = join(',', array_map('intval', $modelsID));
 
 		$sql = "SELECT models_variables.id                     AS id,
+				       models.id           					   AS model_id,
+				       models_packages.internal_id             AS model_internal_id,
 				       models_variables.feature_name           AS feature_name,
 				       Round(Avg(models_variables.score_perc)) AS score_perc,
 				       Round(Avg(models_variables.score_no))   AS score_no,
 				       Round(Avg(models_variables.rank))       AS rank
 				FROM   models_variables
+
+				LEFT JOIN models ON models_variables.mid = models.id
+				LEFT JOIN models_packages ON models.mpid = models_packages.id
 
 				WHERE  models_variables.mid IN (" . $mids . ")";
 
@@ -92,7 +97,7 @@ class ModelsVariables {
 			$sort = "DESC";
 		}
 
-		$sql = $sql . " GROUP BY feature_name ORDER BY " . $sort_by . " " . $sort . " LIMIT :start_limit, :end_limit;";
+		$sql = $sql . " GROUP BY models_variables.id, models.id ORDER BY " . $sort_by . " " . $sort . " LIMIT :start_limit, :end_limit;";
 
 		$details = $this->database->query($sql, [
 			":start_limit" => $start_limit,

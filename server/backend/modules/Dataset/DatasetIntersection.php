@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-15 15:42:57
+ * @Last Modified time: 2019-03-27 14:46:43
  */
 namespace SIMON\Dataset;
 
@@ -192,12 +192,13 @@ class DatasetIntersection {
 		$headerMapping = [];
 
 		$reader = Reader::createFromPath($filePath, 'r');
-		## $delimiter = $this->Helpers->detectDelimiter($filePath);
-		## $reader->setDelimiter($delimiter);
+		// $delimiter = $this->Helpers->detectDelimiter($filePath);
+		// $reader->setDelimiter($delimiter);
 
 		$reader->setHeaderOffset(0);
 		$dataHeader = $reader->getHeader();
-
+		// file_put_contents("/mnt/genular/simon-backend/SHARED_DATA/uploads/data", implode(',', $dataHeader));
+		// exit;
 		$this->outcomeColumn = $outcome["remapped"];
 
 		foreach ($features as $feature) {
@@ -230,6 +231,7 @@ class DatasetIntersection {
 				}
 
 				foreach ($record as $recordID => $recordValue) {
+
 					// If column is not in user desired features list skip it
 					if (!isset($this->selectedFeatures[$recordID]) || $recordID === $this->outcomeColumn) {
 						continue;
@@ -239,6 +241,7 @@ class DatasetIntersection {
 						$headerMapping[$recordID] = array_search($recordID, $dataHeader);
 					}
 					$isNumeric = is_numeric($recordValue);
+
 					if (!isset($samples[$sampleID][$recordID]) && $isNumeric) {
 						$samples[$sampleID][$recordID] = true;
 					}

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 17:54:21
+ * @Last Modified time: 2019-03-27 13:39:43
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -369,38 +369,45 @@ class FileSystem {
 		$file_path_gz = $file_path . ".tar.gz";
 
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile local file-path: " . $file_path);
-
 		// Skip downloading if file is already downloaded and extracted
 		if (file_exists($file_path)) {
 			@unlink($file_path_gz);
 			return $file_path;
 		}
 
-		$ungz_cmd = "tar xf " . $file_path_gz . " -C " . $this->temp_dir;
+		$ungz_cmd = "/usr/bin/tar xf " . $file_path_gz . " -C " . $this->temp_dir . " --verbose";
 		// Skip downloading if compressed file is already downloaded
 		if (file_exists($file_path_gz)) {
-			exec($ungz_cmd);
+			$extracted_file = trim(shell_exec($ungz_cmd));
+			if ($file->getBasename('.tar.gz') !== $extracted_file) {
+				$file_path = str_replace($file->getBasename('.tar.gz'), $extracted_file, $file_path);
+			}
 			return $file_path;
 		}
 
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile remote file-path: " . $file_path);
+
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($remotePath);
 		$contents = stream_get_contents($stream);
 		if (is_resource($contents)) {
 			fclose($contents);
 		}
-
 		file_put_contents($file_path_gz, $contents);
-		exec($ungz_cmd);
-		@unlink($file_path_gz);
+
+		$extracted_file = trim(shell_exec($ungz_cmd));
+		if ($file->getBasename('.tar.gz') !== $extracted_file) {
+			$file_path = str_replace($file->getBasename('.tar.gz'), $extracted_file, $file_path);
+		}
 
 		if ($new_file_name !== false) {
 			$new_file_name = $this->temp_dir . "/" . $new_file_name;
 			rename($file_path, $new_file_name);
 
 			$file_path = $new_file_name;
+
 		}
+		@unlink($file_path_gz);
 
 		return $file_path;
 	}

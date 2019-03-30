@@ -31,74 +31,81 @@ simon$handle$analysis$other$predict$catboost$submit <- expression(
             settings <- jsonlite::fromJSON(RCurl::base64Decode(URLdecode(args$settings)))
         }
 
+
+        package_installed <- TRUE
+        if (!require("catboost", character.only=T, quietly=T)) {
+            package_installed <- FALSE
+        }
+        if(package_installed == FALSE){
+            return(list(
+                    status = package_installed,
+                    message = "catboost package missing")
+            )
+        }
+
         ## Get JOB and his Info from database
         resampleDetails <- db.apps.getFeatureSetData(resampleID)
 
+        dataset <- resampleDetails[[1]]
+        data = list(training = "",testing = "")
+
+        filePathTraining <- downloadDataset(dataset$remotePathTrain, FALSE)
+        filePathTesting <- downloadDataset(dataset$remotePathTest, FALSE)
+
         ## Download dataset if not downloaded already
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        dataset <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        data$training <- data.table::fread(filePathTraining, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        data$testing <- data.table::fread(filePathTesting, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
 
-        ## Remap outcome values to original ones
-        dataset[[resampleDetails[[1]]$outcome$remapped]] <- as.factor(dataset[[resampleDetails[[1]]$outcome$remapped]])
+        ## Coerce data to a standard data.frame
+        data$training <- base::as.data.frame(data$training, stringsAsFactors = TRUE)
+        data$testing <- base::as.data.frame(data$testing, stringsAsFactors = TRUE)
 
-        ## Drop all columns that are not in analyzed feature set of the resample
-        data <- dataset[, names(dataset) %in% c(resampleDetails[[1]]$features$remapped)]
+        ## Remove all columns expect selected features and outcome
+        data$training <- data$training[, base::names(data$training) %in% c(dataset$features$remapped, dataset$outcome$remapped)]
+        data$testing <- data$testing[, base::names(data$testing) %in% c(dataset$features$remapped, dataset$outcome$remapped)]
 
-        ## Rename all columns back to its original column names
-        ##                   original position remapped
-        ## 1              Pregnancies        0  column0
-        names(data) <- plyr::mapvalues(names(data), from=resampleDetails[[1]]$features$remapped, to=resampleDetails[[1]]$features$original)
+        modelData = list(training = data$training, testing = data$testing)
 
-        fit_control <-  trainControl(
-            method = 'repeatedcv', 
-            number = settings$kFolds$value,
-            repeats = settings$cvRepeats$value,
-            ## seeds = seeds,
-            verboseIter = FALSE,
-            savePredictions = TRUE,
-            classProbs = TRUE,
-            allowParallel = TRUE
-            # MaxNWts = MaxNWts
+
+        cat(paste0("===> INFO: Setting factors for datasets on: ",dataset$outcome$remapped," column. \n"))
+
+        ## Establish factors for outcome column
+        ## Specify library ("base") since some other libraries overwrite as.factor functions like h2o
+        modelData$training[[dataset$outcome$remapped]] <- base::as.factor(modelData$training[[dataset$outcome$remapped]])
+        modelData$training[[dataset$outcome$remapped]] <- base::factor(
+            modelData$training[[dataset$outcome$remapped]], levels = base::levels(modelData$training[[dataset$outcome$remapped]])
+        )
+        modelData$testing[[dataset$outcome$remapped]] <- base::as.factor(modelData$testing[[dataset$outcome$remapped]])
+        modelData$testing[[dataset$outcome$remapped]] <- base::factor(
+            modelData$testing[[dataset$outcome$remapped]], levels = base::levels(modelData$testing[[dataset$outcome$remapped]])
         )
 
-        grid <- expand.grid(depth = c(4,6,8),
-            learning_rate = 0.01,
-            iterations = 500,
-            l2_leaf_reg = 1e-3,
-            rsm = 0.95,
-            border_count = 64
+        JOB_DIR <- initilizeDatasetDirectory(dataset)
+        
+        model_details = list(
+            internal_id = "catboost.caret",
+            prob = TRUE,
+            process_timeout = 300,
+            ## https://github.com/catboost/catboost/blob/master/catboost/R-package/R/catboost.R
+            model_specific_args = list(logging_level = 'Info', train_dir = JOB_DIR, save_snapshot = FALSE, allow_writing_files = FALSE)
         )
 
+        trainModel <- caretTrainModel(modelData$training, model_details, "classification", dataset$outcome$remapped, NULL, dataset$resampleID, JOB_DIR)
+ 
+        ## Define results variables
+        results_auc <- NULL
+        results_confusionMatrix <- NULL
+        results_varImportance <- NULL
+        prediction <- NULL
 
-      training_model <- train(x, as.factor(make.names(y)),
-                   method = catboost.caret,
-                   verbose = TRUE, preProc = NULL,
-                   tuneLength=settings$tuneLength$value, trControl = fit_control)
+        print(trainModel)
 
-      prediction <- predict(training_model,  data_testing, type = "prob")
-      importance <- varImp(training_model, scale = FALSE)
-
-      roc <- tryCatch(
-          {
-             roc(data_testing$outcome, prediction[, "high"], levels = levels(data_testing$outcome))
-          },
-          error=function(msg) {
-              return(NULL)
-          },
-          warning=function(msg) {
-              return(NULL)
-          },
-          finally={}
-      ) 
-      auc <- NULL 
-      if(!is.null(roc)){
-         auc <- as.numeric(pROC::auc(roc))    
-      }
-      return(list(
-        training_model = training_model,
-        prediction = prediction,
-        importance = importance,
-        roc = roc,
-        auc = auc))
+        return(list(
+                training_model = NULL,
+                prediction = NULL,
+                importance = NULL,
+                roc = NULL,
+                auc = NULL)
+        )
     }
 )

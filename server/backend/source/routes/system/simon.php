@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-15 15:01:53
+ * @Last Modified time: 2019-03-27 13:41:44
  */
 
 use Slim\Http\Request;
@@ -236,6 +236,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 			// CALCULATE INTERSECTIONS
 			foreach ($submitData["selectedOutcome"] as $selectedOutcome) {
 				$resamples = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"]);
+
 				// If we didn't do multi-set intersection check if some of the columns contain Invalid data
 				if ($submitData["extraction"] === false && count($resamples["info"]["invalidColumns"]) > 0) {
 					foreach ($resamples["info"]["invalidColumns"] as $invalidColumn) {

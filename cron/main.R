@@ -36,7 +36,7 @@ cpu_cores <- as.numeric(cpu_cores)
 ## Set max number of CPU cores to be used.
 ## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
 if(cpu_cores > 5){
-    CORES <- cpu_cores - 1
+    CORES <- cpu_cores - 3
 }else{
     CORES <- 1
 }
@@ -354,7 +354,7 @@ for (dataset in datasets) {
             next()
         }
         cat(paste0("===> INFO: model training start: ",model_details$internal_id," \r\n"))
-
+        ## dataset$preProcess
         trainModel <- caretTrainModel(modelData$training, model_details, problemType, dataset$outcome, NULL, dataset$resampleID, JOB_DIR)
 
         ## Define results variables

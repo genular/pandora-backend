@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-31 14:25:35
+ * @Last Modified time: 2019-03-29 14:03:40
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -179,10 +179,15 @@ $app->get('/backend/queue/resamples/details', function (Request $request, Respon
 	$resamplesListIDs = $request->getQueryParam('drid', 0);
 	$measurements = $request->getQueryParam('measurements', []);
 
+	$hideFailedModels = $request->getQueryParam('hideFailedModels', false);
+	$hideFailedModels = ($hideFailedModels === 'true');
+
 	if (is_numeric($resamplesListIDs)) {
 
 		$Models = $this->get('SIMON\Models\Models');
-		$modelsList = $Models->getDatasetResamplesModels(array($resamplesListIDs), $user_id);
+
+		$modelsWhereClause = [($hideFailedModels === false ? "models.error LIKE '%'" : "models.error = ''")];
+		$modelsList = $Models->getDatasetResamplesModels(array($resamplesListIDs), $user_id, $modelsWhereClause);
 
 		$modelsListIDs = array_column($modelsList, 'modelID');
 		$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');

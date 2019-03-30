@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 17:47:10
+ * @Last Modified time: 2019-03-29 14:03:09
  */
 namespace SIMON\Models;
 
@@ -102,10 +102,16 @@ class Models {
 	 * [getDatasetResamplesModels description]
 	 * @param  [type] $drid    [description]
 	 * @param  [type] $user_id [description]
+	 * @param  [type] $whereArray [description]
 	 * @return [type]          [description]
 	 */
-	public function getDatasetResamplesModels($drid, $user_id) {
+	public function getDatasetResamplesModels($drid, $user_id, $whereArray = []) {
 		$drids = join(',', array_map('intval', $drid));
+
+		$whereClause = join('AND ', $whereArray);
+		if ($whereClause !== "") {
+			$whereClause = "AND " . $whereClause;
+		}
 
 		$sql = " SELECT
 				       dataset_resamples.id AS resampleID,
@@ -125,6 +131,7 @@ class Models {
 				              ON models.mpid = models_packages.id
 				WHERE  models.drid IN (" . $drids . ")
 				       AND dataset_queue.uid = :user_id
+				       " . $whereClause . "
 				ORDER BY models.status DESC;";
 
 		$details = $this->database->query($sql, [

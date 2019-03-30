@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-15 15:09:36
+ * @Last Modified time: 2019-03-27 14:54:54
  */
 namespace SIMON\Helpers;
 
@@ -143,6 +143,7 @@ class Helpers {
 	public function validateCSVFileHeader($filePath) {
 
 		$path_parts = pathinfo($filePath);
+
 		$data = array(
 			'info' => $path_parts,
 			'dirname' => $path_parts['dirname'],
@@ -177,11 +178,15 @@ class Helpers {
 						$data['details']["header"]["formatted"][$itemValueHash] = array("original" => $itemValue, "position" => $itemKey, "remapped" => $remapped[$itemKey]);
 					}
 				}
-				$headerReplacedCSV = implode(',', $remapped);
-				$replace_cmd = exec("sed -i '1c\\" . $headerReplacedCSV . "' " . $filePath);
-				if ($replace_cmd !== "") {
-					array_push($data['message'], "Cannot reformat file header, please use only alphanumeric characters");
-				}
+
+				$headerReplacedCSV = "\"" . implode('","', $remapped) . "\"\n";
+
+				// read into array
+				$arr = file($filePath);
+				// edit first line
+				$arr[0] = $headerReplacedCSV;
+				// write back to file
+				file_put_contents($filePath, implode($arr));
 			} else {
 				array_push($data['message'], "Cannot detect header items, please check delimiters");
 			}
