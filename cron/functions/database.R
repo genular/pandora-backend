@@ -108,7 +108,7 @@ appendDatabaseFiled <- function(table, column, value, whereColumn, whereValue){
     dbExecute(databasePool, update_query)
 }
 
-#' @title appendDatabaseFiled
+#' @title incrementDatabaseFiled
 #' @description 
 #' @param table 
 #' @param column
@@ -122,7 +122,7 @@ incrementDatabaseFiled <- function(table, column, value, whereColumn, whereValue
     dbExecute(databasePool, update_query)
 }
 
-#' @title calculateProportionForClasses
+#' @title datasetProportions
 #' @description 
 #' Classes that contains "strings" as values (eg. outcome) 
 #' For-each "sting" value calculate following =>
@@ -327,7 +327,7 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
         props$result), collapse = ","))
     dbExecute(databasePool, query)
 }
-#' @title Save new generated file to database
+#' @title db.apps.simon.saveFileInfo
 #' @description Used to save newly generated Test/Train partitions files to MySQL
 #' @param uid 
 #' @param paths 
@@ -375,7 +375,7 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
     return(ufid)
 }
 
-#' @title 
+#' @title db.apps.simon.saveFeatureSetsInfo
 #' @description 
 #' @param data 
 #' @param samples
@@ -417,18 +417,20 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
 
     return(fs_id)
 }
-#' @title 
-#' @description 
+
+#' @title db.apps.simon.saveMethodAnalysisData
+#' @description Save Model data into database with all performance measurements
 #' @param resampleID ID of current processing re-sample
 #' @param trainModel Complete model produces by caret::train
-#' @param confmatrix Prediction confusion matrix
+#' @param predConfusionMatrix
 #' @param model_details Data-frame with current model details
-#' @param roc List containing ROC measures roc$auc
+#' @param predAUC List containing pROC measures
+#' @param predPostResample
 #' @param status Boolean, true or false
 #' @param errors Character vector with listed errors that occurred during training
 #' @param model_time_start Sys.time() object with model starting time
 #' @return list
-db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmatrix, model_details, performanceVariables, roc, errors, model_time_start){
+db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, model_details, performanceVariables, predAUC, predPostResample, errors, model_time_start){
     model_status <- 1
     training_time <- NULL
 
@@ -492,8 +494,10 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmat
 
     ## Insert other model Variables:
     if(!is.null(modelID)){
+        ## MySQL query placeholder
         prefQuery <- NULL
-        ### TRAININF FIT PARAMETARS
+
+        ## Insert Model Training parameters
         if (trainModel$status == TRUE) {
             preferencies <- caret::getTrainPerf(trainModel$data)
             preferencies <- preferencies[, !(names(preferencies) %in% c("method"))]
@@ -503,15 +507,15 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmat
                     ## value <- round(as.numeric(value), 4)
                     performanceVariables <- getPerformanceVariable(pref, performanceVariables)
                     pvDetails <- performanceVariables[performanceVariables$value %in% pref,]
-
                     query <- c(query, sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, value))
                 }
             }
             prefQuery <- paste(query, collapse = ",")
         }
-        ### PREDICTION PARAMETARS
-        if(!is.null(confmatrix)){
-            confmatrix_data <- c(confmatrix$overall, confmatrix$byClass)
+
+        ## Insert Model Testing parameters
+        if(!is.null(predConfusionMatrix)){
+            confmatrix_data <- c(predConfusionMatrix$overall, predConfusionMatrix$byClass)
             confmatrix_data <- data.frame(prefName=names(confmatrix_data), prefValue=confmatrix_data, row.names=NULL)
       
             performanceVariables <- getPerformanceVariable(confmatrix_data$prefName, performanceVariables)
@@ -523,19 +527,30 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, confmat
             ## Insert Positive control
             performanceVariables <- getPerformanceVariable("PositiveControl", performanceVariables)
             pvDetails <- performanceVariables[performanceVariables$value %in% "PositiveControl",]
-            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",confmatrix$positive,"', NOW())")), collapse = ",")
-
+            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predConfusionMatrix$positive,"', NOW())")), collapse = ",")
         }
 
-        if(!is.null(roc) & !is.null(roc$auc)){
+        ## Insert Testing pAUC
+        if(!is.null(predAUC) & !is.null(predAUC$auc)){
             performanceVariables <- getPerformanceVariable("PredictAUC", performanceVariables)
             pvDetails <- performanceVariables[performanceVariables$value %in% "PredictAUC",]
 
-            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",roc$auc,"', NOW())")), collapse = ",")
+            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predAUC$auc,"', NOW())")), collapse = ",")
         }
+
+        ## Insert Testing Accuracy/Kappa or RMSE, Rsquared, MAE
+        if(!is.null(predPostResample) & length(predPostResample) >= 2){
+            postResampleData <- data.frame(prefName=names(predPostResample), prefValue=predPostResample, row.names=NULL)
+
+            performanceVariables <- getPerformanceVariable(postResampleData$prefName, performanceVariables)
+            pvDetails <- performanceVariables[performanceVariables$value %in% postResampleData$prefName,]
+
+            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, postResampleData$prefValue), collapse = ",")
+            prefQuery <- paste(c(prefQuery, query), collapse = ",")
+        }
+        ## When everything is ready insert data
         if(!is.null(prefQuery)){
             query <- paste0("INSERT IGNORE INTO models_performance (id, mid, mpvid, prefValue, created) VALUES ",prefQuery,";")
-
             dbExecute(databasePool, query)
         }
     }

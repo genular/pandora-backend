@@ -13,7 +13,7 @@ p_load(ggplot2)
 source("cron/functions/database.R")
 source("cron/functions/helpers.R")
 source("cron/functions/caretPredict.R")
-source("cron/functions/variable_importance.R")
+source("cron/functions/postProcessModel.R")
 source("cron/functions/preProcessDataset.R")
 
 maximum_memory <- getUseableFreeMemory()
@@ -366,6 +366,7 @@ for (dataset in datasets) {
         trainingVariableImportance <- NULL
         predictionObject <- NULL
         predictionAUC <- NULL
+        predictionPostResample <- NULL
         predictionConfusionMatrix <- NULL
 
         if(trainModel$status == TRUE){
@@ -422,16 +423,28 @@ for (dataset in datasets) {
                             error_models <- c(error_models, "Cannot calculate confusion matrix")
                         }
                         
-                        cat(paste0("===> INFO: Trying to calculate pROC and pAUC \r\n"))
-                        ## RAW ones are fucked up
+                        cat(paste0("===> INFO: Trying to calculate pROC/pAUC, postResample \r\n"))
                         if(predictionObject$type == "prob" && !is.null(predictionObject$predictions)){
-                            predictionROC <- pROC::roc(modelData$testing[[dataset$outcome]], predictionProcessed[, outcome_mapping[1, ]$class_remapped], levels = levels(modelData$testing[[dataset$outcome]]))
-                            predictionAUC <- list(roc = predictionROC, auc = pROC::auc(predictionROC))
+                            cat(paste0("===> INFO: Calculating pROC and pAUC \r\n"))
+                            predROC <- getPredictROC(modelData$testing[[dataset$outcome]], predictionObject$predictions[, outcome_mapping[1, ]$class_remapped], model_details)
+
+                            if(predROC$status == TRUE){
+                                predictionAUC <- list(roc = predROC$data, auc = pROC::auc(predROC$data))
+                            }else{
+                                cat(paste0("===> ERROR: Cannot calculate getPredictROC \r\n"))
+                                error_models <- c(error_models, "Cannot calculate getPredictROC")
+                            }
                         }else if(predictionObject$type == "raw" && !is.null(predictionObject$predictions)){
-                            ## https://topepo.github.io/caret/measuring-performance.html
+                            cat(paste0("===> INFO: Calculating getPostResample \r\n"))
                             ## Calculates performance across resamples
                             ## Given two numeric vectors of data, the mean squared error and R-squared are calculated. For two factors, the overall agreement rate and Kappa are determined.
-                            t <- apply(predictionObject$predictions, 2, caret::postResample, obs=base::as.factor(modelData$testing[,dataset$outcome]))
+                            predPostResample <- getPostResample(predictionObject$predictions, modelData$testing[,dataset$outcome], model_details)
+                            if(predPostResample$status == TRUE){
+                                predictionPostResample <- predPostResample$data
+                            }else{
+                                cat(paste0("===> ERROR: Cannot calculate getPostResample \r\n"))
+                                error_models <- c(error_models, "Cannot calculate getPostResample")
+                            }
                         }else{
                             error_models <- c(error_models, "Not calculating pROC or pAUC")
                         }
@@ -459,6 +472,7 @@ for (dataset in datasets) {
                                                                 model_details,
                                                                 performanceVariables,
                                                                 predictionAUC,
+                                                                predictionPostResample,
                                                                 error_models,
                                                                 model_time_start
                                                             )
@@ -474,6 +488,7 @@ for (dataset in datasets) {
                 training = trainModel,
                 predictionObject = predictionObject, 
                 auc = predictionAUC, 
+                predictionPostResample = predictionPostResample,
                 confusionMatrix = predictionConfusionMatrix,
                 varImportance = trainingVariableImportance
             )

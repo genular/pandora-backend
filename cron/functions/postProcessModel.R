@@ -1,9 +1,58 @@
+#' @title  getPredictROC
+#' @description Build a ROC curve
+#' @param responseData modelData$testing[[dataset$outcome]]
+#' @param predictionsData predictionObject$predictions[, outcome_mapping[1, ]$class_remapped]
+#' @param model_details
+#' @return list
+getPredictROC <- function(responseData, predictionsData, model_details) {
+    results <- list(status = FALSE, data = NULL)
+    input_args <- c(list(response = responseData, predictor = predictionsData, levels = levels(responseData)))
+
+    process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(pROC::roc, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+    if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
+        results$status <- TRUE
+    }else{
+        if(inherits(results$data, 'try-error')){
+            message <- base::geterrmessage()
+            process.execution$message <- message
+        }
+        results$data <- process.execution$message
+    }
+    return(results)
+}
+
+#' @title  getPostResample
+#' @description postResample function to get an accuracy score
+#' https://github.com/topepo/caret/blob/master/pkg/caret/R/postResample.R#L119
+#' https://topepo.github.io/caret/measuring-performance.html
+#' @param predictionProcessed predictionProcessed
+#' @param referenceData dataTesting[,outcomeColumn]
+#' @param model_details
+#' @return list
+getPostResample <- function(predictionProcessed, referenceData, model_details) {
+    results <- list(status = FALSE, data = NULL)
+    input_args <- c(list(pred=predictionProcessed, obs=as.factor(dataTesting[,outcomeColumn])))
+    ## Old apply
+    ## t <- apply(predictionProcessed, 2, caret::postResample, obs=base::as.factor(dataTesting[, outcomeColumn]))
+    process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::postResample, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+    if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
+        results$status <- TRUE
+    }else{
+        if(inherits(results$data, 'try-error')){
+            message <- base::geterrmessage()
+            process.execution$message <- message
+        }
+        results$data <- process.execution$message
+    }
+    return(results)
+}
+
 #' @title  getConfusionMatrix
 #' @description Calculation of confusionMatrix
 #' @param predictionProcessed predictionProcessed
 #' @param referenceData Outcome column 
-#' @param model_details 
-#' @param mode
+#' @param model_details Model details list
+#' @param mode caret::confusionMatrix mode
 #' @return list
 getConfusionMatrix <- function(predictionProcessed, referenceData, model_details, mode = "everything") {
     results <- list(status = FALSE, data = NULL)

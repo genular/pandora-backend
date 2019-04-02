@@ -99,7 +99,7 @@ tmpExtract <- function(x){
 #' @return integer
 getResamplesNumber <- function(tuneList){
     suppressWarnings(tmp <- tmpExtract(tuneList))
-    tmp2 <- length(unique(modelLookup(tuneList$method)$parameter))
+    tmp2 <- length(unique(caret::modelLookup(tuneList$method)$parameter))
 
     tmp <- as.numeric(tmp)
     tmp2 <- as.numeric(tmp2)
@@ -133,7 +133,7 @@ extractCaretTarget.default <- function(x, y, ...){
 #' @param ... ignored
 #' @method extractCaretTarget formula
 extractCaretTarget.formula <- function(form, data, ...){
-    y <- model.response(model.frame(form, data))
+    y <- stats::model.response(stats::model.frame(form, data))
     names(y) <- NULL
     return(y)
 }
@@ -151,11 +151,8 @@ extractCaretTarget.formula <- function(form, data, ...){
 caretTrainModel <- function(data, model_details, problemType, outcomeColumn, preProcess = NULL, resampleID, dataDir){
     set.seed(1337)
 
-    results <- list(
-            status = FALSE,
-            data = NULL)
+    results <- list(status = FALSE, data = NULL)
     trControl <- NULL
-
 
     if(problemType == "classification"){
         trControl <- caret::trainControl(method="repeatedcv", 
@@ -165,8 +162,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
             repeats=5, 
             savePredictions = "final", 
             classProbs = model_details$prob, 
-            summaryFunction = caret::multiClassSummary, 
-
+            summaryFunction = caret::multiClassSummary,
             verboseIter = TRUE, 
             allowParallel = TRUE)
     }else{
@@ -270,6 +266,8 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
 
 #' @title Predicts Testing data on previously trained model Fit
 #' @description This function predicts Testing set if available, it returns class probabilities for predictions
+#' There are two types of evaluation we can do here, raw or prob. Raw gives you a class prediction, yes and nope, 
+#' while prob gives you the probability on how sure the model is about it’s choice.
 #' @param trainingFit Model Fit from caret::train function
 #' @param dataTesting Testing set data with features and outcomes
 #' @param outcomeColumn Name of the outcome column
