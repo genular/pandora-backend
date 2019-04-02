@@ -1,3 +1,30 @@
+#' @title  getConfusionMatrix
+#' @description Calculation of confusionMatrix
+#' @param predictionProcessed predictionProcessed
+#' @param referenceData Outcome column 
+#' @param model_details 
+#' @param mode
+#' @return list
+getConfusionMatrix <- function(predictionProcessed, referenceData, model_details, mode = "everything") {
+    results <- list(status = FALSE, data = NULL)
+
+    input_args <- c(list(data = predictionProcessed, reference = referenceData, mode = mode))
+
+    process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::confusionMatrix, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+
+    if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
+        results$status <- TRUE
+    }else{
+        if(inherits(results$data, 'try-error')){
+            message <- base::geterrmessage()
+            process.execution$message <- message
+        }
+        results$data <- process.execution$message
+    }
+
+    return(results)
+}
+
 #' @title  getVariableImportance
 #' @description Calculation of variable importance for regression and classification models
 #' @param model Model Fit from caret::train function
@@ -6,7 +33,7 @@
 getVariableImportance <- function(model, scale = TRUE) {
     out <- tryCatch(
         {
-            varImp(model, scale=scale)
+            caret::varImp(model, scale=scale)
         },
         error=function(msg) {
             cat(paste0("===> ERROR: getVariableImportance: ",match.call()[[1]]," (error): ", msg, "\r\n"))
@@ -34,7 +61,7 @@ prepareVariableImportance <- function(model)
     if (!is.null(imp_perc) && !is.null(imp_no)) { 
 
         imp <- data.frame(imp_perc$importance)
-        ## Take Overall if available otherwise take first values row
+        ## Take Overall column if available otherwise take first values row
         if("Overall" %in% names(imp)){
             importance_perc = imp[order(-imp$Overall), ,drop = FALSE]
         }else{

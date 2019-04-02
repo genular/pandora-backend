@@ -6,6 +6,7 @@
 #' caretModelSpec("rf", tuneLength=5, preProcess="ica")
 caretModelSpec <- function(methodInclude="rf", ...){
     if(methodInclude == "catboost.caret"){
+        ## Return a R function instead string in method
         methodInclude = base::get(methodInclude)
     }
     out <- c(list(method=methodInclude), list(...))
@@ -228,19 +229,22 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     ## trControl$seeds <- mseeds
 
     ## Use matrix interface for classification problems
-    if(problemType == "classification"){
-        x <- data[,!(names(data) %in% outcomeColumn)]
-        y <- data[,c(outcomeColumn)]
+    if(model_details$interface == "matrix"){
+        data_x <- data[,!(names(data) %in% outcomeColumn)]
+        data_y <- data[,c(outcomeColumn)]
+        train_args <- list(data_x, base::as.factor(base::make.names(data_y)), trControl = trControl)
 
-        train_args <- list(x, as.factor(make.names(y)), trControl = trControl)
-    }else{
+    }else if(model_details$interface == "formula"){
         train_args <- list(stats::as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
+    }else{
+        cat(paste0("===> ERROR: Model details interface is not defined! \r\n"))
+        die()
     }
 
     train_args <- c(train_args, tuneList)
     model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
 
-    # Ignore warnings while processing errors
+    # Ignore warnings while processing errors, actually we should move this to have training suppressed as well!?
     options(warn = -1)
     if(!inherits(model.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
         params <- results$data$modelInfo$parameters$parameter
@@ -267,37 +271,48 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
 #' @title Predicts Testing data on previously trained model Fit
 #' @description This function predicts Testing set if available, it returns class probabilities for predictions
 #' @param trainingFit Model Fit from caret::train function
-#' @param model Testing dataset with features and outcome
+#' @param dataTesting Testing set data with features and outcomes
+#' @param outcomeColumn Name of the outcome column
+#' @param model_details model_details list
 #' @return data frame
-caretPredict <- function(trainingFit, data){
-    results <- list(status = TRUE, type = NULL, preds = NULL)
+caretPredict <- function(trainingFit, dataTesting, outcomeColumn, model_details){
+    results <- list(status = TRUE, type = NULL, predictions = NULL)
+    predictOnData <- NULL
 
-    if (is.null(data)) {
-        data <- trainingFit[[1]]$trainingData
-        if (is.null(data)) {
+    if (is.null(dataTesting)) {
+        dataTesting <- trainingFit[[1]]$trainingData
+        if (is.null(dataTesting)) {
             cat(paste0("===> ERROR: caretPredict: Could not find training data in the first model \r\n"))
             results$status <- FALSE
         }
     }
 
+    ## Remove outcome column
+    if(model_details$interface == "matrix"){
+        predictOnData <- dataTesting[,!(names(dataTesting) %in% outcomeColumn)]
+    }else if(model_details$interface == "formula"){
+        predictOnData <- dataTesting
+    }
+
     if(results$status == TRUE){
-        type <- trainingFit$modelType
-        if (type == "Classification") {
+        if (trainingFit$modelType == "Classification") {
+            ## Check if probabilities are supported by model
             if (trainingFit$control$classProbs) {
                 results$type <- "prob"
-                # Return probability predictions for only one of the classes as determined by
-                # configured default response class level
-                results$preds <- tryCatch( caret::predict.train(trainingFit, type = "prob", newdata = data) , error = function(e){ return(e) } )
             } else {
                 results$type <- "raw"
-                results$preds <- tryCatch( caret::predict.train(trainingFit, type = "raw", newdata = data) , error = function(e){ return(e) } )
             }
-        } else if (type == "Regression") {
+        } else if (trainingFit$modelType == "Regression") {
             results$type <- "raw"
-            results$preds <- tryCatch( caret::predict.train(trainingFit, type = "raw", newdata = data) , error = function(e){ return(e) } )
         } else {
-            cat(paste0("===> ERROR: caretPredict: Unknown model type:", type," \r\n"))
+            cat(paste0("===> ERROR: caretPredict: Unknown modelType:", trainingFit$modelType," \r\n"))
             results$status <- FALSE
+        }
+        ## Finally make predictions
+        if(results$status == TRUE){
+            # Return probability predictions for only one of the classes as determined by
+            # configured default response class level
+            results$predictions <- tryCatch( caret::predict.train(trainingFit, type = results$type, newdata = predictOnData) , error = function(e){ return(e) } )
         }
     }
 
