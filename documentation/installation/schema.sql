@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 95.216.176.70:3307
--- Generation Time: Mar 14, 2019 at 11:56 PM
+-- Generation Time: Apr 04, 2019 at 01:47 AM
 -- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
@@ -57,7 +57,7 @@ CREATE TABLE `dataset_queue` (
   `sparsity` float DEFAULT NULL,
   `packages` longtext COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n	packageID: \n	serverGroup:\n}',
   `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors',
-  `processing_time` int(11) DEFAULT NULL COMMENT 'Total processing time - miliseconds',
+  `processing_time` int(11) DEFAULT '0' COMMENT 'Total processing time - miliseconds',
   `servers_total` int(11) DEFAULT '0' COMMENT 'Total number of created cloud servers that needs to do processing',
   `created` datetime DEFAULT NULL COMMENT 'Initial Created time',
   `created_ip_address` varchar(15) DEFAULT NULL,
@@ -123,7 +123,7 @@ CREATE TABLE `models` (
   `ufid` int(11) DEFAULT NULL COMMENT 'users_files_id - where is model data saved',
   `mpid` int(11) DEFAULT NULL COMMENT 'Model Packages ID',
   `mv_hash` char(32) DEFAULT NULL COMMENT 'models_variables MD5 signature hash',
-  `status` tinyint(6) DEFAULT NULL COMMENT 'Analysis status\n0 - Model Training or Predict Failure\n1- Sucess\n3- In progress',
+  `status` tinyint(6) DEFAULT NULL COMMENT 'Analysis status\n0 - Model Failure\n1- Sucess',
   `error` longtext COMMENT 'JSON encoded array of errors',
   `training_time` int(11) DEFAULT NULL COMMENT 'Only model training time - miliseconds',
   `processing_time` int(11) DEFAULT NULL COMMENT 'Total models processing time. Training, testing etc.. - miliseconds',
@@ -148,6 +148,7 @@ CREATE TABLE `models_packages` (
   `tags` longtext COMMENT 'JSON list of model tags',
   `tuning_parameters` longtext COMMENT 'JSON - model tuning parametars',
   `citations` longtext COMMENT 'JSON of citations for all libraries needed for this model',
+  `licenses` longtext COMMENT 'JSON of licenses for all libraries needed for this model',
   `time_per_million` int(11) DEFAULT NULL COMMENT 'Average Time in miliseconds needed to process per milion datapoints\ndataponts = columns x rows',
   `documentation` text COMMENT '{\npackageName: "",\npackageVersion: "",\nhtml_content: ""\n}',
   `r_version` float DEFAULT NULL,
