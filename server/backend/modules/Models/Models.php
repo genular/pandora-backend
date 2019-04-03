@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-29 14:03:09
+ * @Last Modified time: 2019-04-03 14:19:53
  */
 namespace SIMON\Models;
 
@@ -66,7 +66,35 @@ class Models {
 		]);
 		return ($data->rowCount());
 	}
+	/**
+	 * [getDetailsByID description]
+	 * @param  [type] $resampleID    [description]
+	 * @param  [type] $user_id [description]
+	 * @return [array]
+	 */
+	public function getDetailsByID($modelIDs, $user_id) {
+		// [><] == INNER JOIN
+		// [>] == LEFT JOIN
+		$join = [
+			"[>]dataset_resamples" => ["models.drid" => "id"],
+			"[>]dataset_queue" => ["dataset_resamples.dqid" => "id"],
+		];
+		$columns =
+			[
+			"models.id(modelID) [Int]",
+			"models.drid(resampleID) [Int]",
+			"dataset_queue.id(queueID) [Int]",
+			"models.ufid(ufid_model) [Int]",
+		];
+		$conditions = [
+			"models.id" => $modelIDs,
+			"dataset_queue.uid" => $user_id,
+		];
 
+		$details = $this->database->select($this->table_name, $join, $columns, $conditions);
+
+		return ($details);
+	}
 	/**
 	 * [assignMesurmentsToModels description]
 	 * @param  [type] $modelsList                [description]

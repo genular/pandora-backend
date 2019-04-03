@@ -43,26 +43,29 @@ createDataPartitions <- function(data, outcome = "outcome", split = 0.75, use.va
 
     list(training = training, testing = testing, validation = validation)
 }
-## List all predict functions
-## for(fn in methods("predict"))
-##    try({
-##        f <- eval(substitute(getAnywhere(fn)$objs[[1]], list(fn = fn)))
-##        cat(fn, ":\n\t", deparse(args(f)), "\n")
-##        }, silent = TRUE)
-## https://machinelearningmastery.com/pre-process-your-dataset-in-r/
+# List all predict functions
+# for(fn in methods("predict")){
+# try({
+#         f <- eval(substitute(getAnywhere(fn)$objs[[1]], list(fn = fn)))
+#         cat(fn, ":\n\t", deparse(args(f)), "\n")
+#     }, silent = TRUE)
+# }
+# https://machinelearningmastery.com/pre-process-your-dataset-in-r/
+# http://rismyhammer.com/ml/Pre-Processing.html
 preProcessData <- function(data, outcome, excludeClasses, methods = c("center", "scale"))
 {
     set.seed(1337)
+    if(length(methods) == 0){
+        methods <- c("center", "scale")
+    }
     whichToExclude <- sapply( names(data), function(y) any(sapply(excludeClasses, function(excludeClass)  return (y %in% excludeClass) )) )
     # calculate the pre-process parameters from the dataset
-    preprocessParams <- caret::preProcess(data[!whichToExclude], method = methods, outcome = outcome)
+    preprocessParams <- caret::preProcess(data[!whichToExclude], method = methods, outcome = outcome, n.comp = 25)
     # transform the dataset using the parameters
     processedMat <- predict(preprocessParams, newdata=data[!whichToExclude])
-
     # summarize the transformed dataset
-    data[!whichToExclude] <- processedMat
-
-    return(data)
+    processedMat[excludeClasses] <- data[excludeClasses]
+    return(list(processedMat = processedMat, preprocessParams = preprocessParams))
 }
 
 findImportantVariables  <- function(max_auc, min_auc, min_score, max_score, min_rank, max_rank, json_features, processing_id) {

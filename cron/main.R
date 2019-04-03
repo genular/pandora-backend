@@ -274,8 +274,16 @@ for (dataset in datasets) {
         ## Does models supports probabilities
         model_details$prob <- TRUE
 
-        ##   id internal_id classification regression
-        ## 3854          lm              0          1
+        ## TODO add this in database!
+        if(model == "nnet"){
+            model_details$model_specific_args <- list(trace=FALSE)
+        }else if(model == "gbm"){
+            model_details$model_specific_args <- list(verbose=FALSE)
+        }else if(model == "stepLDA"){
+            model_details$model_specific_args <- list(output=FALSE)
+        }else if(model == "stepQDA"){
+            model_details$model_specific_args <- list(output=FALSE)
+        }
 
         if(model %in% models_restrict){
             cat(paste0("===> WARNING: RESTRICTED. Skipping model: ",model," \r\n"))
@@ -317,11 +325,11 @@ for (dataset in datasets) {
         }
         if(!is.null(model_info$library)){
             ## Try to load model libraries 
-            for (package in c(model_info$library)) {
+            for (package in unique(c(model_info$library))) {
                 if(package %!in% (.packages())){
                     cat(paste0("===> WARNING: Package is not loaded: ",package," - trying to load it \r\n"))
 
-                    if (!require(package, character.only=T, quietly=T)) {
+                    if (!require(package, character.only=TRUE, quietly=TRUE, warn.conflicts=FALSE)) {
                         cat(paste0("===> ERROR: Package not found: ",package," trying to install it:\r\n"))
                         github_path <- paste0("cran/", package)
                         if(try(RCurl::url.exists(paste0("https://github.com/",github_path)))){
@@ -494,7 +502,7 @@ for (dataset in datasets) {
             )
             saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
             ## JOB_DIR is temporarily directory on our local file-system
-            saveDataPaths$path_initial <- paste0(JOB_DIR,"/models/modelID_", methodDetails$modelID, ".RData")
+            saveDataPaths$path_initial <- paste0(JOB_DIR,"/models/modelID_",model_details$internal_id,"_", methodDetails$modelID, ".RData")
             ## Save data in .RData since write_feather supports only data-frames
             save(saveData, file = saveDataPaths$path_initial)
             path_details = compressPath(saveDataPaths$path_initial)

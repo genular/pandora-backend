@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-29 14:36:44
+ * @Last Modified time: 2019-04-03 14:45:04
  */
 namespace SIMON\Models;
 
@@ -62,7 +62,6 @@ class ModelsVariables {
 
 	/**
 	 * [getVariableImportance description]
-	 * @param  [type] $resampleID [description]
 	 * @param  [type] $modelsID   [description]
 	 * @param  [type] $page       [description]
 	 * @param  [type] $page_size  [description]
@@ -70,7 +69,7 @@ class ModelsVariables {
 	 * @param  [type] $sort_by    [description]
 	 * @return [type]             [description]
 	 */
-	public function getVariableImportance($resampleID, $modelsID, $page, $page_size, $sort, $sort_by) {
+	public function getVariableImportance($modelsID, $page, $page_size, $sort, $sort_by) {
 
 		$start_limit = (($page - 1) * $page_size);
 		$end_limit = $page_size;

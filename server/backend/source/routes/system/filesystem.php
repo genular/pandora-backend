@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 17:40:02
+ * @Last Modified time: 2019-04-03 14:44:24
  */
 
 use Slim\Http\Request;
@@ -88,7 +88,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 			@unlink($gzipped_path);
 		}
 
-		$file_details = $FileSystem->getFileDetails($file_id, false);
+		$file_details = $FileSystem->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
 		if ($file_details !== false) {
 			$message = array(
 				"id" => $file_details["id"],
@@ -163,9 +163,9 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 	if (isset($submitData['selectedFiles'])) {
 		foreach ($submitData['selectedFiles'] as $selectedFilesKey => $selectedFilesValue) {
 			$fileID = (int) $selectedFilesValue;
-			$file_details = $FileSystem->getFileDetails($fileID, false);
+			$file_details = $FileSystem->getFileDetails($fileID, ["uid", "file_path"], false);
 
-			if ($file_details["details"] && $user_id == $file_details["uid"]) {
+			if ($file_details !== false && $user_id == $file_details["uid"]) {
 				$message = $FileSystem->deleteFileByID($fileID, $file_details["file_path"]);
 				if ($message === false) {
 					$success = false;
@@ -194,6 +194,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	$message = false;
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -204,37 +205,60 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	}
 
 	if ($submitData && isset($submitData['recordID'])) {
-		$recordID = (int) $submitData['recordID'];
+		// This is array for models or integer for queue and resample
+		$recordID = $submitData['recordID'];
 		$downloadType = $submitData['downloadType'];
 
 		$recordDetails = false;
 		if ($downloadType === "queue") {
 			$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 			$recordDetails = $DatasetQueue->getDetailsByID($recordID, $user_id);
-		} else {
+		} else if ($downloadType === "resample") {
 			$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
 			$recordDetails = $DatasetResamples->getDetailsByID($recordID, $user_id);
-		}
+		} else if ($downloadType === "models") {
+			$Models = $this->get('SIMON\Models\Models');
+			$recordDetails = $Models->getDetailsByID($recordID, $user_id);
 
+		}
+		// 1st fetch all necessarily file IDs from database
 		$downloadIDs = [];
 		if ($recordDetails) {
 			// Loop all values and search for fileIDs
 			foreach ($recordDetails as $recordDetailsKey => $recordDetailsValue) {
-				if (strpos($recordDetailsKey, 'ufid') === 0) {
-					if (!isset($downloadIDs[$recordDetailsValue])) {
-						$downloadIDs[$recordDetailsValue] = $recordDetailsValue;
+				if (!is_array($recordDetailsValue)) {
+					// Process only keys that start with ufid: ex. ufid_train
+					if ($Helpers->startsWith($recordDetailsKey, 'ufid')) {
+						if (!isset($downloadIDs[$recordDetailsValue])) {
+							$downloadIDs[$recordDetailsValue] = $recordDetailsValue;
+						}
+					}
+				} else {
+					foreach ($recordDetailsValue as $recordDetailsValueKey => $recordValue) {
+						if ($Helpers->startsWith($recordDetailsValueKey, 'ufid')) {
+							if (!isset($downloadIDs[$recordValue])) {
+								$downloadIDs[$recordValue] = $recordValue;
+							}
+						}
 					}
 				}
 			}
 		}
 
+		// 2nd Generate final download links
 		$downloadLinks = [];
 		foreach ($downloadIDs as $fileID) {
-			$fileDetails = $FileSystem->getFileDetails($fileID, false);
+			$fileDetails = $FileSystem->getFileDetails($fileID, ["file_path", "display_filename", "extension"], false);
+
 			if (isset($fileDetails['file_path'])) {
-				$url = $FileSystem->getDownloadLink($fileDetails['file_path']);
-				$downloadLinks[] = $url;
+				$download_url = $FileSystem->getDownloadLink($fileDetails['file_path']);
+				$display_filename = $FileSystem->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
+				$downloadLinks[] = ["filename" => $display_filename, "download_url" => $download_url];
 			}
+		}
+		// 3rd if model download is requested also download variable_importance and model overview sheet
+		if ($downloadType === "models") {
+
 		}
 
 		if (count($downloadLinks) > 0) {

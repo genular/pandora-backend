@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 14:26:00
+ * @Last Modified time: 2019-04-03 14:45:24
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -29,7 +29,7 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 	$sort_by = $request->getQueryParam('sort_by', 'feature_name');
 
 	$ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
-	$variableImportanceData = $ModelsVariables->getVariableImportance(intval($resampleID), $modelsID, intval($page), intval($page_size), $sort, $sort_by);
+	$variableImportanceData = $ModelsVariables->getVariableImportance($modelsID, intval($page), intval($page_size), $sort, $sort_by);
 
 	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 	$queueDetails = $DatasetQueue->getDetailsByID($pqid, $user_id);

@@ -146,7 +146,7 @@ extractCaretTarget.formula <- function(form, data, ...){
 #' @param outcomeColumn Name of the outcome column in data
 #' @param preProcess c("pca")
 #' @param resampleID Current Feature set ID
-#' @param dataDir Data root save dir for current analysis
+#' @param dataDir Data root save dir for current analysis (TEMP_DIR,"/cron_data/",dataset$userID,"/",dataset$queueID,"/",dataset$resampleID)
 #' @return model fit
 caretTrainModel <- function(data, model_details, problemType, outcomeColumn, preProcess = NULL, resampleID, dataDir){
     set.seed(1337)
@@ -196,10 +196,13 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     }
     # TODO: Add indexes to trControl if they are missing
     if (!is.null(trControl) && is.null(trControl$index) && problemType == "classification") {
+        cat(paste0("===> INFO: Adding indexes to trControl \r\n"))
+        
         cachePath <- paste0(dataDir,"/folds/train_control_folds.RData")
         trainFormula <- stats::as.formula(paste0("base::factor(", outcomeColumn, ") ~."))
         target <- extractCaretTarget(trainFormula, data)
         folds <- checkCachedList(cachePath)
+
         if(!is.null(folds)){
             trControl$index <- folds
             rm(folds)
@@ -211,8 +214,8 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
         trControl <- trControlCheck(x = trControl, y = target)
     }
 
-    # TODO: add seeds
     ## Predefine seeds and cache it to use in all models across feature set
+    ## make a tuneList method to identify the seed structure and build seeds
     ## resamplesNumber <- getResamplesNumber(tuneList)
     ## cachePath <- paste0(dataDir,"/data/specific/seeds_",resampleID,"_",resamplesNumber,".RData")
     ## cacheSeeds <- checkCachedList(cachePath)

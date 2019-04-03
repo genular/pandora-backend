@@ -31,7 +31,7 @@ getPredictROC <- function(responseData, predictionsData, model_details) {
 #' @return list
 getPostResample <- function(predictionProcessed, referenceData, model_details) {
     results <- list(status = FALSE, data = NULL)
-    input_args <- c(list(pred=predictionProcessed, obs=as.factor(dataTesting[,outcomeColumn])))
+    input_args <- c(list(pred=predictionProcessed, obs=base::as.factor(referenceData)))
     ## Old apply
     ## t <- apply(predictionProcessed, 2, caret::postResample, obs=base::as.factor(dataTesting[, outcomeColumn]))
     process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::postResample, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )

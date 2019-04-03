@@ -334,6 +334,11 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
 #' @return string
 db.apps.simon.saveFileInfo <- function(uid, paths){
     ufid <- NULL
+
+    extension <- ".csv"
+    display_filename <- "default"
+    mime_type <- "unknown"
+
     sql <- "INSERT IGNORE INTO `users_files`
             (`id`, `uid`, `ufsid`, `item_type`, `file_path`, `filename`, `display_filename`, 
             `size`, `extension`, `mime_type`, `details`, `file_hash`, `created`, `updated`)
@@ -354,14 +359,21 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
                 id=LAST_INSERT_ID(id), uid=?uid, file_path=?file_path, filename=?filename, 
                 display_filename=?display_filename, size=?size, extension=?extension, mime_type=?mime_type, file_hash=?file_hash"
 
+    if("path_initial" %in% names(paths)){
+        extension <- getExtension(saveDataPaths$path_initial)
+        display_filename <- sub('\\..*$', '', basename(paths$path_initial))
+        ##  Based on the data derived from /etc/mime.types
+        mime_type <- mime::guess_type(paths$path_initial)
+    }
+
     query <- sqlInterpolate(databasePool, sql, 
             uid=uid, 
             file_path=paths$file_path,
             filename=basename(paths$renamed_path),
-            display_filename=sub('\\..*$', '', basename(paths$path_initial)),
+            display_filename=display_filename,
             size=file.info(paths$renamed_path)$size, 
-            extension='.csv',
-            mime_type='text/plain',
+            extension=extension,
+            mime_type=mime_type,
             file_hash=digest::digest(paths$renamed_path, algo="sha256", serialize=F, file=TRUE)
     )
     results <- dbExecute(databasePool, query)

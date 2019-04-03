@@ -1,3 +1,12 @@
+#' @title  getExtension
+#' @description Extract file extension from file path
+#' @param file file path
+#' @return string
+getExtension <- function(file){ 
+    ex <- strsplit(basename(file), split="\\.")[[1]]
+    return(ex[-1])
+}
+
 #' @title calculateTimeDifference
 #' @description Returns the time difference in different units
 #' @param start_time Object returned from Sys.time()

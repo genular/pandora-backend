@@ -388,7 +388,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
         ## This package is not yet on CRAN. To install the latest development version you can install from the cloudyr drat repository:
         sudo Rscript -e "install.packages('aws.s3', repos = c('cloudyr' = 'http://cloudyr.github.io/drat'))"
-        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMySQL', 'RMariaDB', 'PKI', 'data.table', 'RCurl'), repos='http://cran.us.r-project.org')"
+        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMySQL', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'mime'), repos='http://cran.us.r-project.org')"
         
         ## Check some shared deps
         if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then

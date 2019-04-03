@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-27 13:41:44
+ * @Last Modified time: 2019-04-03 09:24:00
  */
 
 use Slim\Http\Request;
@@ -64,16 +64,13 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/verify', function (Re
 	$fileDetails = false;
 	if ($file_id > 0) {
 		// Retrieve first line from database
-		$fileDetails = $FileSystem->getFileDetails($file_id);
+		$fileDetails = $FileSystem->getFileDetails($file_id, ["details"], true);
 	}
 
 	if ($fileDetails !== false && isset($fileDetails["details"])) {
-		$details = $fileDetails["details"];
-		unset($fileDetails);
-		if (isset($details["header"]) && isset($details["header"]["formatted"])) {
-			$message = array_slice($details["header"]["formatted"], 0, 50);
+		if (isset($fileDetails["details"]["header"]) && isset($fileDetails["details"]["header"]["formatted"])) {
+			$message = array_slice($fileDetails["details"]["header"]["formatted"], 0, 50);
 			$message = array_values($message);
-			unset($details);
 		} else {
 			$success = false;
 			$message[] = "Cannot read file header.";
@@ -113,17 +110,13 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*
 	$fileDetails = false;
 	if ($file_id > 0) {
 		// Retrieve first line from database
-		$fileDetails = $FileSystem->getFileDetails($file_id);
+		$fileDetails = $FileSystem->getFileDetails($file_id, ["details"], true);
 	}
 
 	if ($fileDetails !== false && isset($fileDetails["details"])) {
-		$details = $fileDetails["details"];
-		unset($fileDetails);
-		if (isset($details["header"])) {
-			if (is_array($details["header"]["formatted"])) {
-				$message = $details["header"]["formatted"];
-				unset($details);
-
+		if (isset($fileDetails["details"]["header"])) {
+			if (is_array($fileDetails["details"]["header"]["formatted"])) {
+				$message = $fileDetails["details"]["header"]["formatted"];
 				if (trim($userInput) !== "") {
 					usort($message, function ($a, $b) use ($userInput) {
 						similar_text($userInput, $a["original"], $percentA);
@@ -132,7 +125,6 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*
 						return $percentA === $percentB ? 0 : ($percentA > $percentB ? -1 : 1);
 					});
 				}
-
 				$message = array_slice($message, 0, 50);
 				$message = array_values($message);
 			}
@@ -186,7 +178,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	if ($tempFilePath !== false && file_exists($tempFilePath)) {
 		$totalDatasetsGenerated = 0;
 
-		$mainFileDetails = $FileSystem->getFileDetails($submitData["selectedFiles"][0]);
+		$mainFileDetails = $FileSystem->getFileDetails($submitData["selectedFiles"][0], ["details"], true);
 
 		// Check if user has selected ALL Switch, in that case just exclude other Features from Header
 		$selectALLSwitch = array_search("ALL", array_column($submitData["selectedFeatures"], 'remapped'));

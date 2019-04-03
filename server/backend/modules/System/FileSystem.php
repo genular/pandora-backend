@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-27 13:39:43
+ * @Last Modified time: 2019-04-03 14:36:29
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -229,7 +229,7 @@ class FileSystem {
 				continue;
 			}
 			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem deleteFilesByIDs: " . $id);
-			$details = $this->getFileDetails($id);
+			$details = $this->getFileDetails($id, ["file_path"], true);
 			$this->deleteFileByID($id, $details['file_path']);
 		}
 	}
@@ -285,26 +285,28 @@ class FileSystem {
 		return ($details);
 	}
 
-	public function getFileDetails($file_id, $cache = true) {
-
-		$cache_key = $this->table_name . "_getFileDetails_" . md5($file_id);
+	public function getFileDetails($file_id, $columns = ["*"], $cache = true) {
+		// Make unique cache key for query
+		$cache_key = $this->table_name . "_getFileDetails_" . md5($file_id) . "_" . md5(json_encode($columns));
 
 		$details = $this->Cache->getArray($cache_key);
 		if ($cache === false || $details === false) {
-			$columns = "*";
 			$conditions = [
 				'id' => $file_id,
 			];
 			$details = $this->database->get($this->table_name, $columns, $conditions);
 			$this->Cache->setArray($cache_key, $details);
 		}
-		$details["details"] = json_decode($details["details"], true);
+		if (isset($details["details"])) {
+			$details["details"] = json_decode($details["details"], true);
+		}
+
 		return ($details);
 	}
 
 	public function readFirstLine($file_id) {
 
-		$details = $this->getFileDetails($file_id);
+		$details = $this->getFileDetails($file_id, ["file_path"], true);
 
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($details["file_path"]);
@@ -357,7 +359,7 @@ class FileSystem {
 
 		$remotePath = $input;
 		if (is_numeric($input)) {
-			$details = $this->getFileDetails($input, false);
+			$details = $this->getFileDetails($input, ["file_path"], false);
 			if (isset($details["file_path"])) {
 				$remotePath = $details["file_path"];
 			} else {
@@ -410,5 +412,34 @@ class FileSystem {
 		@unlink($file_path_gz);
 
 		return $file_path;
+	}
+	/**
+	 * [getDisplayFilename description]
+	 * @param  [type] $filename [description]
+	 * @return [type]           [description]
+	 */
+	public function getDisplayFilename($filename, $extension) {
+
+		$display_filename = "";
+
+		if ($this->Helpers->startsWith($filename, 'genSysFile_queue')) {
+			$display_filename = "resample_data";
+		} else if ($this->Helpers->endsWith($filename, 'training_partition')) {
+			$display_filename = "training_partition";
+		} else if ($this->Helpers->endsWith($filename, 'testing_partition')) {
+			$display_filename = "testing_partition";
+		} else if ($this->Helpers->startsWith($filename, 'modelID')) {
+			// TODO: This is temporary
+			if ($extension == ".csv") {
+				$extension = ".RData";
+			}
+			$display_filename = str_replace("modelID", "model", $filename);
+		} else {
+			$display_filename = $filename;
+		}
+		if ($extension) {
+			$display_filename = $display_filename . $extension;
+		}
+		return ($display_filename . ".tar.gz");
 	}
 }

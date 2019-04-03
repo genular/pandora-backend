@@ -95,16 +95,45 @@ preProcessDataset <- function(dataset) {
     datasetData[, !names(datasetData) %in% outcome_and_classes] <- lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , as.numeric)
 
     # ==> 2 PREPROCCESING: Skewness and normalizing of the numeric predictors
+    preProcessMapping <- NULL
     if(length(dataset$preProcess) > 0 ){
         transformations <- paste(dataset$preProcess, sep=",")
         message <- paste0("===> INFO: Pre-processing transformation (",transformations,")")
         cat(message)
 
         fs_status$info <- c(fs_status$info, message)
-        datasetData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
+        preProcessedData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
+        ## Final processed data-frame
+        datasetData <- preProcessedData$processedMat
+
+        if("pca" %in% dataset$preProcess){
+            preProcessMapping <- preProcessedData$preprocessParams$rotation
+            ## res.var <- factoextra::get_pca_var(res.pca)
+            ## res.var$coord          # Coordinates
+            ## res.var$contrib        # Contributions to the PCs
+            ## res.var$cos2           # Quality of representation 
+            ## corrplot::corrplot(res.var$cos2, is.corr = FALSE)
+        }else if("ica" %in% dataset$preProcess){
+            ## TODO not implemented
+            ## preProcessMapping <- preProcessedData$processedMat
+        }
     }
 
-   
+    ## Save newly generated components
+    if(!is.null(preProcessMapping)){            
+        saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
+        ## JOB_DIR is temporarily directory on our local file-system
+        saveDataPaths$path_initial <- paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_preProcessMapping.RData")
+        save(preProcessMapping, file = saveDataPaths$path_initial)
+
+        path_details = compressPath(saveDataPaths$path_initial)
+        saveDataPaths$renamed_path = path_details$renamed_path
+        saveDataPaths$gzipped_path = path_details$gzipped_path
+
+        saveDataPaths$file_path = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/data"))
+        file_id <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+    }
+
     ## Split datasetData into testing and training subsets based on Outcome column
     data <- createDataPartitions(datasetData, outcome = dataset$outcome, split = dataset$partitionSplit)
 
@@ -115,6 +144,7 @@ preProcessDataset <- function(dataset) {
     data$training <- as.data.frame(data$training)
     data$testing <- as.data.frame(data$testing)
 
+    ## Calculate dataset proportions
     datasetProportions(dataset$resampleID, dataset$outcome, dataset$classes, data)
 
     ## Make a backup of partitioned data
