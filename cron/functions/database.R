@@ -336,8 +336,11 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
     ufid <- NULL
 
     extension <- ".csv"
+    filename <- ""
     display_filename <- "default"
     mime_type <- "unknown"
+    size <- 0
+    file_hash <- ""
 
     sql <- "INSERT IGNORE INTO `users_files`
             (`id`, `uid`, `ufsid`, `item_type`, `file_path`, `filename`, `display_filename`, 
@@ -360,21 +363,35 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
                 display_filename=?display_filename, size=?size, extension=?extension, mime_type=?mime_type, file_hash=?file_hash"
 
     if("path_initial" %in% names(paths)){
-        extension <- getExtension(saveDataPaths$path_initial)
+        extension <- paste0(".", getExtension(paths$path_initial))
+        ## Take the last extension in case multiple are detected
+        if(length(extension) > 1){
+            extension <- extension[length(extension)]
+        }
         display_filename <- sub('\\..*$', '', basename(paths$path_initial))
         ##  Based on the data derived from /etc/mime.types
         mime_type <- mime::guess_type(paths$path_initial)
+        ## Take the last mime in case multiple are detected
+        if(length(mime_type) > 1){
+            mime_type <- mime_type[length(mime_type)]
+        }
+    }
+    
+    if("renamed_path" %in% names(paths)){
+        size <- file.info(paths$renamed_path)$size
+        filename <- basename(paths$renamed_path)
+        file_hash <- digest::digest(paths$renamed_path, algo="sha256", serialize=F, file=TRUE)
     }
 
     query <- sqlInterpolate(databasePool, sql, 
             uid=uid, 
             file_path=paths$file_path,
-            filename=basename(paths$renamed_path),
+            filename=filename,
             display_filename=display_filename,
-            size=file.info(paths$renamed_path)$size, 
+            size=size, 
             extension=extension,
             mime_type=mime_type,
-            file_hash=digest::digest(paths$renamed_path, algo="sha256", serialize=F, file=TRUE)
+            file_hash=file_hash
     )
     results <- dbExecute(databasePool, query)
     # 0 - ON DUPLICATE KEY

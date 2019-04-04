@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-03 14:44:24
+ * @Last Modified time: 2019-04-04 10:01:05
  */
 
 use Slim\Http\Request;
@@ -251,15 +251,15 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 			$fileDetails = $FileSystem->getFileDetails($fileID, ["file_path", "display_filename", "extension"], false);
 
 			if (isset($fileDetails['file_path'])) {
-				$download_url = $FileSystem->getDownloadLink($fileDetails['file_path']);
 				$display_filename = $FileSystem->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
+				// get link with a new name
+				$download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
 				$downloadLinks[] = ["filename" => $display_filename, "download_url" => $download_url];
 			}
 		}
-		// 3rd if model download is requested also download variable_importance and model overview sheet
-		if ($downloadType === "models") {
-
-		}
+		// TODO 3rd if model download is requested also download variable_importance and model overview sheet
+		// if ($downloadType === "models") {
+		// }
 
 		if (count($downloadLinks) > 0) {
 			$message = $downloadLinks;

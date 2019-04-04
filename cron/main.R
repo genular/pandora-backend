@@ -233,12 +233,13 @@ for (dataset in datasets) {
     data$training <- base::as.data.frame(data$training)
     data$testing <- base::as.data.frame(data$testing)
 
-    ## Remove all columns expect selected features and outcome
-    data$training <- data$training[, base::names(data$training) %in% c(dataset$features, dataset$outcome)]
-    data$testing <- data$testing[, base::names(data$testing) %in% c(dataset$features, dataset$outcome)]
+    if("pca" %!in% dataset$preProcess){
+        ## Remove all columns expect selected features and outcome
+        data$training <- data$training[, base::names(data$training) %in% c(dataset$features, dataset$outcome)]
+        data$testing <- data$testing[, base::names(data$testing) %in% c(dataset$features, dataset$outcome)]
+    }
 
     modelData = list(training = data$training, testing = data$testing)
-
     cat(paste0("===> INFO: Setting factors for datasets on: ",dataset$outcome," column. \n"))
 
     ## Establish factors for outcome column
@@ -275,13 +276,19 @@ for (dataset in datasets) {
         model_details$prob <- TRUE
 
         ## TODO add this in database!
-        if(model == "nnet"){
+        if(model %in% c("qrnn", "penalized", "pcaNNet", "nnet", "multinom", "avNNet")){
             model_details$model_specific_args <- list(trace=FALSE)
-        }else if(model == "gbm"){
+
+        }else if(model %in% c("lmStepAIC", "glmStepAIC")){
+            model_details$model_specific_args <- list(trace=0)
+
+        }else if(model %in% c("sda", "rfRules", "plsRglm", "mxnet", "hda", "deepboost", "brnn", "binda", "bartMachine", "avMxnet", "ORFsvm", "ORFridge", "ORFpls", "ORFlog", "gbm")){
             model_details$model_specific_args <- list(verbose=FALSE)
-        }else if(model == "stepLDA"){
-            model_details$model_specific_args <- list(output=FALSE)
-        }else if(model == "stepQDA"){
+
+        }else if(model %in% c("mlpKerasDropoutCost", "mlpKerasDropout", "mlpKerasDecayCost", "mlpKerasDecay")){
+            model_details$model_specific_args <- list(verbose=0)
+
+        }else if(model %in% c("stepLDA", "stepQDA")){
             model_details$model_specific_args <- list(output=FALSE)
         }
 
@@ -312,7 +319,7 @@ for (dataset in datasets) {
         ## Check if specific model for current feature set is already processed
         model_processed <- db.apps.checkIfModelProcessed(dataset$resampleID, model_details$id)
         if(model_processed == TRUE){
-            cat(paste0("===> ERROR: SKIPPING Model is already processed. Model: ", model_details$internal_id, "\r\n"))
+            cat(paste0("===> INFO: SKIPPING Model is already processed. Model: ", model_details$internal_id, "\r\n"))
             next()
         }
         ### Remove previously loaded libraries for previous model
@@ -513,11 +520,18 @@ for (dataset in datasets) {
             saveDataPaths$file_path = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/models"))
             file_id <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
 
-            updateDatabaseFiled("models", "ufid", file_id, "id", methodDetails$modelID)
+            if(!is.null(file_id)){
+                updateDatabaseFiled("models", "ufid", file_id, "id", methodDetails$modelID)    
+            }else{
+                updateDatabaseFiled("models", "status", 0, "id", methodDetails$modelID)
+                message <- paste0("Error saving model information file")
+                appendDatabaseFiled("models", "error", message, "id", methodDetails$modelID)
 
+                error_models <- c(error_models, message)
+            }
+            
             if(file.exists(saveDataPaths$gzipped_path)){ file.remove(saveDataPaths$gzipped_path) }
             if(file.exists(saveDataPaths$renamed_path)){ file.remove(saveDataPaths$renamed_path) }
-
         }
 
         if(length(error_models) > 0){

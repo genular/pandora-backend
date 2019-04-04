@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-03 14:36:29
+ * @Last Modified time: 2019-04-04 09:53:18
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -140,11 +140,11 @@ class FileSystem {
 	 * @param  [type] $filesystem_path [description]
 	 * @return [type]                  [description]
 	 */
-	public function getDownloadLink($filesystem_path) {
+	public function getDownloadLink($filesystem_path, $customFilename = false) {
 		$downloadLink = false;
 
 		if ($this->storage_type === "remote") {
-			return $this->getPreSignedURL($filesystem_path, $this->Config->get('default.storage.s3.bucket'), '+1 day', false);
+			return $this->getPreSignedURL($filesystem_path, $this->Config->get('default.storage.s3.bucket'), '+1 day', $customFilename);
 
 		} else if ($this->storage_type === "local") {
 			$public_directory = realpath(__DIR__ . '/../../public/downloads');
@@ -152,8 +152,13 @@ class FileSystem {
 			$this->deleteOldFiles($public_directory);
 
 			$copy_from = $this->Config->get('default.storage.local.data_path') . "/" . $filesystem_path;
-			$copy_to = $public_directory . "/" . basename($filesystem_path);
 
+			if ($customFilename !== false) {
+				$copy_to_filename = $customFilename;
+			} else {
+				$copy_to_filename = basename($filesystem_path);
+			}
+			$copy_to = $public_directory . "/" . $copy_to_filename;
 			$downloadLink = $this->Config->get('default.backend.server.url') . "/downloads/" . basename($filesystem_path);
 
 			if (!file_exists($copy_to)) {
