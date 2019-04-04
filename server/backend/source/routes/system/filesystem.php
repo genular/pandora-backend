@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-04 10:01:05
+ * @Last Modified time: 2019-04-04 13:53:34
  */
 
 use Slim\Http\Request;
@@ -69,37 +69,42 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 		// Validate File Header and rename it to standardize column names!
 		$details = $Helpers->validateCSVFileHeader($uploaded_path);
 
-		$renamed_path = $Helpers->renamePathToHash($details);
-		// Compress original file to GZ archive format
-		$gzipped_path = $Helpers->compressPath($renamed_path);
-		// Upload compressed file to the Storage
-		$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
-		// Save reference to Database
-		$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
+		if (count($details["message"]) === 0) {
 
-		// Delete and cleanup local files
-		if (file_exists($uploaded_path)) {
-			@unlink($uploaded_path);
-		}
-		if (file_exists($renamed_path)) {
-			@unlink($renamed_path);
-		}
-		if (file_exists($gzipped_path)) {
-			@unlink($gzipped_path);
-		}
+			$renamed_path = $Helpers->renamePathToHash($details);
+			// Compress original file to GZ archive format
+			$gzipped_path = $Helpers->compressPath($renamed_path);
+			// Upload compressed file to the Storage
+			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
+			// Save reference to Database
+			$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
 
-		$file_details = $FileSystem->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
-		if ($file_details !== false) {
-			$message = array(
-				"id" => $file_details["id"],
-				"size" => $file_details["size"],
-				"display_filename" => $file_details["display_filename"],
-				"extension" => $file_details["extension"],
-				"mime_type" => $file_details["mime_type"],
-				"item_type" => $file_details["item_type"],
-			);
-		}
+			// Delete and cleanup local files
+			if (file_exists($uploaded_path)) {
+				@unlink($uploaded_path);
+			}
+			if (file_exists($renamed_path)) {
+				@unlink($renamed_path);
+			}
+			if (file_exists($gzipped_path)) {
+				@unlink($gzipped_path);
+			}
 
+			$file_details = $FileSystem->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
+			if ($file_details !== false) {
+				$message = array(
+					"id" => $file_details["id"],
+					"size" => $file_details["size"],
+					"display_filename" => $file_details["display_filename"],
+					"extension" => $file_details["extension"],
+					"mime_type" => $file_details["mime_type"],
+					"item_type" => $file_details["item_type"],
+				);
+			}
+		} else {
+			$success = false;
+			$message = $details["message"];
+		}
 	}
 
 	return $response->withJson(["success" => $success, "message" => $message]);

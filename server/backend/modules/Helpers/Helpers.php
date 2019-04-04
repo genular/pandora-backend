@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-27 14:54:54
+ * @Last Modified time: 2019-04-04 14:11:58
  */
 namespace SIMON\Helpers;
 
@@ -160,16 +160,17 @@ class Helpers {
 		// Skip header check for system files and do it only for user files
 		if (file_exists($filePath) && $data['item_type'] === 1) {
 			$header = trim(fgets(fopen($filePath, 'r')));
-			// Remove newline character
+			// Remove newline character from header
 			if (substr($header, -2) === "\n") {
 				$header = substr($header, 0, -2);
 			}
 
 			$data['details']["header"]["original"] = $header;
-			$header_items = str_getcsv($header);
+			// ($row, $delimiter, $enclosure , $escape)
+			$header_items = str_getcsv($header, ",", '"', "\\");
 			unset($header);
-
-			if (is_array($header_items) && count($header_items) > 0) {
+			// We need at least 3 columns one outcome + features
+			if (is_array($header_items) && count($header_items) > 2) {
 				$remapped = array();
 				foreach ($header_items as $itemKey => $itemValue) {
 					$itemValueHash = md5($itemKey . $itemValue);
@@ -188,7 +189,7 @@ class Helpers {
 				// write back to file
 				file_put_contents($filePath, implode($arr));
 			} else {
-				array_push($data['message'], "Cannot detect header items, please check delimiters");
+				array_push($data['message'], "delimiters_check");
 			}
 		}
 
