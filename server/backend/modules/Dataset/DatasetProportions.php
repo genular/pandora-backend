@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-28 14:36:40
+ * @Last Modified time: 2019-04-04 10:14:07
  */
 namespace SIMON\Dataset;
 
@@ -52,6 +52,7 @@ class DatasetProportions {
 	 * @return array
 	 */
 	public function mapRenamedToOriginal($searchColumn, $searchArray, $selectedOptions) {
+		$mappingExist = false;
 		$mappings = [];
 		foreach ($searchArray as $searchArrayKey => $searchArrayValue) {
 			$remappedValue = $searchArrayValue[$searchColumn];
@@ -66,12 +67,21 @@ class DatasetProportions {
 							if (!isset($mappings[$remappedValue])) {
 								$mappings[$remappedValue] = $subValue["original"];
 								$searchArray[$searchArrayKey]["original"] = $mappings[$remappedValue];
+								if ($mappingExist === false) {
+									$mappingExist = true;
+								}
 								break 2;
 							}
 						}
 					}
 				}
 
+			}
+		}
+		// No mapping detected this means we made PCA or some other preprocessing method and set our own column names
+		if ($mappingExist === false) {
+			foreach ($searchArray as $searchArrayKey => $searchArrayValue) {
+				$searchArray[$searchArrayKey]["original"] = $searchArrayValue[$searchColumn];
 			}
 		}
 		return $searchArray;
