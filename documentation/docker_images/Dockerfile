@@ -18,7 +18,7 @@ ADD ./configuration.example.json /tmp/configuration.json
 
 ## Lets build and configure SIMON
 RUN su - genular -c 'cd /var/www/genular/simon-frontend \
-	&& git pull origin master \
+	&& git checkout . && git pull origin master \
 	&& yarn install --check-files \
 	&& yarn run webpack:web:dev \
 	--isDemoServer=false \
@@ -26,7 +26,7 @@ RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	--server_backend=http://localhost:3011 \
 	--server_homepage=http://localhost:3010 \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
-	&& git pull origin master \
+	&& git checkout . && git pull origin master \
 	&& composer install \
 	&& composer post-install /tmp/configuration.json'
 
