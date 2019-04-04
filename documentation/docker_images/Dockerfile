@@ -2,6 +2,7 @@
 # escape=\
 
 FROM "genular/parent:master"
+# FROM "genular"
 
 MAINTAINER LogIN- "info@genular.com"
 
@@ -11,11 +12,14 @@ WORKDIR /tmp
 ## Run only if Internet is Enabled!
 # RUN apt-get update && apt-get upgrade
 
-ADD ./configuration.json /tmp/configuration.json
+# If you have custom configuration variables you can pass it like this:
+# just add "composer post-install /tmp/configuration.json" as a last in RUN command
+ADD ./configuration.example.json /tmp/configuration.json
 
 ## Lets build and configure SIMON
 RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	&& git pull origin master \
+	&& yarn install --check-files \
 	&& yarn run webpack:web:dev \
 	--isDemoServer=false \
 	--server_frontend=http://localhost:3010 \
@@ -23,17 +27,21 @@ RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	--server_homepage=http://localhost:3010 \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
 	&& git pull origin master \
+	&& composer install \
 	&& composer post-install /tmp/configuration.json'
 
-COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"]
+COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
 #
 # Expose the ports!
 #
-EXPOSE 3010
+# EXPOSE 3010
 EXPOSE 3011
 EXPOSE 3012
 EXPOSE 3013
+
+## MySQL for Testing 
+# EXPOSE 3306
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 

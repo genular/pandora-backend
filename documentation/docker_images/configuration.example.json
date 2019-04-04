@@ -2,22 +2,22 @@
     "default": {
         "analysis": {
             "server": {
-                "url": "https://analysis.genular.org"
+                "url": "http://localhost:3012"
             }
         },
         "plots": {
             "server": {
-                "url": "https://plots.genular.org"
+                "url": "http://localhost:3013"
             }
         },
         "backend": {
             "server": {
-                "url": "https://backend.genular.org"
+                "url": "http://localhost:3011"
             }
         },
         "frontend": {
             "server": {
-                "url": "https://dashboard.genular.org"
+                "url": "http://localhost:3010"
             }
         }
     }
