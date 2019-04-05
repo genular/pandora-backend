@@ -3,6 +3,37 @@
 ## Warning: This CRON should be run called in following way:
 ## * * * * * /usr/bin/flock -n /tmp/simon_backend.pid /path/to/cron.R
 
+## Set ROOT working directory since CRON is maybe not called from root
+raw_args <- commandArgs(trailingOnly=FALSE)
+working_dir <- NULL
+for (arg in raw_args) {
+   if(base::startsWith(arg, "--file=") == TRUE){
+        cron_file <- gsub("^.*\\=","",arg)
+        ## Check if its a absolute path or a relative path
+        if(base::startsWith(cron_file, "/") == TRUE){
+            cron_dir <- base::dirname(cron_file)
+        }else{
+            pre_dir <- system("pwd", TRUE)
+            post_dir <- base::dirname(cron_file)
+            cron_dir <- file.path(pre_dir, post_dir)
+        }
+        cron_dir <- base::normalizePath(cron_dir)
+        # This is now path to CRON subdirectory
+        # lets move it one directory up
+        if(dir.exists(cron_dir)){
+            work_dir <- base::normalizePath(paste0(cron_dir, "/../"))
+            if(dir.exists(work_dir)){
+                working_dir <- work_dir
+            }
+        }
+   }
+}
+
+if (!is.null(working_dir)){
+    cat(paste0("===> INFO: Initializing CRON. Working directory: ",working_dir," \r\n"))
+    setwd(working_dir)
+}
+
 source("server/includes/header.R")
 
 # for parallel CPU processing
@@ -22,8 +53,6 @@ options(max.print=1000000)
 options(stringsAsFactors=FALSE)
 ##  Java - maximum size of memory allocation pool
 options(java.parameters=paste0("-Xmx",maximum_memory,"M"))
-## request a new limit, in Mb
-memory.limit(size = maximum_memory)
 
 # Set global CRON execution time limit in seconds, this is not model train time out limit
 # 604800 <- 7 days
