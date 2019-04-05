@@ -67,3 +67,6 @@ SHARED_DATA
 
 dataset_generator
 documentation/docker_images/base_image/images/*
+
+## Some model output
+badhess.txt
