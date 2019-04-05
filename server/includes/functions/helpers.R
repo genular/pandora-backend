@@ -1,3 +1,12 @@
+#' @title  which_cmd
+#' @description Get path to system bin file
+#' @param bin_file exec name ex. tar
+#' @return string
+which_cmd <- function(bin_file){ 
+  path <- system(paste(unname(Sys.which("which")), bin_file), TRUE)
+  return(path)
+}
+
 #' @title  getExtension
 #' @description Extract file extension from file path
 #' @param file file path

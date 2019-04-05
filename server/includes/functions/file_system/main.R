@@ -55,7 +55,7 @@ downloadDataset <- function(file_from, useCache = TRUE){
         cat(paste0("===> ERROR: Cannot locate download gzipped file: ",file_to," \r\n"))
         file_exist <- FALSE
     }else{
-        utils::untar(tarfile = file_to, list = FALSE, exdir = temp_directory, verbose = T, tar = "/usr/bin/tar")
+        utils::untar(tarfile = file_to, list = FALSE, exdir = temp_directory, verbose = T, tar = which_cmd("tar"))
         
         if(file.exists(file_path_local) || file.exists(file_path_local_dup)){
             cat(paste0("===> INFO: Deleting local tar.gz file since its extracted \r\n"))
@@ -94,7 +94,7 @@ compressPath <- function(filepath_local){
 
     file.rename(filepath_local, renamed_path)
 
-    try(system(paste0("tar -zcvf " , renamed_path , ".tar.gz -C " , dirname(renamed_path) , " " , basename(renamed_path)), wait = TRUE))
+    try(system(paste0(which_cmd("tar"), " -zcvf " , renamed_path , ".tar.gz -C " , dirname(renamed_path) , " " , basename(renamed_path)), wait = TRUE))
 
     if(!file.exists(gzipped_path)){
         cat(paste0("===> ERROR: compressPath archive does not exists: ",filepath_local," => ",gzipped_path," \r\n"))

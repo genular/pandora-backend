@@ -4,12 +4,16 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-04 14:11:58
+ * @Last Modified time: 2019-04-05 09:38:11
  */
 namespace SIMON\Helpers;
 
 class Helpers {
-
+	/**
+	 * [castArrayValues description]
+	 * @param  [type] $input [description]
+	 * @return [type]        [description]
+	 */
 	public function castArrayValues($input) {
 		// Cast all numeric values to INT
 		foreach ($input as $rowKey => $rowItem) {
@@ -64,6 +68,30 @@ class Helpers {
 
 		return array_search(max($delimiters), $delimiters);
 	}
+	/**
+	 * [which_cmd description]
+	 * @param  [type] $bin_file [description]
+	 * @return [type]           [description]
+	 */
+	public function which_cmd($bin_file) {
+		$path = exec("which " . $bin_file);
+		$path = trim($path);
+
+		if ($path === "") {
+			// Maybe exec function is disabled
+			$additional_paths = ["/bin/", "/usr/bin/"];
+			foreach ($additional_paths as $root_path) {
+				$tmp_path = $root_path . $bin_file;
+				if (file_exists($tmp_path) && $path === "") {
+					$path = $tmp_path;
+				}
+			}
+			if ($path === "") {
+				$path = false;
+			}
+		}
+		return ($path);
+	}
 
 	/**
 	 * [renamePath]
@@ -89,7 +117,13 @@ class Helpers {
 	 */
 	public function compressPath($file_from) {
 		// 1. Archive file
-		$tar_cmd = "tar -zcvf " . $file_from . ".tar.gz -C " . dirname($file_from) . " " . basename($file_from);
+		$targz = $this->which_cmd("tar");
+		// Check if tar is available
+		if ($targz === false) {
+			die("error: cannot detect path to tar library compressPath: " . $this->targz);
+		}
+
+		$tar_cmd = $targz . " -zcvf " . $file_from . ".tar.gz -C " . dirname($file_from) . " " . basename($file_from);
 		$gzipped = exec($tar_cmd);
 
 		return $file_from . ".tar.gz";

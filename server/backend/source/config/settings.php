@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 11:55:08
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 17:21:35
+ * @Last Modified time: 2019-04-05 09:04:48
  */
 
 use \SIMON\Helpers\Helpers as Helpers;
@@ -27,6 +27,6 @@ return [
 			'path' => getenv('IS_DOCKER') ? 'php://stdout' : __DIR__ . '/../logs/simon.log',
 			'level' => \Monolog\Logger::DEBUG,
 		],
-		'timezone' => date_default_timezone_get(),
+		'timezone' => getenv('TZ') ? getenv('TZ') : date_default_timezone_get(),
 	],
 ];

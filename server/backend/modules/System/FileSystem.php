@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-04 09:53:18
+ * @Last Modified time: 2019-04-05 09:36:01
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -33,6 +33,7 @@ class FileSystem {
 	// Used for saving temporary files
 	private $temp_dir = "/tmp";
 	private $storage_type = "remote";
+	private $targz = false;
 
 	public function __construct(
 		Medoo $database,
@@ -54,6 +55,8 @@ class FileSystem {
 		if (!file_exists($this->temp_dir)) {
 			$this->Helpers->createDirectory($this->temp_dir);
 		}
+
+		$this->targz = $this->Helpers->which_cmd("tar");
 
 		// Check if S3 storage is configured!
 		$s3_configured = true;
@@ -103,6 +106,11 @@ class FileSystem {
 
 		} else {
 			throw new Exception("Error: SIMON\System\FileSystem Cannot configure file-system", 1);
+		}
+
+		// Check if tar is available
+		if ($this->targz === false) {
+			die("error: cannot detect path to tar library: " . $this->targz);
 		}
 
 		$this->filesystem = new Flysystem($adapter, new FConfig([
@@ -382,7 +390,7 @@ class FileSystem {
 			return $file_path;
 		}
 
-		$ungz_cmd = "/usr/bin/tar xf " . $file_path_gz . " -C " . $this->temp_dir . " --verbose";
+		$ungz_cmd = $this->targz . " xf " . $file_path_gz . " -C " . $this->temp_dir . " --verbose";
 		// Skip downloading if compressed file is already downloaded
 		if (file_exists($file_path_gz)) {
 			$extracted_file = trim(shell_exec($ungz_cmd));
