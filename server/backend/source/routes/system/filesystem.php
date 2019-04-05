@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-04 13:53:34
+ * @Last Modified time: 2019-04-05 15:07:18
  */
 
 use Slim\Http\Request;
@@ -34,12 +34,14 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 	if (!empty($_FILES)) {
 		foreach ($_FILES as $file) {
-			if ($file['error'] != 0) {
-				$message[] = 'File error';
+			if ($file['error'] !== 0) {
+				$message[] = 'file_error_' . $file['error'];
+				$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/upload' file_error " . json_encode($file));
 				continue;
 			}
 			if (!$file['tmp_name']) {
-				$message[] = 'Tmp file not found';
+				$message[] = 'file_error_tmp';
+				$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/upload' file_error_tmp " . json_encode($file));
 				continue;
 			}
 			$uploaded_path = $file['tmp_name'];
@@ -51,14 +53,14 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 					// Last chunk uploaded and file constructed
 					$success = true;
 					$uploaded_path = $chunks_res['path'];
-					$message[] = 'File uploaded in chunks';
+					$message[] = 'upload_success_chunks';
 				}
 			} else {
 				// File is not chunk is complete file
 				$uploaded_path = $ResumableUpload->moveUploadedFile($uploaded_path, $filename);
 				if ($uploaded_path !== false) {
 					$success = true;
-					$message[] = 'File uploaded as whole';
+					$message[] = 'upload_success_whole';
 				}
 			}
 		}

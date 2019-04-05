@@ -430,6 +430,9 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             
             echo "${yellow}Trying to install tensorflow${clear}"
             echo ""
+            ## Install tensorflow requirements
+            ## Install pip and virtualenv for Python 2 
+            sudo apt-get install python-pip python-virtualenv
             ## https://tensorflow.rstudio.com/tensorflow/reference/install_tensorflow.html
             sudo Rscript -e "tensorflow::install_tensorflow(method='auto')"
         fi 
