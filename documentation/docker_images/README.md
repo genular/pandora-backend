@@ -101,7 +101,8 @@ docker run --rm \
 ### Login to DockerHub
 	- cat ~/my_password.txt | docker login --username foo --password-stdin
 ### Tag image
-	- docker tag IMAGE_ID genular/parent:master
+	- sudo docker image ls -a
+	- docker tag ac55e70039a9 genular/parent:master
 ### Push your image to the repository you created on DockerHub
 	- sudo docker push genular/parent:master
 ### or upload to CDN
