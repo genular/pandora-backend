@@ -1,4 +1,4 @@
 # /etc/cron.d/genular: crontab fragment for genular
 # Look for new analysis and try to process them
 
-*/2 * * * * root (cd /var/www/genular/simon-backend && exec flock -n /tmp/simon_cron.lock /usr/bin/Rscript ./cron/main.R cron >>/var/log/simon-cron.log 2>&1)
+*/2 * * * * root /usr/bin/flock -n /tmp/simon_cron.lock /usr/bin/Rscript /var/www/genular/simon-backend/cron/main.R cron >>/var/log/simon-cron.log 2>&1

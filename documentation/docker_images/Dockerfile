@@ -41,9 +41,7 @@ EXPOSE 3012
 EXPOSE 3013
 
 ## MySQL for Testing 
-EXPOSE 3306
-## SSH for Testing 
-#EXPOSE 22
+#EXPOSE 3306
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
