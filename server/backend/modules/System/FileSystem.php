@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-05 09:36:01
+ * @Last Modified time: 2019-04-05 17:07:45
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -67,8 +67,7 @@ class FileSystem {
 
 		// If we are inside a DOCKER or there is no Internet available or remote storage is not configured use Local storage
 		if ($this->Config->get('settings')["is_docker"] === true ||
-			$this->Config->get('settings')["is_connected"] === false ||
-			$s3_configured === false) {
+			$this->Config->get('settings')["is_connected"] === false || $s3_configured === false) {
 
 			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using local storage: " . $this->Config->get('default.storage.local.data_path'));
 
@@ -105,7 +104,7 @@ class FileSystem {
 			$adapter = new AwsS3Adapter($this->client, $this->Config->get('default.storage.s3.bucket'));
 
 		} else {
-			throw new Exception("Error: SIMON\System\FileSystem Cannot configure file-system", 1);
+			die("Error: SIMON\System\FileSystem Cannot configure file-system");
 		}
 
 		// Check if tar is available
@@ -167,7 +166,9 @@ class FileSystem {
 				$copy_to_filename = basename($filesystem_path);
 			}
 			$copy_to = $public_directory . "/" . $copy_to_filename;
-			$downloadLink = $this->Config->get('default.backend.server.url') . "/downloads/" . basename($filesystem_path);
+			$downloadLink = $this->Config->get('default.backend.server.url') . "/downloads/" . $copy_to_filename;
+
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem getDownloadLink: " . $copy_from . " " . $copy_to);
 
 			if (!file_exists($copy_to)) {
 				if (file_exists($copy_from)) {
