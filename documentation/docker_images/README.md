@@ -1,56 +1,68 @@
 ## Explanation
-
-This directory ("./base_image") contains scripts necessary to create parent docker image.
-
+Directory `./base_image` contains scripts necessary to create parent docker image.
 Usage:
-	- sudo ./make_image.sh
-
-Script pre-installs basic genular dependencies from a Debian distribution and compiles custom image out of it,
-that is than used latter on in Dockerfile.
-
-
-## 1. Import parent image
-1st import docker image - https://docs.docker.com/engine/reference/commandline/import/#import-from-a-remote-location
-
-### Import from remote location
-docker import https://genular.ams3.cdn.digitaloceanspaces.com/docker-parent-images/genular.tar
-
-### Import local tar image
-	* sudo tar cpf - . | sudo docker import - genular
-	* sudo cat ./genular.tar | sudo docker import - genular
-
-### Import from directory
-sudo tar -c . | docker import --change "ENV DEBUG true" - ./base_image/images/genular
-
-#### Check if image is properly imported
-sudo docker image ls -a
-
-#### Check if networking and DNS inside docker is working properly
-sudo docker run -t -i --rm --network host genular /bin/bash
-
-sudo docker run --dns 8.8.8.8 busybox ping -c 10 genular.org
-sudo docker run --dns 8.8.8.8 busybox nslookup google.com
-
-##### To delete specific image
-	- sudo docker rmi IMAGE_ID
-##### Prune all images:
-	- sudo docker system prune -a
-
-## 2. Build docker image from Dockerfile
-
-### 2.1 Set configuration variables in Dockerfile 
-You can get example of configuration JSON by executing following command
-	- cd simon-backend/server/backend && composer generate-docker-config
-This will create a new file: documentation/docker_images/configuration.json where you can add/remove custom configuration variables
-
-### 2.2 Build docker image
-	- sudo docker build --network=host --tag "genular/simon:latest" --file ./Dockerfile .
-
-## 3. Run Dockerfile you just build-ed
-
-Replace TZ=<timzone> with your timezone.
-You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 ```bash
+sudo ./make_image.sh
+```
+Command pre-installs basic genular dependencies from a Debian distribution and compile custom image out of it, that is than used latter on in Dockerfile.
+
+## Steps needed to publish parent genular image
+After build is finished using `./make_image.sh` image will be compressed inside `./base_image/images` directory.
+
+### 1. Import local tar image
+Command:
+```bash
+sudo cat ./FILE_NAME.tar | sudo docker import - genular
+```
+
+Check if image is properly imported and get IMAGE_ID
+```bash
+sudo docker image ls -a
+```
+
+### 1.1 Login to DockerHub if not already loggein
+```bash
+cat ~/my_password.txt | docker login --username foo --password-stdin
+```
+### 2. Tag image
+```bash
+sudo docker tag IMAGE_ID genular/parent:master
+```
+### 3. Push your image to the repository you created on DockerHub
+```bash
+sudo docker push genular/parent:master
+```
+### 3.1 or upload to CDN
+```bash
+rclone copy ./genular.tar genular-spaces:genular/docker-parent-images
+```
+
+## Steps needed to publish child genular SIMON image
+Auto-build is configure on dockerhub. Whenever new chnage is detected it will build `genular/simon:latest` container.
+To do it manually build docker image from Dockerfile:
+
+### 1. Check/Adjust configuration variables in Dockerfile 
+You can get example of configuration JSON by executing following command
+    `cd simon-backend/server/backend && composer generate-docker-config`
+This will create a new file: `documentation/docker_images/configuration.json` where you can add/remove custom configuration variables and place it in `./configuration.example.json`
+
+### 2. Build docker image
+Remove `--network=host` if needed.
+    `sudo docker build --network=host --tag "genular/simon:latest" --file ./Dockerfile .`
+
+## 3. Running SIMON Container
+In order to run a test instance of `SIMON` we first need to prepare the environment.
+If you finished installing docker please continue.
+
+Lets pull the [genular/simon](https://cloud.docker.com/u/genular/repository/docker/genular/simon) image from DockerHub. 
+Then we will run a docker container with appropriately mounted volumes and port mapping. By default the container would run with a local file-system inside of it.
+
+After you installed docker and its running, please open your favorite Terminal and run the command below.
+If on Windows - open `Windows Power Shell`
+
+> If you wish to get correct time, replace TZ=<timzone> with your timezone. You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+```bash
+# Important: if you are using Windows replace newline separators in the command: "\" with "`"
 docker run --rm \
     --detach \
     --name genular \
@@ -58,53 +70,26 @@ docker run --rm \
     --interactive \
     --env IS_DOCKER='true' \
     --env TZ=America/Los_Angeles \
+    --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/usrdata \
     --publish 3010:3010 \
     --publish 3011:3011 \
     --publish 3012:3012 \
     --publish 3013:3013 \
     genular/simon:latest
-## --network=host \
-## --publish 3010:3010 \
-## --publish 3011:3011 \
-## --publish 3012:3012 \
-## --publish 3013:3013 \
-## --publish 3306:3014 \
-## --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/data \
 ```
-### 3.1 Run Dockerfile from remote
-```bash
-docker run --rm \
-    --detach \
-    --network=host \
-    --name my_genular \
-    --tty \
-    --interactive \
-    --env IS_DOCKER='true' \
-    --env TZ=America/Los_Angeles \
-    --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/usrdata \
-    --publish 3011:3011 \
-    --publish 3012:3012 \
-    --publish 3013:3013 \
-    genular/simon:latest
-```
+Once command is executed and the container is started you can open SIMON on `http://localhost:3010` and create your account.
+- If you get asked please allow connections through your Windows Firewall.
+
+To publish it on dockerhub use same steps as above.
+
 ## Helpers
-
-### SSH into a running container
-	- sudo docker exec -it genular /bin/bash
-### List all running ones
-	- sudo docker ps
-### Stop image
-	- sudo docker stop genular
-
-
-## Publish parent docker image
-
-### Login to DockerHub
-	- cat ~/my_password.txt | docker login --username foo --password-stdin
-### Tag image
-	- sudo docker image ls -a
-	- docker tag ac55e70039a9 genular/parent:master
-### Push your image to the repository you created on DockerHub
-	- sudo docker push genular/parent:master
-### or upload to CDN
-	- rclone copy ./genular.tar genular-spaces:genular/docker-parent-images
+* SSH into a running container
+    `sudo docker exec -it genular /bin/bash`
+* List all running ones
+    `sudo docker ps`
+* Stop image
+    `sudo docker stop genular`
+* To delete specific image
+    `sudo docker rmi IMAGE_ID`
+* Prune all images:
+    `sudo docker system prune -a`
