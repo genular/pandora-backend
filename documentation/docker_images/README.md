@@ -44,24 +44,25 @@ You can get example of configuration JSON by executing following command
 This will create a new file: documentation/docker_images/configuration.json where you can add/remove custom configuration variables
 
 ### 2.2 Build docker image
-	- sudo docker build --network=host --tag "genular:master" --file ./Dockerfile .
+	- sudo docker build --network=host --tag "genular/simon:latest" --file ./Dockerfile .
 
 ## 3. Run Dockerfile you just build-ed
 
 Replace TZ=<timzone> with your timezone.
 You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 ```bash
-sudo docker run --rm \
-	--detach \
-	--name genular \
-	--tty \
-	--interactive \
-	--env IS_DOCKER='true' \
-	--env TZ=America/Los_Angeles \
-	--publish 3011:3011 \
-	--publish 3012:3012 \
-	--publish 3013:3013 \
-	genular:master
+docker run --rm \
+    --detach \
+    --name genular \
+    --tty \
+    --interactive \
+    --env IS_DOCKER='true' \
+    --env TZ=America/Los_Angeles \
+    --publish 3010:3010 \
+    --publish 3011:3011 \
+    --publish 3012:3012 \
+    --publish 3013:3013 \
+    genular/simon:latest
 ## --network=host \
 ## --publish 3010:3010 \
 ## --publish 3011:3011 \
@@ -75,12 +76,12 @@ sudo docker run --rm \
 docker run --rm \
     --detach \
     --network=host \
-    --name genular \
+    --name my_genular \
     --tty \
     --interactive \
     --env IS_DOCKER='true' \
     --env TZ=America/Los_Angeles \
-    --publish 3010:3010 \
+    --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/usrdata \
     --publish 3011:3011 \
     --publish 3012:3012 \
     --publish 3013:3013 \

@@ -352,6 +352,8 @@ echo "Installation of advanced dependencies START"
 
 	## We will use this directory in SIMON to save data into
 	mkdir "/mnt/data" && chmod 777 "/mnt/data"
+	## If user mounts custom directory for data persistance we will use this one
+	mkdir "/mnt/usrdata" && chmod 777 "/mnt/usrdata"
 
 __EOS__
 )

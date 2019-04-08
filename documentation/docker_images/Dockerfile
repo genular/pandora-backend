@@ -16,8 +16,12 @@ WORKDIR /tmp
 # just add "composer post-install /tmp/configuration.json" as a last in RUN command
 ADD ./configuration.example.json /tmp/configuration.json
 
+## This script will check for any custom mount-points and its managed by supervisor
+ADD ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
+
 ## Lets build and configure SIMON
-RUN su - genular -c 'cd /var/www/genular/simon-frontend \
+RUN su - genular -c 'chmod 777 /tmp/prepare_docker_storage.sh \
+	&& cd /var/www/genular/simon-frontend \
 	&& git checkout . && git pull origin master \
 	&& yarn install --check-files \
 	&& yarn run webpack:web:dev \
