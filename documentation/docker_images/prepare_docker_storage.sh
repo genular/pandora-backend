@@ -2,7 +2,7 @@
 # @Author: LogIN-
 # @Date:   2019-04-08 13:15:08
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-04-08 15:48:16
+# @Last Modified time: 2019-04-08 15:56:08
 
 CUSTOM_MOUNT=n
 
@@ -38,14 +38,14 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 	fi
 
 	## FILES
-	## If old data dir exists and new one doesnt
+	## If old data dir exists (/mnt/data/users) and new one doesn't (/mnt/usrdata/users)
 	if [ -d /mnt/data/users ]; then
 
 		echo "/mnt/data/users exists"
 
 		if [ ! -d /mnt/usrdata/users ]; then
 
-			echo "/mnt/data/users desnt exists, creating one"
+			echo "/mnt/data/users doesn't exists, creating one"
 
 			# Create new directory for user data
 			sudo mkdir -p /mnt/usrdata/users
@@ -62,6 +62,13 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 			sudo chown --reference=/mnt/data/users /mnt/usrdata/users
 			# Set permissions on new directory to match existing one
 			sudo chmod --reference=/mnt/data/users /mnt/usrdata/users
+
+			## Change data directory in SIMON backend configuration file
+			cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/usrdata"}}}}'
 		fi
+	else
+		## Even /mnt/data/users doesn't exists
+		## Change data directory in SIMON backend configuration file
+		cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/usrdata"}}}}'
 	fi
 fi
