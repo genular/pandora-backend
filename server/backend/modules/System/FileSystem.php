@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-09 11:09:45
+ * @Last Modified time: 2019-04-09 11:22:51
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -154,8 +154,7 @@ class FileSystem {
 			return $this->getPreSignedURL($filesystem_path, $this->Config->get('default.storage.s3.bucket'), '+1 day', $customFilename);
 
 		} else if ($this->storage_type === "local") {
-			$public_directory = realpath(dirname(__DIR__)) . "/../public/downloads";
-
+			$public_directory = realpath(realpath(dirname(__DIR__)) . "/../public/downloads");
 			// Clean old files
 			$this->deleteOldFiles($public_directory);
 
@@ -185,17 +184,20 @@ class FileSystem {
 	}
 	/**
 	 * Delete files older than 2 days
-	 * @param  [type] $directory [description]
+	 * @param  [string] $directory [description]
+	 * @param  [array] $except [description]
 	 * @return [type]            [description]
 	 */
-	public function deleteOldFiles($directory) {
+	public function deleteOldFiles($directory, $except = ["index.html"]) {
 		if (file_exists($directory)) {
 			foreach (new \DirectoryIterator($directory) as $fileInfo) {
 				if ($fileInfo->isDot()) {
 					continue;
 				}
 				if ($fileInfo->isFile() && time() - $fileInfo->getCTime() >= 2 * 24 * 60 * 60) {
-					unlink($fileInfo->getRealPath());
+					if (!in_array($fileInfo->getFilename(), $except)) {
+						unlink($fileInfo->getRealPath());
+					}
 				}
 			}
 		}
