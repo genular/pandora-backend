@@ -61,7 +61,7 @@ If on Windows - open `Windows Power Shell`
 > If you wish to get correct time, replace TZ=<timzone> with your timezone. You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 ```bash
 # Important: if you are using Windows replace newline separators in the command: "\" with "`"
-docker run --rm \
+docker run --rm --network=host \
     --detach \
     --name genular \
     --tty \

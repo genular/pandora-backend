@@ -10,12 +10,12 @@ WORKDIR /tmp
 
 # If you have custom configuration variables you can pass it like this:
 # just add "composer post-install /tmp/configuration.json" as a last in RUN command
-ADD ./configuration.example.json /tmp/configuration.json
+COPY ./configuration.example.json /tmp/configuration.json
 
 ## This script will check for any custom mount-points and its managed by supervisor
-ADD ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
-## Maybe adjust permissions?
-## chmod 777 /tmp/prepare_docker_storage.sh
+## It will also start mysql and pm2 supervisor tasks
+COPY ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
+RUN chmod +x /tmp/prepare_docker_storage.sh
 
 ## Lets build and configure SIMON
 RUN su - genular -c 'cd /var/www/genular/simon-frontend \
@@ -34,8 +34,9 @@ RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
 # Expose the ports!
-
+## frontend
 EXPOSE 3010
+## backend
 EXPOSE 3011
 EXPOSE 3012
 EXPOSE 3013

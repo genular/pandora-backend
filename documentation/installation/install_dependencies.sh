@@ -27,8 +27,8 @@ MODS[simon_frontend]=y
 
 ## Defaults
 declare -A B_CONF
-B_CONF[salt]=$(LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+= < /dev/urandom | head -c 8)
-B_CONF[secret]=$(LC_CTYPE=C tr -dc A-Za-z0-9_\!\@\#\$\%\^\&\*\(\)-+= < /dev/urandom | head -c 16)
+B_CONF[salt]=$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 8)
+B_CONF[secret]=$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)
 
 B_CONF[details_title]="genular"
 B_CONF[details_email]="support@genular.com"
