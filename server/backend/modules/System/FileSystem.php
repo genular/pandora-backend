@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-05 17:07:45
+ * @Last Modified time: 2019-04-09 11:09:45
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -154,7 +154,8 @@ class FileSystem {
 			return $this->getPreSignedURL($filesystem_path, $this->Config->get('default.storage.s3.bucket'), '+1 day', $customFilename);
 
 		} else if ($this->storage_type === "local") {
-			$public_directory = realpath(__DIR__ . '/../../public/downloads');
+			$public_directory = realpath(dirname(__DIR__)) . "/../public/downloads";
+
 			// Clean old files
 			$this->deleteOldFiles($public_directory);
 

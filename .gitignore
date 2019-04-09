@@ -50,8 +50,6 @@ server/data/*
 uptime.pid
 availablePackages.json
 
-
-server/backend/additional
 server/backend/public/downloads/*
 !server/backend/public/downloads/index.html
 

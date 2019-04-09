@@ -575,6 +575,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
                 touch "$GIT_BACKEND_LOCAL/server/backend/source/logs/simon.log"
                 chmod -R 777 "$GIT_BACKEND_LOCAL/server/backend/source/logs"
+                
                 chmod 777 "$GIT_BACKEND_LOCAL/server/backend/public/downloads"
 
                 touch "/var/log/simon-cron.log"
