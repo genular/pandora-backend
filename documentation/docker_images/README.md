@@ -73,7 +73,6 @@ docker run --rm --network=host \
     --publish 3011:3011 \
     --publish 3012:3012 \
     --publish 3013:3013 \
-    --publish 3014:22 \
     genular/simon:latest
 ```
 Once command is executed and the container is started you can open SIMON on `http://localhost:3010` and create your account.
