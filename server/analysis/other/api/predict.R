@@ -49,8 +49,8 @@ simon$handle$analysis$other$predict$catboost$submit <- expression(
         dataset <- resampleDetails[[1]]
         data = list(training = "",testing = "")
 
-        filePathTraining <- downloadDataset(dataset$remotePathTrain, FALSE)
-        filePathTesting <- downloadDataset(dataset$remotePathTest, FALSE)
+        filePathTraining <- downloadDataset(dataset$remotePathTrain)
+        filePathTesting <- downloadDataset(dataset$remotePathTest)
 
         ## Download dataset if not downloaded already
         data$training <- data.table::fread(filePathTraining, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
@@ -84,14 +84,16 @@ simon$handle$analysis$other$predict$catboost$submit <- expression(
         
         model_details = list(
             internal_id = "catboost.caret",
+            interface = "matrix",
             prob = TRUE,
+            trControl = list(method = "boot", number = 3, repeats = 3, allowParallel = FALSE),
             process_timeout = 300,
             ## https://github.com/catboost/catboost/blob/master/catboost/R-package/R/catboost.R
-            model_specific_args = list(logging_level = 'Info', train_dir = JOB_DIR, save_snapshot = FALSE, allow_writing_files = FALSE)
+            model_specific_args = list(logging_level = 'Info', train_dir = JOB_DIR, save_snapshot = FALSE, allow_writing_files = FALSE, thread_count = 1)
         )
 
         trainModel <- caretTrainModel(modelData$training, model_details, "classification", dataset$outcome$remapped, NULL, dataset$resampleID, JOB_DIR)
- 
+        
         ## Define results variables
         results_auc <- NULL
         results_confusionMatrix <- NULL

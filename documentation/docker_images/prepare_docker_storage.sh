@@ -2,7 +2,7 @@
 # @Author: LogIN-
 # @Date:   2019-04-08 13:15:08
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-04-09 10:34:54
+# @Last Modified time: 2019-04-09 13:03:00
 
 CUSTOM_MOUNT=n
 
@@ -43,7 +43,6 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 		echo "/mnt/data/users exists"
 
 		if [ ! -d /mnt/usrdata/users ]; then
-
 			echo "/mnt/data/users doesn't exists, creating one"
 
 			# Create new directory for user data
@@ -74,6 +73,14 @@ else
 	echo "Custom mount-point not requested, reseting configuration to default"
 	## Just in case change mysql configuration but this should be already changed!
 	sed -i '/datadir/c\datadir		= /var/lib/mysql' /etc/mysql/mariadb.conf.d/50-server.cnf
+
+	if [ ! -d /mnt/data/users ]; then
+		if [ -d /mnt/usrdata/users ]; then
+			echo "Copying old files /mnt/usrdata/users /mnt/data/users"
+			# Copy all files from old to new one
+			sudo cp -R -p /mnt/usrdata/users /mnt/data/users
+		fi
+	fi
 	## Change data directory in SIMON backend configuration file
 	cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/data"}}}}'
 fi

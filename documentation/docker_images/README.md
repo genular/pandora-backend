@@ -18,18 +18,19 @@ sudo cat ./FILE_NAME.tar | sudo docker import - genular/parent:master
 
 Check if image is properly imported
 ```bash
-sudo docker image ls -a
+## List all images
+docker image ls -a
 ```
 
-### 1.1 Login to repository if not already logged-in
+#### 1.1 Login to repository if not already logged-in
 ```bash
 cat ~/my_password.txt | docker login --username foo --password-stdin
 ```
-### 2. Push your image to repository
+### 2. Push your image to on-line repository
 ```bash
-sudo docker push genular/parent:master
+docker push genular/parent:master
 ```
-### 2.1 or upload to CDN
+#### 2.1 or upload to CDN
 ```bash
 rclone copy ./genular.tar genular-spaces:genular/docker-parent-images
 ```
@@ -46,7 +47,7 @@ This will create a new file: `documentation/docker_images/configuration.json` wh
 
 ### 2. Build docker image
 Remove `--network=host` if needed.
-`sudo docker build --network=host --tag "genular/simon:latest" --file ./Dockerfile .`
+`docker build --no-cache --network=host --tag "genular/simon:latest" --file ./Dockerfile .`
 
 ## 3. Running SIMON Container
 In order to run a test instance of `SIMON` we first need to prepare the environment.
@@ -61,6 +62,7 @@ If on Windows - open `Windows Power Shell`
 > If you wish to get correct time, replace TZ=<timzone> with your timezone. You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 ```bash
 # Important: if you are using Windows replace newline separators in the command: "\" with "`"
+# To use custom directory as file-system backend: --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/usrdata \
 docker run --rm --network=host \
     --detach \
     --name genular \
@@ -68,7 +70,7 @@ docker run --rm --network=host \
     --interactive \
     --env IS_DOCKER='true' \
     --env TZ=America/Los_Angeles \
-    --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/usrdata \
+    --volume genular_data:/mnt/usrdata \
     --publish 3010:3010 \
     --publish 3011:3011 \
     --publish 3012:3012 \
@@ -82,12 +84,14 @@ To publish it on [Docker Hub](https://hub.docker.com/?namespace=genular) use sam
 
 ## Helpers
 * SSH into a running container
-    `sudo docker exec -it genular /bin/bash`
+    `docker exec -it genular /bin/bash`
 * List all running ones
-    `sudo docker ps`
+    `docker ps`
 * Stop image
-    `sudo docker stop genular`
+    `docker stop genular`
 * To delete specific image
-    `sudo docker rmi IMAGE_ID`
+    `docker rmi IMAGE_ID`
 * Prune all images:
-    `sudo docker system prune -a`
+    `docker system prune -a`
+* Delete docker volume:
+    `docker volume rm genular_data`

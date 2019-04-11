@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-29 14:03:40
+ * @Last Modified time: 2019-04-11 09:51:54
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -140,9 +140,14 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 	return $response->withJson(["success" => $success, "message" => $message]);
 });
 
+/**
+ * Dashboard => modal details
+ */
 $app->get('/backend/queue/details', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = [];
+
+	$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
 
 	$config = $this->get('Noodlehaus\Config');
 	$redirectURL = $config->get('default.frontend.server.url');
@@ -150,16 +155,18 @@ $app->get('/backend/queue/details', function (Request $request, Response $respon
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$pqid = $request->getQueryParam('pqid', 0);
-	if (is_numeric($pqid)) {
-		$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
-		$data = $DatasetResamples->getDatasetResamples($pqid, $user_id);
-	} else {
-		$data = "";
+	$queueIDs = $request->getQueryParam('queueIDs', []);
+
+	foreach ($queueIDs as $queueID) {
+		$data = $DatasetResamples->getDatasetResamples($queueID, $user_id);
+		$message = array_merge($message, $data);
+	}
+
+	if (count($message) < 1) {
 		$success = false;
 	}
 
-	return $response->withJson(["success" => $success, "data" => $data]);
+	return $response->withJson(["success" => $success, "message" => $message]);
 });
 
 $app->get('/backend/queue/resamples/details', function (Request $request, Response $response, array $args) {
@@ -176,18 +183,16 @@ $app->get('/backend/queue/resamples/details', function (Request $request, Respon
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$resamplesListIDs = $request->getQueryParam('drid', 0);
+	$resampleIDs = $request->getQueryParam('resampleIDs', 0);
 	$measurements = $request->getQueryParam('measurements', []);
 
-	$hideFailedModels = $request->getQueryParam('hideFailedModels', false);
-	$hideFailedModels = ($hideFailedModels === 'true');
-
-	if (is_numeric($resamplesListIDs)) {
+	if (is_array($resampleIDs)) {
 
 		$Models = $this->get('SIMON\Models\Models');
 
-		$modelsWhereClause = [($hideFailedModels === false ? "models.error LIKE '%'" : "models.error = ''")];
-		$modelsList = $Models->getDatasetResamplesModels(array($resamplesListIDs), $user_id, $modelsWhereClause);
+		// $modelsWhereClause = [($hideFailedModels === false ? "models.error LIKE '%'" : "models.error = ''")];
+		$modelsWhereClause = [];
+		$modelsList = $Models->getDatasetResamplesModels($resampleIDs, $user_id, $modelsWhereClause);
 
 		$modelsListIDs = array_column($modelsList, 'modelID');
 		$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');

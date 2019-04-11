@@ -4,7 +4,7 @@
 simon$handle$plots$heatmap$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
-        plot <- NULL
+        results <- list(status = FALSE, data = NULL, image = NULL)
 
         resampleID <- 0
         if("resampleID" %in% names(args)){
@@ -84,37 +84,54 @@ simon$handle$plots$heatmap$renderPlot <- expression(
 
         resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
         data <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-
         ## Remove all other than necessary selectedColumns
         data <- data[, names(data) %in% c(settings$selectedRows, settings$selectedColumns)]
 
-        tmp <- tempfile()
-        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
-        print(plot.heatmap(data, 
-                            resampleDetails,
-                            settings$selectedColumns,
-                            settings$selectedRows,
-                            settings$removeNA,
-                            settings$scale,
-                            settings$displayNumbers,
-                            settings$displayLegend,
-                            settings$displayColnames,
-                            settings$displayRownames,
-                            settings$plotWidth,
-                            settings$plotRatio,
-                            settings$clustDistance,
-                            settings$clustLinkage,
-                            settings$clustOrdering,
-                            settings$fontSizeGeneral,
-                            settings$fontSizeRow,
-                            settings$fontSizeCol,
-                            settings$fontSizeNumbers)
-            )
+
         
+        input_args <- c(list(data=data, 
+                            resampleDetails=resampleDetails,
+                            selectedColumns=settings$selectedColumns,
+                            selectedRows=settings$selectedRows,
+                            removeNA=settings$removeNA,
+                            scale=settings$scale,
+                            displayNumbers=settings$displayNumbers,
+                            displayLegend=settings$displayLegend,
+                            displayColnames=settings$displayColnames,
+                            displayRownames=settings$displayRownames,
+                            plotWidth=settings$plotWidth,
+                            plotRatio=settings$plotRatio,
+                            clustDistance=settings$clustDistance,
+                            clustLinkage=settings$clustLinkage,
+                            clustOrdering=settings$clustOrdering,
+                            fontSizeGeneral=settings$fontSizeGeneral,
+                            fontSizeRow=settings$fontSizeRow,
+                            fontSizeCol=settings$fontSizeCol,
+                            fontSizeNumbers=settings$fontSizeNumbers))
 
-        dev.off() 
-        return (list(image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))))
+        process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(plot.heatmap, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
+        if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
+            results$status <- TRUE
+        }else{
+            if(inherits(results$data, 'try-error')){
+                message <- base::geterrmessage()
+                process.execution$message <- message
+            }
+            results$data <- process.execution$message
+        }
+
+        if(results$status == TRUE){
+            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
+            tempdir(check = TRUE)
+            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            print(results$data)
+            dev.off()
+
+            results$image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
+        }
+
+       return(list(status = results$status, image = results$image))
     }
 )
 

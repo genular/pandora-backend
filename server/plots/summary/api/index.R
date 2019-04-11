@@ -45,11 +45,12 @@ simon$handle$plots$summary$renderPlot <- expression(
             colors <- RColorBrewer::brewer.pal(total_models, "Blues")
             my.settings <- list(
                 strip.background=list(col=colors[6]),
-                strip.border=list(col="black")
+                strip.border=list(col="transparent")
             )
 
             ## 1. BOX PLOT
-            tmp <- tempfile()
+            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
+            tempdir(check = TRUE)
             svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
                 plot <- lattice::bwplot(resamps, metric = c("Accuracy", "Sensitivity", "Specificity", "F1", "Recall", "AUC"), scales = list(x = list(relation="free")), par.settings = my.settings)
                 print(plot)
@@ -66,8 +67,9 @@ simon$handle$plots$summary$renderPlot <- expression(
             data$info$differences <- toString(RCurl::base64Encode(data$info$differences, "txt"))
            
             ## 4. ROC_AUC_PLOT
-            tmp <- tempfile()
-            svg(tmp,  width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "mono", bg = "white", antialias = "default")
+            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
+            tempdir(check = TRUE)
+            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
                 i = 1;
                 for(model in modelsDetailsData){
                     all_models[i] <- model$method

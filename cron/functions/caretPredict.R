@@ -155,25 +155,31 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     trControl <- NULL
 
     if(problemType == "classification"){
-        trControl <- caret::trainControl(method="repeatedcv", 
-            ## Either the number of folds or number of resampling iterations
-            number=10,
-            ## For repeated k-fold cross-validation only: the number of complete sets of folds to compute
-            repeats=5, 
-            savePredictions = "final", 
-            classProbs = model_details$prob, 
-            summaryFunction = caret::multiClassSummary,
-            verboseIter = TRUE, 
-            allowParallel = TRUE)
+        trControl <- caret::trainControl(
+                method=ifelse(is.null(model_details[["trControl"]][["method"]]), "repeatedcv", model_details$trControl$method), 
+                ## Either the number of folds or number of resampling iterations
+                number=ifelse(is.null(model_details[["trControl"]][["number"]]), 10, model_details$trControl$number),
+                ## For repeated k-fold cross-validation only: the number of complete sets of folds to compute
+                repeats=ifelse(is.null(model_details[["trControl"]][["repeats"]]), 5, model_details$trControl$repeats), 
+                savePredictions =ifelse(is.null(model_details[["trControl"]][["savePredictions"]]), "final", model_details$trControl$savePredictions), 
+                classProbs=ifelse(is.null(model_details[["trControl"]][["classProbs"]]), model_details$prob, model_details$trControl$classProbs), 
+                summaryFunction=ifelse(is.null(model_details[["trControl"]][["summaryFunction"]]), caret::multiClassSummary, model_details$trControl$summaryFunction),
+                verboseIter=ifelse(is.null(model_details[["trControl"]][["verboseIter"]]), TRUE, model_details$trControl$verboseIter), 
+                allowParallel=ifelse(is.null(model_details[["trControl"]][["allowParallel"]]), TRUE, model_details$trControl$allowParallel)
+            )
     }else{
-        trControl <- caret::trainControl(method="repeatedcv", 
-            number=10,
-            repeats=5, 
-            savePredictions = "final", 
-            # classProbs = TRUE, 
-            # summaryFunction = caret::multiClassSummary, 
-            verboseIter = TRUE, 
-            allowParallel = TRUE)
+        trControl <- caret::trainControl(
+                method=ifelse(is.null(model_details[["trControl"]][["method"]]), "repeatedcv", model_details$trControl$method), 
+                ## Either the number of folds or number of resampling iterations
+                number=ifelse(is.null(model_details[["trControl"]][["number"]]), 10, model_details$trControl$number),
+                ## For repeated k-fold cross-validation only: the number of complete sets of folds to compute
+                repeats=ifelse(is.null(model_details[["trControl"]][["repeats"]]), 5, model_details$trControl$repeats), 
+                savePredictions =ifelse(is.null(model_details[["trControl"]][["savePredictions"]]), "final", model_details$trControl$savePredictions), 
+                # classProbs = TRUE, 
+                # summaryFunction = caret::multiClassSummary, 
+                verboseIter=ifelse(is.null(model_details[["trControl"]][["verboseIter"]]), TRUE, model_details$trControl$verboseIter), 
+                allowParallel=ifelse(is.null(model_details[["trControl"]][["allowParallel"]]), TRUE, model_details$trControl$allowParallel)
+            )
     }
 
     # Add arguments specific to models

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-26 14:06:15
+ * @Last Modified time: 2019-04-10 14:10:29
  */
 namespace SIMON\Dataset;
 
@@ -142,7 +142,8 @@ class DatasetResamples {
 	 */
 	public function getDatasetResamples($queueID, $user_id) {
 
-		$sql = "SELECT dataset_resamples.id               AS resampleID,
+		$sql = "SELECT dataset_resamples.dqid  			  AS queueID,
+					   dataset_resamples.id               AS resampleID,
 		               dataset_resamples.ufid       	  AS ufid,
 		               dataset_resamples.ufid_train       AS ufid_train,
 		               dataset_resamples.ufid_test        AS ufid_test,

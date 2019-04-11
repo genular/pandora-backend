@@ -36,37 +36,39 @@ calcClustering = function(mat, distance= "correlation", linkage = "complete"){
 ## { id: 6, value: "reverse original" }
 
 calcOrdering = function(mat, distance, linkage, ordering){
-  hc = calcClustering(mat, distance, linkage)
-  if(class(hc) != "hclust") return(hc)
-  if((length(unique(hc$height)) < length(hc$height)) && !is.na(ordering)){
-    return("multiple objects have same distance, only tree ordering 'tightest cluster first' is supported!")
-  }
-  if(!(all(hc$height == sort(hc$height)))){
-    return("some clusters have distance lower than its subclusters, please choose a method other than median or centroid!")
-  }
-  if(is.na(ordering) || ordering == 1){
-    return(hc) #default hclust() output
-  } else if(ordering == 2){
-    wts = rank(-apply(mat, 1, median, na.rm = TRUE))
-  } else if(ordering == 3){
-    wts = rank(-rowMeans(mat, na.rm = TRUE)) #faster than apply
-  } else if(ordering == 4){
-    wts = rank(apply(mat, 1, median, na.rm = TRUE))
-  } else if(ordering == 5){
-    wts = rank(rowMeans(mat, na.rm = TRUE)) #faster than apply
-  } else if(ordering == 6){
-    wts = 1:nrow(mat)
-  } else if(ordering == 7){
-    wts = nrow(mat):1
-  } else {
-    return(NA)
-  }
-  hc2 = as.hclust(reorder(as.dendrogram(hc), wts, agglo.FUN = mean))
-  hc2
+    hc = calcClustering(mat, distance, linkage)
+    if(class(hc) != "hclust") {
+        return(hc)
+    }
+    if((length(unique(hc$height)) < length(hc$height)) && !is.na(ordering)){
+        return("multiple objects have same distance, only tree ordering 'tightest cluster first' is supported!")
+    }
+    if(!(all(hc$height == sort(hc$height)))){
+        return("some clusters have distance lower than its subclusters, please choose a method other than median or centroid!")
+    }
+    if(is.na(ordering) || ordering == 1){
+        return(hc) #default hclust() output
+    } else if(ordering == 2){
+        wts = rank(-apply(mat, 1, median, na.rm = TRUE))
+    } else if(ordering == 3){
+        wts = rank(-rowMeans(mat, na.rm = TRUE)) #faster than apply
+    } else if(ordering == 4){
+        wts = rank(apply(mat, 1, median, na.rm = TRUE))
+    } else if(ordering == 5){
+        wts = rank(rowMeans(mat, na.rm = TRUE)) #faster than apply
+    } else if(ordering == 6){
+        wts = 1:nrow(mat)
+    } else if(ordering == 7){
+        wts = nrow(mat):1
+    } else {
+        return(NA)
+    }
+    hc2 = as.hclust(reorder(as.dendrogram(hc), wts, agglo.FUN = mean))
+    return(hc2)
 }
 
 
-plot.heatmap <- function(data, 
+plot.heatmap <- function(   data, 
                             resampleDetails,
                             selectedColumns,
                             selectedRows,
@@ -87,6 +89,8 @@ plot.heatmap <- function(data,
                             fontSizeNumbers){
 
     pallets <- c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds")
+
+   
 
     if(!is.null(removeNA) & removeNA == TRUE){
         data <- data[complete.cases(data), ]
@@ -123,7 +127,9 @@ plot.heatmap <- function(data,
     }  
 
     rownames(annotationColumn) = rownames(data)
+    ## Rename outcome columns
     names(annotationColumn) <- plyr::mapvalues(names(annotationColumn), from=resampleDetails[[1]]$outcome$remapped, to=resampleDetails[[1]]$outcome$original)
+    ## Rename features columns
     names(annotationColumn) <- plyr::mapvalues(names(annotationColumn), from=resampleDetails[[1]]$classes$remapped, to=resampleDetails[[1]]$classes$original)
 
     ## Get dataframe that contains only selected "features" without column variables
@@ -133,11 +139,8 @@ plot.heatmap <- function(data,
     ## Transform data and order it by rowMeans
     t_data <- t(data)
 
-    print(clustOrdering)
-
     hClustRows <- calcOrdering(t_data, "correlation", "complete", clustOrdering)
     hClustCols <- calcOrdering(t(t_data), "correlation", "complete", clustOrdering)
-
 
     #image dimensions:
     picwIn = plotWidth / 2.54
@@ -171,6 +174,7 @@ plot.heatmap <- function(data,
                        fontsize_number = fontSizeNumbers,
                        width = picwIn, 
                        height = pichIn
-                    )
+                    ) 
+
     return(out)
 }

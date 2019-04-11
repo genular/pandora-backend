@@ -97,28 +97,32 @@ simon$handle$plots$correlation$renderPlot <- expression(
                         uppCI.mat = if(settings$significance$enable == TRUE) p.mat[[3]] else NULL,
 
                         plotCI = if(settings$confidence$enable == TRUE) settings$confidence$ploting_method else "n",
-                        tl.col = "black"
+                        tl.col = "black",
+                        addgrid.col="transparent"
                         )
 
-        # Modify the default png size.
-        tmp <- tempfile() 
-        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+
 
         if(settings$confidence$enable == TRUE) {
-          print(do.call(corrplot, c(list(type = settings$plot_type), args)))
-
+            input_args <- c(list(type = settings$plot_type), args)
         } else if(settings$plot_method == "mixed") {
-
-          print(do.call(corrplot.mixed, c(list(lower = settings$plot_method_mixed$lower_method,
+            input_args <- c(list(lower = settings$plot_method_mixed$lower_method,
                                          upper = settings$plot_method_mixed$upper_method),
-                                    args)))
+                                    args)
         } else {
-          print(do.call(corrplot, c(list(method = settings$plot_method, type = settings$plot_type), args)))
+            input_args <- c(list(method = settings$plot_method, type = settings$plot_type), args)
         }
+        results <- list(status = TRUE, data = NULL, image = NULL)
 
-        dev.off() 
-        return (list(image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))))
+        tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
+        tempdir(check = TRUE)
+        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+
+        process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(corrplot, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
+            print(results$data)
+        dev.off()
+
+        results$image =  as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
+        return (list(status = results$status, image = results$image))
     }
 )
-
-
