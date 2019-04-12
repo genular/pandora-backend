@@ -21,7 +21,7 @@ RUN chmod +x /tmp/prepare_docker_storage.sh
 RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	&& git checkout . && git pull origin master \
 	&& yarn install --check-files \
-	&& yarn run webpack:web:dev \
+	&& yarn run webpack:web:prod \
 	--isDemoServer=false \
 	--server_frontend=http://localhost:3010 \
 	--server_backend=http://localhost:3011 \

@@ -496,8 +496,8 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
 
                 ## Compile statically for web
                 cd "$GIT_FRONTEND_LOCAL" || exit 1
-                echo "${yellow}Building static front-end files, please wait. (yarn run webpack:web:dev)${clear}"
-                yarn run webpack:web:dev
+                echo "${yellow}Building static front-end files, please wait. (yarn run webpack:web:prod)${clear}"
+                yarn run webpack:web:prod
 
                 sudo chown -hR $USER:www-data "/var/www/genular"
 
