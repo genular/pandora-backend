@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-11 09:51:54
+ * @Last Modified time: 2019-04-15 10:09:28
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -93,7 +93,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 
 			$DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
 			$resamplesProportions = $DatasetProportions->getDatasetResamplesProportions($resamplesListIDs);
-
+			// Count number of unique values inside the class
 			$queueDetails["selectedOptions"]["classes"] = $DatasetProportions->getUniqueValuesCountForClasses($resamplesListIDs, $queueDetails["selectedOptions"]["classes"]);
 			// For each proportion column add additional array key "original" and put original column name in it column7 => Outcome
 			$resamplesProportions = $DatasetProportions->mapRenamedToOriginal("column_remapped", $resamplesProportions, $queueDetails["selectedOptions"]);

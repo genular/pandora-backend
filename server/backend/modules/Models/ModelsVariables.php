@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-03 14:45:04
+ * @Last Modified time: 2019-04-15 15:02:51
  */
 namespace SIMON\Models;
 
@@ -90,7 +90,7 @@ class ModelsVariables {
 
 				WHERE  models_variables.mid IN (" . $mids . ")";
 
-		if ($sort === "+") {
+		if ($sort === true) {
 			$sort = "ASC";
 		} else {
 			$sort = "DESC";

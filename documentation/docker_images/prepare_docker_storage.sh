@@ -2,7 +2,7 @@
 # @Author: LogIN-
 # @Date:   2019-04-08 13:15:08
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-04-09 13:03:00
+# @Last Modified time: 2019-04-15 08:30:26
 
 CUSTOM_MOUNT=n
 
@@ -85,11 +85,12 @@ else
 	cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/data"}}}}'
 fi
 
-## Start dependent services
+## Restart dependent services with new configuration
 ## cron:cron_00      
-## mariadb:mariadb_00
 ## nginx:nginx_00    
 ## php-fpm:php-fpm_00
-## pm2:pm2_00        
-## prepare_storage   
+## prepare_storage
+#
+## pm2:pm2_00    
+## mariadb:mariadb_00
 sudo supervisorctl -c /etc/supervisor/conf.d/supervisord.conf start mariadb:mariadb_00 pm2:pm2_00

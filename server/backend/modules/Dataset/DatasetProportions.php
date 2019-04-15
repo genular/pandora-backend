@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-04 10:14:07
+ * @Last Modified time: 2019-04-15 10:31:21
  */
 namespace SIMON\Dataset;
 
@@ -247,15 +247,24 @@ class DatasetProportions {
 					'proportion_class_name',
 				],
 			]);
+
 		// Map sql sum values into classes array
 		foreach ($classes as $classesKey => $classesValue) {
+			$isClassMapped = false;
 			foreach ($details as $detailsItem) {
 				if ($detailsItem["class_name"] === $classesValue["remapped"]) {
 					$classes[$classesKey]["unique"] = intval($detailsItem["result"]);
+					$isClassMapped = true;
 					break;
 				}
 			}
+			## In case we didn't make mapping since database value are missing add unique value manually
+			if ($isClassMapped === false) {
+				$this->logger->addError("==> ERROR: SIMON\Dataset\DatasetProportions\getUniqueValuesCountForClasses cannot find mapping: " . $classesKey . " - " . implode(",", $resampleIDs));
+				$classes[$classesKey]["unique"] = 0;
+			}
 		}
+
 		return ($classes);
 	}
 }

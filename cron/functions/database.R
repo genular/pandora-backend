@@ -147,8 +147,9 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
 
     ## Assign calculation types depending what kind of values are in columns
     ## Calculate 7 (total values) for both
+    ## Since 6 and 7 is just length use if for both variable types
     calculate_types <- list(
-            string = c(1,2),
+            string = c(1,2,6,7),
             numbers = c(3,4,5,6,7)
         )
 

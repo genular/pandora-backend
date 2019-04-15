@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-10 13:28:15
+ * @Last Modified time: 2019-04-15 15:04:45
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -26,6 +26,9 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 	$page = $request->getQueryParam('page', 1);
 	$page_size = $request->getQueryParam('page_size', 20);
 	$sort = $request->getQueryParam('sort', false);
+	// Cast string to boolean
+	$sort = $sort === 'true' ? true : false;
+
 	$sort_by = $request->getQueryParam('sort_by', 'feature_name');
 
 	$ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
