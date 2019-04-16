@@ -5,15 +5,18 @@ simon$handle$plots$heatmap$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = FALSE, data = NULL, image = NULL)
+        plotUniqueHash <- ""
 
         resampleID <- 0
         if("resampleID" %in% names(args)){
             resampleID <- as.numeric(args$resampleID)
+            plotUniqueHash <- paste0(plotUniqueHash, resampleID)
         }
 
         settings <- NULL
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(args$settings)
+            plotUniqueHash <- paste0(plotUniqueHash, args$settings)
         }
 
         if(length(settings$removeNA) == 0){
@@ -71,6 +74,19 @@ simon$handle$plots$heatmap$renderPlot <- expression(
             settings$fontSizeNumbers = 7
         }
 
+        plotUniqueHash <-  digest::digest(plotUniqueHash, algo="md5", serialize=F)
+
+        tmp_dir <- tempdir(check = TRUE)
+        cachedFile <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plotUniqueHash, ".*\\.svg"))
+        ## Check if some files where found in tmpdir that match our unique hash
+        if(identical(cachedFile, character(0)) == FALSE){
+            if(file.exists(cachedFile)){
+                results$status <- TRUE
+                results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
+                return(list(status = results$status, image = results$image))
+            }
+        }
+
         ## 1st - Get JOB and his Info from database
         resampleDetails <- db.apps.getFeatureSetData(resampleID)
         ## save(resampleDetails, file = "/tmp/testing.rds")
@@ -122,13 +138,15 @@ simon$handle$plots$heatmap$renderPlot <- expression(
         }
 
         if(results$status == TRUE){
-            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
-            tempdir(check = TRUE)
-            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
+            svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
             print(results$data)
-            dev.off()
+            dev.off()        
 
-            results$image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
+            ## Optimize SVG using svgo package
+            system(paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path), intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+            results$image = as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
         }
 
        return(list(status = results$status, image = results$image))

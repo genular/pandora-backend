@@ -356,16 +356,19 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     # -----------------------------------------------------------------------------
     # => Install global node packages
     # -----------------------------------------------------------------------------
-    echo "${yellow}Do you want to install global pm2 process manager package? (y/n) Enter y${clear}"
-    read -e install_pm2
-    if [ "${install_pm2}" == "" ] ; then
-        install_pm2=y
+    echo "${yellow}Do you want to install global pm2 process manager and svgo package? (y/n) Enter y${clear}"
+    read -e install_node_deps
+    if [ "${install_node_deps}" == "" ] ; then
+        install_node_deps=y
     fi
     echo ""
 
-    if [ "$install_pm2" == y ] ; then
+    if [ "$install_node_deps" == y ] ; then
         yarn global add pm2@latest
         echo "${yellow}pm2 installation is complete.${clear}"
+
+        yarn global add svgo
+        echo "${yellow}svgo installation is complete.${clear}"
     fi
 
 

@@ -4,23 +4,28 @@
 simon$handle$plots$variableImportance$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
-        plot <- NULL
+        results <- list(status = TRUE, data = NULL, image = NULL)
+        plotUniqueHash <- ""
 
         resampleID <- 0
         if("resampleID" %in% names(args)){
             resampleID <- as.numeric(args$resampleID)
+            plotUniqueHash <- paste0(plotUniqueHash, resampleID)
         }
         variables <- NULL
         if("variables" %in% names(args)){
             variables <- jsonlite::fromJSON(args$variables)
+            plotUniqueHash <- paste0(plotUniqueHash, args$variables)
         }
         modelsID <- NULL
         if("modelsID" %in% names(args)){
             modelsID <- jsonlite::fromJSON(args$modelsID)
+            plotUniqueHash <- paste0(plotUniqueHash, args$modelsID)
         }
         settings <- NULL
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(args$settings)
+            plotUniqueHash <- paste0(plotUniqueHash, args$settings)
         }
 
         if(length(settings$dotsize) == 0) {
@@ -34,6 +39,18 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         }
         if(length(settings$fontSize) == 0) {
             settings$fontSize <- 12
+        }
+
+        plotUniqueHash <-  digest::digest(plotUniqueHash, algo="md5", serialize=F)
+
+        tmp_dir <- tempdir(check = TRUE)
+        cachedFile <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plotUniqueHash, ".*\\.svg"))
+        ## Check if some files where found in tmpdir that match our unique hash
+        if(identical(cachedFile, character(0)) == FALSE){
+            if(file.exists(cachedFile)){
+                results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
+                return(list(status = results$status, image = results$image))
+            }
         }
 
         ## 1st - Get JOB and his Info from database
@@ -50,12 +67,11 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         data <- reshape2::melt(data, id=c(resampleDetails[[1]]$outcome$remapped))
 
         # Modify the default image size.
-        tmp <- tempfile()
-        svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-
+        tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
+        svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
         theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-        g_plot <- ggplot(data, aes_string(x = resampleDetails[[1]]$outcome$remapped, fill = resampleDetails[[1]]$outcome$remapped, y = "value")) +
+        results$data <- ggplot(data, aes_string(x = resampleDetails[[1]]$outcome$remapped, fill = resampleDetails[[1]]$outcome$remapped, y = "value")) +
                         ## https://ggplot2.tidyverse.org/reference/geom_dotplot.html
                         geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5, dotsize=settings$dotsize, colour=NA, na.rm = TRUE) + 
                         stat_summary(geom = "crossbar", width=0.65, fatten=0, color="black", fun.data = function(x){ return(c(y=median(x), ymin=median(x), ymax=median(x))) }) +
@@ -69,10 +85,14 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
                         ylab("Value") + 
                         guides(fill=guide_legend(title=resampleDetails[[1]]$outcome$original))
 
-        print(g_plot)
+        print(results$data)
+        dev.off()
 
-        dev.off() 
-        return (list(image = as.character(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))))
+        ## Optimize SVG using svgo package
+        system(paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path), intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+        results$image = as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+        return(list(status = results$status, image = results$image))
     }
 )
 

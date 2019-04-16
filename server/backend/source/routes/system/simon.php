@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-03 09:24:00
+ * @Last Modified time: 2019-04-16 15:52:32
  */
 
 use Slim\Http\Request;
@@ -31,7 +31,8 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
 		} else {
 			$package['preselected'] = 0;
 		}
-
+		// Just a placeholder for front-end use
+		$package['disabled'] = false;
 		return $package;
 
 	}, $avaliablePackages
