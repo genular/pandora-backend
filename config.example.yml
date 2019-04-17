@@ -44,6 +44,14 @@ default:
         password: PLACEHOLDER
         ## Table name
         dbname: PLACEHOLDER
+    ## Federation server configuration
+    federation:
+        ## should we use federation server features
+        enabled: true
+        ## send usage statistics to federation server
+        usage_statistics: true
+        ## federation server endpoint
+        endpoint: "https://backend.genular.org"
     ## In this section we can configure specific details for each backend server module
     analysis:
         ## Current web server general configuration
