@@ -40,6 +40,9 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         if(length(settings$fontSize) == 0) {
             settings$fontSize <- 12
         }
+        if(length(settings$aspect_ratio) == 0) {
+            settings$aspect_ratio <- 1
+        }
 
         plotUniqueHash <-  digest::digest(plotUniqueHash, algo="md5", serialize=F)
 
@@ -49,7 +52,7 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         if(identical(cachedFile, character(0)) == FALSE){
             if(file.exists(cachedFile)){
                 results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
-                return(list(status = results$status, image = results$image))
+                # return(list(status = results$status, image = results$image))
             }
         }
 
@@ -68,7 +71,7 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
 
         # Modify the default image size.
         tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
-        svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        svg(tmp_path, height = 8, width = 8 * settings$aspect_ratio,  pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
         theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
         results$data <- ggplot(data, aes_string(x = resampleDetails[[1]]$outcome$remapped, fill = resampleDetails[[1]]$outcome$remapped, y = "value")) +
@@ -76,7 +79,7 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
                         geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5, dotsize=settings$dotsize, colour=NA, na.rm = TRUE) + 
                         stat_summary(geom = "crossbar", width=0.65, fatten=0, color="black", fun.data = function(x){ return(c(y=median(x), ymin=median(x), ymax=median(x))) }) +
                         #coord_cartesian(ylim=c(min(data$value), max(data$value) )) + 
-                        facet_wrap(~variable, scales="free", labeller = labeller(variable = function(inputValue) {
+                        facet_wrap(~variable, scales="free_y", labeller = labeller(variable = function(inputValue) {
                             features <- resampleDetails[[1]]$features[resampleDetails[[1]]$features$remapped %in% inputValue, ]
                             return(unique(features$original))
                         })) +

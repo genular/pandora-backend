@@ -42,7 +42,7 @@ simon$handle$plots$summary$renderPlot <- expression(
 
             total_models <- length(modelsDetailsData)
             all_models <- as.character(total_models)
-            colors <- RColorBrewer::brewer.pal(total_models, "Blues")
+            colors <- RColorBrewer::brewer.pal(total_models, "Set1")
             my.settings <- list(
                 strip.background=list(col=colors[6]),
                 strip.border=list(col="transparent")
