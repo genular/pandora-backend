@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-10 13:28:09
+ * @Last Modified time: 2019-04-18 13:12:00
  */
 namespace SIMON\Dataset;
 
@@ -34,6 +34,14 @@ class DatasetQueue {
 		$this->Helpers = $Helpers;
 		// Log anything.
 		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetQueue constructed");
+	}
+	/**
+	 * Checks if file is owned by specific user
+	 * @return boolean [description]
+	 */
+	public function isOwner($user_id, $queueID) {
+		$queue = $this->getDetailsByID($queueID, $user_id);
+		return $queue;
 	}
 
 	/**
@@ -177,6 +185,7 @@ class DatasetQueue {
 			$this->database->insert($this->table_name, [
 				"uid" => $user_id,
 				"ufid" => $submitData["selectedFiles"][0],
+				"name" => $submitData["display_filename"],
 				"uniqueHash" => $queueHash,
 				"selectedOptions" => json_encode(["features" => $submitData["selectedFeatures"],
 					"excludeFeatures" => $submitData["excludeFeatures"],
@@ -290,7 +299,7 @@ class DatasetQueue {
 				    dataset_queue.sparsity AS sparsity,
 				    dataset_queue.packages AS packages,
 				    dataset_queue.ufid AS ufid,
-				    users_files.display_filename AS queueName,
+				    dataset_queue.name AS queueName,
 				    users.username  AS username,
 				    COUNT(DISTINCT(dataset_resamples.id)) AS resamplesTotal,
 				    COUNT(models.id) AS modelsTotal,
@@ -306,9 +315,6 @@ class DatasetQueue {
 
 				LEFT JOIN models
 				    ON dataset_resamples.id = models.drid
-
-				LEFT JOIN users_files
-				    ON dataset_queue.ufid = users_files.id
 
 	            WHERE dataset_queue.uid = :user_id";
 

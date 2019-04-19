@@ -160,7 +160,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
                 ## Either the number of folds or number of resampling iterations
                 number=ifelse(is.null(model_details[["trControl"]][["number"]]), 10, model_details$trControl$number),
                 ## For repeated k-fold cross-validation only: the number of complete sets of folds to compute
-                repeats=ifelse(is.null(model_details[["trControl"]][["repeats"]]), 5, model_details$trControl$repeats), 
+                repeats=ifelse(is.null(model_details[["trControl"]][["repeats"]]), 2, model_details$trControl$repeats), 
                 savePredictions =ifelse(is.null(model_details[["trControl"]][["savePredictions"]]), "final", model_details$trControl$savePredictions), 
                 classProbs=ifelse(is.null(model_details[["trControl"]][["classProbs"]]), model_details$prob, model_details$trControl$classProbs), 
                 summaryFunction=ifelse(is.null(model_details[["trControl"]][["summaryFunction"]]), caret::multiClassSummary, model_details$trControl$summaryFunction),
@@ -173,7 +173,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
                 ## Either the number of folds or number of resampling iterations
                 number=ifelse(is.null(model_details[["trControl"]][["number"]]), 10, model_details$trControl$number),
                 ## For repeated k-fold cross-validation only: the number of complete sets of folds to compute
-                repeats=ifelse(is.null(model_details[["trControl"]][["repeats"]]), 5, model_details$trControl$repeats), 
+                repeats=ifelse(is.null(model_details[["trControl"]][["repeats"]]), 2, model_details$trControl$repeats), 
                 savePredictions =ifelse(is.null(model_details[["trControl"]][["savePredictions"]]), "final", model_details$trControl$savePredictions), 
                 # classProbs = TRUE, 
                 # summaryFunction = caret::multiClassSummary, 

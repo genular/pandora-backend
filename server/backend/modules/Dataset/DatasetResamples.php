@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-10 14:10:29
+ * @Last Modified time: 2019-04-18 13:54:10
  */
 namespace SIMON\Dataset;
 
@@ -142,41 +142,39 @@ class DatasetResamples {
 	 */
 	public function getDatasetResamples($queueID, $user_id) {
 
-		$sql = "SELECT dataset_resamples.dqid  			  AS queueID,
-					   dataset_resamples.id               AS resampleID,
-		               dataset_resamples.ufid       	  AS ufid,
-		               dataset_resamples.ufid_train       AS ufid_train,
-		               dataset_resamples.ufid_test        AS ufid_test,
-		               dataset_resamples.data_source      AS dataSource,
-		               dataset_resamples.samples_total    AS samplesTotal,
-		               dataset_resamples.samples_training AS samplesTraining,
-		               dataset_resamples.samples_testing  AS samplesTesting,
-		               dataset_resamples.features_total   AS featuresTotal,
-		               dataset_resamples.datapoints       AS datapoints,
-		               dataset_resamples.status           AS status,
-		               dataset_resamples.processing_time  AS processing_time,
-		               dataset_resamples.error            AS error,
-		               Count(models.id)                   AS modelsTotal,
-		               ROUND(SUM(models.training_time))   AS model_processing_time,
-		               Sum(CASE
-		                     WHEN models.status > 0 THEN 1
-		                     ELSE 0
-		                   END)                           AS models_success
-					FROM   dataset_resamples
-
-			               	INNER JOIN dataset_queue
-			                      ON dataset_resamples.dqid = dataset_queue.id
-			               	INNER JOIN models
-			                      ON dataset_resamples.id = models.drid
-			               	INNER JOIN models_performance
-			                      ON models.id = models_performance.mid
-			          		INNER JOIN models_performance_variables
-			                	ON models_performance.mpvid = models_performance_variables.id
-
-					WHERE  dataset_queue.uid = :user_id
-			               AND dataset_resamples.dqid = :queueID
-
-			               GROUP BY dataset_resamples.id ORDER BY modelsTotal DESC;";
+		$sql = " SELECT dataset_resamples.dqid             AS queueID,
+				       dataset_resamples.id               AS resampleID,
+				       dataset_resamples.ufid             AS ufid,
+				       dataset_resamples.ufid_train       AS ufid_train,
+				       dataset_resamples.ufid_test        AS ufid_test,
+				       dataset_resamples.data_source      AS dataSource,
+				       dataset_resamples.samples_total    AS samplesTotal,
+				       dataset_resamples.samples_training AS samplesTraining,
+				       dataset_resamples.samples_testing  AS samplesTesting,
+				       dataset_resamples.features_total   AS featuresTotal,
+				       dataset_resamples.datapoints       AS datapoints,
+				       dataset_resamples.status           AS status,
+				       dataset_resamples.processing_time  AS processing_time,
+				       dataset_resamples.error            AS error,
+				       models.modelsTotal,
+				       models.model_processing_time,
+				       models.models_success
+				FROM   dataset_resamples
+				       INNER JOIN dataset_queue
+				               ON dataset_resamples.dqid = dataset_queue.id
+				       LEFT JOIN (SELECT models.drid          AS drid,
+				                         Count(*)             AS modelsTotal,
+				                         Sum(processing_time) AS model_processing_time,
+				                         Count(CASE
+				                                 WHEN models.status > 0 THEN 1
+				                                 ELSE 0
+				                               END)           AS models_success
+				                  FROM   models
+				                  GROUP  BY models.drid) models
+				              ON dataset_resamples.id = models.drid
+				WHERE  dataset_queue.uid = :user_id
+				       AND dataset_resamples.dqid = :queueID
+				ORDER  BY models.modelsTotal DESC;";
 
 		$details = $this->database->query($sql, [
 			":user_id" => $user_id,

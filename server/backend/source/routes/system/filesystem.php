@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-05 17:00:28
+ * @Last Modified time: 2019-04-18 12:57:16
  */
 
 use Slim\Http\Request;
@@ -22,6 +22,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 	$message = array();
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 	$ResumableUpload = $this->get('SIMON\System\ResumableUpload');
 
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
@@ -79,7 +80,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 			// Upload compressed file to the Storage
 			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
 			// Save reference to Database
-			$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
+			$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
 
 			// Delete and cleanup local files
 			if (file_exists($uploaded_path)) {
@@ -92,7 +93,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 				@unlink($gzipped_path);
 			}
 
-			$file_details = $FileSystem->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
+			$file_details = $UsersFiles->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
 			if ($file_details !== false) {
 				$message = array(
 					"id" => $file_details["id"],
@@ -120,12 +121,12 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
  *
  * @return {json} JSON encoded API response object
  */
-$app->get('/backend/system/filesystem/list/{fileID:.*}', function (Request $request, Response $response, array $args) {
+$app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
 
 	$Config = $this->get('Noodlehaus\Config');
-	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -140,7 +141,15 @@ $app->get('/backend/system/filesystem/list/{fileID:.*}', function (Request $requ
 		$selectedDirectory = $submitData['selectedDirectory'];
 	}
 
-	$data = $FileSystem->getAllFilesByUserID($user_id, "uploads", false);
+	$sort = "DESC";
+	$sort_by = "display_filename";
+	if (isset($submitData['settings'])) {
+
+		$sort = $submitData['settings']['sort'] === true ? "ASC" : "DESC";
+		$sort_by = $submitData['settings']['sort_by'];
+	}
+
+	$data = $UsersFiles->getAllFilesByUserID($user_id, "uploads", false, $sort, $sort_by);
 
 	return $response->withJson(["success" => $success, "message" => $data]);
 
@@ -158,6 +167,7 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 	$message = false;
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -170,7 +180,7 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 	if (isset($submitData['selectedFiles'])) {
 		foreach ($submitData['selectedFiles'] as $selectedFilesKey => $selectedFilesValue) {
 			$fileID = (int) $selectedFilesValue;
-			$file_details = $FileSystem->getFileDetails($fileID, ["uid", "file_path"], false);
+			$file_details = $UsersFiles->getFileDetails($fileID, ["uid", "file_path"], false);
 
 			if ($file_details !== false && $user_id == $file_details["uid"]) {
 				$message = $FileSystem->deleteFileByID($fileID, $file_details["file_path"]);
@@ -201,6 +211,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	$message = false;
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
 	$user_details = $request->getAttribute('user');
@@ -255,10 +266,10 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		// 2nd Generate final download links
 		$downloadLinks = [];
 		foreach ($downloadIDs as $fileID) {
-			$fileDetails = $FileSystem->getFileDetails($fileID, ["file_path", "display_filename", "extension"], false);
+			$fileDetails = $UsersFiles->getFileDetails($fileID, ["file_path", "display_filename", "extension"], false);
 
 			if (isset($fileDetails['file_path'])) {
-				$display_filename = $FileSystem->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
+				$display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
 				// get link with a new name
 				$download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
 				$downloadLinks[] = ["filename" => $display_filename, "download_url" => $download_url];

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-09 11:22:51
+ * @Last Modified time: 2019-04-18 10:43:54
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -17,6 +17,7 @@ use \Medoo\Medoo;
 use \Monolog\Logger;
 use \SIMON\Helpers\Cache as Cache;
 use \SIMON\Helpers\Helpers as Helpers;
+use \SIMON\Users\UsersFiles as UsersFiles;
 
 class FileSystem {
 
@@ -30,6 +31,7 @@ class FileSystem {
 	protected $Config;
 	protected $Cache;
 	protected $Helpers;
+	protected $UsersFiles;
 	// Used for saving temporary files
 	private $temp_dir = "/tmp";
 	private $storage_type = "remote";
@@ -41,13 +43,15 @@ class FileSystem {
 
 		Config $Config,
 		Cache $Cache,
-		Helpers $Helpers
+		Helpers $Helpers,
+		UsersFiles $UsersFiles
 	) {
 		$this->database = $database;
 		$this->logger = $logger;
 		$this->Config = $Config;
 		$this->Cache = $Cache;
 		$this->Helpers = $Helpers;
+		$this->UsersFiles = $UsersFiles;
 
 		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/downloads";
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->temp_dir);
@@ -203,39 +207,6 @@ class FileSystem {
 		}
 	}
 	/**
-	 * Insert remote file reference into local database
-	 *
-	 * @param string $user_id Database ID of the current user
-	 * @param array $details file-info array
-	 * @param string $remote_path
-	 */
-	public function insertFileToDatabase($user_id, $details, $remote_path) {
-		// Display user friendly name for system files
-		if ($details['item_type'] === 2) {
-			if (substr($details['filename'], 0, 17) !== "genSysFile_queue_") {
-				$details['filename'] = str_replace("genSysFile_queue_", "", $details['filename']);
-			}
-		}
-
-		$this->database->insert($this->table_name, [
-			"uid" => $user_id,
-			"ufsid" => 1,
-			"item_type" => $details['item_type'],
-			"file_path" => $remote_path,
-			"filename" => md5($details['basename']),
-			"display_filename" => $details['filename'],
-			"size" => $details['filesize'],
-			"extension" => $details['extension'],
-			"mime_type" => $details['mime_type'],
-			"details" => json_encode($details['details']),
-			"file_hash" => $details['file_hash'],
-			"created" => Medoo::raw("NOW()"),
-			"updated" => Medoo::raw("NOW()"),
-		]);
-
-		return $this->database->id();
-	}
-	/**
 	 * [deleteFilesByIDs description]
 	 * @param  [type] $ids [description]
 	 * @return [type]      [description]
@@ -246,7 +217,7 @@ class FileSystem {
 				continue;
 			}
 			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem deleteFilesByIDs: " . $id);
-			$details = $this->getFileDetails($id, ["file_path"], true);
+			$details = $this->UsersFiles->getFileDetails($id, ["file_path"], true);
 			$this->deleteFileByID($id, $details['file_path']);
 		}
 	}
@@ -269,61 +240,14 @@ class FileSystem {
 
 		return ($response);
 	}
-
 	/**
-	 * [getAllFilesByUserID description]
-	 * @param  [type]  $user_id          [description]
-	 * @param  [type]  $upload_directory [description]
-	 * @param  boolean $cache            [description]
-	 * @return [type]                    [description]
+	 * [readFirstLine description]
+	 * @param  [type] $file_id [description]
+	 * @return [type]          [description]
 	 */
-	public function getAllFilesByUserID($user_id, $upload_directory, $cache = true) {
-		$cache_key = $this->table_name . "_getAllFilesByUserID_" . md5($user_id . $upload_directory);
-		$details = $this->Cache->getArray($cache_key);
-
-		if ($cache === false || $details === false) {
-			$columns = [
-				"id",
-				"item_type",
-				"size",
-				"display_filename",
-				"extension",
-				"mime_type",
-			];
-			$conditions = [
-				'uid' => $user_id,
-				'item_type' => 1,
-				'file_path[~]' => $upload_directory,
-			];
-			$details = $this->database->select($this->table_name, $columns, $conditions);
-			$this->Cache->setArray($cache_key, $details, 5000);
-		}
-
-		return ($details);
-	}
-
-	public function getFileDetails($file_id, $columns = ["*"], $cache = true) {
-		// Make unique cache key for query
-		$cache_key = $this->table_name . "_getFileDetails_" . md5($file_id) . "_" . md5(json_encode($columns));
-
-		$details = $this->Cache->getArray($cache_key);
-		if ($cache === false || $details === false) {
-			$conditions = [
-				'id' => $file_id,
-			];
-			$details = $this->database->get($this->table_name, $columns, $conditions);
-			$this->Cache->setArray($cache_key, $details);
-		}
-		if (isset($details["details"])) {
-			$details["details"] = json_decode($details["details"], true);
-		}
-
-		return ($details);
-	}
-
 	public function readFirstLine($file_id) {
 
-		$details = $this->getFileDetails($file_id, ["file_path"], true);
+		$details = $this->UsersFiles->getFileDetails($file_id, ["file_path"], true);
 
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($details["file_path"]);
@@ -376,7 +300,7 @@ class FileSystem {
 
 		$remotePath = $input;
 		if (is_numeric($input)) {
-			$details = $this->getFileDetails($input, ["file_path"], false);
+			$details = $this->UsersFiles->getFileDetails($input, ["file_path"], false);
 			if (isset($details["file_path"])) {
 				$remotePath = $details["file_path"];
 			} else {
@@ -429,34 +353,5 @@ class FileSystem {
 		@unlink($file_path_gz);
 
 		return $file_path;
-	}
-	/**
-	 * [getDisplayFilename description]
-	 * @param  [type] $filename [description]
-	 * @return [type]           [description]
-	 */
-	public function getDisplayFilename($filename, $extension) {
-
-		$display_filename = "";
-
-		if ($this->Helpers->startsWith($filename, 'genSysFile_queue')) {
-			$display_filename = "resample_data";
-		} else if ($this->Helpers->endsWith($filename, 'training_partition')) {
-			$display_filename = "training_partition";
-		} else if ($this->Helpers->endsWith($filename, 'testing_partition')) {
-			$display_filename = "testing_partition";
-		} else if ($this->Helpers->startsWith($filename, 'modelID')) {
-			// TODO: This is temporary
-			if ($extension == ".csv") {
-				$extension = ".RData";
-			}
-			$display_filename = str_replace("modelID", "model", $filename);
-		} else {
-			$display_filename = $filename;
-		}
-		if ($extension) {
-			$display_filename = $display_filename . $extension;
-		}
-		return ($display_filename . ".tar.gz");
 	}
 }

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:21
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-11 15:21:44
+ * @Last Modified time: 2019-04-18 10:36:20
  */
 
 use Slim\Http\Request;
@@ -103,6 +103,7 @@ $app->get('/backend/dataset/import/public/import/{submitData:.*}', function (Req
 		$PublicDatabases = $this->get('SIMON\PublicDatabases\PublicDatabases');
 		$Helpers = $this->get('SIMON\Helpers\Helpers');
 		$FileSystem = $this->get('SIMON\System\FileSystem');
+		$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 
 		foreach ($datasetIDs as $datasetIDsKey => $datasetID) {
 			$message[$datasetIDsKey] = [
@@ -127,7 +128,7 @@ $app->get('/backend/dataset/import/public/import/{submitData:.*}', function (Req
 			// Upload compressed file to the Storage
 			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
 			// Save reference to Database
-			$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
+			$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
 
 			// Delete and cleanup local files
 			if (file_exists($initial_path)) {

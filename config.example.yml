@@ -44,7 +44,7 @@ default:
         password: PLACEHOLDER
         ## Table name
         dbname: PLACEHOLDER
-    ## Federation server configuration
+    ## Federation server configuration ## NOT USED
     federation:
         ## should we use federation server features
         enabled: true

@@ -409,6 +409,7 @@ for (dataset in datasets) {
         ## Define results variables
         trainingVariableImportance <- NULL
         predictionObject <- NULL
+        predictionProcessed <- NULL
         predictionAUC <- NULL
         predictionPostResample <- NULL
         predictionConfusionMatrix <- NULL
@@ -528,19 +529,37 @@ for (dataset in datasets) {
                     methodDetails$modelID
                 )
             }
-            saveData <- list(
-                training = trainModel,
-                predictionObject = predictionObject, 
-                auc = predictionAUC, 
-                predictionPostResample = predictionPostResample,
-                confusionMatrix = predictionConfusionMatrix,
-                varImportance = trainingVariableImportance
+            ## All in one object for user to download
+            simonData <- list(
+                ## General processing info
+                info = list(
+                    resampleID = dataset$resampleID,
+                    problemType = problemType,
+                    ## Lets put this here just because convenience
+                    data = modelData,
+                    outcome = dataset$outcome,
+                    outcome_mapping = outcome_mapping,
+                    model_details = model_details
+                ),
+                ## Model FIT
+                training = list(
+                    raw = trainModel,
+                    varImportance = trainingVariableImportance
+                ),
+                ## Predictions
+                predictions = list(
+                    raw = predictionObject,
+                    processed = predictionProcessed,
+                    AUROC = predictionAUC, 
+                    postResample = predictionPostResample,
+                    confusionMatrix = predictionConfusionMatrix
+                )
             )
             saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
             ## JOB_DIR is temporarily directory on our local file-system
             saveDataPaths$path_initial <- paste0(JOB_DIR,"/models/modelID_",model_details$internal_id,"_", methodDetails$modelID, ".RData")
             ## Save data in .RData since write_feather supports only data-frames
-            save(saveData, file = saveDataPaths$path_initial)
+            save(simonData, file = saveDataPaths$path_initial)
             path_details = compressPath(saveDataPaths$path_initial)
             
             saveDataPaths$renamed_path = path_details$renamed_path

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-17 12:41:53
+ * @Last Modified time: 2019-04-18 13:18:02
  */
 
 use Slim\Http\Request;
@@ -51,7 +51,7 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/verify', function (Re
 	$message = array();
 
 	$config = $this->get('Noodlehaus\Config');
-	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
 	$selectedFiles = [];
@@ -69,7 +69,7 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/verify', function (Re
 	$fileDetails = false;
 	if ($file_id > 0) {
 		// Retrieve first line from database
-		$fileDetails = $FileSystem->getFileDetails($file_id, ["details"], true);
+		$fileDetails = $UsersFiles->getFileDetails($file_id, ["details"], true);
 	}
 
 	if ($fileDetails !== false && isset($fileDetails["details"])) {
@@ -95,7 +95,7 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*
 	$message = array();
 
 	$config = $this->get('Noodlehaus\Config');
-	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
 	$userInput = base64_decode(urldecode($args['userInput']));
@@ -115,7 +115,7 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*
 	$fileDetails = false;
 	if ($file_id > 0) {
 		// Retrieve first line from database
-		$fileDetails = $FileSystem->getFileDetails($file_id, ["details"], true);
+		$fileDetails = $UsersFiles->getFileDetails($file_id, ["details"], true);
 	}
 
 	if ($fileDetails !== false && isset($fileDetails["details"])) {
@@ -158,6 +158,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	$config = $this->get('Noodlehaus\Config');
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 	$DatasetIntersection = $this->get('SIMON\Dataset\DatasetIntersection');
 	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 	$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
@@ -183,7 +184,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 	if ($tempFilePath !== false && file_exists($tempFilePath)) {
 		$totalDatasetsGenerated = 0;
 
-		$mainFileDetails = $FileSystem->getFileDetails($submitData["selectedFiles"][0], ["details"], true);
+		$mainFileDetails = $UsersFiles->getFileDetails($submitData["selectedFiles"][0], ["details", "display_filename"], true);
 
 		// Check if user has selected ALL Switch, in that case just exclude other Features from Header
 		$selectALLSwitch = array_search("ALL", array_column($submitData["selectedFeatures"], 'remapped'));
@@ -206,6 +207,8 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 			// Keep exclusively only features
 			$submitData["selectedFeatures"] = array_values($selectedFeatures);
 		}
+
+		$submitData["display_filename"] = $mainFileDetails["display_filename"];
 
 		$allOtherOptions = array_merge($submitData["selectedOutcome"], $submitData["selectedFormula"], $submitData["selectedClasses"]);
 		$allOtherSelections = [];
@@ -274,7 +277,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 						// Upload compressed file to the Storage
 						$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads/queue/" . $queueID);
 						// Save reference to Database
-						$file_id = $FileSystem->insertFileToDatabase($user_id, $details, $remote_path);
+						$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
 
 						// Delete and cleanup local files
 						if (file_exists($uploaded_path)) {

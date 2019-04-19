@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-15 10:09:28
+ * @Last Modified time: 2019-04-18 13:12:09
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -37,6 +37,10 @@ $app->get('/backend/queue/list', function (Request $request, Response $response,
 	$paginatedData = $DatasetQueue->getDatasetQueueList($user_id, $page, $limit, $sort, $filters);
 
 	if ($paginatedData) {
+		foreach ($paginatedData as $paginatedDataKey => $paginatedDataValue) {
+			$paginatedData[$paginatedDataKey]['edit']['queueName'] = false;
+		}
+
 		$countData = 0;
 		if (count($paginatedData) > 0) {
 			$countData = $DatasetQueue->getDatasetQueueCount("uid", $user_id, $filters);
@@ -48,6 +52,44 @@ $app->get('/backend/queue/list', function (Request $request, Response $response,
 	}
 
 	return $response->withJson(["success" => $success, "message" => $message]);
+});
+
+/**
+ * Used to update Queue name in Dashboard => field click
+ */
+$app->post('/backend/queue/update', function (Request $request, Response $response, array $args) {
+	$success = false;
+	$message = "";
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$post = $request->getParsedBody();
+	$submitData = false;
+	if (isset($post['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($post['submitData'])), true);
+	}
+
+	if ($submitData) {
+		$updateID = intval($submitData['updateID']);
+		$updateAction = trim($submitData['updateAction']);
+		$updateValue = trim($submitData['updateValue']);
+		// Different actions
+		if ($updateAction === "queueName") {
+			$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+			$privilage = $DatasetQueue->isOwner($user_id, $updateID);
+
+			if ($privilage) {
+				$updateCheck = $DatasetQueue->updateTable("name", $updateValue, "id", $updateID);
+				if ($updateCheck) {
+					$success = true;
+				}
+			}
+		}
+	}
+
+	return $response->withJson(["success" => $success]);
+
 });
 
 $app->get('/backend/queue/exploration/list', function (Request $request, Response $response, array $args) {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 95.216.176.70:3307
--- Generation Time: Apr 18, 2019 at 12:48 AM
+-- Generation Time: Apr 19, 2019 at 10:46 PM
 -- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
@@ -34,7 +34,7 @@ CREATE TABLE `dataset_proportions` (
   `class_name` varchar(255) DEFAULT NULL COMMENT 'Name of the class that is analized',
   `proportion_class_name` varchar(255) DEFAULT NULL,
   `feature_set_type` tinyint(4) DEFAULT NULL COMMENT '1 - Training\n2 - Testing\n3 - Validation',
-  `measurement_type` tinyint(4) DEFAULT NULL COMMENT '1 - number\n2 - percentage\n3 - median\n4 - min\n5 - max',
+  `measurement_type` tinyint(4) DEFAULT NULL COMMENT '1 - number\n2 - percentage\n3 - median\n4 - min\n5 - max\n6 - number of unique values\n7 - number of all values ',
   `value` varchar(255) DEFAULT NULL COMMENT 'proportion_class_name remapped value',
   `result` float DEFAULT NULL COMMENT 'Calculated number value',
   `created` datetime DEFAULT NULL
@@ -50,6 +50,7 @@ CREATE TABLE `dataset_queue` (
   `id` int(11) NOT NULL,
   `uid` int(11) DEFAULT NULL COMMENT 'User ID',
   `ufid` int(11) DEFAULT NULL COMMENT 'Users Files ID that is in question for processing',
+  `name` varchar(255) DEFAULT NULL COMMENT 'Queue name',
   `uniqueHash` char(64) DEFAULT NULL COMMENT 'MD5 hash of :\nuserID\nselected header values\nselected files IDs\npackages,\nextraction\nfeature_selection',
   `selectedOptions` longtext COMMENT 'JSON encoded list of features, outcomes and classes to analyze:\nname\ndataType\nitemType\ntotalNaValues\nunique',
   `impute` tinyint(6) DEFAULT '0' COMMENT 'Should we do additional inputation?\n1 - median\n2 - mean \n3- genetic',
@@ -92,6 +93,23 @@ CREATE TABLE `dataset_resamples` (
   `created` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Dataset Sample Creation Time',
   `updated` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Datasets automaticaly made from specific dataset that is in queue if extraction is cecked,\ntaan intersection of data is used. Usefull in case of missing data';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dataset_resamples_components`
+--
+
+CREATE TABLE `dataset_resamples_components` (
+  `id` int(11) NOT NULL,
+  `dqid` int(11) DEFAULT NULL COMMENT 'Dataset Queue ID',
+  `drid` int(11) DEFAULT NULL COMMENT 'Dataset Resamples ID',
+  `pre_process_type` varchar(64) DEFAULT NULL COMMENT 'PreProcessing type: pca, ice ..',
+  `feature_name` varchar(255) DEFAULT NULL COMMENT 'Remmaped name of the column',
+  `component_name` varchar(255) DEFAULT NULL COMMENT 'Original user given name of the class',
+  `rank_in_component` varchar(255) DEFAULT NULL COMMENT 'The proportion of variation retained by the principal components ',
+  `created` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Resample component mappings if PCA or ICE preProcessing is used';
 
 -- --------------------------------------------------------
 
@@ -490,6 +508,13 @@ ALTER TABLE `dataset_resamples`
   ADD KEY `dataset_resamples_dqidx` (`dqid`);
 
 --
+-- Indexes for table `dataset_resamples_components`
+--
+ALTER TABLE `dataset_resamples_components`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_class_idx` (`dqid`,`drid`,`pre_process_type`,`feature_name`,`rank_in_component`);
+
+--
 -- Indexes for table `dataset_resamples_mappings`
 --
 ALTER TABLE `dataset_resamples_mappings`
@@ -665,6 +690,12 @@ ALTER TABLE `dataset_queue`
 -- AUTO_INCREMENT for table `dataset_resamples`
 --
 ALTER TABLE `dataset_resamples`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `dataset_resamples_components`
+--
+ALTER TABLE `dataset_resamples_components`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

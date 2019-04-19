@@ -1,9 +1,11 @@
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
-#' @GET /plots/summary/render-plot
-simon$handle$plots$summary$renderPlot <- expression(
+#' @GET /plots/modelsummary/render-plot
+simon$handle$plots$modelsummary$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
+
+        ## https://shirinsplayground.netlify.com/2018/07/explaining_ml_models_code_caret_iml/
 
 
         options(width = 360)
