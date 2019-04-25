@@ -1,4 +1,6 @@
 require(corrplot);
+require(plotROC)
+
 source(paste0("server/",SERVER_NAME,"/summary/functions/index.R"))
 ## POST & GET Declarations
 simon$handle$plots$summary = list()
