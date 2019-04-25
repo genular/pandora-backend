@@ -96,7 +96,7 @@ simon$handle$plots$summary$renderPlot <- expression(
                             minor.breaks = c(seq(0, 0.1, by = 0.01), seq(0.9, 1, by = 0.01)),
                             guide = TRUE, 
                             xlab = "False positive fraction (1-specificity)",
-                            ylab = "True positive fraction (1-sensitivity)", 
+                            ylab = "True positive fraction (sensitivity)", 
                             theme = theme_bw) + 
                     geom_abline(slope = 1, intercept = 0, color = "#D3D3D3", aplha = 0.85, linetype="longdash") +
                     scale_fill_brewer(palette="Set1")
