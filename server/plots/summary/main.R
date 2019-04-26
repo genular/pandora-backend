@@ -1,5 +1,5 @@
-require(corrplot);
-require(plotROC)
+require(corrplot)
+p_load(plotROC)
 
 source(paste0("server/",SERVER_NAME,"/summary/functions/index.R"))
 ## POST & GET Declarations

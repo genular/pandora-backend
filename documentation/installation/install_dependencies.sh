@@ -414,6 +414,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('taiyun/corrplot', build_vignettes = TRUE)"
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"
             sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer'), repos='http://cran.us.r-project.org')"
+            sudo Rscript -e "devtools::install_github('sachsmc/plotROC')"
         fi
 
         if [ "${MODS[simon_cron]}" == y ] ; then

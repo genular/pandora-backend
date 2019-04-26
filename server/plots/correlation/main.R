@@ -1,4 +1,4 @@
-require(corrplot);
+require(corrplot)
 
 source(paste0("server/",SERVER_NAME,"/correlation/functions/index.R"))
 
