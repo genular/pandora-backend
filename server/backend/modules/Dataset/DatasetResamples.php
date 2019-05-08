@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-18 13:54:10
+ * @Last Modified time: 2019-05-08 11:40:23
  */
 namespace SIMON\Dataset;
 
@@ -56,10 +56,20 @@ class DatasetResamples {
 	public function updateStatus($resample) {
 
 		if ($resample['isSelected'] === true) {
-			$status = 0;
+			// User selected
+			$status = 2;
 		} else {
+			// User deselected
 			$status = 1;
 		}
+
+		// 0 Created
+		// 1 Deselected
+		// 2 Selected
+		// 3 R train/test partitions created
+		// 4 R cron started processing
+		// 5 Finished Success
+		// 6 Finished Errors
 
 		$data = $this->database->update($this->table_name, [
 			"status" => $status,
@@ -85,14 +95,14 @@ class DatasetResamples {
 		$this->database->insert($this->table_name, [
 			"dqid" => $queueID,
 			"ufid" => $fileID,
-			"data_source" => 1,
+			"data_source" => 1, // 1 - Initial
 			"samples_total" => $resample["totalSamples"],
 			"samples_training" => 0,
 			"samples_testing" => 0,
 			"features_total" => intval($resample["totalFeatures"]),
 			"selectedOptions" => json_encode(["outcome" => $outcome, "features" => $resample["listFeatures"], "subjects" => $resample["listSamples"]]),
 			"datapoints" => intval($resample["totalDatapoints"]),
-			"status" => 1, // 1 - Active, activate/deactivate it based on user selection
+			"status" => 0, // 0 - Created
 			"servers_finished" => 0,
 			"processing_time" => 0,
 			"error" => Medoo::raw("NULL"),

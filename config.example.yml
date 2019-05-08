@@ -48,6 +48,8 @@ default:
     federation:
         ## should we use federation server features
         enabled: true
+        ## server type: master/slave/both
+        server_type: both
         ## send usage statistics to federation server
         usage_statistics: true
         ## federation server endpoint

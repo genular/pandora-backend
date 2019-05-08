@@ -11,14 +11,14 @@ SERVER_NAME <- args[1]
 SERVER_TYPES <- c("analysis", "plots")
 
 if(is.na(SERVER_NAME) || is.null(SERVER_NAME)){
-    SERVER_NAME <- "cron"
+    SERVER_NAME <- "cron_analysis"
 }
 
 simonConfig <- config::get(file = "config.yml")
 
 
 if(!(SERVER_NAME %in% names(simonConfig))){
-    if(SERVER_NAME != "cron"){
+    if(SERVER_NAME != "cron_analysis"){
         stop("Cannot find configuration for given server name!")    
     }
 }

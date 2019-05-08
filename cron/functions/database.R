@@ -6,10 +6,13 @@ getProcessingEntries <- function(){
     queue = list()
 
     ## Get older processing entries first
-    ## queue gets status = 1 after user confirms re-samples back in UI
-    query <- "SELECT id, uid, packages  FROM dataset_queue WHERE status = ?status ORDER BY id ASC LIMIT 1"
+    #
+    # 1 - user confirms re-samples back in UI
+    # 3 - Marked for processing
+    # 4 - Processing
+    # 8 - User resumes
+    query <- "SELECT id, uid, packages  FROM dataset_queue WHERE status IN(1,3,4,8) ORDER BY id ASC LIMIT 1"
     
-    query <- sqlInterpolate(databasePool, query, status = 1)
     results <- dbGetQuery(databasePool, query)
 
     if(nrow(results) > 0){

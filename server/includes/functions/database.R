@@ -65,9 +65,9 @@ db.apps.getCronJobQueue <- function(data){
 
                     FROM dataset_queue
                     INNER JOIN dataset_resamples ON dataset_queue.id = dataset_resamples.dqid
-                         ## Select only re-samples that are user activated or 2 R (train/test) partitions Created
-                         ## If processing is canceled unexpectedly status will be 3 (In Processing)
-                         AND dataset_resamples.status IN (0,2,3)
+                         ## Select only re-samples that are user Selected (2) or R train/test partitions created 3
+                         ## If processing is canceled unexpectedly status will be 4 R cron started processing
+                         AND dataset_resamples.status IN (2, 3, 4)
                          AND dataset_resamples.servers_finished != dataset_queue.servers_total
 
                     LEFT JOIN users_files users_files_main ON dataset_resamples.ufid = users_files_main.id
@@ -79,7 +79,7 @@ db.apps.getCronJobQueue <- function(data){
                     LEFT JOIN users_files users_files_test ON dataset_resamples.ufid_test = users_files_test.id
                          AND users_files_test.uid = dataset_queue.uid
                     ## Select datasets that are marked for processing or already processing
-                    WHERE dataset_queue.id = ",data$queueID," AND dataset_queue.status IN(3, 4)
+                    WHERE dataset_queue.id = ",data$queueID," AND dataset_queue.status IN(3,4,8)
 
                     ORDER BY dataset_resamples.samples_total DESC")
 

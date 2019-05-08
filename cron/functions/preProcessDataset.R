@@ -12,7 +12,7 @@ preProcessDataset <- function(dataset) {
         message <- paste0("===> ERROR: Cannot download remote dataset data\r\n")
         cat(message)
 
-        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
         return(FALSE)
     }
@@ -29,7 +29,7 @@ preProcessDataset <- function(dataset) {
         message <- paste0("===> ERROR: Invalid number (",length(dataset$outcome),") of outcome columns detected. Currently only one is supported.")
         cat(message)
 
-        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
         return(FALSE)
     }
@@ -48,7 +48,7 @@ preProcessDataset <- function(dataset) {
     if(length(outcome_unique) > 2 || length(outcome_unique) < 2){
         cat(paste0("===> ERROR: Only two unique outcome classes are currently supported. You have: ", length(outcome_unique), "\r\n"))
         print(outcome_unique)
-        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", paste0("Incorrect number of outcome levels in main dataset: ", length(outcome_unique)), "id", dataset$resampleID)
         return(FALSE)
     }
@@ -56,25 +56,51 @@ preProcessDataset <- function(dataset) {
     ## Remap outcome classes with A & B values
     mappings <- matrix(ncol=4, nrow=length(outcome_unique))
 
-    ## Since "0" and "1", aren't valid variable names in R we need to use letters as class outcomes
-    ## Remap outcome to numeric values
-    ## outcome_remapping <- seq(1, length(outcome_unique), by=1)
-
     ## Generate letters: LIMIT: 702 letters
     outcome_remapping <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
-
     ## Convert "outcome" to characters and then do replacing
     datasetData[[dataset$outcome]] <- as.character(datasetData[[dataset$outcome]])
 
-    i <- 1
+    m_count <- 1
+    remap_count <- 1
     for(outcome_item in outcome_unique){
-        mappings[i, ][1] <- dataset$outcome
-        mappings[i, ][2] <- 2
-        mappings[i, ][3] <- outcome_item
-        mappings[i, ][4] <- outcome_remapping[i]
+        mappings[m_count, ][1] <- dataset$outcome
+        mappings[m_count, ][2] <- 2
+        mappings[m_count, ][3] <- outcome_item
+        mappings[m_count, ][4] <- outcome_remapping[remap_count]
 
-        datasetData[[dataset$outcome]][datasetData[[dataset$outcome]] == outcome_item] <- outcome_remapping[i]
-        i <- i + 1
+        datasetData[[dataset$outcome]][datasetData[[dataset$outcome]] == outcome_item] <- outcome_remapping[remap_count]
+        m_count <- m_count + 1
+        remap_count <- remap_count + 1
+    }
+
+    ## Extract all non numeric columns and convert them to numbers
+    non_numeric_column_ids <- unlist(lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , is.numeric))  
+    non_numeric_column_names <- colnames(datasetData)[!non_numeric_column_ids]
+
+    if(length(non_numeric_column_names) > 0){
+        for (column_name in non_numeric_column_names){
+            column_unique <- unique(datasetData[[column_name]])
+
+            ## Extend the matrix
+            mappings <- rbind(mappings, length(column_unique))
+
+            column_remapping <- seq(1, length(column_unique), by=1)
+            ## Convert "column" to characters and then do replacing
+            datasetData[[column_name]] <- as.character(datasetData[[column_name]])
+
+            remap_count <- 1
+            for(column_item in column_unique){
+                mappings[m_count, ][1] <- column_name
+                mappings[m_count, ][2] <- 2
+                mappings[m_count, ][3] <- column_item
+                mappings[m_count, ][4] <- column_remapping[remap_count]
+
+                datasetData[[column_name]][datasetData[[column_name]] == column_item] <- column_remapping[remap_count]
+                m_count <- m_count + 1
+                remap_count <- remap_count + 1
+            }
+        }
     }
 
     ## Convert it to data-frame
@@ -91,14 +117,15 @@ preProcessDataset <- function(dataset) {
     ## Maintain outcome as factors
     datasetData[[dataset$outcome]] <- as.factor(datasetData[[dataset$outcome]])
 
-    ## Convert all columns expect "outcome_and_classes" column to numeric
+    ## Convert all columns expect "outcome_and_classes" column to numeric values! 
+    ## Same as above mappings but just in case we missed some!
     datasetData[, !names(datasetData) %in% outcome_and_classes] <- lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , as.numeric)
 
     # ==> 2 PREPROCCESING: Skewness and normalizing of the numeric predictors
     preProcessMapping <- NULL
     if(length(dataset$preProcess) > 0 ){
         transformations <- paste(dataset$preProcess, sep=",")
-        message <- paste0("===> INFO: Pre-processing transformation (",transformations,")")
+        message <- paste0("===> INFO: Pre-processing transformation (",transformations,") \r\n")
         cat(message)
 
         fs_status$info <- c(fs_status$info, message)
@@ -187,7 +214,7 @@ preProcessDataset <- function(dataset) {
         message <- paste0("===> ERROR: Cannot save partitioned data into database, detected file ids: ",splits$training$ufid," - ", splits$testing$ufid)
         cat(message)
 
-        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
         return(FALSE)
     }
@@ -205,7 +232,7 @@ preProcessDataset <- function(dataset) {
                             ufid_test=as.numeric(splits$testing$ufid),
                             samples_training=as.numeric(samples$training),
                             samples_testing=as.numeric(samples$testing),
-                            status=as.numeric(2),
+                            status=as.numeric(3),
                             resampleID=as.numeric(dataset$resampleID))
 
     dbExecute(databasePool, query)

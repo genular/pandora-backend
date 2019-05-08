@@ -1,3 +1,31 @@
+#' @title Checks process is running
+#' @description Checks if we can find process by part of this name in running process list
+#' @param identifier cron_analysis
+#' @return vector
+is_process_running <- function(identifier){
+    ## Check if some other R CRON process is already running and KILL it
+    process_pid <- Sys.getpid()
+    process_command <- paste0("ps -ef | awk '$NF~\"",identifier,"\" {print $2}'")
+    process_list <- system(process_command, intern = TRUE)
+    if(length(process_list) > 0){
+        process_list <- setdiff(process_list, process_pid)
+    }
+
+    return(process_list)
+}
+#' @title Kill process
+#' @description Kills processes by PIDs
+#' @param process_list numeric vector
+#' @return
+kill_process_pids <- function(process_list){
+    if(length(process_list) > 0){
+        for(cron_pid in process_list){
+            print(paste0("Killing process SIGKILL: ", cron_pid))
+            tools::pskill(as.numeric(cron_pid), signal = 9)
+        }
+    }
+}
+
 #' @title  which_cmd
 #' @description Get path to system bin file
 #' @param bin_file exec name ex. tar
