@@ -402,7 +402,7 @@ for (dataset in datasets) {
             cat(paste0("===> ERROR: SKIPPING Package libraries could not be loaded, skipping: ",package," \r\n"))
             next()
         }
-        cat(paste0("===> INFO: Model Training Start: ",model_details$internal_id," Interface: ",model_details$interface," problemType: ",problemType," \r\n"))
+        cat(paste0("===> INFO: Model Training Start: ",model_details$internal_id," Interface: ",model_details$interface," problemType: ",problemType," <=== \r\n"))
         ## dataset$preProcess
         trainModel <- caretTrainModel(modelData$training, model_details, problemType, dataset$outcome, NULL, dataset$resampleID, JOB_DIR)
 
