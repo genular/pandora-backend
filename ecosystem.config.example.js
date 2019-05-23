@@ -65,5 +65,14 @@ module.exports = {
                 NODE_ENV: "development"
             }
         }
+        // {
+        //     name: "simon-analysis-python",
+        //     cwd: backendPath,
+        //     script: "./server/python/run.py",
+        //     args: "analysis-python",
+        //     watch: ["server/python"],
+        //     watch_options: watchOptions,
+        //     interpreter: "/usr/bin/python3.7"
+        // }
     ]
 };

@@ -220,6 +220,9 @@ echo "Installation of basic dependencies START"
 	apt-get install -y nodejs
 	apt-get install yarn
 
+	## For SSH login function located in User Settings
+	yarn global add localtunnel
+
 	echo "===> INSTALLATION step: 4"
 	apt-get install default-jre default-jdk
 
@@ -232,6 +235,8 @@ echo "Installation of basic dependencies START"
 
 	echo "===> INSTALLATION step: 7"
 	apt-get install openssl
+
+	apt-get install openssh-server
 
 	echo "===> INSTALLATION step: 8"
 	apt-get install git
@@ -256,7 +261,12 @@ _EOF_
 __EOS__
 )
 
+## Add MySQL configuration
 cp "$rootfsDir/../../configs/etc/mysql/mariadb.conf.d/50-server.cnf" "$rootfsDir/etc/mysql/mariadb.conf.d/50-server.cnf"
+
+## Add SSH configuration
+cp "$rootfsDir/../../configs/etc/ssh/ssh_config" "$rootfsDir/etc/ssh/ssh_config"
+
 echo "Installation of basic dependencies END"
 
 mkdir -p "$rootfsDir/var/www/html"
