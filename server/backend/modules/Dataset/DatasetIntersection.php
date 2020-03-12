@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-27 14:46:43
+ * @Last Modified time: 2019-12-10 11:26:24
  */
 namespace SIMON\Dataset;
 
@@ -212,9 +212,7 @@ class DatasetIntersection {
 			->where([$this, 'removeEmptyOutcomeValues']);
 
 		// If we are not doing dataset extraction remove all samples/rows that have empty values (non-numerc)
-		if ($extraction === false) {
-			$stmt = $stmt->where([$this, 'removeEmptyValues']);
-		}
+
 		$records = $stmt->process($reader);
 		$samples = array();
 
@@ -262,6 +260,7 @@ class DatasetIntersection {
 		} else {
 			$sparsity = 1;
 		}
+
 		$invalidColumns = array_keys($invalidColumns);
 
 		/** Sort an array by key - Sort subjects by their ID */
@@ -287,7 +286,16 @@ class DatasetIntersection {
 			if ($totalMultiSetsIntersections >= 200) {
 				continue;
 			}
+
 			$sampleFeatures = array_keys($sampleFeatures);
+
+			if ($extraction === false && count($invalidColumns) > 0) {
+				$sampleFeatures = array_diff($sampleFeatures, $invalidColumns);
+				if (count($sampleFeatures) < 1 || empty($sampleFeatures)) {
+					continue;
+				}
+			}
+
 			/** Sort an array by key - Maintain sorting order
 			 * of Features so we can use them in hashing algorithm
 			 */

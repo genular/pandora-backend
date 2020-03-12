@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-05-08 11:40:29
+ * @Last Modified time: 2019-12-10 10:50:28
  */
 
 use Slim\Http\Request;
@@ -171,7 +171,8 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 	$post = $request->getParsedBody();
 	if (isset($post['submitData'])) {
-		$submitData = json_decode(base64_decode(urldecode($post['submitData'])), true);
+		// URL Encode two times, since sometimes utf8 characters from column names are issue for JS btoa
+		$submitData = json_decode(urldecode(base64_decode(urldecode($post['submitData']))), true);
 		$submitData["selectedPartitionSplit"] = (int) $submitData["selectedPartitionSplit"];
 	}
 

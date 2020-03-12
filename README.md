@@ -19,15 +19,15 @@ our focus here is scientific community so we can enable scientist and other rese
 ## More info [HERE](https://github.com/genular/simon-frontend) at main project repository
 
 ## License
-Please check `LICENCE` file for more information.
+`SIMON` is open-source software for more informations please check `LICENCE` file.
 
 ## Citation
 This software can be used for research purposes, you should cite
 the aforementioned papers in any resulting publication.
 
 ```bash
-	Adriana Tomic, Ivan Tomic, Yael Rosenberg-Hasson, Cornelia L. Dekker, Holden T. Maecker, Mark M. Davis.
-	SIMON, an automated machine learning system reveals immune signatures of influenza vaccine responses.
-	Preprint available from bioRxiv 545186
-	doi: https://doi.org/10.1101/545186
+    Adriana Tomic, Ivan Tomic, Yael Rosenberg-Hasson, Cornelia L. Dekker, Holden T. Maecker, Mark M. Davis.
+    SIMON, an Automated Machine Learning System, Reveals Immune Signatures of Influenza Vaccine Responses
+    http://www.jimmunol.org/content/early/2019/06/13/jimmunol.1900033.abstract
+    doi: 10.4049/jimmunol.1900033
 ```

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:16:35
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-13 11:58:30
+ * @Last Modified time: 2019-12-10 10:40:46
  */
 
 // Bootstrap the app environment.
@@ -21,7 +21,7 @@ if (PHP_SAPI == 'cli-server') {
 }
 require 'vendor/autoload.php';
 
-// Turn on debug.
+// Turn on debug
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
