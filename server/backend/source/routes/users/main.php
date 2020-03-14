@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:27:46
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-06 10:43:38
+ * @Last Modified time: 2020-03-14 14:23:14
  */
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 use LasseRafn\Initials\Initials;
@@ -106,6 +106,10 @@ $app->get('/backend/user/details', function (Request $request, Response $respons
 
 });
 
+/*
+Register initial user into the system
+ */
+
 $app->post('/backend/user/register', function (Request $request, Response $response, array $args) {
 	$success = true;
 	// Check if system is properly initialized
@@ -181,7 +185,27 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 	if ($user_id === null) {
 		$success = false;
 	} else {
-		// array_push($message, "User successfully registered");
+		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Send statistics about usage");
+		$url = 'https://snap.genular.org/simon.php';
+		$collect_data = $post;
+		unset($collect_data["user"]['password']);
+
+		$collect_data["user"]['success'] = $success;
+		$collect_data["timestamp"] = time();
+
+		$options = array(
+			'http' => array(
+				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+				'method' => 'POST',
+				'content' => http_build_query($collect_data),
+			),
+		);
+
+		$context = stream_context_create($options);
+		$collect_result = file_get_contents($url, false, $context);
+		if ($collect_result === FALSE) {
+			$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Send statistics about usage FAILED");
+		}
 	}
 
 	// If user is successfully registered send verification email

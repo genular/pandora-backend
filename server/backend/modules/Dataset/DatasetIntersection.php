@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-12-10 11:26:24
+ * @Last Modified time: 2020-03-14 11:38:06
  */
 namespace SIMON\Dataset;
 
@@ -304,7 +304,7 @@ class DatasetIntersection {
 			/** Calculate unique donor features identifier by
 			 * using MD5 hashing algorithm
 			 */
-			$featuresID = hash('sha512', implode($sampleFeatures, ','));
+			$featuresID = hash('sha512', implode(',', $sampleFeatures));
 
 			if (!isset($featureSets[$featuresID])) {
 				$featureSets[$featuresID] = $sampleFeatures;
@@ -319,7 +319,7 @@ class DatasetIntersection {
 
 				if (!empty($featuresShared)) {
 					ksort($featuresShared, SORT_NATURAL);
-					$featuresSharedID = hash('sha512', implode($featuresShared, ','));
+					$featuresSharedID = hash('sha512', implode(',', $featuresShared));
 
 					if (!isset($featureSetsShared[$featuresSharedID])) {
 						$featureSetsShared[$featuresSharedID] = array(

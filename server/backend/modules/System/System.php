@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-03-25 10:56:30
+ * @Last Modified time: 2020-03-14 11:52:35
  */
 namespace SIMON\System;
 
@@ -120,6 +120,7 @@ class System {
 			["value" => "PositiveControl"],
 			["value" => "Precision"],
 			["value" => "PredictAUC"],
+			["value" => "prAUC"],
 			["value" => "Prevalence"],
 			["value" => "Recall"],
 			["value" => "Sensitivity"],

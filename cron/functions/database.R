@@ -458,12 +458,13 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
 #' @param predConfusionMatrix
 #' @param model_details Data-frame with current model details
 #' @param predAUC List containing pROC measures
+#' @param prAUC Precision/Recall AUC on Predict Test Set
 #' @param predPostResample
 #' @param status Boolean, true or false
 #' @param errors Character vector with listed errors that occurred during training
 #' @param model_time_start Sys.time() object with model starting time
 #' @return list
-db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, model_details, performanceVariables, predAUC, predPostResample, errors, model_time_start){
+db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, model_details, performanceVariables, predAUC, prAUC, predPostResample, errors, model_time_start){
     model_status <- 1
     training_time <- NULL
 
@@ -569,6 +570,14 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
             pvDetails <- performanceVariables[performanceVariables$value %in% "PredictAUC",]
 
             prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predAUC$auc,"', NOW())")), collapse = ",")
+        }
+
+        ## Insert Testing prAUC
+        if(!is.null(prAUC) & !is.null(prAUC$auc.integral)){
+            performanceVariables <- getPerformanceVariable("prAUC", performanceVariables)
+            pvDetails <- performanceVariables[performanceVariables$value %in% "prAUC",]
+
+            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",prAUC$auc.integral,"', NOW())")), collapse = ",")
         }
 
         ## Insert Testing Accuracy/Kappa or RMSE, Rsquared, MAE
