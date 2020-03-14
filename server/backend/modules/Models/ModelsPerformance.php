@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:19:22
+ * @Last Modified time: 2020-03-14 14:40:22
  */
 namespace SIMON\Models;
 
@@ -56,7 +56,7 @@ class ModelsPerformance {
 
 		$ids = join(',', array_map('intval', $ids));
 		if (!is_array($measurements) || count($measurements) < 1) {
-			$measurements = ['Accuracy', 'F1', 'Kappa', 'Precision', 'PredictAUC', 'Recall', 'Sensitivity', 'Specificity', 'TrainAccuracy', 'TrainAUC', 'TrainF1', 'TrainprAUC', 'TrainPrecision', 'TrainRecall', 'TrainSensitivity', 'TrainSpecificity'];
+			$measurements = ['Accuracy', 'F1', 'Kappa', 'Precision', 'PredictAUC', 'prAUC', 'Recall', 'Sensitivity', 'Specificity', 'TrainAccuracy', 'TrainAUC', 'TrainF1', 'TrainprAUC', 'TrainPrecision', 'TrainRecall', 'TrainSensitivity', 'TrainSpecificity'];
 		}
 		$grouppings = Array("queueID" => "dataset_queue.id", "resampleID" => "dataset_resamples.id", "modelID" => "models.id");
 
