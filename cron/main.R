@@ -503,11 +503,14 @@ for (dataset in datasets) {
                             cat(paste0("===> ERROR: Cannot calculate getPredictROC \r\n"))
                             error_models <- c(error_models, "Cannot calculate getPredictROC")
                         }
-                        cat(paste0("===> INFO: Calculating prAUC \r\n"))
-                        
-                        preds_pos <- predictionProcessed[modelData$testing[[dataset$outcome]]== outcome_mapping[1, ]$class_remapped] #preds for true positive class
-                        preds_neg <- predictionProcessed[modelData$testing[[dataset$outcome]]== outcome_mapping[2, ]$class_remapped] #preds for true negative class
-                        prAUC <- PRROC::pr.curve(preds_pos, preds_neg, curve = TRUE)
+                        cat(paste0("===> INFO: Calculating prAUC START\r\n"))
+                        predPrAUC <- getPrAUC(predictionProcessed, modelData$testing[[dataset$outcome]], dataset, outcome_mapping)
+                        if(predPrAUC$status == TRUE){
+                            prAUC <- predPrAUC$data
+                        }else{
+                            cat(paste0("===> ERROR: Cannot calculate prAUC: ",predPrAUC$data," \r\n"))
+                            error_models <- c(error_models, "Cannot calculate prAUC")
+                        }
 
                     }else if(predictionObject$type == "raw" && !is.null(predictionObject$predictions)){
                         cat(paste0("===> INFO: Calculating getPostResample \r\n"))

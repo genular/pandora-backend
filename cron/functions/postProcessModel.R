@@ -1,3 +1,33 @@
+#' @title  getPrAUC
+#' @description Calculate PRAUC
+#' @param predictionProcessed predictionProcessed
+#' @param responseData modelData$testing[[dataset$outcome]]
+#' @param dataset
+#' @param outcome_mapping
+#' @return list
+getPrAUC <- function(predictionProcessed, responseData, dataset, outcome_mapping) {
+    results <- list(status = FALSE, data = NULL)
+
+    preds_pos <- predictionProcessed[responseData == outcome_mapping[1, ]$class_remapped] #preds for true positive class
+    preds_neg <- predictionProcessed[responseData == outcome_mapping[2, ]$class_remapped] #preds for true negative class
+    
+    input_args <- c(list(scores.class0 = preds_pos, scores.class1 = preds_neg, curve = TRUE))
+
+    process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(PRROC::pr.curve, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+
+    if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
+        results$status <- TRUE
+    }else{
+        if(inherits(results$data, 'try-error')){
+            message <- base::geterrmessage()
+            process.execution$message <- message
+        }
+        results$data <- process.execution$message
+    }
+
+    return(results)
+}
+
 #' @title  getPredictROC
 #' @description Build a ROC curve
 #' @param responseData modelData$testing[[dataset$outcome]]

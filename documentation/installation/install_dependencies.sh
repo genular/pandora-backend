@@ -325,7 +325,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
                 ## Configure R with system java
                 ## Should we also set java home?: 
                 ## https://gist.githubusercontent.com/djangofan/5526565/raw/b6425dba457bdbad63604b571efe85b1b3716dd4/java-setup.sh
-                echo "${yellow}Configuring java to work with R${clear}"
+                echo "${yellow}Configuring JAVA to work with R${clear}"
                 sudo R CMD javareconf
 
                 echo "${green}"
@@ -345,7 +345,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
                 echo ""
                 echo "R Installation failed. Remote R source file does not exist!"
                 echo ""
-                echo "File url: $R_URL"
+                echo "File URL: $R_URL"
                 echo ""
                 echo "================================================================="
                 echo "${clear}"
