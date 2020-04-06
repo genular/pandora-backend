@@ -168,6 +168,7 @@ __EOS__
 	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
 
 	apt-get install locales
+
 	# tzdata
 	echo 'Europe/Amsterdam' > /etc/timezone
 	cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
@@ -197,7 +198,7 @@ __EOS__
 if [ "$FRESH_START" == y ] ; then
 
 	( rootfs_chroot /bin/sh << '__EOS__'
-		curl -sL https://deb.nodesource.com/setup_11.x | bash -
+		curl -sL https://deb.nodesource.com/setup_12.x | bash -
 		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 __EOS__
@@ -240,6 +241,10 @@ echo "Installation of basic dependencies START"
 
 	echo "===> INSTALLATION step: 8"
 	apt-get install git
+
+	## Add support for git2r
+	echo "===> INSTALLATION step: 8.1"
+	apt-get install libgit2-dev
 
 	echo "===> INSTALLATION step: 9"
 	apt-get install mariadb-server mariadb-client
@@ -315,27 +320,46 @@ echo "Installation of advanced dependencies START"
 	apt-get install libxml2-dev unzip zip
 
 	echo "===> INSTALLATION step: 6"
+
+	echo "===========================================> INSTALLATION step: 7"
 	apt-get install php7.3-fpm php7.3-common php7.3-cli
+	echo "===========================================> php7.3-mysql"
 	apt-get install php7.3-mysql
+	echo "===========================================> php7.3-zip"
 	apt-get install php7.3-zip
-	apt-get install php7.3-xml
-	apt-get install php7.3-curl
-	apt-get install php7.3-mbstring
+	echo "===========================================> php-xml php7.3-xml"
+	apt-get install php-xml php7.3-xml
+	echo "===========================================> php7.3-curl"
+	apt-get install php-curl php7.3-curl
+	echo "===========================================> php7.3-mbstring"
+	apt-get install php-mbstring php7.3-mbstring
+	echo "===========================================> php7.3-gmp"
 	apt-get install php7.3-gmp
+	echo "===========================================> php7.3-imagick"
 	apt-get install php7.3-imagick
+	echo "===========================================> php7.3-bcmath"
 	apt-get install php7.3-bcmath
+	echo "===========================================> php7.3-bz2"
 	apt-get install php7.3-bz2
+	echo "===========================================> php7.3-gd"
 	apt-get install php7.3-gd
+	echo "===========================================> php7.3-intl"
 	apt-get install php7.3-intl
+	echo "===========================================> php7.3-json"
 	apt-get install php7.3-json
+	echo "===========================================> php7.3-readline"
 	apt-get install php7.3-readline
-	apt-get install php7.3-xml
+	echo "===========================================> php-dev"
 
 	sudo apt-get install php-dev libmcrypt-dev php-pear
 	sudo pecl channel-update pecl.php.net
 
+	echo "===========================================> libsodium 1"
+	apt-get install libsodium-dev
+	echo "===========================================> libsodium 2"
+	mkdir -p /tmp/pear/cache
 	pecl install -f libsodium
-	pecl install channel://pecl.php.net/mcrypt-1.0.2
+	echo "===========================================> INSTALLATION step: 7 END"
 
 	## Socket location directory
 	mkdir -p "$rootfsDir/run/php"
@@ -349,6 +373,11 @@ echo "Installation of advanced dependencies START"
 
 	mkdir -p "$rootfsDir/var/log/nginx"
 	mkdir -p "$rootfsDir/var/log/mysql"
+
+	## Disable AppArmor 
+	mkdir -p /etc/default/grub.d
+	echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT apparmor=0"' | tee /etc/default/grub.d/apparmor.cfg
+	update-grub
 
 	echo "===> INSTALLATION step: 7"
 	## Create GENULAR mysql USER

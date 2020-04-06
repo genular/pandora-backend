@@ -110,7 +110,7 @@ if [ "${MODS[simon_cron]}" == y ] ; then
     check_blas=$(ldconfig -p | grep openblas)
     if [ -z "$check_blas" ] ; then
         install_dep=n
-        echo "${red}OpenBLAS is missing. OpenBLAS, ATLAS or MKL package or needed. Should we install OpenBLAS now? (y/n) Enter y${clear}";
+        echo "${red}OpenBLAS is probably missing. OpenBLAS, ATLAS or MKL package or needed. Should we try to install OpenBLAS now? (y/n) Enter y${clear}";
         read -e install_dep
         if [ "${install_dep}" == "" ] ; then
             install_dep=y
@@ -126,7 +126,7 @@ if [ "${MODS[simon_cron]}" == y ] ; then
     check_opencv=$(ldconfig -p | grep opencv)
     if [ -z "$check_opencv" ] ; then
         install_dep=n
-        echo "${red}OpenCV is missing. Should we install it now? (y/n) Enter y${clear}";
+        echo "${red}OpenCV is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
         read -e install_dep
         if [ "${install_dep}" == "" ] ; then
             install_dep=y
@@ -142,7 +142,7 @@ if [ "${MODS[simon_cron]}" == y ] ; then
     check_libssl=$(ldconfig -p | grep libssl)
     if [ -z "$check_libssl" ] ; then
         install_dep=n
-        echo "${red}libssl is missing. Should we install it now? (y/n) Enter y${clear}";
+        echo "${red}libssl is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
         read -e install_dep
         if [ "${install_dep}" == "" ] ; then
             install_dep=y
@@ -158,7 +158,7 @@ if [ "${MODS[simon_cron]}" == y ] ; then
     check_libssh=$(ldconfig -p | grep libssh)
     if [ -z "$check_libssh" ] ; then
         install_dep=n
-        echo "${red}libssh is missing. Should we install it now? (y/n) Enter y${clear}";
+        echo "${red}libssh is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
         read -e install_dep
         if [ "${install_dep}" == "" ] ; then
             install_dep=y
@@ -174,7 +174,7 @@ if [ "${MODS[simon_cron]}" == y ] ; then
     check_libmariadbclient=$(ldconfig -p | grep libmariadbclient)
     if [ -z "$check_libmariadbclient" ] ; then
         install_dep=n
-        echo "${red}libmariadbclient is missing. Should we install it now? (y/n) Enter y${clear}";
+        echo "${red}libmariadbclient-dev is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
         read -e install_dep
         if [ "${install_dep}" == "" ] ; then
             install_dep=y
@@ -190,7 +190,7 @@ if [ "${MODS[simon_cron]}" == y ] ; then
     check_libxml2=$(ldconfig -p | grep libxml2)
     if [ -z "$check_libxml2" ] ; then
         install_dep=n
-        echo "${red}libxml2 is missing. Should we install it now? (y/n) Enter y${clear}";
+        echo "${red}libxml2 is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
         read -e install_dep
         if [ "${install_dep}" == "" ] ; then
             install_dep=y
@@ -230,7 +230,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             install_r=y
         fi
     else
-        echo "${yellow}R installation found on system. Do you want to install another R verion? (y/n) Enter n${clear}"
+        echo "${yellow}R installation found on system. Do you want to install another R version? (y/n) Enter n${clear}"
         read -e install_r
         if [ "${install_r}" == "" ] ; then
             install_r=n
@@ -383,7 +383,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     echo ""
 
     if [ "$install_rdep" == y ] ; then
-        echo "${green}=> Installing shared dependencies${clear}"
+        echo "${green}}==========> Installing shared dependencies${clear}"
 
         sudo Rscript -e "install.packages(c('devtools'), repo = 'https://cloud.r-project.org/')"
         ## server/backend/public/assets/datasets/Rdatasets.R
@@ -399,16 +399,16 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         fi
 
         if [ "${MODS[simon_analysis]}" == y ] ; then
-            echo "${green}=> Installing analysis server deps${clear}"
+            echo "${green}==========> Installing ANALYSIS server dependencies${clear}"
             sudo Rscript -e "BiocManager::install('impute', version = '3.8', update = FALSE, ask = FALSE)"
             sudo Rscript -e "install.packages(c('samr'), repos='http://cran.us.r-project.org')"
             # sudo Rscript -e "devtools::install_github('catboost/catboost', subdir = 'catboost/R-package', args=c('--no-multiarch', '--no-test-load'))"
-            sudo Rscript -e "devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.12.1.1/catboost-R-Linux-0.12.1.1.tgz', INSTALL_opts = c('--no-multiarch', '--no-test-load'))"
+            sudo Rscript -e "devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Linux-0.22.tgz', INSTALL_opts = c('--no-multiarch', '--no-test-load'))"
 
         fi
 
         if [ "${MODS[simon_plots]}" == y ] ; then
-            echo "${green}=> Installing plots server deps${clear}"
+            echo "${green}==========> Installing PLOTS server dependencies${clear}"
             ## We need caret package to calculate resamples and display some of the plots in plots API
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
             sudo Rscript -e "devtools::install_github('taiyun/corrplot', build_vignettes = TRUE)"
@@ -421,9 +421,15 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         fi
 
         if [ "${MODS[simon_cron]}" == y ] ; then
-            echo "${green}=> Installing cron server deps${clear}"
+            echo "${green}==========> Installing CRON server dependencies{clear}"
             ## Shared cron deps
             sudo Rscript -e "install.packages(c('doMC'), repos='http://cran.us.r-project.org')"
+
+            ## Try to compile this caret dependencies from github directly
+            sudo Rscript -e "devtools::install_github('cran/gplots')"
+            sudo Rscript -e "devtools::install_github('cran/ROCR')"
+            sudo Rscript -e "devtools::install_github('cran/MLmetrics')"
+
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
 
             ## Classification
@@ -435,7 +441,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "BiocManager::install('logicFS', version = '3.8', update = FALSE, ask = FALSE)"
             sudo Rscript -e "devtools::install_github(c('cran/adaptDA', 'ramhiser/sparsediscrim', 'cran/elmNN', 'cran/FCNN4R', 'rstudio/tensorflow'))"
             
-            echo "${yellow}Trying to install tensorflow${clear}"
+            echo "${yellow}}==========> Trying to install TensorFlow${clear}"
             echo ""
             ## Install tensorflow requirements
             ## Install pip and virtualenv for Python 2 
