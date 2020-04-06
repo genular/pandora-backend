@@ -544,9 +544,6 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
         if [ "$GIT_BACKEND_LOCAL" != n ] ; then
             ## make sure that directory doesn't exist
             if [ ! -d "$GIT_BACKEND_LOCAL" ]; then
-                echo "${yellow}Installing necessarily PHP modules (php-zip, ext-simplexml, ext-curl, ext-mbstring, ext-gmp, ext-libsodium, php-imagick)${clear}"
-                sudo apt-get install unzip php-zip php7.3-xml php-curl php-mbstring php-gmp php-libsodium php-imagick
-
                 git clone --recursive $GIT_BACKEND "$GIT_BACKEND_LOCAL"
                 cd "$GIT_BACKEND_LOCAL" || exit 1
 

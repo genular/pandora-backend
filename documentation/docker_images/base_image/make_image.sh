@@ -1,7 +1,7 @@
 # @Author: LogIN-
 # @Date:   2019-02-26 13:27:17
 # @Last Modified by:   LogIN-
-# @Last Modified time: 2019-03-11 08:16:01
+# @Last Modified time: 2020-04-06 13:55:31
 
 FRESH_START=y
 
@@ -33,7 +33,7 @@ if [ -f "./images/${IMAGE_NAME}_$DATE_TAG.tar" ]; then
 	sudo rm "./images/${IMAGE_NAME}_$DATE_TAG.tar"
 fi
 
-## Build stable debian image currently stretch/Debian 9
+## Build stable debian image currently (stretch/Debian 9) - new stable version (buster/Debian 10)
 build_command="sudo ./debootstrap $ROOT_FS stable $FRESH_START"
 
 echo "Building base docker image: "
