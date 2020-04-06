@@ -299,8 +299,8 @@ echo "Installation of advanced dependencies START"
 
 	apt-get update
 	apt-get install vim
-	## Install basic dependencies needed for SIMON
 
+	## Install basic dependencies needed for SIMON
 	echo "===> INSTALLATION step: 0"
 	apt install build-essential libssl-dev
 
@@ -319,9 +319,7 @@ echo "Installation of advanced dependencies START"
 	echo "===> INSTALLATION step: 5"
 	apt-get install libxml2-dev unzip zip
 
-	echo "===> INSTALLATION step: 6"
-
-	echo "===========================================> INSTALLATION step: 7"
+	echo "===========================================> INSTALLATION step: 6"
 	apt-get install php7.3-fpm php7.3-common php7.3-cli
 	echo "===========================================> php7.3-mysql"
 	apt-get install php7.3-mysql
