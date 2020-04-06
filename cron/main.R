@@ -509,7 +509,8 @@ for (dataset in datasets) {
                             prAUC <- predPrAUC$data
                         }else{
                             cat(paste0("===> ERROR: Cannot calculate prAUC: ",predPrAUC$data," \r\n"))
-                            error_models <- c(error_models, "Cannot calculate prAUC")
+                            ## TODO: Show this as warning and not as error, since if there are any errors in model we cannot make Exploration analysis
+                            ## error_models <- c(error_models, "Cannot calculate prAUC")
                         }
 
                     }else if(predictionObject$type == "raw" && !is.null(predictionObject$predictions)){
