@@ -442,7 +442,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             ## bartMachine dependencies
             sudo Rscript -e "install.packages(c('car', 'missForest'))"
             ## Install plsRglm from github
-            devtools::install_github("fbertran/plsRglm")
+            sudo Rscript -e "devtools::install_github('fbertran/plsRglm')"
 
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
 

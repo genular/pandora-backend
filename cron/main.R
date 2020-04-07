@@ -59,16 +59,19 @@ options(java.parameters=paste0("-Xmx",maximum_memory,"M"))
 globalTimeLimit <- 604800
 setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
 
-cpu_cores <- detectCores(logical = TRUE)
+cpu_cores <- parallel::detectCores(logical=FALSE)
 cpu_cores <- as.numeric(cpu_cores)
 
 ## Set max number of CPU cores to be used.
 ## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
 if(cpu_cores > 5){
     CORES <- cpu_cores - 1
+}else if(cpu_cores < 5 && cpu_cores > 1){
+    CORES <- cpu_cores - 1
 }else{
     CORES <- 1
 }
+
 cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores and ",maximum_memory," MB allocated \r\n"))
 
 queue_start_time <- Sys.time()

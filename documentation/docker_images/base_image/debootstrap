@@ -317,7 +317,7 @@ echo "Installation of advanced dependencies START"
 	apt-get install libmariadbclient-dev
 
 	echo "===> INSTALLATION step: 5"
-	apt-get install libxml2-dev unzip zip
+	apt-get install tk tcl tcl-dev libxml2-dev unzip zip
 
 	echo "===========================================> INSTALLATION step: 6"
 	apt-get install php7.3-fpm php7.3-common php7.3-cli
