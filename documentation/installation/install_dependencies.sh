@@ -386,6 +386,14 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         echo "${green}}==========> Installing shared dependencies${clear}"
 
         sudo Rscript -e "install.packages(c('devtools'), repo = 'https://cloud.r-project.org/')"
+
+        ## For R version 3.5.1
+        if [ "${R_VERSION}" == "3.5.1" ] ; then
+            sudo Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/caTools/caTools_1.17.1.4.tar.gz', repos=NULL, type='source')"
+        else
+            sudo Rscript -e "devtools::install_github('spluque/caTools')"
+        fi
+
         ## server/backend/public/assets/datasets/Rdatasets.R
         sudo Rscript -e "devtools::install_github('trinker/pacman')"
 
@@ -428,7 +436,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             ## Try to compile this caret dependencies from github directly
             sudo Rscript -e "devtools::install_github('cran/gplots')"
             sudo Rscript -e "devtools::install_github('cran/ROCR')"
-            sudo Rscript -e "devtools::install_github('cran/MLmetrics')"
+            sudo Rscript -e "devtools::install_github('yanyachen/MLmetrics')"
 
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
 
