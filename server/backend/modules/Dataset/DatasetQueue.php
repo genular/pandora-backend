@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-18 13:12:00
+ * @Last Modified time: 2020-04-07 13:36:35
  */
 namespace SIMON\Dataset;
 
@@ -312,6 +312,8 @@ class DatasetQueue {
 
 				LEFT JOIN dataset_resamples
 				    ON dataset_queue.id = dataset_resamples.dqid
+				    ## User deselected - 1
+				    AND dataset_resamples.status != 1
 
 				LEFT JOIN models
 				    ON dataset_resamples.id = models.drid

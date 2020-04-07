@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-12-10 10:50:28
+ * @Last Modified time: 2020-04-07 13:29:51
  */
 
 use Slim\Http\Request;
@@ -241,7 +241,14 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 				// If we didn't do multi-set intersection check if some of the columns contain Invalid data
 				if ($submitData["extraction"] === false && count($resamples["info"]["invalidColumns"]) > 0) {
 					foreach ($resamples["info"]["invalidColumns"] as $invalidColumn) {
-						array_push($queue_message, ["msg_info" => "invalid_columns", "data" => $invalidColumn]);
+
+						$originalColumnKey = array_search($invalidColumn, array_column($submitData["selectedFeatures"], 'remapped'));
+						if (isset($submitData["selectedFeatures"][$originalColumnKey])) {
+							$originalColumnName = $submitData["selectedFeatures"][$originalColumnKey]["original"];
+						} else {
+							$originalColumnName = $invalidColumn;
+						}
+						array_push($queue_message, ["msg_info" => "invalid_columns", "data" => $originalColumnName]);
 					}
 					// remove resamples and force user needs to select new columns since some have non  numeric data
 					continue;

@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-03-14 11:38:06
+ * @Last Modified time: 2020-04-07 13:20:23
  */
 namespace SIMON\Dataset;
 
@@ -246,7 +246,8 @@ class DatasetIntersection {
 
 					if (!$isNumeric) {
 						$missingDatapoints++;
-						if (!isset($invalidColumns[$recordID]) && ctype_alpha($recordValue)) {
+
+						if (!isset($invalidColumns[$recordID]) && ctype_alpha($recordValue) || $recordValue === "") {
 							$invalidColumns[$recordID] = true;
 						}
 					}
