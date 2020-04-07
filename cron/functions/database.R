@@ -481,6 +481,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
     if (trainModel$status == TRUE) {
         ## Get only model training time
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
+        cat(paste0("===> INFO: Model training time: ", training_time ," miliseconds \r\n"))
     }
 
     sql <- "INSERT INTO `models`
@@ -511,8 +512,21 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
                 )   ON DUPLICATE KEY UPDATE
                 drid=?drid, mpid=?mpid, status=?status, error=?error, training_time=?training_time, processing_time=?processing_time, updated=NOW();"
 
-    query <- sqlInterpolate(databasePool, sql, drid=resampleID, mpid=model_details$id, status=model_status, 
-        error=toString(errors), training_time=toString(training_time), processing_time=processing_time)
+    if(is.null(training_time)){
+        training_time <- 0
+    }
+
+    if(is.null(processing_time)){
+        processing_time <- 0
+    }
+
+    query <- sqlInterpolate(databasePool, sql, 
+        drid=resampleID, 
+        mpid=model_details$id, 
+        status=model_status, 
+        error=toString(errors), 
+        training_time=toString(training_time), 
+        processing_time=processing_time)
 
     results <- dbExecute(databasePool, query)
     modelID <- NULL
