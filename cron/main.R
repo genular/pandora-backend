@@ -66,10 +66,13 @@ cpu_cores <- as.numeric(cpu_cores)
 ## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
 if(cpu_cores > 5){
     CORES <- cpu_cores - 1
+    cat(paste0("===> INFO: Adding CPU cores (1): ",CORES," \r\n"))
 }else if(cpu_cores < 5 && cpu_cores > 1){
     CORES <- cpu_cores - 1
+    cat(paste0("===> INFO: Adding CPU cores (2): ",CORES," \r\n"))
 }else{
     CORES <- 1
+    cat(paste0("===> INFO: Adding CPU cores (3): ",CORES," \r\n"))
 }
 
 cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores and ",maximum_memory," MB allocated \r\n"))
@@ -647,8 +650,18 @@ if(skipped_datasets >= total_datasets){
 updateDatabaseFiled("dataset_queue", "status", queue_status, "id", serverData$queueID)
 
 cat(paste0("======> INFO: PROCESSING END (",queue_total_time," ms)  \r\n"))
+
 ## Remove PID file
 if(file.exists(UPTIME_PID)){
     cat(paste0("======> INFO: Deleting UPTIME_PID file \r\n"))
     invisible(file.remove(UPTIME_PID))
+}
+
+## Make sure there aren't any cron_analysis child processes from parallel:: package_version still running
+process_list <- is_process_running("cron_analysis")
+## There are no process running delete PID file so cron can continue on next call
+if(length(process_list) > 0){
+    cat(paste0("===> INFO: Found abandoned process, at end of analysis \r\n"))
+    # kill $(ps aux | grep 'cron_analysis' | awk '{print $2}') 
+    kill_process_pids(process_list)
 }
