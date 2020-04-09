@@ -20,7 +20,7 @@ is_process_running <- function(identifier){
 kill_process_pids <- function(process_list){
     if(length(process_list) > 0){
         for(cron_pid in process_list){
-            print(paste0("Killing process SIGKILL: ", cron_pid))
+            print(paste0("==> Killing process SIGKILL: ", cron_pid))
             tools::pskill(as.numeric(cron_pid), signal = 9)
         }
     }

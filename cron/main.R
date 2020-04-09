@@ -628,7 +628,7 @@ for (dataset in datasets) {
         rm(trainModel)
     } ## END caret model/algorithm loop
 
-    cat(paste0("===> INFO: Processing of resample ID: ",dataset$resampleID," end \r\n"))
+    cat(paste0("===> INFO: Processing of resample ID: ",dataset$resampleID," END \r\n"))
 
     resample_total_time <- calculateTimeDifference(resample_time_start, unit = "ms")
     incrementDatabaseFiled("dataset_resamples", "processing_time", resample_total_time, "id", dataset$resampleID)
@@ -659,9 +659,11 @@ if(file.exists(UPTIME_PID)){
 
 ## Make sure there aren't any cron_analysis child processes from parallel:: package_version still running
 process_list <- is_process_running("cron_analysis")
-## There are no process running delete PID file so cron can continue on next call
+## If there are process still running
 if(length(process_list) > 0){
     cat(paste0("===> INFO: Found abandoned process, at end of analysis \r\n"))
     # kill $(ps aux | grep 'cron_analysis' | awk '{print $2}') 
     kill_process_pids(process_list)
 }
+
+cat(paste0("======> DONE \r\n"))
