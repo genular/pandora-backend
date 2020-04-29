@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-04-07 13:29:51
+ * @Last Modified time: 2020-04-29 12:29:09
  */
 
 use Slim\Http\Request;
@@ -353,6 +353,7 @@ $app->post('/backend/system/simon/dataset-queue', function (Request $request, Re
 	}
 
 	if (isset($submitData['resamples'])) {
+
 		// 1. Activate or deactivate each resample
 		foreach ($submitData['resamples'] as $resamples) {
 			foreach ($resamples['data'] as $resample) {
