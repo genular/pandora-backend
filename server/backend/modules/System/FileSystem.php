@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-18 10:43:54
+ * @Last Modified time: 2020-04-29 12:49:24
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -103,6 +103,8 @@ class FileSystem {
 				],
 				'region' => $this->Config->get('default.storage.s3.region'),
 				'version' => 'latest',
+				// https://github.com/aws/aws-sdk-php/issues/1915
+				'retries' => 0,
 				'endpoint' => "https://" . $this->Config->get('default.storage.s3.region') . "." . $this->Config->get('default.storage.s3.endpoint'),
 			]);
 			$adapter = new AwsS3Adapter($this->client, $this->Config->get('default.storage.s3.bucket'));
