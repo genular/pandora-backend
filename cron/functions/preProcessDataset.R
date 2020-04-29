@@ -74,7 +74,7 @@ preProcessDataset <- function(dataset) {
         remap_count <- remap_count + 1
     }
 
-    ## Extract all non numeric columns and convert them to numbers
+    ## Extract all non numeric column values and convert them to numeric
     non_numeric_column_ids <- unlist(lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , is.numeric))  
     non_numeric_column_names <- colnames(datasetData)[!non_numeric_column_ids]
 
@@ -170,6 +170,10 @@ preProcessDataset <- function(dataset) {
     ## Coerce data to a standard data.frame
     data$training <- as.data.frame(data$training)
     data$testing <- as.data.frame(data$testing)
+
+    ## Maintain order of outcome classes for different hard-coded performance calculations
+    data$training <- data$training[order(data$training[[dataset$outcome]]), ]
+    data$testing <- data$testing[order(data$testing[[dataset$outcome]]), ]
 
     ## Calculate dataset proportions
     datasetProportions(dataset$resampleID, dataset$outcome, dataset$classes, data)

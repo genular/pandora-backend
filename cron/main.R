@@ -64,14 +64,11 @@ cpu_cores <- as.numeric(cpu_cores)
 
 ## Set max number of CPU cores to be used.
 ## Note: if the underlying model also uses foreach, the## number of cores specified above will double (along with## the memory requirements)
-if(cpu_cores > 5){
+if(cpu_cores > 1 && cpu_cores <= 5){
     CORES <- cpu_cores - 1
     cat(paste0("===> INFO: Adding CPU cores (1): ",CORES," \r\n"))
-}else if(cpu_cores < 5 && cpu_cores > 1){
-    CORES <- cpu_cores - 1
-    cat(paste0("===> INFO: Adding CPU cores (2): ",CORES," \r\n"))
 }else{
-    CORES <- 1
+    CORES <- cpu_cores
     cat(paste0("===> INFO: Adding CPU cores (3): ",CORES," \r\n"))
 }
 
