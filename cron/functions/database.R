@@ -29,10 +29,17 @@ getProcessingEntries <- function(){
 #' @param performanceVariables 
 #' @return data-frame
 getPerformanceVariable <- function(variableValue, performanceVariables){
-    details <- performanceVariables[performanceVariables$value %in% variableValue,]
+    ## details <- performanceVariables[performanceVariables$value %in% variableValue,]
+    details <- performanceVariables %>% filter(value %in% variableValue)
+
     ## If performance variable is not already known, create a new one
     if(nrow(details) == 0){
-        pvID <- createPerformanceVariable(variableValue)
+        cat(paste0("===> WARNING: Creating new performance variable since we cannot find it: ",paste(variableValue, sep = ",", collapse = NULL)," \r\n"))
+
+        for(vv in variableValue) { 
+            pvID <- createPerformanceVariable(vv)
+        }
+
         performanceVariables <- getAllPerformanceVariables()
     }
 
@@ -554,7 +561,8 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
                 for(value in preferencies[[pref]]){
                     ## value <- round(as.numeric(value), 4)
                     performanceVariables <- getPerformanceVariable(pref, performanceVariables)
-                    pvDetails <- performanceVariables[performanceVariables$value %in% pref,]
+                    pvDetails <- performanceVariables %>% filter(value == pref)
+
                     query <- c(query, sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, value))
                 }
             }
@@ -565,23 +573,28 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         if(!is.null(predConfusionMatrix)){
             confmatrix_data <- c(predConfusionMatrix$overall, predConfusionMatrix$byClass)
             confmatrix_data <- data.frame(prefName=names(confmatrix_data), prefValue=confmatrix_data, row.names=NULL)
+
       
             performanceVariables <- getPerformanceVariable(confmatrix_data$prefName, performanceVariables)
-            pvDetails <- performanceVariables[performanceVariables$value %in% confmatrix_data$prefName,]
+            pvDetails <- performanceVariables %>% filter(value %in% confmatrix_data$prefName)
 
             query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, confmatrix_data$prefValue), collapse = ",")
+
+            print(query)
+            
             prefQuery <- paste(c(prefQuery, query), collapse = ",")
 
             ## Insert Positive control
             performanceVariables <- getPerformanceVariable("PositiveControl", performanceVariables)
-            pvDetails <- performanceVariables[performanceVariables$value %in% "PositiveControl",]
+            pvDetails <- performanceVariables %>% filter(value == "PositiveControl")
+
             prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predConfusionMatrix$positive,"', NOW())")), collapse = ",")
         }
 
         ## Insert Testing pAUC
         if(!is.null(predAUC) & !is.null(predAUC$auc)){
             performanceVariables <- getPerformanceVariable("PredictAUC", performanceVariables)
-            pvDetails <- performanceVariables[performanceVariables$value %in% "PredictAUC",]
+            pvDetails <- performanceVariables %>% filter(value == "PredictAUC")
 
             prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predAUC$auc,"', NOW())")), collapse = ",")
         }
@@ -589,7 +602,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         ## Insert Testing prAUC
         if(!is.null(prAUC) & !is.null(prAUC$auc.integral)){
             performanceVariables <- getPerformanceVariable("prAUC", performanceVariables)
-            pvDetails <- performanceVariables[performanceVariables$value %in% "prAUC",]
+            pvDetails <- performanceVariables %>% filter(value == "prAUC")
 
             prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",prAUC$auc.integral,"', NOW())")), collapse = ",")
         }
@@ -599,7 +612,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
             postResampleData <- data.frame(prefName=names(predPostResample), prefValue=predPostResample, row.names=NULL)
 
             performanceVariables <- getPerformanceVariable(postResampleData$prefName, performanceVariables)
-            pvDetails <- performanceVariables[performanceVariables$value %in% postResampleData$prefName,]
+            pvDetails <- performanceVariables %>% filter(value %in% postResampleData$prefName)
 
             query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, postResampleData$prefValue), collapse = ",")
             prefQuery <- paste(c(prefQuery, query), collapse = ",")

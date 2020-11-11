@@ -40,6 +40,7 @@ source("server/includes/header.R")
 p_load(doMC)
 p_load(caret)
 p_load(ggplot2)
+p_load(dplyr)
 
 source("cron/functions/database.R")
 source("cron/functions/helpers.R")
@@ -204,10 +205,7 @@ datasets <- generateData(serverData)
 total_datasets <- length(datasets)
 skipped_datasets <- 0
 
-performanceVariables <- NULL
-
 if(total_datasets > 0){
-    performanceVariables <- getAllPerformanceVariables()
     ## At this stage status of the queue should be changed to 4 - Processing
     queue_status <- 4
     updateDatabaseFiled("dataset_queue", "status", queue_status, "id", serverData$queueID)
@@ -542,7 +540,10 @@ for (dataset in datasets) {
         ## If we are here we must have something
         # 1. everything is okay length(error_models) == 0
         # 2. something failed length(error_models) > 0
-        
+
+        ## Refresh the list of exist performance variables from database
+        performanceVariables <- getAllPerformanceVariables()
+
         ## Save failed model so we don't process it again
         methodDetails <- db.apps.simon.saveMethodAnalysisData(
                                                                 dataset$resampleID, 
@@ -556,6 +557,7 @@ for (dataset in datasets) {
                                                                 error_models,
                                                                 model_time_start
                                                             )
+
 
         if(trainModel$status == TRUE){
             if(!is.null(trainingVariableImportance)){
@@ -574,7 +576,8 @@ for (dataset in datasets) {
                     data = modelData,
                     outcome = dataset$outcome,
                     outcome_mapping = outcome_mapping,
-                    model_details = model_details
+                    model_details = model_details,
+                    db_method_details = methodDetails
                 ),
                 ## Model FIT
                 training = list(
