@@ -34,7 +34,7 @@ getPerformanceVariable <- function(variableValue, performanceVariables){
 
     ## If performance variable is not already known, create a new one
     if(nrow(details) == 0){
-        cat(paste0("===> WARNING: Creating new performance variable since we cannot find it: ",paste(variableValue, sep = ",", collapse = NULL)," \r\n"))
+        cat(paste0("===> WARNING: Creating new performance variables since we cannot find it: ",paste(variableValue, sep = ",", collapse = NULL)," \r\n"))
 
         for(vv in variableValue) { 
             pvID <- createPerformanceVariable(vv)
@@ -575,13 +575,10 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
             confmatrix_data <- data.frame(prefName=names(confmatrix_data), prefValue=confmatrix_data, row.names=NULL)
 
       
-            performanceVariables <- getPerformanceVariable(confmatrix_data$prefName, performanceVariables)
-            pvDetails <- performanceVariables %>% filter(value %in% confmatrix_data$prefName)
+            performanceVariables <- getPerformanceVariable(confmatrix_data$prefName, performanceVariables)  
+            merged_values <- base::merge(confmatrix_data, performanceVariables, by.x = "prefName", by.y = "value", all.x = TRUE)
 
-            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, confmatrix_data$prefValue), collapse = ",")
-
-            print(query)
-            
+            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, merged_values$id, merged_values$prefValue), collapse = ",")
             prefQuery <- paste(c(prefQuery, query), collapse = ",")
 
             ## Insert Positive control
@@ -612,9 +609,10 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
             postResampleData <- data.frame(prefName=names(predPostResample), prefValue=predPostResample, row.names=NULL)
 
             performanceVariables <- getPerformanceVariable(postResampleData$prefName, performanceVariables)
-            pvDetails <- performanceVariables %>% filter(value %in% postResampleData$prefName)
+            merged_values <- base::merge(postResampleData, performanceVariables, by.x = "prefName", by.y = "value", all.x = TRUE)
 
-            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, postResampleData$prefValue), collapse = ",")
+
+            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, merged_values$id, merged_values$prefValue), collapse = ",")
             prefQuery <- paste(c(prefQuery, query), collapse = ",")
         }
         ## When everything is ready insert data
