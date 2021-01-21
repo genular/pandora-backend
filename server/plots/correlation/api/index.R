@@ -46,7 +46,8 @@ simon$handle$plots$correlation$renderOptions <- expression(
 simon$handle$plots$correlation$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
-        results <- list(status = FALSE, data = NULL, image = NULL)
+        results <- list(status = FALSE, data = NULL, image = NULL, image_png = NULL)
+
         plotUniqueHash <- ""
 
         resampleID <- 0
@@ -67,10 +68,16 @@ simon$handle$plots$correlation$renderPlot <- expression(
         cachedFile <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plotUniqueHash, ".*\\.svg"))
         ## Check if some files where found in tmpdir that match our unique hash
         if(identical(cachedFile, character(0)) == FALSE){
-            if(file.exists(cachedFile)){
-                results$status <- TRUE
+            if(file.exists(cachedFile) == TRUE){
+                results$status <- TRUE                
                 results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
-                return(list(status = results$status, image = results$image))
+
+                cachedFile_png <- stringr::str_replace(cachedFile, ".svg", ".png")
+                if(file.exists(cachedFile_png) == TRUE){
+                    results$image_png = as.character(RCurl::base64Encode(readBin(cachedFile_png, "raw", n = file.info(cachedFile_png)$size), "txt"))
+                }
+
+                return(list(status = results$status, image = results$image, image_png = results$image_png))
             }
         }
 
@@ -137,11 +144,19 @@ simon$handle$plots$correlation$renderPlot <- expression(
         dev.off()
 
         ## Optimize SVG using svgo package
-        system(paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path), intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-        results$image =  as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+
+
+        svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
+        results$image = as.character(RCurl::base64Encode(svg_data, "txt"))
+        results$image_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+
         results$status <- TRUE
 
-        return (list(status = results$status, image = results$image))
+        return (list(status = results$status, image = results$image, image_png = results$image_png))
     }
 )

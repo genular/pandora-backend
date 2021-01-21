@@ -4,7 +4,7 @@ default:
         email: PLACEHOLDER # Example: "support@genular.com"
     # Please generate 8 character random alphanumeric string, this is used for encryption purposes (database, files)
     salt: PLACEHOLDER
-    # Please generate 16 character random alphanumeric string, this is used in some ajax/http communications
+    # Please generate 64 character random alphanumeric string, this is used in some ajax/http communications
     # Plase make sure to have same secret defined on front end in config/env_*.json
     secret: PLACEHOLDER
     # API of your sendgrid account, for sending emails

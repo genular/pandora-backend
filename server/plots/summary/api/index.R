@@ -5,7 +5,9 @@ simon$handle$plots$summary$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
-        data <- list( boxplot = NULL, rocplot = NULL, info = list(summary = NULL, differences = NULL))
+        data <- list(boxplot = NULL, rocplot = NULL, boxplot_png = NULL, rocplot_png = NULL, info = list(summary = NULL, differences = NULL))
+
+
         plotUniqueHash <- ""
 
         resampleID <- 0
@@ -61,9 +63,9 @@ simon$handle$plots$summary$renderPlot <- expression(
                                      levels = avPerf$Model)
 
 
-            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
+            tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
             tempdir(check = TRUE)
-            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
                 
                 plot <- ggplot(plotData, aes(x=Model, y=value, fill=Model)) +
                             geom_boxplot(position=position_dodge(1), colour = "#000000", lwd=0.25) +
@@ -71,9 +73,17 @@ simon$handle$plots$summary$renderPlot <- expression(
                             scale_color_brewer(palette="Set1") + 
                             facet_wrap(~Metric, scales="free")
                 print(plot)
-
             dev.off()
-            data$boxplot <- toString(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
+
+
+            ## Optimize SVG using svgo package
+            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+            data$boxplot <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+            data$boxplot_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
 
             ## 2. SUMMARY
             data$info$summary <- R.utils::captureOutput(summary(resamps))
@@ -85,9 +95,9 @@ simon$handle$plots$summary$renderPlot <- expression(
             data$info$differences <- toString(RCurl::base64Encode(data$info$differences, "txt"))
            
             ## 4. ROC_AUC_PLOT
-            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
+            tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
             tempdir(check = TRUE)
-            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
                 plot <- ggplot(modelPredictionData, aes(m=B, d=factor(obs, levels = c("A", "B")), fill = method, color = method)) + 
                     geom_roc(hjust = -0.4, vjust = 1.5, linealpha = 1, increasing = TRUE) + 
@@ -103,8 +113,17 @@ simon$handle$plots$summary$renderPlot <- expression(
 
                 print(plot)
 
-            dev.off()
-            data$rocplot <- toString(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
+            dev.off() 
+
+
+            ## Optimize SVG using svgo package
+            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+            data$rocplot <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+            data$rocplot_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
         }
 
         return (list(success = TRUE, message = data))

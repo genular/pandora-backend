@@ -1,6 +1,5 @@
-library(plumber)
 source("server/includes/header.R")
-
+p_load(plumber)
 
 source(paste0("server/",SERVER_NAME,"/correlation/main.R"))
 source(paste0("server/",SERVER_NAME,"/heatmap/main.R"))
@@ -10,12 +9,12 @@ source(paste0("server/",SERVER_NAME,"/summary/main.R"))
 
 deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     if(!requireNamespace("plumber", quietly = TRUE)) {
-        stop('plumber (>= 0.3.0) is required for this function to work!')
+        stop('plumber (>= 1.0.0) is required for this function to work!')
     }
     cookie_name <- paste0("simon_", SERVER_NAME)
 
     router <- plumber::plumber$new()
-    router$registerHooks(sessionCookie(simonConfig$secret, name=cookie_name, path="/", expiration=Sys.time() + (20 * 365 * 24 * 60 * 60)))
+    router$registerHooks(session_cookie(simonConfig$secret, name=cookie_name, expiration=Sys.time() + (20 * 365 * 24 * 60 * 60)))
 
     router$filter("logger", simon$filter$logger)
     router$filter("cors", simon$filter$cors)

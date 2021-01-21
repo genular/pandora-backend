@@ -4,7 +4,7 @@
 simon$handle$plots$variableImportance$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
-        results <- list(status = TRUE, data = NULL, image = NULL)
+        results <- list(status = TRUE, data = NULL, image = NULL, image_png = NULL)
         plotUniqueHash <- ""
 
         resampleID <- 0
@@ -48,18 +48,28 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
 
         tmp_dir <- tempdir(check = TRUE)
         cachedFile <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plotUniqueHash, ".*\\.svg"))
+        if(length(cachedFile) > 1){
+            cachedFile <- cachedFile[1]
+        }
         ## Check if some files where found in tmpdir that match our unique hash
         if(identical(cachedFile, character(0)) == FALSE){
-            if(file.exists(cachedFile)){
-                results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
-                # return(list(status = results$status, image = results$image))
+            if(file.exists(cachedFile) == TRUE){
+                raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                encoded_file <- RCurl::base64Encode(raw_file, "txt")
+                results$image = as.character(encoded_file)
+
+                cachedFile_png <- stringr::str_replace(cachedFile, ".svg", ".png")
+                if(file.exists(cachedFile_png) == TRUE){
+                    results$image_png = as.character(RCurl::base64Encode(readBin(cachedFile_png, "raw", n = file.info(cachedFile_png)$size), "txt"))
+                }
+
+                return(list(status = results$status, image = results$image, image_png = results$image_png))
             }
         }
 
         ## 1st - Get JOB and his Info from database
         resampleDetails <- db.apps.getFeatureSetData(resampleID)
         ## save(resampleDetails, file = "/tmp/testing.rds")
-
         resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
         data <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
 
@@ -71,7 +81,8 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
 
         # Modify the default image size.
         tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
-        svg(tmp_path, height = 8, width = 8 * settings$aspect_ratio,  pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        svg(tmp_path, height = 12, width = 12 * settings$aspect_ratio,  pointsize = 24, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+
         theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
         results$data <- ggplot(data, aes_string(x = resampleDetails[[1]]$outcome$remapped, fill = resampleDetails[[1]]$outcome$remapped, y = "value")) +
@@ -92,10 +103,16 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         dev.off()
 
         ## Optimize SVG using svgo package
-        system(paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path), intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-        results$image = as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
-        return(list(status = results$status, image = results$image))
+        svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
+        results$image = as.character(RCurl::base64Encode(svg_data, "txt"))
+        results$image_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+
+        return(list(status = results$status, image = results$image, image_png = results$image_png))
     }
 )
 
