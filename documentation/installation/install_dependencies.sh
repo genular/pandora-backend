@@ -547,7 +547,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
     echo ""
 
     ## Needed for rsvg-convert: svg => png
-    apt-get install libxml2-dev
+    apt-get install libxml2-dev librsvg2-bin
 
     if [ "$clone_backend" == y ] ; then
         echo "${yellow}Please enter path to backend root directory? (path/n) Enter default${clear}"
