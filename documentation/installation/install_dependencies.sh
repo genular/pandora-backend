@@ -270,11 +270,11 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
 
         # accept the name of our website
-        echo "${yellow}R Version (eg. 3.5.1/n) Enter 3.5.1${clear}"
+        echo "${yellow}R Version (eg. 3.6.3/n) Enter 3.6.3${clear}"
         read -e R_VERSION
 
         if [ "${R_VERSION}" == "" ] ; then
-            R_VERSION="3.5.1"
+            R_VERSION="3.6.3"
         fi
 
         echo ""
