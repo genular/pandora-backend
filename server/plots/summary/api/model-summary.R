@@ -5,95 +5,95 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
-        ## https://shirinsplayground.netlify.com/2018/07/explaining_ml_models_code_caret_iml/
+        data <- list(histogram = NULL, histogram_png = NULL, density = NULL, density_png = NULL, boxplot = NULL, boxplot_png = NULL)
 
 
-        options(width = 360)
-
-        data <- list( boxplot = NULL, rocplot = NULL, info = list(summary = NULL, differences = NULL))
+        plotUniqueHash <- ""
 
         resampleID <- 0
         if("resampleID" %in% names(args)){
             resampleID <- as.numeric(args$resampleID)
+            plotUniqueHash <- paste0(plotUniqueHash, resampleID)
         }
         modelsIDs <- NULL
         if("modelsIDs" %in% names(args)){
             modelsIDs <- jsonlite::fromJSON(args$modelsIDs)
+            plotUniqueHash <- paste0(plotUniqueHash, args$modelsIDs)
         }
+
+        plotUniqueHash <-  digest::digest(plotUniqueHash, algo="md5", serialize=F)
+
         ## 1st - Get all saved models for selected IDs
         modelsDetails <- db.apps.getModelsDetailsData(modelsIDs)
 
-        modelsResampleData = list()
-        modelsDetailsData = list()
+        data <- NULL
+        outcome_column <- NULL
+
         for(i in 1:nrow(modelsDetails)) {
             model <- modelsDetails[i,]
             modelPath <- downloadDataset(model$remotePathMain)    
             modelData <- loadRObject(modelPath)
 
-            if (modelData$training$raw$status == TRUE) {
-                modelsResampleData[[model$modelInternalID]] = modelData$training$raw$data
-                modelsDetailsData[[model$modelInternalID]] <- list(
-                        method = model$modelInternalID,
-                        ROC = modelData$predictions$AUROC
-                    )
-            }
+            data <- modelData$info$data
+            ## training, testing
+            outcome_column <- modelData$info$outcome
         }
 
-        if(length(modelsResampleData) > 1){
-            resamps <- caret::resamples(modelsResampleData)
 
-            total_models <- length(modelsDetailsData)
-            all_models <- as.character(total_models)
-            colors <- RColorBrewer::brewer.pal(total_models, "Set1")
-            my.settings <- list(
-                strip.background=list(col=colors[6]),
-                strip.border=list(col="transparent")
-            )
+        ## 1. Histogram and density plots with multiple groups
+        ## 1.1 Overlaid histograms
+        tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
+        tempdir(check = TRUE)
+        svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            plot <- ggplot(dat, aes(x=rating, fill=cond)) +
+                        geom_histogram(binwidth=.5, alpha=.5, position="identity")
+            print(plot)
+        dev.off()
 
-            ## 1. BOX PLOT
-            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
-            tempdir(check = TRUE)
-            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-                plot <- lattice::bwplot(resamps, metric = c("Accuracy", "Sensitivity", "Specificity", "F1", "Recall", "AUC"), scales = list(x = list(relation="free")), par.settings = my.settings)
-                print(plot)
-            dev.off()
-            data$boxplot <- toString(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
+        ## Optimize SVG using svgo package
+        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-            ## 2. SUMMARY
-            data$info$summary <- R.utils::captureOutput(summary(resamps))
-            data$info$summary <- paste(data$info$summary, collapse="\n")
-            data$info$summary <- toString(RCurl::base64Encode(data$info$summary, "txt"))
+        data$histogram <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+        data$histogram_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
 
-            data$info$differences <- R.utils::captureOutput(summary(diff(resamps)))
-            data$info$differences <- paste(data$info$differences, collapse="\n")
-            data$info$differences <- toString(RCurl::base64Encode(data$info$differences, "txt"))
-           
-            ## 4. ROC_AUC_PLOT
-            tmp <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = "")
-            tempdir(check = TRUE)
-            svg(tmp, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-                i = 1;
-                for(model in modelsDetailsData){
-                    all_models[i] <- model$method
-                    plotData <- model$ROC$roc
-                    if(i == 1){
-                        plot(plotData, type = "S", col=colors[i])
-                    }else{
-                        plot(plotData, type = "S", col=colors[i])
-                    }
-                    if(i < total_models){
-                        par(new=TRUE)
-                    }
-                    
-                    i <- i + 1
-                }
-                legend("bottomright", inset=.05, title="Classifiers", all_models, fill=colors, horiz=TRUE)
-            dev.off()
-            data$rocplot <- toString(RCurl::base64Encode(readBin(tmp, "raw", n = file.info(tmp)$size), "txt"))
-        }
+        ## 1.2 Density plots
+        tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
+        tempdir(check = TRUE)
+        svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            plot <- ggplot(dat, aes(x=rating, colour=cond)) + geom_density()
+            print(plot)
+        dev.off()
 
+        ## Optimize SVG using svgo package
+        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+        data$density <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+        data$density_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+
+        ## 1.3 Boxplot
+        tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
+        tempdir(check = TRUE)
+        svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+            plot <- ggplot(dat, aes(x=cond, y=rating, fill=cond)) + geom_boxplot()
+            print(plot)
+        dev.off()
+
+        ## Optimize SVG using svgo package
+        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+        data$boxplot <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+        data$boxplot_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+
+    
         return (list(success = TRUE, message = data))
     }
 )
-
-

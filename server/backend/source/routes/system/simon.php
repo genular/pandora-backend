@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-04-29 12:29:09
+ * @Last Modified time: 2021-01-27 13:41:57
  */
 
 use Slim\Http\Request;
@@ -23,7 +23,7 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
 	$ModelsPackages = $this->get('SIMON\Models\ModelsPackages');
 	$avaliablePackages = $ModelsPackages->getPackages();
 
-	$preselectedPackages = ["naive_bayes", "hdda", "pcaNNet", "LogitBoost", "svmLinear2"];
+	$preselectedPackages = []; // ["naive_bayes", "hdda", "pcaNNet", "LogitBoost", "svmLinear2"];
 
 	$packages = array_map(function ($package) use ($preselectedPackages) {
 		if (in_array($package['internal_id'], $preselectedPackages)) {
@@ -32,11 +32,11 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
 			$package['preselected'] = 0;
 		}
 
-		if ($package['classification'] === false) {
-			$package['disabled'] = true;
-		} else {
-			$package['disabled'] = false;
-		}
+		// if ($package['classification'] === false) {
+		// 	$package['disabled'] = true;
+		// } else {
+		$package['disabled'] = true;
+		// }
 		return $package;
 
 	}, $avaliablePackages

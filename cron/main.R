@@ -496,6 +496,7 @@ for (dataset in datasets) {
                     cat(paste0("===> INFO: Trying to calculate pROC/pAUC, postResample \r\n"))
                     if(predictionObject$type == "prob" && !is.null(predictionObject$predictions)){
                         cat(paste0("===> INFO: Calculating pROC, pAUC \r\n"))
+
                         predROC <- getPredictROC(modelData$testing[[dataset$outcome]], predictionObject$predictions[, outcome_mapping[1, ]$class_remapped], model_details)
 
                         if(predROC$status == TRUE){
@@ -503,7 +504,7 @@ for (dataset in datasets) {
                             ## 
                         }else{
                             cat(paste0("===> ERROR: Cannot calculate getPredictROC \r\n"))
-                            error_models <- c(error_models, "Cannot calculate getPredictROC")
+                            error_models <- c(error_models, paste0("Cannot calculate getPredictROC", predROC$data))
                         }
                         cat(paste0("===> INFO: Calculating prAUC START\r\n"))
                         predPrAUC <- getPrAUC(predictionProcessed, modelData$testing[[dataset$outcome]], dataset, outcome_mapping)
@@ -574,10 +575,14 @@ for (dataset in datasets) {
                     problemType = problemType,
                     ## Lets put this here just because convenience
                     data = modelData,
+                    ## String name of outcome column
                     outcome = dataset$outcome,
+                    ## Mapping for outcome classes
                     outcome_mapping = outcome_mapping,
                     model_details = model_details,
-                    db_method_details = methodDetails
+                    db_method_details = methodDetails,
+                    ## Data from getProcessingEntries()
+                    dataset_queue_options = serverData$selectedOptions
                 ),
                 ## Model FIT
                 training = list(

@@ -4,11 +4,24 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-05 09:38:11
+ * @Last Modified time: 2021-01-26 14:48:48
  */
 namespace SIMON\Helpers;
+use \Monolog\Logger;
 
 class Helpers {
+
+	protected $logger;
+
+	public function __construct(
+		Logger $logger
+	) {
+
+		$this->logger = $logger;
+		// Log anything.
+		$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers constructed");
+	}
+
 	/**
 	 * [castArrayValues description]
 	 * @param  [type] $input [description]
@@ -222,6 +235,26 @@ class Helpers {
 				$arr[0] = $headerReplacedCSV;
 				// write back to file
 				file_put_contents($filePath, implode($arr));
+
+				// Get stats about columns
+				$pandas_command = <<<EOFC
+pn_cmd=`cat <<EOF
+import pandas as pd\n
+df = pd.read_csv('{$filePath}')\n
+print(df.nunique().to_json())\n
+EOF`\n
+python -c "\$pn_cmd"
+EOFC;
+				$pandas_output = shell_exec($pandas_command);
+				$pandas_output = json_decode(trim($pandas_output), true);
+
+				foreach ($data['details']["header"]["formatted"] as $itemKey => $itemValue) {
+					if (isset($pandas_output[$itemValue["remapped"]])) {
+						$itemValue["unique_count"] = $pandas_output[$itemValue["remapped"]];
+						$data['details']["header"]["formatted"][$itemKey] = $itemValue;
+					}
+				}
+
 			} else {
 				array_push($data['message'], "delimiters_check");
 			}

@@ -44,17 +44,18 @@ preProcessDataset <- function(dataset) {
     rm(glabalDataset)
 
     outcome_unique <- unique(datasetData[[dataset$outcome]])
+    outcome_unique_count <- length(outcome_unique)
 
-    if(length(outcome_unique) > 2 || length(outcome_unique) < 2){
-        cat(paste0("===> ERROR: Only two unique outcome classes are currently supported. You have: ", length(outcome_unique), "\r\n"))
+    if(outcome_unique_count < 2 || outcome_unique_count > 702){
+        cat(paste0("===> ERROR: You have: ", outcome_unique_count, " outcome class. You should have anything between 2-702 including 2 and 702.\r\n"))
         print(outcome_unique)
         updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
-        appendDatabaseFiled("dataset_resamples", "error", paste0("Incorrect number of outcome levels in main dataset: ", length(outcome_unique)), "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", paste0("Incorrect number of outcome class levels in main dataset: ", outcome_unique_count), "id", dataset$resampleID)
         return(FALSE)
     }
 
     ## Remap outcome classes with A & B values
-    mappings <- matrix(ncol=4, nrow=length(outcome_unique))
+    mappings <- matrix(ncol=4, nrow=outcome_unique_count)
 
     ## Generate letters: LIMIT: 702 letters
     outcome_remapping <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
@@ -90,10 +91,18 @@ preProcessDataset <- function(dataset) {
             datasetData[[column_name]] <- as.character(datasetData[[column_name]])
 
             remap_count <- 1
+            ##   class_column class_type class_original class_remapped
+            ## 1      column0          2       cyclists              A
+            ## 2      column0          2   noncyclists               B
+            ## 3      column0          2 wannabecyclist              C
             for(column_item in column_unique){
+                ## class_column
                 mappings[m_count, ][1] <- column_name
+                ## class_type
                 mappings[m_count, ][2] <- 2
+                ## class_original
                 mappings[m_count, ][3] <- column_item
+                ## class_remapped
                 mappings[m_count, ][4] <- column_remapping[remap_count]
 
                 datasetData[[column_name]][datasetData[[column_name]] == column_item] <- column_remapping[remap_count]
@@ -111,8 +120,9 @@ preProcessDataset <- function(dataset) {
                         (`id`, `dqid`, `drid`, `class_column`, `class_type`, `class_original`, `class_remapped`, `created`) 
                     VALUES", paste(sprintf("(NULL, '%s', '%s', '%s', '%s', '%s', '%s', NOW())", dataset$queueID, dataset$resampleID,
         mappings$class_column, mappings$class_type, mappings$class_original, mappings$class_remapped), collapse = ","))
-   results <- dbExecute(databasePool, query)
-   rm(mappings)
+
+    results <- dbExecute(databasePool, query)
+    rm(mappings)
 
     ## Maintain outcome as factors
     datasetData[[dataset$outcome]] <- as.factor(datasetData[[dataset$outcome]])

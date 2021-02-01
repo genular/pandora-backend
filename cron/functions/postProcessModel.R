@@ -38,7 +38,14 @@ getPredictROC <- function(responseData, predictionsData, model_details) {
     results <- list(status = FALSE, data = NULL)
     input_args <- c(list(response = responseData, predictor = predictionsData, levels = levels(responseData), direction = ">"))
 
-    process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(pROC::roc, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+    if(nlevels(responseData) < 3){
+        process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(pROC::roc, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )    
+    }else{
+        ## This function builds builds multiple ROC curve to compute the multi-class AUC as defined by Hand and Till.
+        process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(pROC::multiclass.roc, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+    }
+    
+
     if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
         results$status <- TRUE
     }else{

@@ -11,13 +11,13 @@ getProcessingEntries <- function(){
     # 3 - Marked for processing
     # 4 - Processing
     # 8 - User resumes
-    query <- "SELECT id, uid, packages  FROM dataset_queue WHERE status IN(1,3,4,8) ORDER BY id ASC LIMIT 1"
+    query <- "SELECT id, uid, packages, selectedOptions  FROM dataset_queue WHERE status IN(1,3,4,8) ORDER BY id ASC LIMIT 1"
     
     results <- dbGetQuery(databasePool, query)
 
     if(nrow(results) > 0){
         packages <- as.numeric(jsonlite::fromJSON(results[1, ]$packages)$packageID)
-        queue <- list("queueID" = results[1, ]$id, "internalServerID" = 0, "packages" = packages, "initialization_time" = NULL )
+        queue <- list("queueID" = results[1, ]$id, "internalServerID" = 0, "packages" = packages, "initialization_time" = NULL, "selectedOptions" = jsonlite::fromJSON(results[1, ]$selectedOptions) )
     }
 
     return(queue)

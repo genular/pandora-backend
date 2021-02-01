@@ -375,7 +375,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     # -----------------------------------------------------------------------------
     # => Install R packages
     # -----------------------------------------------------------------------------
-    echo "${yellow}Do you want to install main SIMON R dependencies? (y/n) Enter y${clear}"
+    echo "${yellow}Do you want to install main SIMON dependencies? (y/n) Enter y${clear}"
     read -e install_rdep
     if [ "${install_rdep}" == "" ] ; then
         install_rdep=y
@@ -401,7 +401,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
         if [ "${MODS[simon_analysis]}" == y ] ; then
             echo "${green}==========> Installing ANALYSIS server dependencies${clear}"
-            sudo Rscript -e "BiocManager::install('impute', version = '3.8', update = FALSE, ask = FALSE)"
+            sudo Rscript -e "BiocManager::install('impute', version = '3.9', update = FALSE, ask = FALSE)"
             sudo Rscript -e "install.packages(c('samr'), repos='http://cran.us.r-project.org')"
             # sudo Rscript -e "devtools::install_github('catboost/catboost', subdir = 'catboost/R-package', args=c('--no-multiarch', '--no-test-load'))"
             sudo Rscript -e "devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Linux-0.22.tgz', INSTALL_opts = c('--no-multiarch', '--no-test-load'))"
@@ -419,6 +419,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('cran/XML')"
             sudo Rscript -e "install.packages('gridSVG', repos='http://R-Forge.R-project.org')"
             sudo Rscript -e "devtools::install_github('sachsmc/plotROC')"
+            ## sudo Rscript -e "devtools::install_github('laresbernardo/lares')"
         fi
 
         if [ "${MODS[simon_cron]}" == y ] ; then
@@ -450,9 +451,9 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "install.packages(c('PRROC', 'ada', 'adabag', 'fastAdaboost', 'bnclassify', 'kohonen', 'bartMachine', 'arm', 'binda', 'bst', 'C50', 'rrcov', 'deepboost', 'deepnet', 'kerndwd', 'evtree', 'extraTrees', 'frbs', 'mboost', 'xgboost', 'wsrf', 'VGAM', 'LiblineaR', 'sparseLDA', 'snn', 'sdwd', 'sda', 'rrcovHD', 'h2o', 'glmnet', 'hda', 'HDclassif', 'RWeka', 'kknn', 'HiDimDA', 'RSNNS', 'keras', 'monmlp', 'msaenet', 'rrlda', 'RRF', 'rpartScore', 'rotationForest', 'rocc', 'robustDA', 'rFerns', 'Rborist', 'randomGLM', 'protoclass', 'supervisedPRIM', 'stepPlr', 'penalizedLDA', 'partDSA', 'obliqueRF', 'ordinalNet', 'nodeHarvest', 'naivebayes'), repos='http://cran.us.r-project.org')"
 
             sudo Rscript -e "install.packages('CHAID', repos='http://R-Forge.R-project.org')"
-            sudo Rscript -e "BiocManager::install('vbmp', version = '3.8', update = FALSE, ask = FALSE)"
-            sudo Rscript -e "BiocManager::install('gpls', version = '3.8', update = FALSE, ask = FALSE)"
-            sudo Rscript -e "BiocManager::install('logicFS', version = '3.8', update = FALSE, ask = FALSE)"
+            sudo Rscript -e "BiocManager::install('vbmp', version = '3.9', update = FALSE, ask = FALSE)"
+            sudo Rscript -e "BiocManager::install('gpls', version = '3.9', update = FALSE, ask = FALSE)"
+            sudo Rscript -e "BiocManager::install('logicFS', version = '3.9', update = FALSE, ask = FALSE)"
             sudo Rscript -e "devtools::install_github(c('cran/adaptDA', 'ramhiser/sparsediscrim', 'cran/elmNN', 'cran/FCNN4R', 'rstudio/tensorflow'))"
             
             echo "${yellow}}==========> Trying to install TensorFlow${clear}"
@@ -463,6 +464,38 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             ## https://tensorflow.rstudio.com/tensorflow/reference/install_tensorflow.html
             sudo Rscript -e "tensorflow::install_tensorflow(method='auto')"
         fi 
+
+        ## PHP Backend environment
+        if [ "${MODS[simon_api]}" == y ] ; then
+            echo "${yellow}}==========> Trying to install pandas${clear}"
+            echo ""
+            ## Install pandas requirements
+            sudo apt-get install python3-pandas
+            # Optional dependencies for python-pandas
+            #     python-pandas-datareader: pandas.io.data replacement (recommended)
+            #     python-numexpr: needed for accelerating certain numerical operations (recommended)
+            #     python-bottleneck: needed for accelerating certain types of nan evaluations (recommended)
+            #     python-beautifulsoup4: needed for read_html function [installed]
+            #     python-jinja: needed for conditional HTML formatting [installed]
+            #     python-pyqt5: needed for read_clipboard function (only one needed) [installed]
+            #     python-pytables: needed for HDF5-based storage
+            #     python-sqlalchemy: needed for SQL database support [installed]
+            #     python-scipy: needed for miscellaneous statistical functions
+            #     python-xlsxwriter: alternative Excel XLSX output
+            #     python-blosc: for msgpack compression using blosc
+            #     python-html5lib: needed for read_hmlt function (and/or python-lxml) [installed]
+            #     python-lxml: needed for read_html function (and/or python-html5lib) [installed]
+            #     python-matplotlib: needed for plotting
+            #     python-openpyxl: needed for Excel XLSX input/output [installed]
+            #     python-psycopg2: needed for PostgreSQL engine for sqlalchemy
+            #     python-pymysql: needed for MySQL engine for sqlalchemy
+            #     python-qtpy: needed for read_clipboard function (only one needed)
+            #     python-tabulate: needed for printing in Markdown-friendly format
+            #     python-fsspec: needed for handling files aside from local and HTTP
+            #     xclip: needed for read_clipboard function (only one needed)
+            #     python-xlrd: needed for Excel XLS input [installed]
+            #     python-xlwt: needed for Excel XLS output
+        fi
     fi
 fi
 

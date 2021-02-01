@@ -7,6 +7,7 @@ simon$handle$analysis$other$availablePackages <- expression(
                             installed <- 1
                             classification <- 0
                             regression <- 0
+
                             citations <- list()
                             licenses <- list()
 
@@ -16,6 +17,10 @@ simon$handle$analysis$other$availablePackages <- expression(
                             if("Regression" %in% x$type){
                                 regression <- 1
                             }
+
+                            ClassProbs <- ifelse(is.null(x$prob), 0, 1)
+                            VarImpMethod <- ifelse(is.null(x$varImp), 0, 1)
+
 
 
                             if(installed != 0 && !is.null(x$library) && x$library %!in% rownames(installed.packages())){

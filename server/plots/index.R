@@ -6,6 +6,7 @@ source(paste0("server/",SERVER_NAME,"/heatmap/main.R"))
 source(paste0("server/",SERVER_NAME,"/variableImportance/main.R"))
 source(paste0("server/",SERVER_NAME,"/stats/main.R"))
 source(paste0("server/",SERVER_NAME,"/summary/main.R"))
+source(paste0("server/",SERVER_NAME,"/distribution/main.R"))
 
 deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     if(!requireNamespace("plumber", quietly = TRUE)) {
@@ -36,6 +37,8 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
 
     router$handle("GET", "/plots/summary/render-plot", simon$handle$plots$summary$renderPlot, serializer=serializer_unboxed_json())
     router$handle("GET", "/plots/model-summary/render-plot", simon$handle$plots$modelsummary$renderPlot, serializer=serializer_unboxed_json())
+
+    router$handle("GET", "/plots/distribution/render-plot", simon$handle$plots$distribution$renderPlot, serializer=serializer_unboxed_json())
     
     router$run(host = options$proxy_host, port = as.numeric(options$proxy_port), debug = options$debug)
 }

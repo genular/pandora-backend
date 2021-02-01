@@ -132,6 +132,48 @@ db.apps.getModelsDetailsData <-function(modelsIDs){
     return(results)
 }
 
+
+db.apps.getDatasetResamplesMappings <- function(resamplesID){
+ 
+    mappings = list()
+
+    sql <- paste0("SELECT dataset_resamples_mappings.id AS id,
+                        dataset_resamples_mappings.dqid AS dqid,
+                        dataset_resamples_mappings.drid AS drid,
+                        dataset_resamples_mappings.class_column AS class_column,
+                        dataset_resamples_mappings.class_type AS class_type,
+                        dataset_resamples_mappings.class_original AS class_original,
+                        dataset_resamples_mappings.class_remapped AS class_remapped,
+                        dataset_resamples_mappings.class_possition AS class_possition,
+                        dataset_resamples_mappings.created AS created
+
+        FROM dataset_resamples_mappings
+
+        WHERE dataset_resamples_mappings.drid IN (",paste(as.numeric(resamplesID), sep="' '", collapse=", "),") 
+
+        ORDER BY id DESC;")
+
+    query <- sqlInterpolate(databasePool, sql)
+    results <- dbGetQuery(databasePool, query)
+    if(nrow(results) > 0){
+        for (i in 1:nrow(results)) {
+
+            mappings[[i]] <- list(
+                    id = results[i, ]$id,
+                    dqid = results[i, ]$dqid,
+                    drid = results[i, ]$drid,
+                    class_column = results[i, ]$class_column,
+                    class_type =  results[i, ]$class_type,
+                    class_original =  results[i, ]$class_original,
+                    class_remapped =  results[i, ]$class_remapped,
+                    class_possition = results[i, ]$class_possition,
+                    created = results[i, ]$created
+                )       
+        }
+    }
+    return(results)
+}
+
 db.apps.getFeatureSetData <- function(resamplesID){
     datasets = list()
 

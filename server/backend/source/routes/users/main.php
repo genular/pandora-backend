@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2019-01-22 10:27:46
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-03-14 14:23:14
+ * @Last Modified time: 2021-01-27 09:57:44
  */
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 use LasseRafn\Initials\Initials;
@@ -123,6 +123,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 
 	// Lets try to reset all data if there are no users registered in database!
 	$totalUsersRegistered = $users->countTotalUsers();
+	$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Total registered users: " . $totalUsersRegistered);
 	if ($totalUsersRegistered < 1) {
 		/** Empty all database tables */
 		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Reseting mysql tables");
