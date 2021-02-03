@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-02-03 15:25:19
+ * @Last Modified time: 2021-02-03 15:27:08
  */
 namespace SIMON\Helpers;
 use \Monolog\Logger;
@@ -243,7 +243,7 @@ import pandas as pd\n
 df = pd.read_csv('{$filePath}')\n
 print(df.nunique().to_json())\n
 EOF`\n
-python -c "\$pn_cmd"
+python3.7 -c "\$pn_cmd"
 EOFC;
 
 				$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers\validateCSVFileHeader: pandas command =>");
