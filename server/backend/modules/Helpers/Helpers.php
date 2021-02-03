@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-02-03 12:56:47
+ * @Last Modified time: 2021-02-03 15:25:19
  */
 namespace SIMON\Helpers;
 use \Monolog\Logger;
@@ -245,12 +245,23 @@ print(df.nunique().to_json())\n
 EOF`\n
 python -c "\$pn_cmd"
 EOFC;
+
+				$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers\validateCSVFileHeader: pandas command =>");
+				$this->logger->addInfo($pandas_command);
+
 				$pandas_output = shell_exec($pandas_command);
+
+				$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers\validateCSVFileHeader: pandas command output =>");
+				$this->logger->addInfo($pandas_output);
+
 				$pandas_output = json_decode(trim($pandas_output), true);
 
 				foreach ($data['details']["header"]["formatted"] as $itemKey => $itemValue) {
 					if (isset($pandas_output[$itemValue["remapped"]])) {
 						$itemValue["unique_count"] = $pandas_output[$itemValue["remapped"]];
+						$data['details']["header"]["formatted"][$itemKey] = $itemValue;
+					} else {
+						$itemValue["unique_count"] = false;
 						$data['details']["header"]["formatted"][$itemKey] = $itemValue;
 					}
 				}
