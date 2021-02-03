@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-01-27 13:41:57
+ * @Last Modified time: 2021-02-03 12:32:26
  */
 
 use Slim\Http\Request;
@@ -191,7 +191,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 		$selectALLSwitch = array_search("ALL", array_column($submitData["selectedFeatures"], 'remapped'));
 		if ($selectALLSwitch !== false) {
 
-			$excludeKeys = ["excludeFeatures", "selectedOutcome", "selectedFormula", "selectedClasses"];
+			$excludeKeys = ["excludeFeatures", "selectedOutcome", "selectedFormula", "timeSeriesDate", "selectedClasses"];
 
 			$selectedFeatures = $mainFileDetails["details"]["header"]["formatted"];
 			foreach ($excludeKeys as $excludeValue) {
@@ -211,7 +211,7 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
 		$submitData["display_filename"] = $mainFileDetails["display_filename"];
 
-		$allOtherOptions = array_merge($submitData["selectedOutcome"], $submitData["selectedFormula"], $submitData["selectedClasses"]);
+		$allOtherOptions = array_merge($submitData["selectedOutcome"], $submitData["selectedFormula"], $submitData["timeSeriesDate"], $submitData["selectedClasses"]);
 		$allOtherSelections = [];
 		foreach ($allOtherOptions as $option) {
 			if (!isset($allOtherSelections[$option["remapped"]])) {

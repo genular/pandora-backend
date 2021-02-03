@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-04-07 13:36:35
+ * @Last Modified time: 2021-02-03 12:31:33
  */
 namespace SIMON\Dataset;
 
@@ -192,6 +192,7 @@ class DatasetQueue {
 					"outcome" => $submitData["selectedOutcome"],
 					"classes" => $submitData["selectedClasses"],
 					"formula" => $submitData["selectedFormula"],
+					"time_series" => $submitData["timeSeriesDate"],
 					"preProcess" => $submitData["selectedPreProcess"],
 					"partitionSplit" => $submitData["selectedPartitionSplit"]]),
 				"impute" => intval($submitData["backwardSelection"]),
