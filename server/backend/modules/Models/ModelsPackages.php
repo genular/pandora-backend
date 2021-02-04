@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:19:32
+ * @Last Modified time: 2021-02-04 10:35:21
  */
 namespace SIMON\Models;
 
@@ -32,7 +32,7 @@ class ModelsPackages {
 	 * @param  [type]  $packageIDs [description]
 	 * @return [type]              [description]
 	 */
-	public function getPackages($installed = 1, $packageIDs = null) {
+	public function getPackages($installed = 1, $packageIDs = null, $packageNameIDs = null) {
 		$columns = [
 			"id [Int]",
 			"internal_id",
@@ -51,6 +51,10 @@ class ModelsPackages {
 
 		if ($packageIDs !== null) {
 			$conditions["id"] = array_values($packageIDs);
+		}
+
+		if ($packageNameIDs !== null) {
+			$conditions["internal_id"] = array_values($packageNameIDs);
 		}
 
 		$details = $this->database->select($this->table_name, $columns, $conditions);

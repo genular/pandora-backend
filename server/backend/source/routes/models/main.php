@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-05 14:36:15
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-04-07 13:33:12
+ * @Last Modified time: 2021-02-04 10:31:53
  */
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -164,6 +164,13 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$modelsListIDs = array_column($modelsList, 'modelID');
 			list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements);
 			$modelsList = $Models->assignMesurmentsToModels($modelsList, $modelsPerformace, $modelsPerformaceVariables);
+
+			$modelsListNameIDs = array_column($modelsList, 'modelName');
+
+			$ModelsPackages = $this->get('SIMON\Models\ModelsPackages');
+			$modelPackagesDetails = $ModelsPackages->getPackages(1, null, $modelsListNameIDs);
+
+			$modelsList = $Models->assignPackageDetailsToModels($modelsList, $modelPackagesDetails);
 
 			$message = Array(
 				'resamplesList' => $resamplesList,

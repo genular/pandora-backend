@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-03 14:19:53
+ * @Last Modified time: 2021-02-04 10:42:59
  */
 namespace SIMON\Models;
 
@@ -121,6 +121,35 @@ class Models {
 				// Is measurements are missing add it with default 0
 				$modelsList[$modelKey]["performance"] = $modelsPerformaceVariablesDefults;
 			}
+		}
+
+		return $modelsList;
+	}
+
+	/**
+	 * [assignMesurmentsToModels assignPackageDetailsToModels]
+	 * @param  [array] $modelsList                [Models->getDatasetResamplesModels]
+	 * @param  [array] $modelPackagesDetails      [ModelsPackages->getPackages]
+	 * @return [type]                             [description]
+	 */
+	public function assignPackageDetailsToModels($modelsList, $modelPackagesDetails) {
+
+		// Assign performance variables to models
+		foreach ($modelsList as $modelKey => $modelsListValue) {
+			$modelName = $modelsListValue["modelName"];
+
+			foreach ($modelPackagesDetails as $packageKey => $packageValue) {
+				if ($packageValue["internal_id"] === $modelName) {
+					$modelsList[$modelKey]["packageDetails"] = [
+						"label" => $packageValue["label"],
+						"citations" => implode(', ', $packageValue["citations"]),
+						"tags" => implode(', ', $packageValue["tags"]),
+					];
+				}
+			}
+			if (!isset($modelsList[$modelKey]["packageDetails"])) {
+				$modelsList[$modelKey]["packageDetails"] = false;
+			};
 		}
 
 		return $modelsList;
