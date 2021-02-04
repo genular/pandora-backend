@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-06-08 15:11:00
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-02-03 12:32:26
+ * @Last Modified time: 2021-02-04 16:13:24
  */
 
 use Slim\Http\Request;
@@ -502,4 +502,47 @@ $app->get('/backend/system/simon/dataset-resample/delete/{submitData:.*}', funct
 
 	return $response->withJson(["success" => $success]);
 
+});
+
+/**
+ * Generate system log file for the debugging purpose
+ */
+$app->get('/backend/system/simon/generate-log-file/{submitData:.*}', function (Request $request, Response $response, array $args) {
+	$success = false;
+
+	$message = false;
+
+	$FileSystem = $this->get('SIMON\System\FileSystem');
+
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$downloadLinks = [];
+
+	$compress_locations = [
+		"/var/log/simon-cron.log" => "simon_cron_log.tar.gz",
+		realpath(realpath(dirname(__DIR__)) . "/../logs/simon.log") => "simon_backend_log.tar.gz",
+		"/home/login/.pm2/logs" => "pm2_server_logs.tar.gz",
+		"/root/.pm2/logs" => "pm2_server_logs.tar.gz",
+		"/var/log/nginx" => "nginx_server_logs.tar.gz",
+	];
+
+	// Compress SIMON cron log file
+	foreach ($compress_locations as $fileInput => $fileOutput) {
+
+		$download_url = $FileSystem->compressFileOrDirectory($fileInput, $fileOutput);
+
+		if ($download_url !== false) {
+			$downloadLinks[] = ["filename" => $fileOutput, "download_url" => $download_url];
+		}
+	}
+
+	if (count($downloadLinks) > 0) {
+		$message = $downloadLinks;
+		$success = true;
+	}
+
+	return $response->withJson(["success" => $success, "message" => $message]);
 });

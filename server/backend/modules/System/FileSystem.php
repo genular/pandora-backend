@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2020-04-29 12:49:24
+ * @Last Modified time: 2021-02-04 16:11:22
  */
 namespace SIMON\System;
 use Aws\S3\S3Client as S3Client;
@@ -355,5 +355,35 @@ class FileSystem {
 		@unlink($file_path_gz);
 
 		return $file_path;
+	}
+
+	/**
+	 * [compressFileOrDirectory description]
+	 * @param  [type] $inputPath  [directory-name]
+	 * @param  [type] $outputPath [archive-name.tar.gz]
+	 * @return [type]             [description]
+	 */
+
+	public function compressFileOrDirectory($inputPath, $outputFileName) {
+		$status = false;
+
+		$public_directory = realpath(realpath(dirname(__DIR__)) . "/../public/downloads");
+
+		$ouputPath = $public_directory . "/" . $outputFileName;
+
+		if (file_exists($inputPath)) {
+			$status = true;
+			$gz_cmd = $this->targz . " -zcvf " . $ouputPath . " " . $inputPath;
+			$command_output = trim(shell_exec($gz_cmd));
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem compressFileOrDirectory: " . $gz_cmd);
+		} else {
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem compressFileOrDirectory file doesn't exsist: " . $inputPath);
+		}
+
+		if (file_exists($ouputPath) && $status === true) {
+			$status = $this->Config->get('default.backend.server.url') . "/downloads/" . $outputFileName;
+		}
+
+		return ($status);
 	}
 }
