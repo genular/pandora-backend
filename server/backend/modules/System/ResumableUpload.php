@@ -40,7 +40,8 @@ class ResumableUpload {
 		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed: " . $this->temp_dir);
 		// Create temporary directory if it doesn't exists
 		if (!file_exists($this->temp_dir)) {
-			$this->Helpers->createDirectory($this->temp_dir);
+			$check = $this->Helpers->createDirectory($this->temp_dir);
+			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload created directory: " . $check);
 		}
 	}
 	/**
@@ -57,13 +58,18 @@ class ResumableUpload {
 
 		$saveName = $this->getNextAvailableFilename($this->temp_dir, $filename, $extension);
 		$savePath = $this->temp_dir . "/" . $saveName . $extension;
+		
+		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload move_uploaded_file: " . $tmp_file_path. " - " . $savePath);
 
-		if (move_uploaded_file($tmp_file_path, $savePath)) {
+		$resp = move_uploaded_file($tmp_file_path, $savePath);
+		if ($resp) {
+			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload file moved: " . $resp);
 			return $savePath;
 		} else {
+			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload file not moved: " . $resp);
 			return false;
 		}
-	}
+	} 
 
 	/**
 	 * [resumableUpload description]
@@ -80,6 +86,7 @@ class ResumableUpload {
 		$file_chunks_folder = $this->temp_dir . "/" . $identifier;
 		if (!is_dir($file_chunks_folder)) {
 			$this->Helpers->createDirectory($file_chunks_folder);
+			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload created file_chunks_folder: " . $file_chunks_folder);
 		}
 
 		$filename = $this->Helpers->sanitizeFileName($filename); # remove problematic symbols

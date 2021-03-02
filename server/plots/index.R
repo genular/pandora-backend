@@ -8,6 +8,8 @@ source(paste0("server/",SERVER_NAME,"/stats/main.R"))
 source(paste0("server/",SERVER_NAME,"/summary/main.R"))
 source(paste0("server/",SERVER_NAME,"/distribution/main.R"))
 
+source(paste0("server/",SERVER_NAME,"/editing/main.R"))
+
 deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     if(!requireNamespace("plumber", quietly = TRUE)) {
         stop('plumber (>= 1.0.0) is required for this function to work!')
@@ -39,6 +41,10 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/plots/model-summary/render-plot", simon$handle$plots$modelsummary$renderPlot, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/distribution/render-plot", simon$handle$plots$distribution$renderPlot, serializer=serializer_unboxed_json())
+
+    ### EDITING
+    router$handle("GET", "/plots/editing/correlation/render-options", simon$handle$plots$editing$correlation$renderOptions, serializer=serializer_unboxed_json())
+    router$handle("GET", "/plots/editing/correlation/render-plot", simon$handle$plots$editing$correlation$renderPlot, serializer=serializer_unboxed_json())
     
     router$run(host = options$proxy_host, port = as.numeric(options$proxy_port), debug = options$debug)
 }

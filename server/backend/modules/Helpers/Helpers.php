@@ -19,7 +19,7 @@ class Helpers {
 
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers constructed");
+		$this->logger->addInfo("==> INFO SIMON\Helpers\Helpers constructed");
 	}
 
 	/**
@@ -189,6 +189,8 @@ class Helpers {
 	 */
 	public function validateCSVFileHeader($filePath) {
 
+		$this->logger->addInfo("==> INFO: SIMON\Helpers\Helpers\validateCSVFileHeader: filePath: " . $filePath);
+
 		$path_parts = pathinfo($filePath);
 
 		$data = array(
@@ -236,28 +238,28 @@ class Helpers {
 				// write back to file
 				file_put_contents($filePath, implode($arr));
 
-				// Get stats about columns
 				$pandas_command = <<<EOFC
+eval "$(conda shell.bash hook)"
 pn_cmd=`cat <<EOF
-import pandas as pd\n
-df = pd.read_csv('{$filePath}')\n
-print(df.nunique().to_json())\n
-EOF`\n
-python3.7 -c "\$pn_cmd"
+import pandas as pd
+df = pd.read_csv('{$filePath}')
+print(df.nunique().to_json())
+EOF`
+python -c "\$pn_cmd"
 EOFC;
-
-				$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers\validateCSVFileHeader: pandas command =>");
-				$this->logger->addInfo($pandas_command);
 
 				$pandas_output = shell_exec($pandas_command);
 
-				$this->logger->addInfo("==> INFO => SIMON\Helpers\Helpers\validateCSVFileHeader: pandas command output =>");
-				$this->logger->addInfo($pandas_output);
+				$this->logger->addInfo("==> INFO: SIMON\Helpers\Helpers\validateCSVFileHeader: pandas_command: ");
+				$this->logger->addInfo($pandas_command);
+
+				// $this->logger->addInfo("==> INFO: SIMON\Helpers\Helpers\validateCSVFileHeader: pandas_output: ");
+				// $this->logger->addInfo($pandas_output);
 
 				$pandas_output = json_decode(trim($pandas_output), true);
 
 				foreach ($data['details']["header"]["formatted"] as $itemKey => $itemValue) {
-					if (isset($pandas_output[$itemValue["remapped"]])) {
+					if (is_array($pandas_output) && isset($pandas_output[$itemValue["remapped"]])) {
 						$itemValue["unique_count"] = $pandas_output[$itemValue["remapped"]];
 						$data['details']["header"]["formatted"][$itemKey] = $itemValue;
 					} else {
@@ -462,6 +464,8 @@ EOFC;
 				}
 			}
 		}
+
+		return true;
 	}
 
 	/**

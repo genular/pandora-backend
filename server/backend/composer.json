@@ -6,7 +6,7 @@
         "dilab/resumable.php": "^0.1.4",
         "phpmailer/phpmailer": "^6.0",
         "monolog/monolog": "^1.23",
-        "slim/slim": "^3.9",
+        "slim/slim": "3.12.2",
         "slim/php-view": "^2.2",
         "catfan/medoo": "^1.5",
         "unicoart/slim-token-authentication": "dev-master",

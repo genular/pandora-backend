@@ -15,7 +15,6 @@ use League\Flysystem\Filesystem as Flysystem;
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Cache as Cache;
 use \SIMON\Helpers\Helpers as Helpers;
 use \SIMON\Users\UsersFiles as UsersFiles;
 
@@ -29,7 +28,6 @@ class FileSystem {
 	protected $filesystem;
 
 	protected $Config;
-	protected $Cache;
 	protected $Helpers;
 	protected $UsersFiles;
 	// Used for saving temporary files
@@ -42,22 +40,23 @@ class FileSystem {
 		Logger $logger,
 
 		Config $Config,
-		Cache $Cache,
 		Helpers $Helpers,
 		UsersFiles $UsersFiles
 	) {
 		$this->database = $database;
 		$this->logger = $logger;
 		$this->Config = $Config;
-		$this->Cache = $Cache;
 		$this->Helpers = $Helpers;
 		$this->UsersFiles = $UsersFiles;
 
+		// 
 		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/downloads";
+
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->temp_dir);
 		// Create temporary directory if it doesn't exists
 		if (!file_exists($this->temp_dir)) {
-			$this->Helpers->createDirectory($this->temp_dir);
+			$check = $this->Helpers->createDirectory($this->temp_dir);
+			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem directory created: " . $check);
 		}
 
 		$this->targz = $this->Helpers->which_cmd("tar");

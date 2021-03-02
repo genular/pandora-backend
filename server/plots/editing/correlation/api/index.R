@@ -1,5 +1,5 @@
 #' @get /plots/correlation/renderOptions
-simon$handle$plots$correlation$renderOptions <- expression(
+simon$handle$plots$editing$correlation$renderOptions <- expression(
     function(){
         data <- list()
 
@@ -43,17 +43,17 @@ simon$handle$plots$correlation$renderOptions <- expression(
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
 #' @post /plots/correlation/renderPlot
-simon$handle$plots$correlation$renderPlot <- expression(
+simon$handle$plots$editing$correlation$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = FALSE, data = NULL, image = NULL, image_png = NULL)
 
-        plotUniqueHash <- ""
+        plotUniqueHash <- "editing_correlation"
 
-        resampleID <- 0
-        if("resampleID" %in% names(args)){
-            resampleID <- as.numeric(args$resampleID)
-            plotUniqueHash <- paste0(plotUniqueHash, resampleID)
+        selectedFileID <- 0
+        if("selectedFileID" %in% names(args)){
+            selectedFileID <- as.numeric(args$selectedFileID)
+            plotUniqueHash <- paste0(plotUniqueHash, selectedFileID)
         }
 
         settings <- NULL
@@ -82,21 +82,24 @@ simon$handle$plots$correlation$renderPlot <- expression(
         }
 
         ## 1st - Get JOB and his Info from database
-        resampleDetails <- db.apps.getFeatureSetData(resampleID)
+        selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
         ## save(resampleDetails, file = "/tmp/testing.rds")
 
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        dataset <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)     
+        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
         
-        ## Remove all columns expect selected features
-        dataset <- dataset[, names(dataset) %in% c(resampleDetails[[1]]$features$remapped)]
+        dataset <- dplyr::select_if(dataset, is.numeric)
 
-        names(dataset) <- plyr::mapvalues(names(dataset), from=resampleDetails[[1]]$features$remapped, to=resampleDetails[[1]]$features$original)
+        ## Remove all columns expect selected features
+        # dataset <- dataset[, names(dataset) %in% c(resampleDetails[1,]$features$remapped)]
+
+        # names(dataset) <- plyr::mapvalues(names(dataset), from=resampleDetails[1,]$features$remapped, to=resampleDetails[1,]$features$original)
 
 
         ## TODO: also give this data for download!
         data <- cor(dataset, use = settings$na_action, method = settings$correlation_method)
         ## write.csv(data, file = "correlation.csv")
+
 
         if(settings$significance$enable == TRUE){
             p.mat <- corTest(data, settings$confidence$level$value)
@@ -137,7 +140,7 @@ simon$handle$plots$correlation$renderPlot <- expression(
         }
 
         tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
-        svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
         process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(corrplot, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
             print(results$data)

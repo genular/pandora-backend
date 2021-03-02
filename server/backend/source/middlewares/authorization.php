@@ -46,6 +46,7 @@ $app->add(new TokenAuthentication([
 		$user_id = $UsersSessions->getUserIdBySessionId($session_id);
 		$initial_db_connect = microtime(true) - $start;
 		if ($user_id) {
+			// $this->logger->addInfo("====================> SIMON REQUEST STARTS: " . $user_id["uid"]);
 			return $request->withAttribute('user', ["user_id" => intval($user_id["uid"]), "session_id" => $session_id, "initial_db_connect" => $initial_db_connect]);
 		} else {
 			throw new UnauthorizedException('Invalid Authentication');

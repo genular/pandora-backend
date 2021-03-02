@@ -10,23 +10,42 @@ namespace SIMON\Helpers;
 use \League\Flysystem\Adapter\Local as Local;
 use \League\Flysystem\Filesystem as Filesystem;
 use \MatthiasMullie\Scrapbook\Adapters\Flysystem as Flysystem;
+use Noodlehaus\Config as Config;
+use \SIMON\Helpers\Helpers as Helpers;
 use \Monolog\Logger;
 
 // https://www.scrapbook.cash/interfaces/key-value-store/
 class Cache {
 	protected $Cache;
+	protected $Config;
 	protected $logger;
+	protected $Helpers;
 
 	public function __construct(
-		Logger $logger
+		Logger $logger,
+		Config $Config,
+		Helpers $Helpers
 	) {
 
 		$this->logger = $logger;
-		// Log anything.
-		$this->logger->addInfo("==> INFO => SIMON\Helpers\Cache constructed");
+		$this->Config = $Config;
+		$this->Helpers = $Helpers;
+		
+		$this->logger->addInfo("==> INFO: SIMON\Helpers\Cache constructed");
 
+		$cache_directory = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/cache";
+
+		$this->Helpers->rrmdir($cache_directory);
+
+		if (!is_dir($cache_directory)) {
+			$check = $this->Helpers->createDirectory($cache_directory);
+			$this->logger->addInfo("==> INFO => SIMON\Helpers\Cache directory created: " . $cache_directory); 
+		}else{
+			$this->logger->addInfo("==> INFO => SIMON\Helpers\Cache directory exists: " . $cache_directory);
+		}
 		// create Flysystem object
-		$adapter = new Local(sys_get_temp_dir(), LOCK_EX);
+		$adapter = new Local($cache_directory,  0);
+		
 		$filesystem = new Filesystem($adapter);
 		// create Scrapbook KeyValueStore object
 		$cache = new Flysystem($filesystem);

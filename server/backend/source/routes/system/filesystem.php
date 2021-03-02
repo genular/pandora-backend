@@ -57,6 +57,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 					$message[] = 'upload_success_chunks';
 				}
 			} else {
+
 				// File is not chunk is complete file
 				$uploaded_path = $ResumableUpload->moveUploadedFile($uploaded_path, $filename);
 				if ($uploaded_path !== false) {
@@ -67,10 +68,12 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 		}
 	}
 
+
 	// File upload is finished!
 	if ($success === true) {
 		// Validate File Header and rename it to standardize column names!
 		$details = $Helpers->validateCSVFileHeader($uploaded_path);
+
 
 		if (count($details["message"]) === 0) {
 
@@ -287,4 +290,34 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 
 	return $response->withJson(["success" => $success, "message" => $message]);
 
+});
+
+
+$app->get('/backend/system/filesystem/file-details/{selectedFiles:.*}', function (Request $request, Response $response, array $args) {
+	$success = true;
+	$message = array();
+
+	$config = $this->get('Noodlehaus\Config');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
+	$Helpers = $this->get('SIMON\Helpers\Helpers');
+
+	$selectedFiles = [];
+	if (isset($args['selectedFiles'])) {
+		$selectedFiles = json_decode(base64_decode(urldecode($args['selectedFiles'])), true);
+	}
+
+	foreach ($selectedFiles["selectedFilesIDs"] as $selectedFileID) {
+		$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/file-details' getting details " . $selectedFileID);
+
+		$details = $UsersFiles->getFileDetails($selectedFileID, ["details"], true);
+
+		usort($details["details"]["header"]["formatted"], function($a, $b) {
+			return $a['remapped'] <=> $b['remapped'];
+		});
+
+		$message = $details;
+
+	}
+
+	return $response->withJson(["success" => $success, "message" => $message]);
 });

@@ -471,6 +471,8 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             echo ""
             ## Install pandas requirements
             sudo apt-get install python3-pandas
+
+            sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
             # Optional dependencies for python-pandas
             #     python-pandas-datareader: pandas.io.data replacement (recommended)
             #     python-numexpr: needed for accelerating certain numerical operations (recommended)

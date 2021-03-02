@@ -36,7 +36,8 @@ class DatasetIntersection {
 		$this->Config = $Config;
 		$this->Helpers = $Helpers;
 
-		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/uploads";
+		$this->temp_dir = "/tmp/" . $this->Config->get('default.salt') . "/uploads";
+		
 		$this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed: " . $this->temp_dir);
 
 		if (!file_exists($this->temp_dir)) {

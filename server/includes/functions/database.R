@@ -263,6 +263,23 @@ db.apps.getFeatureSetData <- function(resamplesID){
     return(datasets)
 }
 
+#' @title Get specific file details
+#' @description Get specific file details from database
+#' @param fileID 
+db.apps.getFileDetails <-function(fileID){
+    sql <- paste0("SELECT *
+                    FROM   users_files
+                    WHERE  users_files.id IN(",paste(as.numeric(fileID), sep="' '", collapse=", "),")
+                    ORDER BY users_files.id ASC;")
+    print(sql)
+    
+    query <- sqlInterpolate(databasePool, sql)
+    results <- dbGetQuery(databasePool, query)
+
+    return(results)
+}
+
+
 #' @title Check if specific model is processed
 #' @description Check if model is processed for current resample ID
 #' @param resampleID 
