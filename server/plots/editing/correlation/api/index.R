@@ -46,7 +46,7 @@ simon$handle$plots$editing$correlation$renderOptions <- expression(
 simon$handle$plots$editing$correlation$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
-        results <- list(status = FALSE, data = NULL, image = NULL, image_png = NULL)
+        results <- list(status = FALSE, data = NULL, image = NULL, image_png = NULL, dropped_columns = NULL, error_message = NULL)
 
         plotUniqueHash <- "editing_correlation"
 
@@ -83,84 +83,108 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
 
         ## 1st - Get JOB and his Info from database
         selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
-        ## save(resampleDetails, file = "/tmp/testing.rds")
+        ## save(selectedFileDetails, file = "/tmp/testing.rds")
 
         selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)     
+        fileHeader <- jsonlite::fromJSON(selectedFileDetails[1,]$details)
+        fileHeader <- plyr::ldply (fileHeader$header$formatted, data.frame)
+
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-        
-        dataset <- dplyr::select_if(dataset, is.numeric)
+
+        if(length(settings$selectedColumns) == 0) {
+            settings$selectedColumns <- fileHeader$remapped
+        }
 
         ## Remove all columns expect selected features
-        # dataset <- dataset[, names(dataset) %in% c(resampleDetails[1,]$features$remapped)]
+        dataset <- dataset %>% select(all_of(settings$selectedColumns)) 
 
-        # names(dataset) <- plyr::mapvalues(names(dataset), from=resampleDetails[1,]$features$remapped, to=resampleDetails[1,]$features$original)
+        remapping_header <- fileHeader %>%
+                            filter(remapped %in% settings$selectedColumns) %>%
+                            select(remapped, original)
 
+        ## Rename remapped columns to original ones
+        dataset <- dataset %>% rename_(.dots=with(remapping_header, setNames(as.list(as.character(remapped)), original)))
 
-        ## TODO: also give this data for download!
-        data <- cor(dataset, use = settings$na_action, method = settings$correlation_method)
-        ## write.csv(data, file = "correlation.csv")
+        ## Drop all non numeric columns
+        numeric_columns <- names(select_if(dataset, is.numeric))
+        dropped_columns <- setdiff(settings$selectedColumns, numeric_columns)
 
-
-        if(settings$significance$enable == TRUE){
-            p.mat <- corTest(data, settings$confidence$level$value)
+        dataset_filtered <- dataset %>% select(all_of(numeric_columns)) 
+        if(ncol(dataset_filtered) <= 1){
+            error_check <- TRUE
+            results$error_message <- "Not enough numerical columns found in database."
+        }else{
+            error_check <- FALSE
         }
 
-        args <- list(data,
-                        number.cex= 7/ncol(dataset),
-                        tl.cex=settings$text_size$value,
-                        cl.cex=settings$text_size$value,
-                        mar=c(0,0,1,0),
-                        order = if(settings$reorder_correlation == "manual") "original" else settings$reorder_correlation, 
-                        hclust.method = settings$reorder_correlation_hclust$method, 
-                        addrect = settings$reorder_correlation_hclust$number_of_rectangles,
-                        is.corr=TRUE,
-
-                        sig.level = if(settings$significance$enable == TRUE) settings$significance$level$value else NULL,
-                        insig = if(settings$significance$enable == TRUE) settings$significance$insignificant_action else NULL,
-
-                        p.mat = if(settings$significance$enable == TRUE) p.mat[[1]] else NULL,
-                        lowCI.mat = if(settings$significance$enable == TRUE) p.mat[[2]] else NULL,
-                        uppCI.mat = if(settings$significance$enable == TRUE) p.mat[[3]] else NULL,
-
-                        plotCI = if(settings$confidence$enable == TRUE) settings$confidence$ploting_method else "n",
-                        tl.col = "black",
-                        addgrid.col="transparent"
-                        )
+        if(error_check == FALSE){
+            ## TODO: also give this data for download!
+            data <- cor(dataset_filtered, use = settings$na_action, method = settings$correlation_method)
+            ## write.csv(data, file = "correlation.csv")
 
 
+            if(settings$significance$enable == TRUE){
+                p.mat <- corTest(data, settings$confidence$level$value)
+            }
 
-        if(settings$confidence$enable == TRUE) {
-            input_args <- c(list(type = settings$plot_type), args)
-        } else if(settings$plot_method == "mixed") {
-            input_args <- c(list(lower = settings$plot_method_mixed$lower_method,
-                                         upper = settings$plot_method_mixed$upper_method),
-                                    args)
-        } else {
-            input_args <- c(list(method = settings$plot_method, type = settings$plot_type), args)
+            args <- list(data,
+                            number.cex= 7/ncol(dataset_filtered),
+                            tl.cex=settings$text_size$value,
+                            cl.cex=settings$text_size$value,
+                            mar=c(0,0,1,0),
+                            order = if(settings$reorder_correlation == "manual") "original" else settings$reorder_correlation, 
+                            hclust.method = settings$reorder_correlation_hclust$method, 
+                            addrect = settings$reorder_correlation_hclust$number_of_rectangles,
+                            is.corr=TRUE,
+
+                            sig.level = if(settings$significance$enable == TRUE) settings$significance$level$value else NULL,
+                            insig = if(settings$significance$enable == TRUE) settings$significance$insignificant_action else NULL,
+
+                            p.mat = if(settings$significance$enable == TRUE) p.mat[[1]] else NULL,
+                            lowCI.mat = if(settings$significance$enable == TRUE) p.mat[[2]] else NULL,
+                            uppCI.mat = if(settings$significance$enable == TRUE) p.mat[[3]] else NULL,
+
+                            plotCI = if(settings$confidence$enable == TRUE) settings$confidence$ploting_method else "n",
+                            tl.col = "black",
+                            addgrid.col="transparent"
+                            )
+
+
+
+            if(settings$confidence$enable == TRUE) {
+                input_args <- c(list(type = settings$plot_type), args)
+            } else if(settings$plot_method == "mixed") {
+                input_args <- c(list(lower = settings$plot_method_mixed$lower_method,
+                                             upper = settings$plot_method_mixed$upper_method),
+                                        args)
+            } else {
+                input_args <- c(list(method = settings$plot_method, type = settings$plot_type), args)
+            }
+
+            tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
+            svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+
+            process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(corrplot, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
+                print(results$data)
+            dev.off()
+
+            ## Optimize SVG using svgo package
+            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+            # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
+            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+
+
+
+            svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
+            results$image = as.character(RCurl::base64Encode(svg_data, "txt"))
+            results$image_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+
+            results$status <- TRUE
         }
 
-        tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
-        svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
-        process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(corrplot, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
-            print(results$data)
-        dev.off()
-
-        ## Optimize SVG using svgo package
-        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-        # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
-        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
-
-
-
-        svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
-        results$image = as.character(RCurl::base64Encode(svg_data, "txt"))
-        results$image_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
-
-        results$status <- TRUE
-
-        return (list(status = results$status, image = results$image, image_png = results$image_png))
+        return (list(status = results$status, image = results$image, image_png = results$image_png, dropped_columns = dropped_columns, error_message = results$error_message))
     }
 )

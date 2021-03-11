@@ -1,17 +1,19 @@
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
-#' @post /plots/heatmap/renderPlot
-simon$handle$plots$heatmap$renderPlot <- expression(
+#' @post /plots/editing/heatmap/renderPlot
+simon$handle$plots$editing$heatmap$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = FALSE, data = NULL, image = NULL)
-        plotUniqueHash <- ""
+        plotUniqueHash <- "editing_clustering"
 
-        resampleID <- 0
-        if("resampleID" %in% names(args)){
-            resampleID <- as.numeric(args$resampleID)
-            plotUniqueHash <- paste0(plotUniqueHash, resampleID)
+        selectedFileID <- 0
+        if("selectedFileID" %in% names(args)){
+            selectedFileID <- as.numeric(args$selectedFileID)
+            plotUniqueHash <- paste0(plotUniqueHash, selectedFileID)
         }
+
+
 
         settings <- NULL
         if("settings" %in% names(args)){
@@ -80,34 +82,63 @@ simon$handle$plots$heatmap$renderPlot <- expression(
         cachedFile <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plotUniqueHash, ".*\\.svg"))
         ## Check if some files where found in tmpdir that match our unique hash
         if(identical(cachedFile, character(0)) == FALSE){
-            if(file.exists(cachedFile)){
-                results$status <- TRUE
+            if(file.exists(cachedFile) == TRUE){
+                results$status <- TRUE                
                 results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
-                return(list(status = results$status, image = results$image))
+
+                cachedFile_png <- stringr::str_replace(cachedFile, ".svg", ".png")
+                if(file.exists(cachedFile_png) == TRUE){
+                    results$image_png = as.character(RCurl::base64Encode(readBin(cachedFile_png, "raw", n = file.info(cachedFile_png)$size), "txt"))
+                }
+
+                return(list(status = results$status, image = results$image, image_png = results$image_png))
             }
         }
 
         ## 1st - Get JOB and his Info from database
-        resampleDetails <- db.apps.getFeatureSetData(resampleID)
-        ## save(resampleDetails, file = "/tmp/testing.rds")
+        selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
+        ## save(selectedFileDetails, file = "/tmp/testing.rds")
+
+        selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)     
+        fileHeader <- jsonlite::fromJSON(selectedFileDetails[1,]$details)
+        fileHeader <- plyr::ldply (fileHeader$header$formatted, data.frame)
+        fileHeader <- subset (fileHeader, select = -c(.id))
+
+
+
+        fileHeader <- fileHeader %>% mutate(unique_count = as.numeric(unique_count)) %>% mutate(position = as.numeric(position))
+        fileHeader$remapped = as.character(fileHeader$remapped)
+        fileHeader$original = as.character(fileHeader$original)
 
         if(length(settings$selectedColumns) == 0) {
-            settings$selectedColumns <- tail(resampleDetails[[1]]$outcome$remapped, 2)
+            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(1) %>% arrange(position) %>% select(remapped)
+            settings$selectedColumns <- tail(selectedColumns$remapped, 1)
         } 
         if(length(settings$selectedRows) == 0) {
-            settings$selectedRows <- tail(resampleDetails[[1]]$features$remapped, 20)
+            selectedRows <- fileHeader %>% arrange(unique_count) %>% slice(2:n()) %>% arrange(position) %>% select(remapped)
+            settings$selectedRows <- tail(selectedRows$remapped, -1)
         }
 
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        data <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-        ## Remove all other than necessary selectedColumns
-        data <- data[, names(data) %in% c(settings$selectedRows, settings$selectedColumns)]
+
+        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        dataset <- dataset[, names(dataset) %in% c(settings$selectedRows, settings$selectedColumns)]
 
 
+        if(!is.null(settings$removeNA) & settings$removeNA == FALSE){
+            preProcessedData <- preProcessData(dataset, settings$selectedColumns, settings$selectedColumns, methods = c("medianImpute", "center", "scale"))
+            dataset <- preProcessedData$processedMat
 
-        
-        input_args <- c(list(data=data, 
-                            resampleDetails=resampleDetails,
+            preProcessedData <- preProcessData(dataset, settings$selectedColumns, settings$selectedColumns,  methods = c("nzv", "zv"))
+            dataset <- preProcessedData$processedMat
+        }
+
+        #save(dataset, file = "/tmp/dataset_pre_cor")
+        #save(fileHeader, file = "/tmp/fileHeader")
+        #save(settings, file = "/tmp/settings_cor")
+        #save(dataset, file = "/tmp/dataset_cor")
+
+        input_args <- c(list(data=dataset, 
+                            fileHeader=fileHeader,
                             selectedColumns=settings$selectedColumns,
                             selectedRows=settings$selectedRows,
                             removeNA=settings$removeNA,
@@ -126,6 +157,7 @@ simon$handle$plots$heatmap$renderPlot <- expression(
                             fontSizeCol=settings$fontSizeCol,
                             fontSizeNumbers=settings$fontSizeNumbers))
 
+ 
         process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(plot.heatmap, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
         if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
             results$status <- TRUE
@@ -138,18 +170,29 @@ simon$handle$plots$heatmap$renderPlot <- expression(
         }
 
         if(results$status == TRUE){
+
             tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
-            svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            print(results$data)
+            svg(tmp_path, width = 24, height = 24, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+                print(results$data)
             dev.off()        
 
             ## Optimize SVG using svgo package
-            system(paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path), intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+            # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
+            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
+            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-            results$image = as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
+
+
+            svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
+            results$image = as.character(RCurl::base64Encode(svg_data, "txt"))
+            results$image_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+
+            results$status <- TRUE
         }
 
-       return(list(status = results$status, image = results$image))
+       return (list(status = results$status, image = results$image, image_png = results$image_png, dropped_columns = NULL, error_message = jsonlite::toJSON(results$data, force = TRUE)))
     }
 )
 

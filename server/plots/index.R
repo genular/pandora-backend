@@ -1,5 +1,10 @@
 source("server/includes/header.R")
 p_load(plumber)
+## Include basic data manipulation packages
+p_load(tidyverse)
+
+
+source(paste0("cron/functions/helpers.R"))
 
 source(paste0("server/",SERVER_NAME,"/correlation/main.R"))
 source(paste0("server/",SERVER_NAME,"/heatmap/main.R"))
@@ -9,6 +14,7 @@ source(paste0("server/",SERVER_NAME,"/summary/main.R"))
 source(paste0("server/",SERVER_NAME,"/distribution/main.R"))
 
 source(paste0("server/",SERVER_NAME,"/editing/main.R"))
+source(paste0("server/",SERVER_NAME,"/general/main.R"))
 
 deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     if(!requireNamespace("plumber", quietly = TRUE)) {
@@ -45,6 +51,17 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     ### EDITING
     router$handle("GET", "/plots/editing/correlation/render-options", simon$handle$plots$editing$correlation$renderOptions, serializer=serializer_unboxed_json())
     router$handle("GET", "/plots/editing/correlation/render-plot", simon$handle$plots$editing$correlation$renderPlot, serializer=serializer_unboxed_json())
+
+    router$handle("GET", "/plots/editing/heatmap/render-plot", simon$handle$plots$editing$heatmap$renderPlot, serializer=serializer_unboxed_json())
+
+    router$handle("GET", "/plots/editing/pcaAnalysis/getAvaliableColumns", simon$handle$plots$editing$pcaAnalysis$getAvaliableColumns, serializer=serializer_unboxed_json())
+    router$handle("GET", "/plots/editing/pcaAnalysis/render-plot", simon$handle$plots$editing$pcaAnalysis$renderPlot, serializer=serializer_unboxed_json())
+    router$handle("GET", "/plots/editing/pcaAnalysis/render-plot-zoomed", simon$handle$plots$editing$pcaAnalysis$renderPlotZoomed, serializer=serializer_unboxed_json())
+
+    router$handle("GET", "/plots/editing/overview/getAvaliableColumns", simon$handle$plots$editing$overview$getAvaliableColumns, serializer=serializer_unboxed_json())
+    router$handle("GET", "/plots/editing/overview/render-plot", simon$handle$plots$editing$overview$renderPlot, serializer=serializer_unboxed_json())
+
+    router$handle("GET", "/plots/editing/tsne/render-plot", simon$handle$plots$editing$tsne$renderPlot, serializer=serializer_unboxed_json())
     
     router$run(host = options$proxy_host, port = as.numeric(options$proxy_port), debug = options$debug)
 }

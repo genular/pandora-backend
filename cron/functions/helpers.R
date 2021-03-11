@@ -58,13 +58,23 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
     if(length(methods) == 0){
         methods <- c("center", "scale")
     }
-    whichToExclude <- sapply( names(data), function(y) any(sapply(excludeClasses, function(excludeClass)  return (y %in% excludeClass) )) )
+    if(!is.null(excludeClasses)){
+        whichToExclude <- sapply( names(data), function(y) any(sapply(excludeClasses, function(excludeClass)  return (y %in% excludeClass) )) )
+        dataset <- data[!whichToExclude]
+    }else{
+        dataset <- data
+    }
+
     # calculate the pre-process parameters from the dataset
-    preprocessParams <- caret::preProcess(data[!whichToExclude], method = methods, outcome = outcome, n.comp = 25)
+    preprocessParams <- caret::preProcess(dataset, method = methods, outcome = outcome, n.comp = 25)
     # transform the dataset using the parameters
-    processedMat <- predict(preprocessParams, newdata=data[!whichToExclude])
-    # summarize the transformed dataset
-    processedMat[excludeClasses] <- data[excludeClasses]
+    processedMat <- predict(preprocessParams, newdata=dataset)
+
+    if(!is.null(excludeClasses)){
+        # summarize the transformed dataset
+        processedMat[excludeClasses] <- data[excludeClasses]
+    }
+
     return(list(processedMat = processedMat, preprocessParams = preprocessParams))
 }
 

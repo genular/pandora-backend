@@ -282,3 +282,13 @@ all.is.numeric <- function(x, extras=c('.','NA'))
     }
     return(suppressWarnings(!any(is.na(as.numeric(xs)))))
 }
+#' @title Prints data to variable
+#' @description Prints data to variable
+#' @param R data
+#' @return text
+convertToString <- function(inputData){
+    text_output <- R.utils::captureOutput(inputData)
+    text_output <- paste(text_output, collapse="\n")
+    text_output <- toString(RCurl::base64Encode(text_output, "txt"))
+    return(text_output)
+}

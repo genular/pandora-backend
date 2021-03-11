@@ -385,7 +385,14 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
 
-        sudo Rscript -e "install.packages(c('devtools'), repo = 'https://cloud.r-project.org/')"
+        sudo Rscript -e "install.packages(c('devtools', 'remotes'), repo = 'https://cloud.r-project.org/')"
+
+
+        if [ "${R_VERSION}" == "3.6.3" ] ; then
+            ## New foreign package is only available for R > 4
+            sudo Rscript -e "remotes::install_github('cran/foreign@726985b019b3d18b353f387c1211e5b147e97f71')"
+            sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"            
+        fi
 
         ## server/backend/public/assets/datasets/Rdatasets.R
         sudo Rscript -e "devtools::install_github('trinker/pacman')"
@@ -397,6 +404,10 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         ## Check some shared deps
         if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then
             sudo Rscript -e "install.packages(c('R.utils'), repos='http://cran.us.r-project.org')"
+            sudo Rscript -e "devtools::install_github('mtennekes/tabplot')"
+
+            sudo Rscript -e "install.packages(c('tidyverse'), repo = 'https://cloud.r-project.org/')"
+
         fi
 
         if [ "${MODS[simon_analysis]}" == y ] ; then
@@ -420,6 +431,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "install.packages('gridSVG', repos='http://R-Forge.R-project.org')"
             sudo Rscript -e "devtools::install_github('sachsmc/plotROC')"
             ## sudo Rscript -e "devtools::install_github('laresbernardo/lares')"
+            sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')"
         fi
 
         if [ "${MODS[simon_cron]}" == y ] ; then
