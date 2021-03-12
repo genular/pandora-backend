@@ -263,8 +263,10 @@ checkCachedList <- function(cachePath){
 #' @param cachePath path to the cached data
 #' @param data path to the cached data
 #' @return boolean
-saveCachedList <- function(cachePath, data){    
-    save(data, file = cachePath)
+saveCachedList <- function(cachePath, data){
+    #if(!file.exists(cachePath)){
+        save(data, file = cachePath)    
+    #}
 }
 
 #' @title Check if All Elements in Character Vector are Numeric
@@ -312,3 +314,37 @@ is_var_empty <- function(variable){
     return(is_empty)
 }
 
+getPreviouslySavedResponse <- function(plot_unique_hash, response_data, check_count){
+    tmp_dir <- tempdir(check = TRUE)
+    tmp_check_count <- 0
+    for (name in names(plot_unique_hash)) {
+        cachedFiles <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plot_unique_hash[[name]], ".*")) 
+        for(cachedFile in cachedFiles){
+            cachedFileExtension <- tools::file_ext(cachedFile)
+            ## Check if some files where found in tmpdir that match our unique hash
+            if(identical(cachedFile, character(0)) == FALSE){
+                if(file.exists(cachedFile) == TRUE){
+                    if(cachedFileExtension == "svg"){
+                        raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                        encoded_file <- RCurl::base64Encode(raw_file, "txt")
+                        response_data[[name]] = as.character(encoded_file) 
+                    }else if(cachedFileExtension == "png"){
+                        raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                        encoded_file <- RCurl::base64Encode(raw_file, "txt")
+                        response_data[[paste0(name, "_png")]] = as.character(encoded_file)
+                    }else if(cachedFileExtension == "Rdata"){
+                        response_data[[name]] = substr(basename(cachedFile), 1, nchar(basename(cachedFile))-6)
+                    }else if(cachedFileExtension == "RDS"){
+                        response_data[[name]] = loadRObject(cachedFile)
+                    }
+                    tmp_check_count <- tmp_check_count + 1
+                }
+            }
+        }
+    }
+    if(tmp_check_count == check_count){
+        return (list(success = TRUE, message = response_data))
+    }else{
+        return(FALSE)
+    }
+}

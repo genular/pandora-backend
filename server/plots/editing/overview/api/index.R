@@ -7,7 +7,8 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
 
         response_data <- list(
             columns = NULL,
-            summary = NULL
+            summary = NULL, 
+            saveObjectHash = NULL
         )
 
         selectedFileID <- 0
@@ -17,6 +18,17 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
         settings <- NULL
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(args$settings)
+        }
+
+        plot_unique_hash <- list(
+            columns = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_overview_getAvaliableColumns_columns"), algo="md5", serialize=F), 
+            summary = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_overview_getAvaliableColumns_summary"), algo="md5", serialize=F), 
+            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_overview_getAvaliableColumns_hash"), algo="md5", serialize=F)
+        )
+
+        resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 3)
+        if(is.list(resp_check)){
+            return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -33,7 +45,6 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
 
         ## Load dataset
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-
 
         # we only want to show numeric cols
         valid_numeric <- NULL
@@ -70,6 +81,23 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
         response_data$summary <- data_summary %>% 
             left_join(fileHeader, by = "remapped", keep = FALSE) %>% dplyr::select(Mean, Std.Dev, Min, Median, Max, N.Valid, Pct.Valid, original)
 
+
+        tmp_path <- tempfile(pattern = plot_unique_hash[["columns"]], tmpdir = tempdir(), fileext = ".RDS")
+        saveCachedList(tmp_path, response_data$columns)
+
+        tmp_path <- tempfile(pattern = plot_unique_hash[["summary"]], tmpdir = tempdir(), fileext = ".RDS")
+        saveCachedList(tmp_path, response_data$summary)
+
+        tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
+        processingData <- list(
+            columns = response_data$columns,
+            summary = response_data$summary,
+            settings = settings,
+            fileHeader = fileHeader,
+            dataset = dataset
+        )
+        saveCachedList(tmp_path, processingData)
+        response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
         return (list(success = TRUE, message = response_data))
     }
@@ -131,44 +159,12 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
             distribution_plot =  digest::digest(paste0(selectedFileID, "_",args$settings,"_distribution_plot"), algo="md5", serialize=F),
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_overview_render_plot"), algo="md5", serialize=F)
         )
-        response_data$saveObjectHash = plot_unique_hash$saveObjectHash
 
-        tmp_dir <- tempdir(check = TRUE)
-        tmp_check_count <- 0
-        for (name in names(plot_unique_hash)) {
-            cachedFiles <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plot_unique_hash[[name]], ".*")) 
 
-            for(cachedFile in cachedFiles){
-                cachedFileExtension <- tools::file_ext(cachedFile)
+        resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
 
-                ## Check if some files where found in tmpdir that match our unique hash
-                if(identical(cachedFile, character(0)) == FALSE){
-                    if(file.exists(cachedFile) == TRUE){
-
-                        if(cachedFileExtension == "svg"){
-                            raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
-                            encoded_file <- RCurl::base64Encode(raw_file, "txt")
-
-                            response_data[[name]] = as.character(encoded_file) 
-
-                        }else if(cachedFileExtension == "png"){
-                            raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
-                            encoded_file <- RCurl::base64Encode(raw_file, "txt")
-
-                            response_data[[paste0(name, "_png")]] = as.character(encoded_file)
-
-                        }else if(cachedFileExtension == "Rdata"){
-                            response_data[[name]] = basename(cachedFile)
-                        }
-                        
-                        tmp_check_count <- tmp_check_count + 1
-                    }
-                }
-            }
-        }
-
-        if(tmp_check_count == 5){
-            return (list(success = TRUE, message = response_data))
+        if(is.list(resp_check)){
+            return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -200,7 +196,7 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
         }
         ## Remove grouping variable from selected columns
         settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariable)
-        
+
         ## Load dataset
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
@@ -261,7 +257,8 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
             dataset = dataset,
             dataset_filtered_processed = dataset_filtered
         )
-        save(processingData, file = tmp_path)
+        saveCachedList(tmp_path, processingData)
+        response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
         return (list(success = TRUE, message = response_data))
     }

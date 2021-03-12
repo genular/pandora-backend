@@ -66,7 +66,11 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
     }
 
     # calculate the pre-process parameters from the dataset
-    preprocessParams <- caret::preProcess(dataset, method = methods, outcome = outcome, n.comp = 25)
+    if(!is_null(outcome)){
+        preprocessParams <- caret::preProcess(dataset, method = methods, outcome = outcome, n.comp = 25)    
+    }else{
+        preprocessParams <- caret::preProcess(dataset, method = methods, n.comp = 25)
+    }
     # transform the dataset using the parameters
     processedMat <- predict(preprocessParams, newdata=dataset)
 

@@ -58,36 +58,11 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_render_plot"), algo="md5", serialize=F)
         )
 
-        tmp_dir <- tempdir(check = TRUE)
-        tmp_check_count <- 0
-        for (name in names(plot_unique_hash)) {
-            cachedFiles <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plot_unique_hash[[name]], ".*")) 
-
-            for(cachedFile in cachedFiles){
-                cachedFileExtension <- tools::file_ext(cachedFile)
-
-                ## Check if some files where found in tmpdir that match our unique hash
-                if(identical(cachedFile, character(0)) == FALSE){
-                    if(file.exists(cachedFile) == TRUE){
-                        raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
-                        encoded_file <- RCurl::base64Encode(raw_file, "txt")
-
-                        if(cachedFileExtension == "svg"){
-                            response_data[[name]] = as.character(encoded_file)    
-                        }else if(cachedFileExtension == "png"){
-                            response_data[[paste0(name, "_png")]] = as.character(encoded_file)
-                        }
-                        
-                        tmp_check_count <- tmp_check_count + 1
-                    }
-                }
-            }
+        resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
+        if(is.list(resp_check)){
+            return(resp_check)
         }
-        print(tmp_check_count)
 
-        if(tmp_check_count == 4){
-            # return (list(success = TRUE, message = response_data))
-        }
         ## 1st - Get JOB and his Info from database
         selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
         ## save(selectedFileDetails, file = "/tmp/testing.rds")
@@ -179,7 +154,6 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
-
         processingData <- list(
             tsne = tsne_calc,
             tsne_plot = rendered_plot_tsne,
@@ -188,8 +162,9 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             dataset = dataset,
             dataset_filtered_processed = dataset_filtered
         )
-        save(processingData, file = tmp_path)
+        saveCachedList(tmp_path, processingData)
+        response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
-        return (list(success = TRUE, message = response_data, saveObjectHash = plot_unique_hash[["saveObjectHash"]], info.norm = clust_plot_tsne$info.norm))
+        return (list(success = TRUE, message = response_data, info.norm = clust_plot_tsne$info.norm))
     }
 )

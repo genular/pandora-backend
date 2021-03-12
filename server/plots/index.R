@@ -54,9 +54,7 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
 
     router$handle("GET", "/plots/editing/heatmap/render-plot", simon$handle$plots$editing$heatmap$renderPlot, serializer=serializer_unboxed_json())
 
-    router$handle("GET", "/plots/editing/pcaAnalysis/getAvaliableColumns", simon$handle$plots$editing$pcaAnalysis$getAvaliableColumns, serializer=serializer_unboxed_json())
     router$handle("GET", "/plots/editing/pcaAnalysis/render-plot", simon$handle$plots$editing$pcaAnalysis$renderPlot, serializer=serializer_unboxed_json())
-    router$handle("GET", "/plots/editing/pcaAnalysis/render-plot-zoomed", simon$handle$plots$editing$pcaAnalysis$renderPlotZoomed, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/editing/overview/getAvaliableColumns", simon$handle$plots$editing$overview$getAvaliableColumns, serializer=serializer_unboxed_json())
     router$handle("GET", "/plots/editing/overview/render-plot", simon$handle$plots$editing$overview$renderPlot, serializer=serializer_unboxed_json())
