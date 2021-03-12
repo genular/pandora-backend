@@ -6,8 +6,10 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         args <- as.list(match.call())
 
         response_data <- list(
-            table_plot = NULL, table_plot_png = NULL, 
-            distribution_plot = NULL, distribution_plot_png = NULL)
+            tsne_plot = NULL, tsne_plot_png = NULL, 
+            tsne_cluster_plot = NULL, tsne_cluster_plot_png = NULL, 
+            tsne_cluster_heatmap_plot = NULL, tsne_cluster_heatmap_plot_png = NULL
+        )
 
 
         selectedFileID <- 0
@@ -55,12 +57,13 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         plot_unique_hash <- list(
             tsne_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_plot"), algo="md5", serialize=F),
             tsne_cluster_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_plot"), algo="md5", serialize=F),
+            tsne_cluster_heatmap_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_heatmap_plot"), algo="md5", serialize=F),
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_render_plot"), algo="md5", serialize=F)
         )
 
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
         if(is.list(resp_check)){
-            return(resp_check)
+            # return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database

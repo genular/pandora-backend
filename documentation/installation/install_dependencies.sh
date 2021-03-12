@@ -404,10 +404,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         ## Check some shared deps
         if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then
             sudo Rscript -e "install.packages(c('R.utils'), repos='http://cran.us.r-project.org')"
-            sudo Rscript -e "devtools::install_github('mtennekes/tabplot')"
-
             sudo Rscript -e "install.packages(c('tidyverse'), repo = 'https://cloud.r-project.org/')"
-
         fi
 
         if [ "${MODS[simon_analysis]}" == y ] ; then
@@ -431,7 +428,9 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "install.packages('gridSVG', repos='http://R-Forge.R-project.org')"
             sudo Rscript -e "devtools::install_github('sachsmc/plotROC')"
             ## sudo Rscript -e "devtools::install_github('laresbernardo/lares')"
-            sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')"
+            sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
+            sudo Rscript -e "devtools::install_github('mtennekes/tabplot')"
+            sudo Rscript -e "devtools::install_github('ggobi/ggally')"
         fi
 
         if [ "${MODS[simon_cron]}" == y ] ; then

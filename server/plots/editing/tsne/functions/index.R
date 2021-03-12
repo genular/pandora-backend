@@ -59,7 +59,7 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 # Hierarchical clustering
 cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
 
-	hc.norm = stats::hclust(dist(tsne.norm$Y), method = "ward.D")
+	hc.norm = stats::hclust(dist(tsne.norm$Y), method = "ward.D") 
 	
 	info.norm$cluster = factor(cutree(hc.norm, 9))
 
