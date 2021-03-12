@@ -4,27 +4,33 @@
 simon$handle$plots$editing$heatmap$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
-        results <- list(status = FALSE, data = NULL, image = NULL)
-        plotUniqueHash <- "editing_clustering"
+        response_data <- list(
+            clustering_plot = NULL, clustering_plot_png = NULL, 
+            saveObjectHash = NULL)
+
 
         selectedFileID <- 0
         if("selectedFileID" %in% names(args)){
             selectedFileID <- as.numeric(args$selectedFileID)
-            plotUniqueHash <- paste0(plotUniqueHash, selectedFileID)
         }
-
-
 
         settings <- NULL
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(args$settings)
-            plotUniqueHash <- paste0(plotUniqueHash, args$settings)
         }
 
-        if(length(settings$removeNA) == 0){
+        if(is_var_empty(settings$selectedColumns) == TRUE){
+            settings$selectedColumns = NULL
+        }
+
+        if(is_var_empty(settings$selectedRows) == TRUE){
+            settings$selectedRows = NULL
+        }
+
+        if(is_var_empty(settings$removeNA) == TRUE){
             settings$removeNA = FALSE
         }
-        if(length(settings$scale) == 0){
+        if(is_var_empty(settings$scale) == TRUE){
             settings$scale = "column"
         }
         # Define default values
@@ -33,7 +39,7 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         settings$displayColnames = FALSE
         settings$displayRownames = FALSE
 
-        if(length(settings$displayOptions) > 0) {
+        if(is_var_empty(settings$displayOptions) == FALSE) {
             if("numbers" %in% settings$displayOptions){
                 settings$displayNumbers = TRUE
             }
@@ -48,96 +54,125 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
             }
         }
 
-        if(length(settings$plotWidth) == 0){
+        if(is_var_empty(settings$plotWidth) == TRUE){
             settings$plotWidth = 20
         }
-        if(length(settings$plotRatio) == 0){
+        if(is_var_empty(settings$plotRatio) == TRUE){
             settings$plotRatio = 0.8
         }
-        if(length(settings$clustDistance) == 0){
+        if(is_var_empty(settings$clustDistance) == TRUE){
             settings$clustDistance = "correlation"
         }
-        if(length(settings$clustLinkage) == 0){
+        if(is_var_empty(settings$clustLinkage) == TRUE){
             settings$clustLinkage = "ward.D2"
         }
-        if(length(settings$clustOrdering) == 0){
+        if(is_var_empty(settings$clustOrdering) == TRUE){
             settings$clustOrdering = 1
         }
-        if(length(settings$fontSizeGeneral) == 0){
+        if(is_var_empty(settings$fontSizeGeneral) == TRUE){
             settings$fontSizeGeneral = 10
         }
-        if(length(settings$fontSizeRow) == 0){
+        if(is_var_empty(settings$fontSizeRow) == TRUE){
             settings$fontSizeRow = 9
         }
-        if(length(settings$fontSizeCol) == 0){
+        if(is_var_empty(settings$fontSizeCol) == TRUE){
             settings$fontSizeCol = 9
         }
-        if(length(settings$fontSizeNumbers) == 0){
+        if(is_var_empty(settings$fontSizeNumbers) == TRUE){
             settings$fontSizeNumbers = 7
         }
+        if(is_var_empty(settings$preProcessDataset) == TRUE){
+            settings$preProcessDataset = NULL
+        }
 
-        plotUniqueHash <-  digest::digest(plotUniqueHash, algo="md5", serialize=F)
+        plot_unique_hash <- list(
+            clustering_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_clustering_plot"), algo="md5", serialize=F), 
+            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_clustering_render_plot"), algo="md5", serialize=F)
+        )
+        response_data$saveObjectHash = plot_unique_hash$saveObjectHash
 
         tmp_dir <- tempdir(check = TRUE)
-        cachedFile <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plotUniqueHash, ".*\\.svg"))
-        ## Check if some files where found in tmpdir that match our unique hash
-        if(identical(cachedFile, character(0)) == FALSE){
-            if(file.exists(cachedFile) == TRUE){
-                results$status <- TRUE                
-                results$image = as.character(RCurl::base64Encode(readBin(cachedFile, "raw", n = file.info(cachedFile)$size), "txt"))
+        tmp_check_count <- 0
+        for (name in names(plot_unique_hash)) {
+            cachedFiles <- list.files(tmp_dir, full.names = TRUE, pattern=paste0(plot_unique_hash[[name]], ".*")) 
+            for(cachedFile in cachedFiles){
+                cachedFileExtension <- tools::file_ext(cachedFile)
+                ## Check if some files where found in tmpdir that match our unique hash
+                if(identical(cachedFile, character(0)) == FALSE){
+                    if(file.exists(cachedFile) == TRUE){
+                        if(cachedFileExtension == "svg"){
+                            raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                            encoded_file <- RCurl::base64Encode(raw_file, "txt")
+                            response_data[[name]] = as.character(encoded_file) 
+                               
+                        }else if(cachedFileExtension == "png"){
+                            raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                            encoded_file <- RCurl::base64Encode(raw_file, "txt")
+                            response_data[[paste0(name, "_png")]] = as.character(encoded_file)
 
-                cachedFile_png <- stringr::str_replace(cachedFile, ".svg", ".png")
-                if(file.exists(cachedFile_png) == TRUE){
-                    results$image_png = as.character(RCurl::base64Encode(readBin(cachedFile_png, "raw", n = file.info(cachedFile_png)$size), "txt"))
+                        }else if(cachedFileExtension == "Rdata"){
+                            response_data[[name]] = basename(cachedFile)
+                        }
+                        tmp_check_count <- tmp_check_count + 1
+                    }
                 }
-
-                return(list(status = results$status, image = results$image, image_png = results$image_png))
             }
         }
 
+        if(tmp_check_count == 3){
+            return (list(success = TRUE, message = response_data))
+        }
         ## 1st - Get JOB and his Info from database
         selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
-        ## save(selectedFileDetails, file = "/tmp/testing.rds")
+        selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)
 
-        selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)     
         fileHeader <- jsonlite::fromJSON(selectedFileDetails[1,]$details)
         fileHeader <- plyr::ldply (fileHeader$header$formatted, data.frame)
         fileHeader <- subset (fileHeader, select = -c(.id))
-
-
 
         fileHeader <- fileHeader %>% mutate(unique_count = as.numeric(unique_count)) %>% mutate(position = as.numeric(position))
         fileHeader$remapped = as.character(fileHeader$remapped)
         fileHeader$original = as.character(fileHeader$original)
 
-        if(length(settings$selectedColumns) == 0) {
+        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+
+        if(is_null(settings$selectedColumns)) {
+            print("Selected Columns are not set, taking initial ones")
             selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(1) %>% arrange(position) %>% select(remapped)
             settings$selectedColumns <- tail(selectedColumns$remapped, 1)
         } 
-        if(length(settings$selectedRows) == 0) {
+        if(is_null(settings$selectedRows)) {
+            print("Selected Rows are not set, taking initial ones")
             selectedRows <- fileHeader %>% arrange(unique_count) %>% slice(2:n()) %>% arrange(position) %>% select(remapped)
             settings$selectedRows <- tail(selectedRows$remapped, -1)
         }
+        settings$selectedRows <-  setdiff(settings$selectedRows, settings$selectedColumns)
 
-
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        #print("===============> Selected columns")
+        #print(settings$selectedColumns)
+        #print("===============> Selected selectedRows")
+        #print(settings$selectedRows)
         dataset <- dataset[, names(dataset) %in% c(settings$selectedRows, settings$selectedColumns)]
 
-
-        if(!is.null(settings$removeNA) & settings$removeNA == FALSE){
+        if(!is.null(settings$preProcessDataset)){
+            #print("===============> DATASET PREPROCESS")
             preProcessedData <- preProcessData(dataset, settings$selectedColumns, settings$selectedColumns, methods = c("medianImpute", "center", "scale"))
-            dataset <- preProcessedData$processedMat
+            dataset_filtered <- preProcessedData$processedMat
 
-            preProcessedData <- preProcessData(dataset, settings$selectedColumns, settings$selectedColumns,  methods = c("nzv", "zv"))
-            dataset <- preProcessedData$processedMat
+            preProcessedData <- preProcessData(dataset_filtered, settings$selectedColumns, settings$selectedColumns,  methods = c("nzv", "zv"))
+            dataset_filtered <- preProcessedData$processedMat
+        }else{
+            dataset_filtered <- dataset
         }
 
-        #save(dataset, file = "/tmp/dataset_pre_cor")
-        #save(fileHeader, file = "/tmp/fileHeader")
-        #save(settings, file = "/tmp/settings_cor")
-        #save(dataset, file = "/tmp/dataset_cor")
+        if(settings$removeNA == TRUE){
+            #print("===============> DATASET na.omit")
+            dataset_filtered <- na.omit(dataset_filtered)
+        }
 
-        input_args <- c(list(data=dataset, 
+        #save(dataset_filtered, file = "/tmp/dataset_filtered")
+
+        input_args <- c(list(data=dataset_filtered, 
                             fileHeader=fileHeader,
                             selectedColumns=settings$selectedColumns,
                             selectedRows=settings$selectedRows,
@@ -157,42 +192,52 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
                             fontSizeCol=settings$fontSizeCol,
                             fontSizeNumbers=settings$fontSizeNumbers))
 
- 
-        process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(plot.heatmap, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
-        if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
-            results$status <- TRUE
+
+        clustering_out <- FALSE
+        clustering_out_status <- FALSE
+
+        process.execution <- tryCatch( garbage <- R.utils::captureOutput(clustering_out <- R.utils::withTimeout(do.call(plot.heatmap, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
+        if(!inherits(process.execution, "error") && !inherits(clustering_out, 'try-error') && !is.null(clustering_out)){
+            clustering_out_status <- TRUE
         }else{
-            if(inherits(results$data, 'try-error')){
+            if(inherits(clustering_out, 'try-error')){
                 message <- base::geterrmessage()
                 process.execution$message <- message
             }
-            results$data <- process.execution$message
+            clustering_out <- process.execution$message
         }
 
-        if(results$status == TRUE){
-
-            tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")
+        if(clustering_out_status == TRUE){
+            print("Plotting clustering plot")
+            tmp_path <- tempfile(pattern =  plot_unique_hash[["clustering_plot"]], tmpdir = tempdir(), fileext = ".svg")
             svg(tmp_path, width = 24, height = 24, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-                print(results$data)
+                print(clustering_out)
             dev.off()        
 
             ## Optimize SVG using svgo package
             tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
             png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-            # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
             convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
+
             system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-
-
             svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
-            results$image = as.character(RCurl::base64Encode(svg_data, "txt"))
-            results$image_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
-
-            results$status <- TRUE
+            response_data$clustering_plot = as.character(RCurl::base64Encode(svg_data, "txt"))
+            response_data$clustering_plot_png = as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
         }
 
-       return (list(status = results$status, image = results$image, image_png = results$image_png, dropped_columns = NULL, error_message = jsonlite::toJSON(results$data, force = TRUE)))
+        ## save data for latter use
+        tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
+        processingData <- list(
+            input_args = input_args,
+            clustering_out = clustering_out,
+            settings = settings,
+            dataset = dataset,
+            dataset_filtered_processed = dataset_filtered
+        )
+        save(processingData, file = tmp_path)
+
+        return (list(success = TRUE, message = response_data))
     }
 )
 

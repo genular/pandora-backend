@@ -203,14 +203,21 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(args$settings)
         }
-        if(length(settings$pcaComponentsDisplayX) == 0){
+
+        if(is_var_empty(settings$selectedColumns) == TRUE){
+            settings$selectedColumns = NULL
+        }
+
+        if(is_var_empty(settings$groupingVariable) == TRUE){
+            settings$groupingVariable = NULL
+        }
+
+        if(is_var_empty(settings$pcaComponentsDisplayX) == TRUE){
             settings$pcaComponentsDisplayX = "PC1"
         }
-        if(length(settings$pcaComponentsDisplayY) == 0){
+        
+        if(is_var_empty(settings$pcaComponentsDisplayY) == TRUE){
             settings$pcaComponentsDisplayY = "PC2"
-        }
-        if(length(settings$groupingVariable) == 0){
-            settings$groupingVariable = NULL
         }
 
         plot_unique_hash <- list(
@@ -268,15 +275,14 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         #save(fileHeader, file = "/tmp/fileHeader")
 
         if(!is.null(settings$groupingVariable)){
-            print("Selecting grouping variables from request: ")
-            print(settings$groupingVariable)
             settings$groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
             settings$groupingVariable <- settings$groupingVariable$remapped
         }
 
-        if(!is.null(settings$selectedColumns)){
-            print(paste0("Selecting columns from request"))
-            print(settings$selectedColumns)
+        if(is.null(settings$selectedColumns)){
+            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(5) %>% arrange(position) %>% select(remapped)
+            settings$selectedColumns <- tail(selectedColumns$remapped, 5)
+        }else{
             settings$selectedColumns <- fileHeader %>% filter(remapped %in% settings$selectedColumns)
             settings$selectedColumns <- settings$selectedColumns$remapped
         }
@@ -285,11 +291,8 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariable)
 
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-
         ## Drop all columns expect selected and grouping ones
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
-        print("Final dataset columns:")
-        print(names(dataset_filtered))
         
         ## Preprocess data except grouping variables
         preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable , methods = c("medianImpute", "center", "scale"))
@@ -308,11 +311,6 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         names(the_data_subset) <- plyr::mapvalues(names(the_data_subset), from=fileHeader$remapped, to=fileHeader$original)
         names(the_data_num) <- plyr::mapvalues(names(the_data_num), from=fileHeader$remapped, to=fileHeader$original)
 
-
-
-        save(dataset_filtered, file = "/tmp/dataset_filtered")
-        save(the_data, file = "/tmp/the_data")
-        save(the_data_num, file = "/tmp/the_data_num")
 
         ## from stats package
         pca_output <- prcomp(the_data_num, 
@@ -363,10 +361,6 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         if(is.null(settings$groupingVariable)){
             pca_details$plot_pca <- plot_pca(pca_details$pcs_df, pca_details$pca_output, settings)
         }else{
-            print("Plotting grouped plot:")
-            print(settings$groupingVariable)
-            #save(pca_details, file = "/tmp/pca_details")
-            #save(settings, file = "/tmp/settings")
             groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
             pca_details$plot_pca <- plot_pca_grouped(pca_details$pcs_df, pca_details$pca_output, settings, groupingVariable$original)
         }

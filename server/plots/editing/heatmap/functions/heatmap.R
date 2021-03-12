@@ -120,7 +120,12 @@ plot.heatmap <- function(   data,
         }
         #print(paste0("====<=> Processing column 2:", length(unique(data[[column]]))))
         ## make colors
-        colorsTemp <- RColorBrewer::brewer.pal(length(unique(data[[column]])), pallets[counter])
+        nb.cols <- length(unique(data[[column]]))
+        if(nb.cols > 8){
+          colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(nb.cols)
+        }else{
+          colorsTemp <- RColorBrewer::brewer.pal(nb.cols, pallets[counter])
+        }
         #print(colorsTemp)
 
         legendColorTemp <- setNames(colorsTemp, levels(data[[column]]))

@@ -292,3 +292,23 @@ convertToString <- function(inputData){
     text_output <- toString(RCurl::base64Encode(text_output, "txt"))
     return(text_output)
 }
+
+#' @title Check if request variable is Empty
+#' @description 
+#' @param variable
+#' @return boolean
+is_var_empty <- function(variable){
+    is_empty <- FALSE
+
+    if(length(variable) == 0){
+        is_empty <- TRUE
+    }else if(!is_null(variable) & rlang::is_empty(variable)){
+        is_empty <- TRUE
+    }else if(is_null(variable)){
+        is_empty <- TRUE
+    }else if(variable == ""){
+        is_empty <- TRUE
+    }
+    return(is_empty)
+}
+

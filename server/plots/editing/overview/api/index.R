@@ -21,8 +21,6 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
 
         ## 1st - Get JOB and his Info from database
         selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
-        ## save(selectedFileDetails, file = "/tmp/testing.rds")
-
         selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)
 
         fileHeader <- jsonlite::fromJSON(selectedFileDetails[1,]$details)
@@ -62,7 +60,7 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
             mutate(valid_zv = if_else(remapped %in% valid_zv, 1, 0)) %>%
             mutate(valid_10p = if_else(remapped %in% valid_10p, 1, 0)) %>%
             mutate(na_percentage = na_percentage[na_percentage$variable == remapped, ]$value)
-
+ 
 
         data_summary <- summarytools::descr(dataset, stats = c("common"), transpose = TRUE, headings = FALSE)
         data_summary <- as.data.frame(data_summary)
@@ -87,7 +85,8 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
 
         response_data <- list(
             table_plot = NULL, table_plot_png = NULL, 
-            distribution_plot = NULL, distribution_plot_png = NULL)
+            distribution_plot = NULL, distribution_plot_png = NULL,
+            saveObjectHash = NULL)
 
 
         selectedFileID <- 0
@@ -99,37 +98,40 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
             settings <- jsonlite::fromJSON(args$settings)
         }
 
-        if(length(settings$groupingVariable) == 0){
+        if(is_var_empty(settings$selectedColumns) == TRUE){
+            settings$selectedColumns = NULL
+        }
+
+        if(is_var_empty(settings$groupingVariable) == TRUE){
             settings$groupingVariable = NULL
         }
 
-        if(length(settings$preProcessDataset) == 0){
+        if(is_var_empty(settings$preProcessDataset) == TRUE){
             settings$preProcessDataset = NULL
         }
 
-        if(length(settings$fontSize) == 0) {
+        if(is_var_empty(settings$fontSize) == TRUE){
             settings$fontSize <- 12
         }
 
-        if(length(settings$theme) == 0) {
+        if(is_var_empty(settings$theme) == TRUE){
             settings$theme <- "theme_gray"
         }
 
-        if(length(settings$colorPalette) == 0) {
+        if(is_var_empty(settings$colorPalette) == TRUE){
             settings$colorPalette <- "RdPu"
         }
 
-        if(length(settings$aspect_ratio) == 0) {
+        if(is_var_empty(settings$aspect_ratio) == TRUE){
             settings$aspect_ratio <- 1
         }
 
         plot_unique_hash <- list(
             table_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_table_plot"), algo="md5", serialize=F), 
-            distribution_plot =  digest::digest(paste0(selectedFileID, "_",args$settings,"_distribution_plot"), algo="md5", serialize=F)
+            distribution_plot =  digest::digest(paste0(selectedFileID, "_",args$settings,"_distribution_plot"), algo="md5", serialize=F),
+            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_overview_render_plot"), algo="md5", serialize=F)
         )
-
-        ## we will return this hash to the client so we can request download of generated data
-        saveObjectHash <- digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_overview_render_plot"), algo="md5", serialize=F)
+        response_data$saveObjectHash = plot_unique_hash$saveObjectHash
 
         tmp_dir <- tempdir(check = TRUE)
         tmp_check_count <- 0
@@ -142,13 +144,21 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
                 ## Check if some files where found in tmpdir that match our unique hash
                 if(identical(cachedFile, character(0)) == FALSE){
                     if(file.exists(cachedFile) == TRUE){
-                        raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
-                        encoded_file <- RCurl::base64Encode(raw_file, "txt")
 
                         if(cachedFileExtension == "svg"){
-                            response_data[[name]] = as.character(encoded_file)    
+                            raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                            encoded_file <- RCurl::base64Encode(raw_file, "txt")
+
+                            response_data[[name]] = as.character(encoded_file) 
+
                         }else if(cachedFileExtension == "png"){
+                            raw_file <- readBin(cachedFile, "raw", n = file.info(cachedFile)$size)
+                            encoded_file <- RCurl::base64Encode(raw_file, "txt")
+
                             response_data[[paste0(name, "_png")]] = as.character(encoded_file)
+
+                        }else if(cachedFileExtension == "Rdata"){
+                            response_data[[name]] = basename(cachedFile)
                         }
                         
                         tmp_check_count <- tmp_check_count + 1
@@ -156,11 +166,9 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
                 }
             }
         }
-        
-        if(tmp_check_count == 4){
-            print("Returning results from cache")
 
-            return (list(success = TRUE, message = response_data, saveObjectHash = saveObjectHash))
+        if(tmp_check_count == 5){
+            return (list(success = TRUE, message = response_data))
         }
 
         ## 1st - Get JOB and his Info from database
@@ -183,22 +191,16 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
         }
 
         plot_all_columns <- FALSE
-        if(length(settings$selectedColumns) == 0) {
+        if(is_null(settings$selectedColumns)) {
             selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(5) %>% arrange(position) %>% select(remapped)
             settings$selectedColumns <- tail(selectedColumns$remapped, 5)
             plot_all_columns <- TRUE
         }else if(length(settings$selectedColumns) == nrow(fileHeader)) {
             plot_all_columns <- TRUE
         }
-
-        print("Selecting columns:")
-        print(settings$selectedColumns)
-        print(length(settings$selectedColumns))
-        print(nrow(fileHeader))
-
-        print("Selecting grouping variables:")
-        print(settings$groupingVariable)
-
+        ## Remove grouping variable from selected columns
+        settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariable)
+        
         ## Load dataset
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
@@ -211,17 +213,13 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
             #dataset_filtered <- preProcessedData$processedMat
         }
 
-        print("Generating table plot")
         rendered_plot_tableplot <- plot_tableplot(dataset_filtered, settings, fileHeader)
 
         if(rendered_plot_tableplot$status == TRUE){
-            print("Writing table plot")
-
             tmp_path <- tempfile(pattern = plot_unique_hash[["table_plot"]], tmpdir = tempdir(), fileext = ".svg")
             save_tableplot_info <- save_tableplot(rendered_plot_tableplot$data, tmp_path, settings)
 
             if(save_tableplot_info$status == TRUE){
-                print("Optimize SVG using svgo package")
                 ## Optimize SVG using svgo package
                 tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
                 png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
@@ -235,8 +233,6 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
             }
 
         }
-
-        print("Generating matrix plot")
         rendered_plot_matrix <- plot_matrix_plot(dataset_filtered, settings, fileHeader)
         
         tmp_path <- tempfile(pattern = plot_unique_hash[["distribution_plot"]], tmpdir = tempdir(), fileext = ".svg")
@@ -257,7 +253,7 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
 
 
         ## save data for latter use
-        tmp_path <- tempfile(pattern = saveObjectHash, tmpdir = tempdir(), fileext = ".Rdata")
+        tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
             plot_tableplot = rendered_plot_tableplot,
             plot_matrix = rendered_plot_matrix,
@@ -267,6 +263,6 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
         )
         save(processingData, file = tmp_path)
 
-        return (list(success = TRUE, message = response_data, saveObjectHash = saveObjectHash))
+        return (list(success = TRUE, message = response_data))
     }
 )
