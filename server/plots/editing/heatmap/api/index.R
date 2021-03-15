@@ -92,7 +92,7 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 3)
         if(is.list(resp_check)){
-            return(resp_check)
+            # return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -127,6 +127,13 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         #print(settings$selectedRows)
         dataset <- dataset[, names(dataset) %in% c(settings$selectedRows, settings$selectedColumns)]
 
+        num_test <- dataset %>% select(where(is.numeric))
+        for (groupVariable in settings$selectedColumns) {
+            if(groupVariable %in% names(num_test)){
+                dataset[[groupVariable]] <-paste("g",dataset[[groupVariable]],sep="_")
+            }
+        }
+
         if(!is.null(settings$preProcessDataset)){
             #print("===============> DATASET PREPROCESS")
             preProcessedData <- preProcessData(dataset, settings$selectedColumns, settings$selectedColumns, methods = c("medianImpute", "center", "scale"))
@@ -143,7 +150,7 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
             dataset_filtered <- na.omit(dataset_filtered)
         }
 
-        #save(dataset_filtered, file = "/tmp/dataset_filtered")
+        save(dataset_filtered, file = "/tmp/dataset_filtered")
 
         input_args <- c(list(data=dataset_filtered, 
                             fileHeader=fileHeader,
@@ -164,7 +171,6 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
                             fontSizeRow=settings$fontSizeRow,
                             fontSizeCol=settings$fontSizeCol,
                             fontSizeNumbers=settings$fontSizeNumbers))
-
 
         clustering_out <- FALSE
         clustering_out_status <- FALSE
@@ -197,6 +203,12 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
             svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
             response_data$clustering_plot = as.character(RCurl::base64Encode(svg_data, "txt"))
             response_data$clustering_plot_png = as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+        }else{
+            print("=============> Columns used in clustering")
+            header_mapped <- fileHeader %>% filter(remapped %in% names(dataset_filtered))
+            print(header_mapped$original)
+            print("=============> Clustering output:")
+            print(clustering_out)
         }
 
         ## save data for latter use

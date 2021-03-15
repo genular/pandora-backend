@@ -25,6 +25,10 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$selectedColumns = NULL
         }
 
+        if(is_var_empty(settings$excludedColumns) == TRUE){
+            settings$excludedColumns = NULL
+        }
+
         if(is_var_empty(settings$groupingVariable) == TRUE){
             settings$groupingVariable = NULL
         }
@@ -97,14 +101,28 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
 
+
+        num_test <- dataset_filtered %>% select(where(is.numeric))
+        for (groupVariable in settings$groupingVariable) {
+            if(groupVariable %in% names(num_test)){
+                dataset_filtered[[groupVariable]] <-paste("g",dataset_filtered[[groupVariable]],sep="_")
+            }
+        }
+
         if(!is.null(settings$preProcessedData)){
             ## Preprocess data except grouping variables
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable , methods = c("medianImpute", "center", "scale"))
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable, settings$groupingVariable, methods = c("medianImpute", "center", "scale"))
             dataset_filtered <- preProcessedData$processedMat
             #preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable ,  methods = c("nzv", "zv"))
             #dataset_filtered <- preProcessedData$processedMat
         }
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
+
+
+        save(dataset_filtered, file = "/tmp/dataset_filtered")
+        save(tsne_calc, file = "/tmp/tsne_calc")
+        save(settings, file = "/tmp/settings")
+        save(fileHeader, file = "/tmp/fileHeader")
 
         rendered_plot_tsne <- plot_tsne(tsne_calc$info.norm, settings, fileHeader)
 

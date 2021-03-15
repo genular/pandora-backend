@@ -16,7 +16,8 @@ calcClustering = function(mat, distance= "correlation", linkage = "complete"){
   } else if(distance == "correlation"){
     sds = apply(mat, 1, sd, na.rm = TRUE)
     if(any(is.na(sds) | (sds == 0))){
-      return("some objects have zero standard deviation, please choose a distance other than correlation!")
+      print("some objects have zero standard deviation, please choose a distance other than correlation!")
+      return(NA)
     }
     d = as.dist(1 - cor(t(mat)))
   } else {
@@ -37,14 +38,17 @@ calcClustering = function(mat, distance= "correlation", linkage = "complete"){
 
 calcOrdering = function(mat, distance, linkage, ordering){
     hc = calcClustering(mat, distance, linkage)
+
     if(class(hc) != "hclust") {
         return(hc)
     }
     if((length(unique(hc$height)) < length(hc$height)) && !is.na(ordering)){
-        return("multiple objects have same distance, only tree ordering 'tightest cluster first' is supported!")
+        print("====> multiple objects have same distance, only tree ordering 'tightest cluster first' is supported!")
+        return(hc)
     }
     if(!(all(hc$height == sort(hc$height)))){
-        return("some clusters have distance lower than its subclusters, please choose a method other than median or centroid!")
+        print("====> some clusters have distance lower than its subclusters, please choose a method other than median or centroid!")
+        return(hc)
     }
     if(is.na(ordering) || ordering == 1){
         return(hc) #default hclust() output
@@ -90,8 +94,6 @@ plot.heatmap <- function(   data,
 
     pallets <- c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds")
 
-   
-
     if(!is.null(removeNA) & removeNA == TRUE){
         data <- data[complete.cases(data), ]
     }
@@ -101,7 +103,6 @@ plot.heatmap <- function(   data,
 
     counter <- 0
     for(column in selectedColumns){
-      #print(paste0("====<=> Processing column 1: ", column))
       counter <- counter + 1
 
         data[[column]] <- as.factor(data[[column]])
@@ -118,15 +119,18 @@ plot.heatmap <- function(   data,
              annotationColumn[[column]] <- NA
              annotationColumn[[column]] <- data[[column]]
         }
-        #print(paste0("====<=> Processing column 2:", length(unique(data[[column]]))))
-        ## make colors
+
         nb.cols <- length(unique(data[[column]]))
         if(nb.cols > 8){
           colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(nb.cols)
         }else{
-          colorsTemp <- RColorBrewer::brewer.pal(nb.cols, pallets[counter])
+            colors.cutoff <- nb.cols
+            if(colors.cutoff < 3){
+                colors.cutoff <- 3
+            }
+          colorsTemp <- RColorBrewer::brewer.pal(colors.cutoff, pallets[counter])
         }
-        #print(colorsTemp)
+        colorsTemp <- head(colorsTemp,n=nb.cols)
 
         legendColorTemp <- setNames(colorsTemp, levels(data[[column]]))
         legendColorTemp <- legendColorTemp[!is.na(names(legendColorTemp))]
@@ -135,20 +139,19 @@ plot.heatmap <- function(   data,
     }  
 
     rownames(annotationColumn) = rownames(data)
+
     names(annotationColumn) <- plyr::mapvalues(names(annotationColumn), from=fileHeader$remapped, to=fileHeader$original)
+    names(legendColors) <- plyr::mapvalues(names(legendColors), from=fileHeader$remapped, to=fileHeader$original)
 
     data <- subset(data, select = !(names(data) %in% selectedColumns) )
     names(data) <- plyr::mapvalues(names(data), from=fileHeader$remapped, to=fileHeader$original)
 
-    #save(data, file = "/tmp/plot_data")    
-    #save(annotationColumn, file = "/tmp/plot_annotationColumn")
-    #save(fileHeader, file = "/tmp/plot_fileHeader")
 
     ## Transform data and order it by rowMeans
     t_data <- t(data)
 
-    hClustRows <- calcOrdering(t_data, "correlation", "complete", clustOrdering)
-    hClustCols <- calcOrdering(t(t_data), "correlation", "complete", clustOrdering)
+    hClustRows <- calcOrdering(t_data, clustDistance, clustLinkage, clustOrdering)
+    hClustCols <- calcOrdering(t(t_data), clustDistance, clustLinkage, clustOrdering)
 
     #image dimensions:
     picwIn = plotWidth / 2.54
@@ -157,7 +160,8 @@ plot.heatmap <- function(   data,
     picw = picwIn * 2.54 * dotsPerCm
     pich = pichIn * 2.54 * dotsPerCm
 
-    out <- pheatmap::pheatmap(t_data,
+
+    input_args <- c(list(t_data,
                        cluster_row =  hClustRows,
                        cluster_cols = hClustCols,
 
@@ -182,7 +186,9 @@ plot.heatmap <- function(   data,
                        fontsize_number = fontSizeNumbers,
                        width = picwIn, 
                        height = pichIn
-                    ) 
+                    ))
+
+    out <- do.call(pheatmap::pheatmap, input_args)
 
     return(out)
 }

@@ -52,7 +52,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
         if(is.list(resp_check)){
-            return(resp_check)
+            # return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -89,6 +89,14 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
         ## Drop all columns expect selected and grouping ones
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
+
+        num_test <- dataset_filtered %>% select(where(is.numeric))
+        for (groupVariable in settings$groupingVariable) {
+            if(groupVariable %in% names(num_test)){
+                dataset_filtered[[groupVariable]] <-paste("g",dataset_filtered[[groupVariable]],sep="_")
+            }
+        }
+
         if(!is.null(settings$preProcessDataset)){
             ## Preprocess data except grouping variables
             preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable , methods = c("medianImpute", "center", "scale"))
@@ -161,6 +169,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             pca_details$plot_pca <- plot_pca(pca_details$pcs_df, pca_details$pca_output, settings)
         }else{
             groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
+
             pca_details$plot_pca <- plot_pca_grouped(pca_details$pcs_df, pca_details$pca_output, settings, groupingVariable$original)
         }
 

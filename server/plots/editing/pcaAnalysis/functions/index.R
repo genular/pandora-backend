@@ -16,7 +16,8 @@ plot_pca_grouped <- function(pcs_df, pca_output, input, groupingVariable) {
                                           colour = 'fill_'
                                           )) +
         stat_ellipse(geom = "polygon", alpha = 0.1) +
-        geom_text(aes(label = labels),  size = 5) +
+        geom_point() + 
+        #geom_text(aes(label = labels),  size = 5) +
         
         geom_segment(data = PCAloadings, aes(x = 0, y = 0, xend =  xend,
                                              yend = yend, 
@@ -49,7 +50,8 @@ plot_pca <- function(pcs_df, pca_output, input) {
                              )) +
     
     
-    geom_text(aes(label = labels)) +
+    geom_point() + 
+    #geom_text(aes(label = labels),  size = 5) +
     theme_minimal() +
     scale_fill_brewer(palette="Set1") + 
     coord_equal() +

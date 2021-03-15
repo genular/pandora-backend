@@ -20,7 +20,7 @@ simon$filter$cors <- function(req, res){
 
 #* @filter authentication
 simon$filter$authentication <- function(req, res){
-    route_whitelist <- c('/analysis/other/available-packages')
+    route_whitelist <- c('/analysis/other/available-packages', '/plots/general/download-saved-object')
     current_route <- req$PATH_INFO
 
     auth_token <- NULL

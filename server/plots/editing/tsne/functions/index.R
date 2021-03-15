@@ -4,7 +4,12 @@ calculate_tsne <- function(dataset, settings, fileHeader){
 	names(info.norm) <- plyr::mapvalues(names(info.norm), from=fileHeader$remapped, to=fileHeader$original)
 
 	tsne_data <- dataset %>% select(where(is.numeric))
-	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), pca = TRUE, verbose = TRUE, max_iter = 2000, pca_scale = FALSE, pca_center = FALSE)
+	print("=============> Columns used to calculate t-SNE")
+
+	header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
+	print(header_mapped$original)
+
+	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), pca = TRUE, verbose = FALSE, max_iter = 2000, pca_scale = FALSE, pca_center = FALSE, check_duplicates = FALSE)
 	info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
 
 	return(list(info.norm = info.norm, tsne.norm = tsne.norm))
@@ -17,15 +22,17 @@ plot_tsne <- function(info.norm, settings, fileHeader){
     	groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
     	groupingVariable <- groupingVariable$original
 
+    	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
+
     	renderedPlot <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable))
 	}else{
 		renderedPlot <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2"))
 	}
 
 	renderedPlot <- renderedPlot + 
-	    geom_point(alpha = 0.3) + theme_bw() + 
+	    geom_point() +
 	    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
-	    scale_fill_brewer(palette=settings$colorPalette) + 
+	    scale_color_brewer(palette=settings$colorPalette) + 
         theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 	return(renderedPlot)
@@ -73,8 +80,8 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
 
 # Mclust clustering
 cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
-
-	mc.norm = mclust::Mclust(tsne.norm$Y, 9)
+	p_load("mclust")
+	mc.norm = Mclust(tsne.norm$Y, 9)
 	info.norm$cluster = factor(mc.norm$classification)
 	lc.cent = info.norm %>% group_by(cluster) %>% 
 							select(tsne1, tsne2) %>% 
@@ -101,12 +108,11 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
 	renderedPlot <- ggplot(info.norm, aes(x = tsne1, y = tsne2, colour = cluster)) + 
-						geom_point(alpha = 0.3) + 
-						theme_bw() + 
+						geom_point() + 
 						ggrepel::geom_label_repel(aes(label = cluster), data = cluster_data) + 
 						guides(colour = FALSE) +
 						labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
-					    scale_fill_brewer(palette=settings$colorPalette) + 
+	    				scale_color_brewer(palette=settings$colorPalette) + 
 				        theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 	return(renderedPlot)

@@ -92,7 +92,7 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
 
         if(is_null(settings$selectedColumns)) {
-            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(25) %>% arrange(position) %>% select(remapped)
+            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(50) %>% arrange(position) %>% select(remapped)
             settings$selectedColumns <- selectedColumns$remapped
         }
 
