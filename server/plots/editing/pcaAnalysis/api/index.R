@@ -44,6 +44,26 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             settings$removeNA = TRUE
         }
 
+        if(is_var_empty(settings$displayLoadings) == TRUE){
+            settings$displayLoadings = TRUE
+        }
+        
+        if(is_var_empty(settings$fontSize) == TRUE){
+            settings$fontSize <- 12
+        }
+
+        if(is_var_empty(settings$theme) == TRUE){
+            settings$theme <- "theme_gray"
+        }
+
+        if(is_var_empty(settings$colorPalette) == TRUE){
+            settings$colorPalette <- "RdPu"
+        }
+
+        if(is_var_empty(settings$aspect_ratio) == TRUE){
+            settings$aspect_ratio <- 1
+        }
+
         plot_unique_hash <- list(
             plot_scree = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_scree"), algo="md5", serialize=F), 
             plot_pca =  digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca"), algo="md5", serialize=F), 
@@ -52,13 +72,12 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
         if(is.list(resp_check)){
-            # return(resp_check)
+            #print("==> Serving request response from cache")
+            #return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
         selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
-        ## save(selectedFileDetails, file = "/tmp/testing.rds")
-
         selectedFilePath <- downloadDataset(selectedFileDetails[1,]$file_path)
 
         fileHeader <- jsonlite::fromJSON(selectedFileDetails[1,]$details)
@@ -68,7 +87,6 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         fileHeader <- fileHeader %>% mutate(unique_count = as.numeric(unique_count)) %>% mutate(position = as.numeric(position))
         fileHeader$remapped = as.character(fileHeader$remapped)
         fileHeader$original = as.character(fileHeader$original)
-        #save(fileHeader, file = "/tmp/fileHeader")
 
         if(!is.null(settings$groupingVariable)){
             settings$groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
@@ -148,7 +166,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         )
 
 
-        pca_details$plot_scree <- plot_scree(pca_details$pca_output)
+        pca_details$plot_scree <- plot_scree(pca_details$pca_output, settings)
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["plot_scree"]], tmpdir = tempdir(), fileext = ".svg")
         tempdir(check = TRUE)
@@ -156,20 +174,14 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             print(pca_details$plot_scree)
         dev.off()
 
-        ## Optimize SVG using svgo package
-        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
+        response_data$plot_scree <- optimizeSVGFile(tmp_path)
+        response_data$plot_scree_png <- convertSVGtoPNG(tmp_path)
 
-        response_data$plot_scree <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
-        response_data$plot_scree_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
 
         if(is.null(settings$groupingVariable)){
             pca_details$plot_pca <- plot_pca(pca_details$pcs_df, pca_details$pca_output, settings)
         }else{
             groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
-
             pca_details$plot_pca <- plot_pca_grouped(pca_details$pcs_df, pca_details$pca_output, settings, groupingVariable$original)
         }
 
@@ -180,20 +192,14 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             print(pca_details$plot_pca)
         dev.off()
 
-        ## Optimize SVG using svgo package
-        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
-
-        response_data$plot_pca <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
-        response_data$plot_pca_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+        response_data$plot_pca <- optimizeSVGFile(tmp_path)
+        response_data$plot_pca_png <- convertSVGtoPNG(tmp_path)
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
-        processingData <- list(pca_details = pca_details, 
+        processingData <- list(
+            pca_details = pca_details, 
             pca_details_output = pca_details_output, 
-            cordinates_x = 0, 
-            cordinates_y = 0
+            response_data = response_data
         )
         saveCachedList(tmp_path, processingData)
         response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)

@@ -67,7 +67,8 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
 
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
         if(is.list(resp_check)){
-            # return(resp_check)
+            print("==> Serving request response from cache")
+            return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -118,30 +119,17 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         }
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
 
-
-        save(dataset_filtered, file = "/tmp/dataset_filtered")
-        save(tsne_calc, file = "/tmp/tsne_calc")
-        save(settings, file = "/tmp/settings")
-        save(fileHeader, file = "/tmp/fileHeader")
-
         rendered_plot_tsne <- plot_tsne(tsne_calc$info.norm, settings, fileHeader)
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["tsne_plot"]], tmpdir = tempdir(), fileext = ".svg")
         svg(tmp_path, width = 12 * settings$aspect_ratio, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
             print(rendered_plot_tsne)
         dev.off()
-        ## Optimize SVG using svgo package
-        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-        # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
-        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-        svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
-        response_data$tsne_plot = as.character(RCurl::base64Encode(svg_data, "txt"))
-        response_data$tsne_plot_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+        response_data$tsne_plot <- optimizeSVGFile(tmp_path)
+        response_data$tsne_plot_png <- convertSVGtoPNG(tmp_path)
 
-        print(paste0("===========> Clustering using", settings$clusterType))
+        print(paste0("===> Clustering using", settings$clusterType))
 
         if(settings$clusterType == "Louvain"){
            clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
@@ -160,28 +148,20 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         svg(tmp_path, width = 12 * settings$aspect_ratio, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
             print(rendered_plot_tsne)
         dev.off()
-        ## Optimize SVG using svgo package
-        tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-        png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-        # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
-        convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-        system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
 
-        svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
-        response_data$tsne_cluster_plot = as.character(RCurl::base64Encode(svg_data, "txt"))
-        response_data$tsne_cluster_plot_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
-
-
+        response_data$tsne_cluster_plot <- optimizeSVGFile(tmp_path)
+        response_data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
-            tsne = tsne_calc,
-            tsne_plot = rendered_plot_tsne,
-            tsne_cluster_plot = rendered_plot_tsne,
-            settings = settings,
-            dataset = dataset,
-            dataset_filtered_processed = dataset_filtered
+            tsne = ifelse(exists("tsne_calc"), tsne_calc, FALSE),
+            tsne_plot = ifelse(exists("rendered_plot_tsne"), rendered_plot_tsne, FALSE),
+            tsne_cluster_plot = ifelse(exists("rendered_plot_tsne"), rendered_plot_tsne, FALSE),
+            tsne_clustered = ifelse(exists("clust_plot_tsne"), clust_plot_tsne, FALSE),
+            settings = ifelse(exists("settings"), settings, FALSE),
+            dataset = ifelse(exists("dataset"), dataset, FALSE),
+            dataset_filtered_processed = ifelse(exists("dataset_filtered"), dataset_filtered, FALSE)
         )
         saveCachedList(tmp_path, processingData)
         response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)

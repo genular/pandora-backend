@@ -15,7 +15,7 @@ calculate_tsne <- function(dataset, settings, fileHeader){
 	return(list(info.norm = info.norm, tsne.norm = tsne.norm))
 }
 
-plot_tsne <- function(info.norm, settings, fileHeader){
+plot_tsne <- function(info.norm, settings, fileHeader){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
     if(!is.null(settings$groupingVariable)){

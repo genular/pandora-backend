@@ -264,9 +264,12 @@ checkCachedList <- function(cachePath){
 #' @param data path to the cached data
 #' @return boolean
 saveCachedList <- function(cachePath, data){
-    #if(!file.exists(cachePath)){
-        save(data, file = cachePath)    
-    #}
+    if (file.exists(cachePath)) {
+        #Delete file if it exists
+        file.remove(cachePath)
+    }
+    
+    save(data, file = cachePath)    
 }
 
 #' @title Check if All Elements in Character Vector are Numeric
@@ -347,4 +350,67 @@ getPreviouslySavedResponse <- function(plot_unique_hash, response_data, check_co
     }else{
         return(FALSE)
     }
+}
+
+#' @title Execute command
+#' @description Executes command in system with timeout, If unsuccessful FALSE is returned otherwise command output
+#' @param cmd_string
+#' @param time_out
+#' @return boolean
+executeSystemCommand <- function(cmd_string, time_out = 300){
+    input_args <- list(
+        cmd_string,
+        timeout=time_out
+    )
+
+    cmd_out <- FALSE
+    cmd_out_status <- FALSE
+
+    process.execution <- tryCatch( garbage <- R.utils::captureOutput(cmd_out <- R.utils::withTimeout(
+        do.call(system, input_args), 
+        timeout=time_out - 2, 
+        onTimeout = "error") ), 
+        error = function(e){ return(e) } )
+
+    options(warn = -1)
+    if(!inherits(process.execution, "error") && !inherits(cmd_out, 'try-error')){
+        cmd_out_status <- TRUE
+    }else{
+        if(inherits(cmd_out, 'try-error')){
+            message <- base::geterrmessage()
+            process.execution$message <- message
+        }
+        cmd_out <- process.execution$message
+    }
+    # Restore default warning reporting
+    options(warn=0)
+    return(cmd_out_status)
+}
+convertSVGtoPNG <- function(tmp_path){
+    ## Optimize SVG using svgo package
+    tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
+    command <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+    
+    cmd_out <- executeSystemCommand(command, 300)
+    if(cmd_out == FALSE){
+        png_data <- FALSE
+    }else{
+        png_data <- as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))   
+    }
+
+    return(png_data)
+}
+
+optimizeSVGFile <- function(tmp_path){
+
+    command <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path)
+
+    cmd_out <- executeSystemCommand(command, 300)
+    if(cmd_out == FALSE){
+        svg_data <- FALSE
+    }else{
+        svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt")) 
+    }
+
+    return(svg_data)
 }

@@ -73,6 +73,7 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 3)
         if(is.list(resp_check)){
+            print("==> Serving request response from cache")
             return(resp_check)
         }
 
@@ -119,9 +120,7 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         }
 
         if(error_check == FALSE){
-            ## TODO: also give this data for download!
             data <- cor(dataset_filtered, use = settings$na_action, method = settings$correlation_method)
-            ## write.csv(data, file = "correlation.csv")
 
 
             if(settings$significance$enable == TRUE){
@@ -170,27 +169,21 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
                 print(corrplot_out)
             dev.off()
 
-            ## Optimize SVG using svgo package
-            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-            # convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " --config='{ \"plugins\": [{ \"removeDimensions\": true }] }' && ", png_cmd)
-            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
-
-            svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
-            response_data$correlation_plot = as.character(RCurl::base64Encode(svg_data, "txt"))
-            response_data$correlation_plot_png =  as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+            response_data$correlation_plot = optimizeSVGFile(tmp_path)
+            response_data$correlation_plot_png =  convertSVGtoPNG(tmp_path)
         }
 
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
-            input_args = input_args,
-            corrplot = corrplot_out,
-            settings = settings,
-            dataset = dataset,
-            dataset_filtered_processed = dataset_filtered
+            corr_data = ifelse(exists("data") == TRUE, data, FALSE),
+            p.mat = ifelse(exists("p.mat") == TRUE, p.mat, FALSE),
+            input_args = ifelse(exists("input_args") == TRUE, input_args, FALSE),
+            corrplot = ifelse(exists("corrplot_out") == TRUE, corrplot_out, FALSE),
+            settings = ifelse(exists("settings") == TRUE, settings, FALSE),
+            dataset = ifelse(exists("dataset"), dataset, FALSE),
+            dataset_filtered_processed = ifelse(exists("dataset_filtered") == TRUE, dataset_filtered, FALSE)
         )
         saveCachedList(tmp_path, processingData)
         response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)

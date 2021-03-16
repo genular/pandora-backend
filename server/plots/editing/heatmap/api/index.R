@@ -92,7 +92,8 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 3)
         if(is.list(resp_check)){
-            # return(resp_check)
+            print("==> Serving request response from cache")
+            return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -150,7 +151,7 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
             dataset_filtered <- na.omit(dataset_filtered)
         }
 
-        save(dataset_filtered, file = "/tmp/dataset_filtered")
+        #save(dataset_filtered, file = "/tmp/dataset_filtered")
 
         input_args <- c(list(data=dataset_filtered, 
                             fileHeader=fileHeader,
@@ -187,23 +188,17 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         }
 
         if(clustering_out_status == TRUE){
-            print("Plotting clustering plot")
+            print("===> Plotting clustering plot")
             tmp_path <- tempfile(pattern =  plot_unique_hash[["clustering_plot"]], tmpdir = tempdir(), fileext = ".svg")
             svg(tmp_path, width = 24, height = 24, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
                 print(clustering_out)
             dev.off()        
 
-            ## Optimize SVG using svgo package
-            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
+            response_data$clustering_plot = optimizeSVGFile(tmp_path)
+            response_data$clustering_plot_png = convertSVGtoPNG(tmp_path)
 
-            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
-
-            svg_data <- readBin(tmp_path, "raw", n = file.info(tmp_path)$size)
-            response_data$clustering_plot = as.character(RCurl::base64Encode(svg_data, "txt"))
-            response_data$clustering_plot_png = as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
         }else{
+            print("===> Error while plot.heatmap")
             print("=============> Columns used in clustering")
             header_mapped <- fileHeader %>% filter(remapped %in% names(dataset_filtered))
             print(header_mapped$original)
@@ -214,11 +209,11 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
-            input_args = input_args,
-            clustering_out = clustering_out,
-            settings = settings,
-            dataset = dataset,
-            dataset_filtered_processed = dataset_filtered
+            input_args = ifelse(exists("input_args"), input_args, FALSE),
+            clustering_out = ifelse(exists("clustering_out"), clustering_out, FALSE),
+            settings = ifelse(exists("settings"), settings, FALSE),
+            dataset = ifelse(exists("dataset"), dataset, FALSE),
+            dataset_filtered_processed = ifelse(exists("dataset_filtered"), dataset_filtered, FALSE)
         )
         saveCachedList(tmp_path, processingData)
         response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)

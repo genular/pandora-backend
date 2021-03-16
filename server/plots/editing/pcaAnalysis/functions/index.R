@@ -1,69 +1,76 @@
-plot_pca_grouped <- function(pcs_df, pca_output, input, groupingVariable) {
-    var_expl_x <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", input$pcaComponentsDisplayX))]^2/sum(pca_output$sdev^2), 1)
-    var_expl_y <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", input$pcaComponentsDisplayY))]^2/sum(pca_output$sdev^2), 1)
+plot_pca_grouped <- function(pcs_df, pca_output, settings, groupingVariable) {
+    var_expl_x <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", settings$pcaComponentsDisplayX))]^2/sum(pca_output$sdev^2), 1)
+    var_expl_y <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", settings$pcaComponentsDisplayY))]^2/sum(pca_output$sdev^2), 1)
     labels <- rownames(pca_output$x)
 
     pcs_df$fill_ <-  as.character(pcs_df[, groupingVariable, drop = TRUE])
 
-    # Extract loadings of the variables
-    PCAloadings <- data.frame(Variables = rownames(pca_output$rotation), pca_output$rotation)
-    PCAloadings$xend <- PCAloadings[[input$pcaComponentsDisplayX]]*50
-    PCAloadings$yend <- PCAloadings[[input$pcaComponentsDisplayY]]*50
 
-    plot  <- ggplot(pcs_df, aes_string(input$pcaComponentsDisplayX, 
-                                          input$pcaComponentsDisplayY, 
-                                          fill = 'fill_', 
-                                          colour = 'fill_'
-                                          )) +
-        stat_ellipse(geom = "polygon", alpha = 0.1) +
-        geom_point() + 
-        #geom_text(aes(label = labels),  size = 5) +
-        
-        geom_segment(data = PCAloadings, aes(x = 0, y = 0, xend =  xend,
-                                             yend = yend, 
-                                             fill = NULL), colour = "grey30", size=0.40, arrow = arrow(length = unit(1/2, "picas")), color = "black") +
-        annotate("text", x = PCAloadings$xend, y = PCAloadings$yend, label = PCAloadings$Variables) + 
+    theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-        theme_bw(base_size = 14) +
+    plot  <- ggplot(pcs_df, aes_string(settings$pcaComponentsDisplayX, 
+                settings$pcaComponentsDisplayY, 
+                fill = 'fill_', 
+                colour = 'fill_'
+            )) +
+            stat_ellipse(geom = "polygon", alpha = 0.1) +
+            geom_point() 
+            #geom_text(aes(label = labels),  size = 5) +
+
+    if(settings$displayLoadings == TRUE){
+        # Extract loadings of the variables
+        PCAloadings <- data.frame(Variables = rownames(pca_output$rotation), pca_output$rotation)
+        PCAloadings$xend <- PCAloadings[[settings$pcaComponentsDisplayX]]*50
+        PCAloadings$yend <- PCAloadings[[settings$pcaComponentsDisplayY]]*50
+        plot  <- plot  +
+            geom_segment(data = PCAloadings, aes(x = 0, y = 0, xend =  xend, yend = yend,  fill = NULL), colour = "grey30", size=0.40, arrow = arrow(length = unit(1/2, "picas")), color = "black") +
+            annotate("text", x = PCAloadings$xend, y = PCAloadings$yend, label = PCAloadings$Variables)
+
+    }
+
+    plot  <- plot  +
         scale_colour_discrete(guide = FALSE) +
         guides(fill = guide_legend(title = "groups")) +
-        theme(legend.position="top") +
+        scale_color_brewer(palette=settings$colorPalette) + 
+        theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank(), legend.position="top")  +
         coord_equal() +
-        xlab(paste0(input$pcaComponentsDisplayX, " (", var_expl_x, "% explained variance)")) +
-        ylab(paste0(input$pcaComponentsDisplayY, " (", var_expl_y, "% explained variance)")) 
+        xlab(paste0(settings$pcaComponentsDisplayX, " (", var_expl_x, "% explained variance)")) +
+        ylab(paste0(settings$pcaComponentsDisplayY, " (", var_expl_y, "% explained variance)"))
 
     return(plot)
-    
 }
 
 
-plot_pca <- function(pcs_df, pca_output, input) {
-    var_expl_x <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", input$pcaComponentsDisplayX))]^2/sum(pca_output$sdev^2), 1)
-    var_expl_y <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", input$pcaComponentsDisplayY))]^2/sum(pca_output$sdev^2), 1)
+plot_pca <- function(pcs_df, pca_output, settings) {
+    var_expl_x <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", settings$pcaComponentsDisplayX))]^2/sum(pca_output$sdev^2), 1)
+    var_expl_y <- round(100 * pca_output$sdev[as.numeric(gsub("[^0-9]", "", settings$pcaComponentsDisplayY))]^2/sum(pca_output$sdev^2), 1)
     labels <- rownames(pca_output$x)
     
 
+    theme_set(eval(parse(text=paste0(settings$theme, "()"))))
+
     # plot without grouping variable
     plot  <-  ggplot(pcs_df, 
-                             aes_string(input$pcaComponentsDisplayX, 
-                                        input$pcaComponentsDisplayY
+                             aes_string(settings$pcaComponentsDisplayX, 
+                                        settings$pcaComponentsDisplayY
                              )) +
     
     
     geom_point() + 
     #geom_text(aes(label = labels),  size = 5) +
-    theme_minimal() +
-    scale_fill_brewer(palette="Set1") + 
+    scale_fill_brewer(palette=settings$colorPalette) +
+    theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())  + 
     coord_equal() +
-    xlab(paste0(input$pcaComponentsDisplayX, " (", var_expl_x, "% explained variance)")) +
-    ylab(paste0(input$pcaComponentsDisplayY, " (", var_expl_y, "% explained variance)")) 
+    xlab(paste0(settings$pcaComponentsDisplayX, " (", var_expl_x, "% explained variance)")) +
+    ylab(paste0(settings$pcaComponentsDisplayY, " (", var_expl_y, "% explained variance)")) 
     
     return(plot)
     
 }
 
-plot_scree <- function(pca_output) {
+plot_scree <- function(pca_output, settings) {
     
+
     eig = (pca_output$sdev)^2
     variance <- eig*100/sum(eig)
     cumvar <- paste(round(cumsum(variance),0), "")
@@ -71,12 +78,14 @@ plot_scree <- function(pca_output) {
                          PCs = colnames(pca_output$x),
                          cumvar =  cumvar)
 
+    theme_set(eval(parse(text=paste0(settings$theme, "()"))))
+
     plot  <- ggplot(eig_df, aes(reorder(PCs, -eig), eig)) +
         geom_bar(stat = "identity") +
         geom_text(label = cumvar,
                   vjust=-0.4) +
-        theme_minimal() +
-        scale_fill_brewer(palette="Set1") +
+        scale_fill_brewer(palette=settings$colorPalette) +
+        theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())  + 
         xlab("PC") +
         ylab("Variances") +
         ylim(0,(max(eig_df$eig) * 1.1))  
