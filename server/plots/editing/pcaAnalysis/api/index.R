@@ -5,10 +5,43 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
-        response_data <- list(
-            plot_scree = NULL, plot_scree_png = NULL, 
-            plot_pca = NULL, plot_pca_png = NULL)
+        res.data <- list(
+            plot_scree = NULL, plot_scree_png = NULL,
+            plot_var_cos2_correlation = NULL, plot_var_cos2_correlation_png = NULL,
+            plot_var_cos2_corrplot = NULL, plot_var_cos2_corrplot_png = NULL,
+            plot_var_bar_plot = NULL, plot_var_bar_plot_png = NULL,
+            
+            plot_var_contrib_correlation = NULL, plot_var_contrib_correlation_png = NULL,
+            plot_var_contrib_corrplot = NULL, plot_var_contrib_corrplot_png = NULL,
+            plot_var_contrib_bar_plot = NULL, plot_var_contrib_bar_plot_png = NULL,
+            
+            plot_ind_cos2_correlation = NULL, plot_ind_cos2_correlation_png = NULL,
+            plot_ind_cos2_corrplot = NULL, plot_ind_cos2_corrplot_png = NULL,
+            plot_ind_bar_plot = NULL, plot_ind_bar_plot_png = NULL,
+            
+            plot_ind_contrib_correlation = NULL, plot_ind_contrib_correlation_png = NULL,
+            plot_ind_contrib_corrplot = NULL, plot_ind_contrib_corrplot_png = NULL,
+            plot_ind_contrib_bar_plot = NULL, plot_ind_contrib_bar_plot_png = NULL
+        )
 
+        res.info <- list(
+            bartlett = NULL,
+            kmo = NULL,
+            pca = NULL,
+            eig = NULL,
+            desc_dim_1 = NULL,
+            desc_dim_2 = NULL,
+            var = list(
+                coord = NULL,
+                cos2 =  NULL,
+                contrib = NULL
+            ),
+            ind = list(
+                coord = NULL,
+                cos2 =  NULL,
+                contrib = NULL
+            )
+        )
 
         selectedFileID <- 0
         if("selectedFileID" %in% names(args)){
@@ -64,13 +97,29 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             settings$aspect_ratio <- 1
         }
 
+        if(is_var_empty(settings$plot_size) == TRUE){
+            settings$plot_size <- 12
+        }
+
         plot_unique_hash <- list(
-            plot_scree = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_scree"), algo="md5", serialize=F), 
-            plot_pca =  digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca"), algo="md5", serialize=F), 
+            plot_scree = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_scree"), algo="md5", serialize=F),
+            plot_var_cos2_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_cos2_correlation"), algo="md5", serialize=F),
+            plot_var_cos2_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_cos2_corrplot"), algo="md5", serialize=F),
+            plot_var_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_bar_plot"), algo="md5", serialize=F),
+            plot_var_contrib_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_contrib_correlation"), algo="md5", serialize=F),
+            plot_var_contrib_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_contrib_corrplot"), algo="md5", serialize=F),
+            plot_var_contrib_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_contrib_bar_plot"), algo="md5", serialize=F),
+            plot_ind_cos2_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_cos2_correlation"), algo="md5", serialize=F),
+            plot_ind_cos2_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_cos2_corrplot"), algo="md5", serialize=F),
+            plot_ind_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_bar_plot"), algo="md5", serialize=F),
+            plot_ind_contrib_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_contrib_correlation"), algo="md5", serialize=F),
+            plot_ind_contrib_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_contrib_corrplot"), algo="md5", serialize=F),
+            plot_ind_contrib_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_contrib_bar_plot"), algo="md5", serialize=F),
+
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca_all"), algo="md5", serialize=F)
         )
 
-        resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 5)
+        resp_check <- getPreviouslySavedResponse(plot_unique_hash, res.data, 5)
         if(is.list(resp_check)){
             #print("==> Serving request response from cache")
             #return(resp_check)
@@ -108,10 +157,11 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         ## Drop all columns expect selected and grouping ones
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
 
+        ## Check if grouping variable is numeric and add prefix to it
         num_test <- dataset_filtered %>% select(where(is.numeric))
         for (groupVariable in settings$groupingVariable) {
             if(groupVariable %in% names(num_test)){
-                dataset_filtered[[groupVariable]] <-paste("g",dataset_filtered[[groupVariable]],sep="_")
+                dataset_filtered[[groupVariable]] <- paste("g",dataset_filtered[[groupVariable]],sep="_")
             }
         }
 
@@ -126,84 +176,123 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         }
 
         if(settings$removeNA == TRUE){
-            the_data <- na.omit(dataset_filtered)
+            dataset_filtered <- na.omit(dataset_filtered)
         }
 
-
-        the_data_subset <- na.omit(the_data %>% select(any_of(settings$selectedColumns)))
-        the_data_num <- na.omit(the_data_subset[,sapply(the_data_subset, is.numeric)])
-
-        ## Rempa column names from remaped to original
-        names(the_data) <- plyr::mapvalues(names(the_data), from=fileHeader$remapped, to=fileHeader$original)
-        names(the_data_subset) <- plyr::mapvalues(names(the_data_subset), from=fileHeader$remapped, to=fileHeader$original)
-        names(the_data_num) <- plyr::mapvalues(names(the_data_num), from=fileHeader$remapped, to=fileHeader$original)
-
-        ## from stats package
-        pca_output <- prcomp(the_data_num, 
-                             center = FALSE, 
-                             scale. = FALSE)
-
-        # data.frame of PCs
-        pcs_df <- cbind(the_data, pca_output$x)
-
-        pca_details = list(the_data = the_data, 
-                           the_data_num = the_data_num,
-                           pca_output = pca_output, 
-                           pcs_df = pcs_df, 
-                           pca_components = colnames(pca_output$x),
-                           plot_scree = NULL,
-                           plot_pca = NULL
-                        )
-        pca_details_output <- list(
-                pca_components = colnames(pca_output$x),
-                pca_rotation = pca_output$rotation,
-                pca_summary = convertToString(summary(pca_output)),
-                panel_scales_y = NULL,
-                panel_scales_x = NULL,
-                summary_bartlett = convertToString(psych::cortest.bartlett(cor(the_data_num), n = nrow(the_data_num))),
-                summary_kmo = convertToString(kmo_test(the_data_num)),
-                pca_dataframe = pcs_df
-        )
-
-
-        pca_details$plot_scree <- plot_scree(pca_details$pca_output, settings)
-
-        tmp_path <- tempfile(pattern = plot_unique_hash[["plot_scree"]], tmpdir = tempdir(), fileext = ".svg")
-        tempdir(check = TRUE)
-        svg(tmp_path, width = 18, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            print(pca_details$plot_scree)
-        dev.off()
-
-        response_data$plot_scree <- optimizeSVGFile(tmp_path)
-        response_data$plot_scree_png <- convertSVGtoPNG(tmp_path)
-
-
-        if(is.null(settings$groupingVariable)){
-            pca_details$plot_pca <- plot_pca(pca_details$pcs_df, pca_details$pca_output, settings)
-        }else{
-            groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
-            pca_details$plot_pca <- plot_pca_grouped(pca_details$pcs_df, pca_details$pca_output, settings, groupingVariable$original)
+        input_data <- dataset_filtered
+        if(!is.null(settings$groupingVariable)){
+            input_data <- input_data[ , -which(names(input_data) %in% settings$groupingVariable)]
         }
 
+        names(dataset_filtered) <- plyr::mapvalues(names(dataset_filtered), from=fileHeader$remapped, to=fileHeader$original)
+        names(input_data) <- plyr::mapvalues(names(input_data), from=fileHeader$remapped, to=fileHeader$original)
 
-        tmp_path <- tempfile(pattern = plot_unique_hash[["plot_pca"]], tmpdir = tempdir(), fileext = ".svg")
-        tempdir(check = TRUE)
-        svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            print(pca_details$plot_pca)
-        dev.off()
+        input_data_num <- input_data[,sapply(input_data, is.numeric)]
 
-        response_data$plot_pca <- optimizeSVGFile(tmp_path)
-        response_data$plot_pca_png <- convertSVGtoPNG(tmp_path)
+        res.pca <- PCA(input_data, scale.unit = FALSE, ncp = 5, graph = FALSE)
+
+        res.info$pca <- convertToString(summary(res.pca))
+        res.info$kmo <- convertToString(kmo_test(input_data_num))
+        res.info$bartlett <- convertToString(psych::cortest.bartlett(cor(input_data_num), n = nrow(input_data_num)))
+
+        # Eigenvalues / Variances
+        eig.val <- get_eigenvalue(res.pca)
+        res.info$eig <- convertToString(eig.val)
+
+        # Dimension description
+        res.desc <- dimdesc(res.pca, axes = c(1,2), proba = 0.05)
+        # Description of dimension
+        res.info$desc_dim_1 <- convertToString(round_df(res.desc$Dim.1$quanti, 4))
+        res.info$desc_dim_2 <- convertToString(round_df(res.desc$Dim.2$quanti, 4))
+
+        # Visualize the eigenvalues
+        tmp_path <- plots_fviz_eig(res.pca, settings, plot_unique_hash[["plot_scree"]])
+        res.data$plot_scree = optimizeSVGFile(tmp_path)
+        res.data$plot_scree_png = convertSVGtoPNG(tmp_path)
+
+        ############# Graph of variables
+        var <- get_pca_var(res.pca)
+        ## Coordinates
+        res.info$var$coord <- var$coord
+        ## Cos2: quality on the factore map
+        res.info$var$cos2 <- var$cos2
+        ## Contributions to the principal components
+        res.info$var$contrib <- var$contrib
+
+        # Visualize the results individuals and variables, respectively.
+        tmp_path <- plots_fviz_pca(res.pca, "cos2", "var", settings, plot_unique_hash[["plot_var_cos2_correlation"]], dataset_filtered, fileHeader)
+        res.data$plot_var_cos2_correlation = optimizeSVGFile(tmp_path)
+        res.data$plot_var_cos2_correlation_png = convertSVGtoPNG(tmp_path)
+
+        # Visualize the cos2 of variables on all the dimensions using the corrplot package
+        tmp_path <- plots_corrplot(var$cos2, settings, plot_unique_hash[["plot_var_cos2_corrplot"]])
+        res.data$plot_var_cos2_corrplot = optimizeSVGFile(tmp_path)
+        res.data$plot_var_cos2_corrplot_png = convertSVGtoPNG(tmp_path)
+        #  bar plot of variables cos2 
+        tmp_path <- plots_fviz_cos2(res.pca, "var", settings, plot_unique_hash[["plot_var_bar_plot"]])
+        res.data$plot_var_bar_plot = optimizeSVGFile(tmp_path)
+        res.data$plot_var_bar_plot_png = convertSVGtoPNG(tmp_path)
+
+
+        # The most important (or, contributing) variables highlighted on the correlation plot
+        tmp_path <- plots_fviz_pca(res.pca, "contrib", "var", settings, plot_unique_hash[["plot_var_contrib_correlation"]], dataset_filtered, fileHeader)
+        res.data$plot_var_contrib_correlation = optimizeSVGFile(tmp_path)
+        res.data$plot_var_contrib_correlation_png = convertSVGtoPNG(tmp_path)
+        # Highlight the most contributing variables for each dimension:
+        tmp_path <- plots_corrplot(var$contrib, settings, plot_unique_hash[["plot_var_contrib_corrplot"]])
+        res.data$plot_var_contrib_corrplot = optimizeSVGFile(tmp_path)
+        res.data$plot_var_contrib_corrplot_png = convertSVGtoPNG(tmp_path)
+        # Draw a bar plot of variable contributions
+        tmp_path <- plots_fviz_contrib(res.pca, "var", 1:2, 10, settings, plot_unique_hash[["plot_var_contrib_bar_plot"]])
+        res.data$plot_var_contrib_bar_plot = optimizeSVGFile(tmp_path)
+        res.data$plot_var_contrib_bar_plot_png = convertSVGtoPNG(tmp_path)
+
+
+        ############# Graph of individuals
+        ind <- get_pca_ind(res.pca)
+        ## Coordinates
+        res.info$ind$coord <- ind$coord
+        ## Cos2: quality on the factore map
+        res.info$ind$cos2 <- ind$cos2
+        ## Contributions to the principal components
+        res.info$ind$contrib <- ind$contrib
+
+        # Correlation circle
+        tmp_path <- plots_fviz_pca(res.pca, "cos2", "ind", settings, plot_unique_hash[["plot_ind_cos2_correlation"]], dataset_filtered, fileHeader)
+        res.data$plot_ind_cos2_correlation = optimizeSVGFile(tmp_path)
+        res.data$plot_ind_cos2_correlation_png = convertSVGtoPNG(tmp_path)
+        # Quality of representation
+        tmp_path <- plots_corrplot(ind$cos2, settings, plot_unique_hash[["plot_ind_cos2_corrplot"]])
+        res.data$plot_ind_cos2_corrplot = optimizeSVGFile(tmp_path)
+        res.data$plot_ind_cos2_corrplot_png = convertSVGtoPNG(tmp_path)
+        #  bar plot of variables cos2 
+        tmp_path <- plots_fviz_cos2(res.pca, "ind", settings, plot_unique_hash[["plot_ind_bar_plot"]])
+        res.data$plot_ind_bar_plot = optimizeSVGFile(tmp_path)
+        res.data$plot_ind_bar_plot_png = convertSVGtoPNG(tmp_path)
+
+        # The most important (or, contributing) variables highlighted on the correlation plot
+        tmp_path <- plots_fviz_pca(res.pca, "contrib", "ind", settings, plot_unique_hash[["plot_ind_contrib_correlation"]], dataset_filtered, fileHeader)
+        res.data$plot_ind_contrib_correlation = optimizeSVGFile(tmp_path)
+        res.data$plot_ind_contrib_correlation_png = convertSVGtoPNG(tmp_path)
+        # Contributions of individuals to PCs
+        tmp_path <- plots_corrplot(ind$contrib, settings, plot_unique_hash[["plot_ind_contrib_corrplot"]])
+        res.data$plot_ind_contrib_corrplot = optimizeSVGFile(tmp_path)
+        res.data$plot_ind_contrib_corrplot_png = convertSVGtoPNG(tmp_path)
+        # Contributions of individuals to PC1 and PC2
+        tmp_path <- plots_fviz_contrib(res.pca, "ind", 1:2, 10, settings, plot_unique_hash[["plot_ind_contrib_bar_plot"]])
+        res.data$plot_ind_contrib_bar_plot = optimizeSVGFile(tmp_path)
+        res.data$plot_ind_contrib_bar_plot_png = convertSVGtoPNG(tmp_path)
+
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
-            pca_details = pca_details, 
-            pca_details_output = pca_details_output, 
-            response_data = response_data
+            res.info = res.info, 
+            res.pca = res.pca, 
+            input_data = input_data
         )
         saveCachedList(tmp_path, processingData)
-        response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
+        res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
-        return (list(success = TRUE, message = response_data, details = pca_details_output))
+        return (list(success = TRUE, message = res.data, details = res.info))
     }
 )

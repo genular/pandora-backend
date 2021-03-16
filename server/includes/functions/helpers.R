@@ -287,14 +287,36 @@ all.is.numeric <- function(x, extras=c('.','NA'))
     }
     return(suppressWarnings(!any(is.na(as.numeric(xs)))))
 }
+
+#' @title Round dataframe
+#' @description Round only numeric dataframe
+#' @param x
+#' @param extras
+#' @return boolean
+round_df <- function(df, digits) {
+  nums <- vapply(df, is.numeric, FUN.VALUE = logical(1))
+  df[,nums] <- round(df[,nums], digits = digits)
+  return(df)
+}
+
 #' @title Prints data to variable
 #' @description Prints data to variable
 #' @param R data
 #' @return text
 convertToString <- function(inputData){
-    text_output <- R.utils::captureOutput(inputData)
+    width <- getOption("width")
+    digits <- getOption("digits")
+
+    options(width = 250)
+    options(digits = 10)
+
+    text_output <- R.utils::captureOutput(print(inputData, width = 250, digits = 10))
     text_output <- paste(text_output, collapse="\n")
     text_output <- toString(RCurl::base64Encode(text_output, "txt"))
+
+    options(width = width)
+    options(digits = digits)
+
     return(text_output)
 }
 
