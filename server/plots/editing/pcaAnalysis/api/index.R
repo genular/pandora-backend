@@ -8,6 +8,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         res.data <- list(
             plot_scree = NULL, plot_scree_png = NULL,
             plot_var_cos2_correlation = NULL, plot_var_cos2_correlation_png = NULL,
+            plot_var_cos2_correlation_cluster = NULL, plot_var_cos2_correlation_cluster_png = NULL,
             plot_var_cos2_corrplot = NULL, plot_var_cos2_corrplot_png = NULL,
             plot_var_bar_plot = NULL, plot_var_bar_plot_png = NULL,
             
@@ -16,6 +17,10 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             plot_var_contrib_bar_plot = NULL, plot_var_contrib_bar_plot_png = NULL,
             
             plot_ind_cos2_correlation = NULL, plot_ind_cos2_correlation_png = NULL,
+
+            plot_ind_cos2_correlation_grouped = NULL,
+            plot_ind_cos2_correlation_grouped_biplot = NULL,
+
             plot_ind_cos2_corrplot = NULL, plot_ind_cos2_corrplot_png = NULL,
             plot_ind_bar_plot = NULL, plot_ind_bar_plot_png = NULL,
             
@@ -57,8 +62,8 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             settings$selectedColumns = NULL
         }
 
-        if(is_var_empty(settings$groupingVariable) == TRUE){
-            settings$groupingVariable = NULL
+        if(is_var_empty(settings$groupingVariables) == TRUE){
+            settings$groupingVariables = NULL
         }
 
         if(is_var_empty(settings$pcaComponentsDisplayX) == TRUE){
@@ -101,15 +106,22 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             settings$plot_size <- 12
         }
 
+
+
         plot_unique_hash <- list(
             plot_scree = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_scree"), algo="md5", serialize=F),
             plot_var_cos2_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_cos2_correlation"), algo="md5", serialize=F),
+            plot_var_cos2_correlation_cluster = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_cos2_correlation_cluster"), algo="md5", serialize=F),
             plot_var_cos2_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_cos2_corrplot"), algo="md5", serialize=F),
             plot_var_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_bar_plot"), algo="md5", serialize=F),
             plot_var_contrib_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_contrib_correlation"), algo="md5", serialize=F),
             plot_var_contrib_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_contrib_corrplot"), algo="md5", serialize=F),
             plot_var_contrib_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_var_contrib_bar_plot"), algo="md5", serialize=F),
             plot_ind_cos2_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_cos2_correlation"), algo="md5", serialize=F),
+
+            plot_ind_cos2_correlation_grouped = list(),
+            plot_ind_cos2_correlation_grouped_biplot =  list(),
+
             plot_ind_cos2_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_cos2_corrplot"), algo="md5", serialize=F),
             plot_ind_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_bar_plot"), algo="md5", serialize=F),
             plot_ind_contrib_correlation = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_contrib_correlation"), algo="md5", serialize=F),
@@ -119,11 +131,24 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca_all"), algo="md5", serialize=F)
         )
 
-        resp_check <- getPreviouslySavedResponse(plot_unique_hash, res.data, 5)
-        if(is.list(resp_check)){
+        if(!is.null(settings$groupingVariables)){
+            res.data$plot_ind_cos2_correlation_grouped = list()
+            res.data$plot_ind_cos2_correlation_grouped_biplot = list()
+
+            for(groupVariable in settings$groupingVariables){
+                res.data$plot_ind_cos2_correlation_grouped[[groupVariable]] <- list(name = NULL, svg = NULL, png = NULL)
+                res.data$plot_ind_cos2_correlation_grouped_biplot[[groupVariable]] <- list(name = NULL, svg = NULL, png = NULL)
+
+                plot_unique_hash$plot_ind_cos2_correlation_grouped[[groupVariable]] <- digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_cos2_correlation_grouped_",groupVariable), algo="md5", serialize=F)
+                plot_unique_hash$plot_ind_cos2_correlation_grouped_biplot[[groupVariable]] <- digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_cos2_correlation_grouped_biplot_",groupVariable), algo="md5", serialize=F)
+            }
+        }
+
+        #resp_check <- getPreviouslySavedResponse(plot_unique_hash, res.data, 5)
+        #if(is.list(resp_check)){
             #print("==> Serving request response from cache")
             #return(resp_check)
-        }
+        #}
 
         ## 1st - Get JOB and his Info from database
         selectedFileDetails <- db.apps.getFileDetails(selectedFileID)
@@ -137,9 +162,9 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         fileHeader$remapped = as.character(fileHeader$remapped)
         fileHeader$original = as.character(fileHeader$original)
 
-        if(!is.null(settings$groupingVariable)){
-            settings$groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
-            settings$groupingVariable <- settings$groupingVariable$remapped
+        if(!is.null(settings$groupingVariables)){
+            settings$groupingVariables <- fileHeader %>% filter(remapped %in% settings$groupingVariables)
+            settings$groupingVariables <- settings$groupingVariables$remapped
         }
 
         if(is.null(settings$selectedColumns)){
@@ -151,15 +176,15 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         }
 
         ## Remove grouping variable from selected columns
-        settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariable)
+        settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariables)
 
         dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
         ## Drop all columns expect selected and grouping ones
-        dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
+        dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
 
         ## Check if grouping variable is numeric and add prefix to it
         num_test <- dataset_filtered %>% select(where(is.numeric))
-        for (groupVariable in settings$groupingVariable) {
+        for (groupVariable in settings$groupingVariables) {
             if(groupVariable %in% names(num_test)){
                 dataset_filtered[[groupVariable]] <- paste("g",dataset_filtered[[groupVariable]],sep="_")
             }
@@ -167,9 +192,9 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         if(!is.null(settings$preProcessDataset)){
             ## Preprocess data except grouping variables
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable , methods = c("medianImpute", "center", "scale"))
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = c("medianImpute", "center", "scale"))
             dataset_filtered <- preProcessedData$processedMat
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable ,  methods = c("nzv", "zv"))
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("nzv", "zv"))
             dataset_filtered <- preProcessedData$processedMat
         }else{
             dataset_filtered <- dataset
@@ -180,8 +205,8 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         }
 
         input_data <- dataset_filtered
-        if(!is.null(settings$groupingVariable)){
-            input_data <- input_data[ , -which(names(input_data) %in% settings$groupingVariable)]
+        if(!is.null(settings$groupingVariables)){
+            input_data <- input_data[ , -which(names(input_data) %in% settings$groupingVariables)]
         }
 
         names(dataset_filtered) <- plyr::mapvalues(names(dataset_filtered), from=fileHeader$remapped, to=fileHeader$original)
@@ -224,6 +249,17 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         res.data$plot_var_cos2_correlation = optimizeSVGFile(tmp_path)
         res.data$plot_var_cos2_correlation_png = convertSVGtoPNG(tmp_path)
 
+        # Classify the variables into 3 groups using the kmeans clustering algorithm. 
+        set.seed(123)
+        res.km <- kmeans(var$coord, centers = 3, nstart = 256)
+        grp <- as.factor(res.km$cluster)
+
+        tmp_path <- plots_fviz_pca(res.pca, grp, "var", settings, plot_unique_hash[["plot_var_cos2_correlation_cluster"]], dataset_filtered, fileHeader, TRUE)
+        res.data$plot_var_cos2_correlation_cluster = optimizeSVGFile(tmp_path)
+        res.data$plot_var_cos2_correlation_cluster_png = convertSVGtoPNG(tmp_path)
+
+
+
         # Visualize the cos2 of variables on all the dimensions using the corrplot package
         tmp_path <- plots_corrplot(var$cos2, settings, plot_unique_hash[["plot_var_cos2_corrplot"]])
         res.data$plot_var_cos2_corrplot = optimizeSVGFile(tmp_path)
@@ -261,6 +297,28 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         tmp_path <- plots_fviz_pca(res.pca, "cos2", "ind", settings, plot_unique_hash[["plot_ind_cos2_correlation"]], dataset_filtered, fileHeader)
         res.data$plot_ind_cos2_correlation = optimizeSVGFile(tmp_path)
         res.data$plot_ind_cos2_correlation_png = convertSVGtoPNG(tmp_path)
+
+        if(!is.null(settings$groupingVariables)){
+
+            for(groupVariable in settings$groupingVariables){
+                # groupVariable is remaped value
+                groupingVariable <- fileHeader %>% filter(remapped %in% groupVariable)
+                groupingVariable <- groupingVariable$original
+
+                tmp_path <- plots_fviz_pca_ind_grouped(res.pca, dataset_filtered, settings, groupingVariable, fileHeader, plot_unique_hash$plot_ind_cos2_correlation_grouped[[groupVariable]])
+                res.data$plot_ind_cos2_correlation_grouped[[groupVariable]]$name <- groupingVariable
+                res.data$plot_ind_cos2_correlation_grouped[[groupVariable]]$svg <- optimizeSVGFile(tmp_path)
+                res.data$plot_ind_cos2_correlation_grouped[[groupVariable]]$png <- convertSVGtoPNG(tmp_path)
+
+
+                tmp_path <- plots_fviz_pca_biplot_grouped(res.pca, dataset_filtered, settings, groupingVariable, fileHeader, plot_unique_hash$plot_ind_cos2_correlation_grouped_biplot[[groupVariable]])
+                res.data$plot_ind_cos2_correlation_grouped_biplot[[groupVariable]]$name <- groupingVariable
+                res.data$plot_ind_cos2_correlation_grouped_biplot[[groupVariable]]$svg <- optimizeSVGFile(tmp_path)
+                res.data$plot_ind_cos2_correlation_grouped_biplot[[groupVariable]]$png <- convertSVGtoPNG(tmp_path)
+            }
+        }
+
+
         # Quality of representation
         tmp_path <- plots_corrplot(ind$cos2, settings, plot_unique_hash[["plot_ind_cos2_corrplot"]])
         res.data$plot_ind_cos2_corrplot = optimizeSVGFile(tmp_path)
@@ -288,7 +346,12 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         processingData <- list(
             res.info = res.info, 
             res.pca = res.pca, 
-            input_data = input_data
+            input_data = input_data, 
+            settings = settings, 
+            dataset_filtered = dataset_filtered, 
+            fileHeader = fileHeader,
+            res.km = res.km,
+            res.data = res.data
         )
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)

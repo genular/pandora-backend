@@ -307,10 +307,10 @@ convertToString <- function(inputData){
     width <- getOption("width")
     digits <- getOption("digits")
 
-    options(width = 250)
+    options(width = 500)
     options(digits = 10)
 
-    text_output <- R.utils::captureOutput(print(inputData, width = 250, digits = 10))
+    text_output <- R.utils::captureOutput(print(inputData, width = 500, digits = 10))
     text_output <- paste(text_output, collapse="\n")
     text_output <- toString(RCurl::base64Encode(text_output, "txt"))
 
@@ -424,6 +424,10 @@ convertSVGtoPNG <- function(tmp_path){
 }
 
 optimizeSVGFile <- function(tmp_path){
+
+
+    svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt")) 
+    return(svg_data)
 
     command <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path)
 
