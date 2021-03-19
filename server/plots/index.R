@@ -62,6 +62,8 @@ deployAPI<- function(simon, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/plots/editing/tsne/render-plot", simon$handle$plots$editing$tsne$renderPlot, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/general/download-saved-object", simon$handle$plots$general$downloadSavedObject, serializer=serializer_content_type("application/octet-stream"))
+
+    router$handle("GET", "/plots/editing/umap/render-plot", simon$handle$plots$editing$umap$renderPlot, serializer=serializer_unboxed_json())
     
     router$run(host = options$proxy_host, port = as.numeric(options$proxy_port), debug = options$debug)
 }

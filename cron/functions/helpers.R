@@ -23,9 +23,9 @@ RMSE <- function(vect1, vect2, rows_no){
 # The dataset requires defined training and test subsets so let's
 # remove some of the variables that don't see to add to the value and
 # create these
-createDataPartitions <- function(data, outcome = "outcome", split = 0.75, use.validation= FALSE)
+createDataPartitions <- function(data, outcome = "outcome", split = 0.75, use.validation = FALSE)
 {
-    set.seed(1234)
+    set.seed(1337)
     validation <- NULL
 
     # Split data: 75% training, 25% testing.

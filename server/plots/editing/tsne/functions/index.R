@@ -3,49 +3,71 @@ calculate_tsne <- function(dataset, settings, fileHeader){
 	info.norm <- dataset
 	names(info.norm) <- plyr::mapvalues(names(info.norm), from=fileHeader$remapped, to=fileHeader$original)
 
+    if(!is.null(settings$groupingVariables)){
+    	print(paste0("====> Removing grouping variables"))
+    	dataset <- dataset %>% select(-any_of(settings$groupingVariables)) 
+    }
+
+    ## To be sure remove all other non numeric columns
 	tsne_data <- dataset %>% select(where(is.numeric))
-	print("=============> Columns used to calculate t-SNE")
 
+    ## Check perplexity
+    perplexity <- settings$perplexity
+    if(nrow(tsne_data) < settings$perplexity){
+    	perplexity <- 1
+    	print(paste0("====> Quick-fix - Adjusting perplexity to: ", perplexity))
+    }
 	header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
-	print(header_mapped$original)
 
-	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), pca = TRUE, verbose = FALSE, max_iter = 2000, pca_scale = FALSE, pca_center = FALSE, check_duplicates = FALSE)
+	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), perplexity = perplexity, pca = TRUE, verbose = FALSE, max_iter = 2000, pca_scale = FALSE, pca_center = FALSE, check_duplicates = FALSE)
 	info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
 
-	return(list(info.norm = info.norm, tsne.norm = tsne.norm))
+	return(list(info.norm = info.norm, tsne.norm = tsne.norm, tsne_columns = header_mapped$original))
 }
 
-plot_tsne <- function(info.norm, settings, fileHeader){ 
+plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-    if(!is.null(settings$groupingVariable)){
-    	groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable)
-    	groupingVariable <- groupingVariable$original
 
+    print("============")
+    print(groupingVariable)
+    print(names(info.norm))
+
+    if(!is.null(groupingVariable)){
     	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
-
-    	renderedPlot <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable))
+    	plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable))
 	}else{
-		renderedPlot <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2"))
+		plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2"))
 	}
 
-	renderedPlot <- renderedPlot + 
+	plotData <- plotData + 
 	    geom_point() +
 	    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 	    scale_color_brewer(palette=settings$colorPalette) + 
-        theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
+        theme(text=element_text(size=settings$fontSize))
 
-	return(renderedPlot)
+
+    tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        print(plotData)
+    dev.off()  
+
+    return(tmp_path) 
 }
 
 ## https://jmonlong.github.io/Hippocamplus/2018/02/13/tsne-and-clustering/
 
 # KNN graph and Louvain community detection
 cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
-	k = 250
-	knn.norm = FNN::get.knn(as.matrix(tsne.norm$Y), k = k)
+	knn_clusters <- settings$knn_clusters
+    if(nrow(tsne.norm$Y) < knn_clusters){
+    	knn_clusters <- round(nrow(tsne.norm$Y) / 2)
+    	print(paste0("====> Quick-fix - Adjusting KNN k to: ", knn_clusters))
+    }
+
+	knn.norm = FNN::get.knn(as.matrix(tsne.norm$Y), k = knn_clusters)
 	knn.norm = data.frame(
-					from = rep(1:nrow(knn.norm$nn.index), k), 
+					from = rep(1:nrow(knn.norm$nn.index), knn_clusters), 
 					to = as.vector(knn.norm$nn.index), 
 					weight = 1/(1 + as.vector(knn.norm$nn.dist))
 				)
@@ -66,9 +88,9 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 # Hierarchical clustering
 cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
 
-	hc.norm = stats::hclust(dist(tsne.norm$Y), method = "ward.D") 
+	hc.norm = stats::hclust(dist(tsne.norm$Y), method = settings$clustLinkage) 
 	
-	info.norm$cluster = factor(cutree(hc.norm, 9))
+	info.norm$cluster = factor(cutree(hc.norm, settings$clustGroups))
 
 	lc.cent = info.norm %>% group_by(cluster) %>% 
 							select(tsne1, tsne2) %>% 
@@ -80,8 +102,8 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
 
 # Mclust clustering
 cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
-	p_load("mclust")
-	mc.norm = Mclust(tsne.norm$Y, 9)
+
+	mc.norm = Mclust(tsne.norm$Y, settings$clustGroups)
 	info.norm$cluster = factor(mc.norm$classification)
 	lc.cent = info.norm %>% group_by(cluster) %>% 
 							select(tsne1, tsne2) %>% 
@@ -93,7 +115,7 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
 #Density-based clustering
 cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 
-	ds.norm = fpc::dbscan(tsne.norm$Y, 2)
+	ds.norm = fpc::dbscan(tsne.norm$Y, settings$reachabilityDistance)
 	info.norm$cluster = factor(ds.norm$cluster)
 	lc.cent = info.norm %>% group_by(cluster) %>% 
 							select(tsne1, tsne2) %>% 
@@ -113,7 +135,7 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings){
 						guides(colour = FALSE) +
 						labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 	    				scale_color_brewer(palette=settings$colorPalette) + 
-				        theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
+        				theme(text=element_text(size=settings$fontSize))
 
 	return(renderedPlot)
 }
