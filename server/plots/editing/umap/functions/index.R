@@ -8,11 +8,12 @@ calculate_umap <- function(dataset, groupingVariable = NULL, settings, fileHeade
     	umap_data <- dataset %>% select(-any_of(groupingVariable)) 
 
     	if(settings$includeOtherGroups == FALSE){
-    	print(paste0("====> Removing all other grouping variables"))
+    		print(paste0("====> Removing all other grouping variables"))
     		other_groups <- fileHeader %>% filter(remapped %in% settings$groupingVariables)
     		other_groups <- other_groups$original
+
     		umap_data <- umap_data %>% select(-any_of(other_groups))
-    		# print(names(umap_data))
+    		print(names(umap_data))
     	}
     }else{
     	umap_data <- dataset

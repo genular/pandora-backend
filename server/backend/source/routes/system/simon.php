@@ -527,6 +527,14 @@ $app->get('/backend/system/simon/generate-log-file/{submitData:.*}', function (R
 		"/home/login/.pm2/logs" => "pm2_server_logs.tar.gz",
 		"/root/.pm2/logs" => "pm2_server_logs.tar.gz",
 		"/var/log/nginx" => "nginx_server_logs.tar.gz",
+		"/var/log/supervisor/supervisord.log " => "supervisor_supervisord.tar.gz",
+		"/var/log/supervisor" => "supervisor_supervisor.tar.gz",
+		"/var/log/prepare_storage_log" => "supervisor_prepare_storage_log.tar.gz",
+		"/var/log/mariadb_log" => "supervisor_mariadb_log.tar.gz",
+		"/var/log/php_log" => "supervisor_php_log.tar.gz",
+		"/var/log/nginx_log" => "supervisor_nginx_log.tar.gz",
+		"/var/log/pm2_log" => "supervisor_pm2_log.tar.gz",
+		"/var/log/cron_log" => "supervisor_cron_log.tar.gz"
 	];
 
 	// Compress SIMON cron log file

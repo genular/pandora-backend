@@ -372,7 +372,9 @@ class FileSystem {
 
 		if (file_exists($inputPath)) {
 			$status = true;
+			// tar -zcvf /tmp/out.tar.gz /var/log/nginx & openssl aes-256-cbc -k simon2021 -a -salt -in /tmp/out.tar.gz -out /tmp/out.tar.gz.enc
 			$gz_cmd = $this->targz . " -zcvf " . $ouputPath . " " . $inputPath;
+			
 			$command_output = trim(shell_exec($gz_cmd));
 			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem compressFileOrDirectory: " . $gz_cmd);
 		} else {

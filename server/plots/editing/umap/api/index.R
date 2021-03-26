@@ -93,11 +93,8 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
             for(groupVariable in settings$groupingVariables){
                 res.data$umap_plot[[groupVariable]] <- list(name = NULL, train = NULL, test = NULL, text = NULL)
 
-
-                if(settings$selectedPartitionSplit < 100){
-                    plot_unique_hash$umap_plot[[groupVariable]]$train <- digest::digest(paste0(selectedFileID, "_",args$settings,"_umap_plot_train",groupVariable), algo="md5", serialize=F)
-                    plot_unique_hash$umap_plot[[groupVariable]]$test <- digest::digest(paste0(selectedFileID, "_",args$settings,"_umap_plot_test",groupVariable), algo="md5", serialize=F)
-                }
+                plot_unique_hash$umap_plot[[groupVariable]]$train <- digest::digest(paste0(selectedFileID, "_",args$settings,"_umap_plot_train",groupVariable), algo="md5", serialize=F)
+                plot_unique_hash$umap_plot[[groupVariable]]$test <- digest::digest(paste0(selectedFileID, "_",args$settings,"_umap_plot_test",groupVariable), algo="md5", serialize=F)
             }
         }
 
@@ -159,6 +156,8 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
             dataset_filtered <- na.omit(dataset_filtered)
         }
 
+        print(paste0("=====> Main partition split: ", settings$selectedPartitionSplit))
+
         if(settings$selectedPartitionSplit < 100){
             if(!is.null(settings$groupingVariables)){
                 data_training <- list()
@@ -216,8 +215,15 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
                 
                 print(paste0("=====> Calculating umap for:",groupVariable))
 
+                ## Calculate only umap for each group on whole data without testing step
+                if(settings$selectedPartitionSplit < 100){
+                    umap_train_dataset <- data_training[[groupVariable]]
+                }else{
+                    umap_train_dataset <- dataset_filtered
+                }
+
                 ## Calculate umap for each target data for supervised dimension reduction
-                umap_calc[[groupVariable]] <- calculate_umap(data_training[[groupVariable]], groupingVariable, settings, fileHeader)
+                umap_calc[[groupVariable]] <- calculate_umap(umap_train_dataset, groupingVariable, settings, fileHeader)
                 tmp_path <- plot_umap(umap_calc[[groupVariable]]$umap_data, umap_calc[[groupVariable]]$dataset, "train", groupingVariable, settings, fileHeader,  plot_unique_hash$umap_plot[[groupVariable]]$train)
 
                 res.data$umap_plot[[groupVariable]]$name <- groupingVariable
