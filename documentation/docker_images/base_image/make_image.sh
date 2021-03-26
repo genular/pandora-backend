@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # @Author: LogIN-
 # @Date:   2019-02-26 13:27:17
 # @Last Modified by:   LogIN-
