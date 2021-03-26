@@ -409,8 +409,8 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
         if [ "${MODS[simon_analysis]}" == y ] ; then
             echo "${green}==========> Installing ANALYSIS server dependencies${clear}"
-            sudo Rscript -e "BiocManager::install('impute', version = '3.9', update = FALSE, ask = FALSE)"
-            sudo Rscript -e "install.packages(c('samr'), repos='http://cran.us.r-project.org')"
+            sudo Rscript -e "BiocManager::install('impute', update = FALSE, ask = FALSE)"
+            sudo Rscript -e "install.packages('samr')"
             # sudo Rscript -e "devtools::install_github('catboost/catboost', subdir = 'catboost/R-package', args=c('--no-multiarch', '--no-test-load'))"
             sudo Rscript -e "devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Linux-0.22.tgz', INSTALL_opts = c('--no-multiarch', '--no-test-load'))"
 
