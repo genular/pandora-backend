@@ -332,6 +332,8 @@ echo "Installation of advanced dependencies START"
 	echo "===> INSTALLATION step: 5"
 	apt-get install tk tcl tcl-dev libxml2-dev unzip zip
 
+	apt-get install libmagick++-dev
+
 	echo "===========================================> INSTALLATION step: 6"
 	apt-get install php7.3-fpm php7.3-common php7.3-cli
 	echo "===========================================> php7.3-mysql"
@@ -360,6 +362,15 @@ echo "Installation of advanced dependencies START"
 	apt-get install php7.3-json
 	echo "===========================================> php7.3-readline"
 	apt-get install php7.3-readline
+	echo "===========================================> php-dev7.3"
+	sudo apt-get install php7.3-dev
+	echo "===========================================> Enable PHP7.3 as Default"
+	sudo update-alternatives --set php /usr/bin/php7.3
+	sudo update-alternatives --set phar /usr/bin/phar7.3
+	sudo update-alternatives --set phar.phar /usr/bin/phar.phar7.3
+	sudo update-alternatives --set phpize /usr/bin/phpize7.3
+	sudo update-alternatives --set php-config /usr/bin/php-config7.3
+
 	echo "===========================================> php-dev"
 	sudo apt-get install php-dev libmcrypt-dev php-pear
 

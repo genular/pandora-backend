@@ -401,6 +401,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         sudo Rscript -e "install.packages('aws.s3', repos = c('cloudyr' = 'http://cloudyr.github.io/drat'))"
         sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMySQL', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'mime', 'reshape2', 'plyr'), repos='http://cran.us.r-project.org')"
         
+
         ## Check some shared deps
         if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then
             sudo Rscript -e "install.packages(c('R.utils'), repos='http://cran.us.r-project.org')"
@@ -410,7 +411,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         if [ "${MODS[simon_analysis]}" == y ] ; then
             echo "${green}==========> Installing ANALYSIS server dependencies${clear}"
             sudo Rscript -e "BiocManager::install('impute', update = FALSE, ask = FALSE)"
-            sudo Rscript -e "install.packages('samr')"
+            sudo Rscript -e "install.packages(c('samr'), repos='http://cran.us.r-project.org')"
             # sudo Rscript -e "devtools::install_github('catboost/catboost', subdir = 'catboost/R-package', args=c('--no-multiarch', '--no-test-load'))"
             sudo Rscript -e "devtools::install_url('https://github.com/catboost/catboost/releases/download/v0.22/catboost-R-Linux-0.22.tgz', INSTALL_opts = c('--no-multiarch', '--no-test-load'))"
 
@@ -427,7 +428,19 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('cran/XML')"
             sudo Rscript -e "install.packages('gridSVG', repos='http://R-Forge.R-project.org')"
             sudo Rscript -e "devtools::install_github('sachsmc/plotROC')"
-            ## sudo Rscript -e "devtools::install_github('laresbernardo/lares')"
+            ## Not used?
+            sudo Rscript -e "devtools::install_github('laresbernardo/lares')"
+
+            sudo Rscript -e "devtools::install_github('rapporter/pander')"  
+            sudo Rscript -e "devtools::install_github('dcomtois/summarytools')"
+
+            sudo Rscript -e "install.packages(c('psych'), repo = 'https://cloud.r-project.org/')"
+            
+            sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
+
+            sudo Rscript -e "install.packages(c('FactoMineR'), repo = 'https://cloud.r-project.org/')"
+            sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
+
             sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
             sudo Rscript -e "devtools::install_github('mtennekes/tabplot')"
             sudo Rscript -e "devtools::install_github('ggobi/ggally')"
@@ -642,7 +655,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 cd server/backend/ || exit 1
                 echo "${red}Installing dependencies..${clear}"
                 echo ""
-                composer install
+                /usr/bin/php7.3 /usr/local/bin/composer install --ignore-platform-reqs
 
                 ## Create logs directory
                 mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
