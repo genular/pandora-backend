@@ -435,7 +435,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('dcomtois/summarytools')"
 
             sudo Rscript -e "install.packages(c('psych'), repo = 'https://cloud.r-project.org/')"
-            
+
             sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
 
             sudo Rscript -e "install.packages(c('FactoMineR'), repo = 'https://cloud.r-project.org/')"
@@ -714,6 +714,7 @@ if [ "$install_database" == y ] ; then
     if [ -d "$GIT_BACKEND_LOCAL" ]; then
         echo "${yellow}Starting database import${clear}"
         mysql -u ${B_CONF[database_user]} -p${B_CONF[database_password]} -h ${B_CONF[database_host]} ${B_CONF[database_dbname]} < "$GIT_BACKEND_LOCAL/documentation/installation/schema.sql"
+        sleep 10
         echo "${yellow}Database import done${clear}"
     else
         echo "${red}Cannot locate simon-backend directory! Exiting..${clear}"
