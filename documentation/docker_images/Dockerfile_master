@@ -28,8 +28,8 @@ RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	--server_homepage=http://localhost:3010 \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
 	&& git checkout . && git pull origin master \
-	&& composer install \
-	&& composer post-install /tmp/configuration.json'
+	&& /usr/bin/php7.3 /usr/local/bin/composer install \
+	&& /usr/bin/php7.3 /usr/local/bin/composer post-install /tmp/configuration.json'
 
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 

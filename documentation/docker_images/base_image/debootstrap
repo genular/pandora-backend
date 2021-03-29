@@ -361,8 +361,8 @@ echo "Installation of advanced dependencies START"
 	echo "===========================================> php7.3-readline"
 	apt-get install php7.3-readline
 	echo "===========================================> php-dev"
-
 	sudo apt-get install php-dev libmcrypt-dev php-pear
+
 	sudo pecl channel-update pecl.php.net
 
 	echo "===========================================> libsodium 1"

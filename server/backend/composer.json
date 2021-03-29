@@ -3,6 +3,7 @@
     "description": "PHP API Backend Service for SIMON Backend Server",
     "type": "project",
     "require": {
+
         "dilab/resumable.php": "^0.1.4",
         "phpmailer/phpmailer": "^6.0",
         "monolog/monolog": "^1.23",
@@ -33,7 +34,9 @@
         }
     ],
     "config": {
-        "process-timeout": 0
+        "process-timeout": 0,
+        "php": "7.3"
+
     },
     "scripts": {
         "start": "php -S 127.0.0.1:8186 -t ./public",
