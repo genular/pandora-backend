@@ -66,7 +66,7 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
     }
 
     # calculate the pre-process parameters from the dataset
-    if(!is_null(outcome)){
+    if(!is.null(outcome)){
         preprocessParams <- caret::preProcess(dataset, method = methods, outcome = outcome, n.comp = 25)    
     }else{
         preprocessParams <- caret::preProcess(dataset, method = methods, n.comp = 25)
