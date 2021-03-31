@@ -157,11 +157,11 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 }
 
 
-plot_clustered_tsne <- function(info.norm, cluster_data, settings){
+plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-	renderedPlot <- ggplot(info.norm, aes(x = tsne1, y = tsne2, colour = cluster)) + 
+	plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2, colour = cluster)) + 
 						geom_point() + 
 						ggrepel::geom_label_repel(aes(label = cluster), data = cluster_data) + 
 						guides(colour = FALSE) +
@@ -169,8 +169,81 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings){
 	    				scale_color_brewer(palette=settings$colorPalette) + 
         				theme(text=element_text(size=settings$fontSize))
 
-	return(renderedPlot)
+    tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        print(plotData)
+    dev.off()  
+
+    return(tmp_path)
 }
 
 
 
+cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
+
+	save(clust_plot_tsne, file="/tmp/clust_plot_tsne")
+	save(settings, file="/tmp/settings")
+	save(tmp_hash, file="/tmp/tmp_hash")
+
+	## To be sure remove all other non numeric columns
+	clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster)
+	
+	info.norm.num <- clust_plot_tsne$info.norm %>% select(where(is.numeric))
+
+	all_columns <- colnames(info.norm.num)
+
+	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "cluster", settings$groupingVariables)] 
+	input_data <- info.norm.num %>% select(any_of(all_columns[! all_columns %in% c("tsne1", "tsne2", settings$groupingVariables)]))
+
+    input_args <- c(list(data=input_data, 
+	                      fileHeader=NULL,
+	                      
+	                      selectedColumns=c("cluster"),
+	                      selectedRows=selectedRows,
+	                      
+	                      removeNA=TRUE,
+	                      
+	                      scale="column",
+	                      
+	                      displayNumbers=FALSE,
+	                      displayLegend=TRUE,
+	                      displayColnames=FALSE,
+	                      displayRownames=TRUE,
+	                      
+	                      plotWidth=12,
+	                      plotRatio=1,
+	                      
+	                      clustDistance="correlation",
+	                      clustLinkage="ward.D2",
+	                      clustOrdering=1,
+	                      
+	                      fontSizeGeneral=10,
+	                      fontSizeRow=9,
+	                      fontSizeCol=9,
+	                      fontSizeNumbers=7))
+
+
+    clustering_out <- FALSE
+    clustering_out_status <- FALSE
+
+    process.execution <- tryCatch( garbage <- R.utils::captureOutput(clustering_out <- R.utils::withTimeout(do.call(plot.heatmap, input_args), timeout=300, onTimeout = "error") ), error = function(e){ return(e) } )
+    if(!inherits(process.execution, "error") && !inherits(clustering_out, 'try-error') && !is.null(clustering_out)){
+        clustering_out_status <- TRUE
+    }else{
+        if(inherits(clustering_out, 'try-error')){
+            message <- base::geterrmessage()
+            process.execution$message <- message
+        }
+        clustering_out <- process.execution$message
+    }
+
+    if(clustering_out_status == TRUE){
+	    tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+	    svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+	        print(clustering_out)
+	    dev.off()  
+	    return(tmp_path)
+    }else{
+    	return(FALSE)
+    }
+}

@@ -67,8 +67,6 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$removeNA = FALSE
         }
 
-
-
         if(is_var_empty(settings$plot_size) == TRUE){
             settings$plot_size <- 12
         }
@@ -180,9 +178,7 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         }
 
 
-        # save(dataset_filtered, file="/tmp/dataset_filtered")
-        # save(settings, file="/tmp/settings")
-        # save(fileHeader, file="/tmp/fileHeader")
+
 
 
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
@@ -258,14 +254,21 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
            clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }
 
-        rendered_plot_tsne <- plot_clustered_tsne(clust_plot_tsne$info.norm, clust_plot_tsne$cluster_data, settings)
-
-        svg(tmp_path, width = 12 * settings$aspect_ratio, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            print(rendered_plot_tsne)
-        dev.off()
-
+        tmp_path <- plot_clustered_tsne(clust_plot_tsne$info.norm, clust_plot_tsne$cluster_data, settings, plot_unique_hash$tsne_cluster_plot)
         res.data$tsne_cluster_plot <- optimizeSVGFile(tmp_path)
         res.data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
+
+
+        print(paste0("===> Hierarchical clustering of clustered data"))
+        tmp_path <- cluster_heatmap(clust_plot_tsne, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
+        if(tmp_path != FALSE){
+            res.data$tsne_cluster_heatmap_plot <- optimizeSVGFile(tmp_path)
+            res.data$tsne_cluster_heatmap_plot_png <- convertSVGtoPNG(tmp_path)
+        }
+
+        # save(dataset_filtered, file="/tmp/dataset_filtered")
+        # save(settings, file="/tmp/settings")
+        # save(fileHeader, file="/tmp/fileHeader")
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")

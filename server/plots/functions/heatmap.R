@@ -140,12 +140,16 @@ plot.heatmap <- function(   data,
 
     rownames(annotationColumn) = rownames(data)
 
-    names(annotationColumn) <- plyr::mapvalues(names(annotationColumn), from=fileHeader$remapped, to=fileHeader$original)
-    names(legendColors) <- plyr::mapvalues(names(legendColors), from=fileHeader$remapped, to=fileHeader$original)
+    if(!is.null(fileHeader)){
+      names(annotationColumn) <- plyr::mapvalues(names(annotationColumn), from=fileHeader$remapped, to=fileHeader$original)
+      names(legendColors) <- plyr::mapvalues(names(legendColors), from=fileHeader$remapped, to=fileHeader$original)
+    }
+
 
     data <- subset(data, select = !(names(data) %in% selectedColumns) )
-    names(data) <- plyr::mapvalues(names(data), from=fileHeader$remapped, to=fileHeader$original)
-
+    if(!is.null(fileHeader)){
+      names(data) <- plyr::mapvalues(names(data), from=fileHeader$remapped, to=fileHeader$original)
+    }
 
     ## Transform data and order it by rowMeans
     t_data <- t(data)
