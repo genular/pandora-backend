@@ -42,7 +42,7 @@ plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){
 	}
 
 	plotData <- plotData + 
-	    geom_point() +
+	    geom_point(size = settings$pointSize) +
 	    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 	    scale_color_brewer(palette=settings$colorPalette) + 
         theme(text=element_text(size=settings$fontSize))
@@ -67,12 +67,12 @@ plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable
     if(!is.null(groupingVariable)){
     	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
     	plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable)) + 
-				    geom_point() +
+				    geom_point(size = settings$pointSize) +
 				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 			        theme(text=element_text(size=settings$fontSize))
 	}else{
 		plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = colorVariable))+ 
-				    geom_point() +
+				    geom_point(size = settings$pointSize) +
             		scale_color_continuous(low = "blue", high = "red", guide = "colourbar", aesthetics = "colour") +
 				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 			        theme(text=element_text(size=settings$fontSize))
@@ -162,7 +162,7 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
 	plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2, colour = cluster)) + 
-						geom_point() + 
+						geom_point(size = settings$pointSize) + 
 						ggrepel::geom_label_repel(aes(label = cluster), data = cluster_data) + 
 						guides(colour = FALSE) +
 						labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
