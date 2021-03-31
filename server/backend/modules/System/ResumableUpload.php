@@ -64,6 +64,11 @@ class ResumableUpload {
 		$resp = move_uploaded_file($tmp_file_path, $savePath);
 		if ($resp) {
 			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload file moved: " . $resp);
+			// Read data with file_get_contents then use mb_convert_encoding to convert to UTF-8
+			$fileContent = file_get_contents($savePath);
+			$fileContent = mb_convert_encoding($fileContent, "UTF-8", "auto");
+			file_put_contents($savePath, $fileContent);
+
 			return $savePath;
 		} else {
 			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload file not moved: " . $resp);

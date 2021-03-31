@@ -28,7 +28,7 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
 
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 3)
         if(is.list(resp_check)){
-            return(resp_check)
+            # return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database

@@ -30,7 +30,7 @@ for (arg in raw_args) {
 }
 
 if (!is.null(working_dir)){
-    cat(paste0("===> INFO: Initializing CRON. Working directory: ",working_dir," \r\n"))
+    cat(paste0("======> INFO: Initializing CRON. Working directory: ",working_dir," <======\r\n"))
     setwd(working_dir)
 }
 
@@ -162,7 +162,7 @@ generateData <- function(serverData){
         invisible(file.remove(UPTIME_PID))
         quit()
     }else{
-        cat(paste0("===> INFO: Found ",length(datasets)," resamples for queueID: ",serverData$queueID," \r\n"))
+        cat(paste0("===> INFO: generateData Found ",length(datasets)," resamples for queueID: ",serverData$queueID," \r\n"))
     }
     ## Loop all datasets and make Train and Test Sets if initial server
     for (d in 1:length(datasets)) {

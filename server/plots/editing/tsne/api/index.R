@@ -127,7 +127,7 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, res.data, 5)
         if(is.list(resp_check)){
             print("==> Serving request response from cache")
-            return(resp_check)
+            ## return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database

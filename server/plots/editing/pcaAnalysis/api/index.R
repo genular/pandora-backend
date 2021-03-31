@@ -90,6 +90,10 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             settings$fontSize <- 12
         }
 
+        if(is_var_empty(settings$pointSize) == TRUE){
+            settings$pointSize <- 1.5
+        }
+
         if(is_var_empty(settings$theme) == TRUE){
             settings$theme <- "theme_gray"
         }
