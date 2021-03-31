@@ -187,7 +187,7 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 	## To be sure remove all other non numeric columns
 	clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster)
-	
+
 	info.norm.num <- clust_plot_tsne$info.norm %>% select(where(is.numeric))
 
 	all_columns <- colnames(info.norm.num)
@@ -244,6 +244,8 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	    dev.off()  
 	    return(tmp_path)
     }else{
+    	print("===> Error while processing:")
+    	print(clustering_out)
     	return(FALSE)
     }
 }
