@@ -35,6 +35,10 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$groupingVariables = NULL
         }
 
+        if(is_var_empty(settings$colorVariables) == TRUE){
+            settings$colorVariables = NULL
+        }
+
         if(is_var_empty(settings$preProcessDataset) == TRUE){
             settings$preProcessDataset = NULL
         }
@@ -63,16 +67,19 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$removeNA = FALSE
         }
 
+
+
         if(is_var_empty(settings$plot_size) == TRUE){
             settings$plot_size <- 12
         }
 
-        if(is_var_empty(settings$perplexity) == TRUE){
-            settings$perplexity <- 30
-        }
 
         if(is_var_empty(settings$knn_clusters) == TRUE){
             settings$knn_clusters <- 250
+        }
+
+        if(is_var_empty(settings$perplexity) == TRUE){
+            settings$perplexity <- 30
         }
         if(is_var_empty(settings$clustLinkage) == TRUE){
             settings$clustLinkage = "ward.D2"
@@ -98,8 +105,20 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
 
         if(!is.null(settings$groupingVariables)){
             for(groupVariable in settings$groupingVariables){
-                res.data$tsne_plot[[groupVariable]] <- list(name = NULL, svg = NULL, png = NULL)
-                plot_unique_hash$tsne_plot[[groupVariable]] <- digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_plot_",groupVariable), algo="md5", serialize=F)
+
+                unique_hash <- paste0(selectedFileID, "_",args$settings,"_tsne_plot_",groupVariable)
+                plot_unique_hash$tsne_plot[[groupVariable]] <- digest::digest(unique_hash, algo="md5", serialize=F)
+
+                res.data$tsne_plot[[groupVariable]] <- list(name = NULL, svg = NULL, png = NULL, colorby = list())
+                ## Color-by placeholder
+                res.data$tsne_plot[[groupVariable]]$colorby <- list()
+                if(!is.null(settings$colorVariables)){
+                    for(colorVariable in settings$colorVariables){
+                        unique_hash <- paste0(unique_hash,"_",colorVariable)
+                        
+                        plot_unique_hash$tsne_plot[[paste0(groupVariable,colorVariable)]] <- digest::digest(unique_hash, algo="md5", serialize=F)
+                    }
+                }
             }
         }
 
@@ -159,13 +178,41 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             print("=====> Data removeNA")
             dataset_filtered <- na.omit(dataset_filtered)
         }
+
+
+        # save(dataset_filtered, file="/tmp/dataset_filtered")
+        # save(settings, file="/tmp/settings")
+        # save(fileHeader, file="/tmp/fileHeader")
+
+
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
         ## Main t-SNE plot 
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
-
+        ## Color-by placeholder
+        res.data$tsne_plot[["main_plot"]]$colorby <- list()
         res.data$tsne_plot[["main_plot"]]$name <- "Main plot"
         res.data$tsne_plot[["main_plot"]]$svg <- optimizeSVGFile(tmp_path)
         res.data$tsne_plot[["main_plot"]]$png <- convertSVGtoPNG(tmp_path)
+
+        if(!is.null(settings$colorVariables)){
+
+            for(colorVariable in settings$colorVariables){
+                coloringVariable <- fileHeader %>% filter(remapped %in% colorVariable)
+                coloringVariable <- coloringVariable$original
+
+                print("===> Processing 1:")
+                print(colorVariable)
+                print(coloringVariable)
+
+                plot_unique_hash$tsne_plot[[paste0("main_plot",colorVariable)]] <- digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_plot_main_",colorVariable), algo="md5", serialize=F)
+                tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings,  plot_unique_hash$tsne_plot[[paste0("main_plot",colorVariable)]])
+
+                res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$name <- coloringVariable
+                res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
+                res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$png <- convertSVGtoPNG(tmp_path_c)
+            }
+        }
+
 
         if(!is.null(settings$groupingVariables)){
             for(groupVariable in settings$groupingVariables){
@@ -177,6 +224,23 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
                 res.data$tsne_plot[[groupVariable]]$name <- groupingVariable
                 res.data$tsne_plot[[groupVariable]]$svg <- optimizeSVGFile(tmp_path)
                 res.data$tsne_plot[[groupVariable]]$png <- convertSVGtoPNG(tmp_path)
+
+                if(!is.null(settings$colorVariables)){
+                    for(colorVariable in settings$colorVariables){
+
+                        coloringVariable <- fileHeader %>% filter(remapped %in% colorVariable)
+                        coloringVariable <- coloringVariable$original
+
+                        print("===> Processing 2:")
+                        print(colorVariable)
+                        print(coloringVariable)
+
+                        tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings,  plot_unique_hash$tsne_plot[[paste0(groupVariable,colorVariable)]])
+                        res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$name <- coloringVariable
+                        res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
+                        res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$png <- convertSVGtoPNG(tmp_path_c)
+                    }
+                }
             }
         }
 

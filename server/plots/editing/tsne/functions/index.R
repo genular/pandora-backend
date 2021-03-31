@@ -1,9 +1,9 @@
 
-calculate_tsne <- function(dataset, settings, fileHeader){
+calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 	info.norm <- dataset
 	names(info.norm) <- plyr::mapvalues(names(info.norm), from=fileHeader$remapped, to=fileHeader$original)
 
-    if(!is.null(settings$groupingVariables)){
+    if(!is.null(settings$groupingVariables) && removeGroups == TRUE){
     	print(paste0("====> Removing grouping variables"))
     	dataset <- dataset %>% select(-any_of(settings$groupingVariables)) 
     }
@@ -20,6 +20,7 @@ calculate_tsne <- function(dataset, settings, fileHeader){
 	header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
 
 	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), perplexity = perplexity, pca = TRUE, verbose = FALSE, max_iter = 2000, pca_scale = FALSE, pca_center = FALSE, check_duplicates = FALSE)
+
 	info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
 
 	return(list(info.norm = info.norm, tsne.norm = tsne.norm, tsne_columns = header_mapped$original))
@@ -29,7 +30,7 @@ plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
 
-    print("============")
+    print("============> plot_tsne")
     print(groupingVariable)
     print(names(info.norm))
 
@@ -45,6 +46,37 @@ plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){
 	    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 	    scale_color_brewer(palette=settings$colorPalette) + 
         theme(text=element_text(size=settings$fontSize))
+
+
+    tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        print(plotData)
+    dev.off()  
+
+    return(tmp_path) 
+}
+
+plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable, settings, tmp_hash){ 
+    theme_set(eval(parse(text=paste0(settings$theme, "()"))))
+
+
+    print("============> plot_tsne_color_by")
+    print(groupingVariable)
+    print(names(info.norm))
+
+    if(!is.null(groupingVariable)){
+    	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
+    	plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable)) + 
+				    geom_point() +
+				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
+			        theme(text=element_text(size=settings$fontSize))
+	}else{
+		plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = colorVariable))+ 
+				    geom_point() +
+            		scale_color_continuous(low = "blue", high = "red", guide = "colourbar", aesthetics = "colour") +
+				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
+			        theme(text=element_text(size=settings$fontSize))
+	}
 
 
     tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
