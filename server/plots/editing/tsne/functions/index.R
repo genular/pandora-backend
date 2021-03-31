@@ -213,7 +213,7 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	                      plotWidth=12,
 	                      plotRatio=1,
 	                      
-	                      clustDistance="correlation",
+	                      clustDistance="euclidean",
 	                      clustLinkage="ward.D2",
 	                      clustOrdering=1,
 	                      
