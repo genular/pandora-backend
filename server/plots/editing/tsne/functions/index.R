@@ -73,7 +73,7 @@ plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable
 	}else{
 		plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = colorVariable))+ 
 				    geom_point(size = settings$pointSize) +
-            		scale_color_continuous(low = "blue", high = "red", guide = "colourbar", aesthetics = "colour") +
+            		scale_color_continuous(low = "gray", high = "red", guide = "colourbar", aesthetics = "colour") +
 				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 			        theme(text=element_text(size=settings$fontSize))
 	}
@@ -220,7 +220,8 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	                      fontSizeGeneral=10,
 	                      fontSizeRow=9,
 	                      fontSizeCol=9,
-	                      fontSizeNumbers=7))
+	                      fontSizeNumbers=7,
+	                      settings=settings))
 
 
     clustering_out <- FALSE

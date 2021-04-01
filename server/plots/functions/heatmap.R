@@ -90,7 +90,8 @@ plot.heatmap <- function(   data,
                             fontSizeGeneral,
                             fontSizeRow,
                             fontSizeCol,
-                            fontSizeNumbers){
+                            fontSizeNumbers,
+                            settings = NULL){
 
     pallets <- c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds")
 
@@ -122,7 +123,11 @@ plot.heatmap <- function(   data,
 
         nb.cols <- length(unique(data[[column]]))
         if(nb.cols > 8){
-          colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(nb.cols)
+          if(!is.null(settings)){
+              colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, settings$colorPalette))(nb.cols)
+            }else{
+              colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(nb.cols)
+            }
         }else{
             colors.cutoff <- nb.cols
             if(colors.cutoff < 3){

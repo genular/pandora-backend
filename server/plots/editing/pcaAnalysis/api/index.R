@@ -91,7 +91,19 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         }
 
         if(is_var_empty(settings$pointSize) == TRUE){
-            settings$pointSize <- 1.5
+            settings$pointSize <- 2
+        }
+
+        if(is_var_empty(settings$labelSize) == TRUE){
+            settings$labelSize <- 4
+        }
+
+        if(is_var_empty(settings$ellipseAlpha) == TRUE){
+            settings$ellipseAlpha <- 0.05
+        }
+
+        if(is_var_empty(settings$addEllipses) == TRUE){
+            settings$addEllipses <- TRUE
         }
 
         if(is_var_empty(settings$theme) == TRUE){

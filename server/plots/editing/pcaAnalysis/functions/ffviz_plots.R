@@ -22,9 +22,13 @@ plots_fviz_pca_ind_grouped <- function(inputData, dataset, settings, groupingVar
                                 geom.ind = "point", # show points only (nbut not "text")
                                 col.ind = dataset[[groupingVariable]], # color by groups
                                 palette = settings$colorPalette,
-                                addEllipses = TRUE, # Concentration ellipses
+                                addEllipses = settings$addEllipses,
+                                ellipse.alpha = settings$ellipseAlpha,
                                 label = "var",
-                                col.var = "black", repel = TRUE, 
+                                pointsize = settings$pointSize,
+                                labelsize = settings$labelSize,
+                                col.var = "black",
+                                repel = TRUE, 
                                 legend.title = groupingVariable) + 
                                 #scale_fill_brewer(palette=settings$colorPalette) +
                                 theme(text=element_text(size=settings$fontSize))
@@ -46,16 +50,26 @@ plots_fviz_pca_biplot_grouped <- function(inputData, dataset, settings, grouping
     plotData <- fviz_pca_biplot(inputData, 
                                 # Individuals
                                 geom.ind = "point",
-                                fill.ind = dataset[[groupingVariable]], col.ind = "black",
-                                pointshape = 21, pointsize = 2,
+                                fill.ind = dataset[[groupingVariable]],
+                                col.ind = "black",
+                                pointshape = 21, 
+                                pointsize = settings$pointSize,
+                                labelsize = settings$labelSize,
+
                                 palette = settings$colorPalette,
-                                addEllipses = TRUE,
+                                addEllipses = settings$addEllipses,
+                                ellipse.alpha = settings$ellipseAlpha,
+
                                 # Variables
-                                alpha.var ="contrib", col.var = "contrib",
-                                gradient.cols = "RdYlBu",
+                                alpha.var ="contrib",
+                                col.var = "contrib",
+                                gradient.cols = settings$colorPalette,
                                 
-                                legend.title = list(fill = groupingVariable, color = "Contrib",
-                                                    alpha = "Contrib")) + 
+                                legend.title = list(
+                                    fill = groupingVariable,
+                                    color = "Contrib",
+                                    alpha = "Contrib")
+                                ) + 
                                 #scale_fill_brewer(palette=settings$colorPalette) +
                                 theme(text=element_text(size=settings$fontSize))
 
@@ -78,16 +92,20 @@ plots_fviz_pca <-function(inputData, choice = "cos2", type = "var", settings, tm
             # Color variables by groups
             plotData <- fviz_pca_var(inputData, col.var = choice, 
                             palette = settings$colorPalette,
+                            labelsize = settings$labelSize,
                             legend.title = "Cluster")
         }else{
             plotData <- fviz_pca_var(inputData, 
                             col.var = choice,
+                            labelsize = settings$labelSize,
                             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
                             repel = TRUE)
         }
 	}else{
         plotData <- fviz_pca_ind(inputData,
-                        col.ind = choice, 
+                        col.ind = choice,
+                        pointsize = settings$pointSize,
+                        labelsize = settings$labelSize,
                         gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
                         repel = TRUE
         )
