@@ -1,7 +1,6 @@
 source("server/includes/header.R")
 p_load(plumber)
-## Include basic data manipulation packages
-p_load(tidyverse)
+
 
 
 source(paste0("cron/functions/helpers.R"))
