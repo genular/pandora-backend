@@ -5,9 +5,6 @@ require(pacman)
 ## This file must be always included as a start point in any other R process
 p_load(config)
 
-## Include basic data manipulation packages
-p_load(tidyverse)
-
 args <- commandArgs(TRUE)
 
 SERVER_NAME <- args[1]

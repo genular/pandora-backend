@@ -545,6 +545,8 @@ for (dataset in datasets) {
         ## Refresh the list of exist performance variables from database
         performanceVariables <- getAllPerformanceVariables()
 
+        ## Load dplyr since some packages overwrite it
+        p_load(dplyr)
         ## Save failed model so we don't process it again
         methodDetails <- db.apps.simon.saveMethodAnalysisData(
                                                                 dataset$resampleID, 
