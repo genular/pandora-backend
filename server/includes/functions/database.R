@@ -298,3 +298,24 @@ db.apps.checkIfModelProcessed <- function (resampleID, modelID){
 
     return (status)
 }
+
+
+#' @title Check if specific queue is still in database
+#' @description 
+#' @param resampleID 
+#' @param modelID
+#' @return boolean
+db.apps.checkIfQueueExsist <- function (queueID){
+    status <- FALSE
+    query <- "SELECT id FROM dataset_queue WHERE id = ?queueID LIMIT 1;"
+    
+    query <- sqlInterpolate(databasePool, query, queueID=queueID)
+    results <- dbGetQuery(databasePool, query)
+
+    if(nrow(results) > 0){
+        status <- TRUE
+    }
+
+    return (status)
+}
+

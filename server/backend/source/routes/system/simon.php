@@ -408,63 +408,74 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
 	$post = $request->getParsedBody();
 	$submitData = array();
 
-	$queueID = false;
+	$queueIDs = false;
 	if (isset($post['submitData'])) {
 		$submitData = json_decode(base64_decode(urldecode($post['submitData'])), true);
-		$queueID = $submitData['queueID'];
+		$queueIDs = $submitData['queueID'];
 	}
 
-	$files = [];
+	if ($queueIDs !== false) {
 
-	if ($queueID !== false) {
-
-		$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
-		$resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
-		$resamplesListIDs = array_column($resamplesList, 'resampleID');
-
-		foreach ($resamplesList as $resample) {
-			$files[] = $resample['ufid'];
-			$files[] = $resample['ufid_train'];
-			$files[] = $resample['ufid_test'];
+		if(!is_array($queueIDs)){
+			$queueIDs = [$queueIDs];
 		}
 
-		$Models = $this->get('SIMON\Models\Models');
-		$modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
-		$modelsListIDs = array_column($modelsList, 'modelID');
+		$this->get('Monolog\Logger')->info("SIMON '/backend/system/simon/dataset-queue/delete' processing queueIDs:" . count($queueIDs));
+		
+		foreach ($queueIDs as $queueID) {
 
-		foreach ($modelsList as $model) {
-			$files[] = $model['ufid'];
+			$this->get('Monolog\Logger')->info("SIMON '/backend/system/simon/dataset-queue/delete' processing queueID:" . $queueID);
 
+			$files = [];
+
+			$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+			$resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
+			$resamplesListIDs = array_column($resamplesList, 'resampleID');
+
+			foreach ($resamplesList as $resample) {
+				$files[] = $resample['ufid'];
+				$files[] = $resample['ufid_train'];
+				$files[] = $resample['ufid_test'];
+			}
+
+			$Models = $this->get('SIMON\Models\Models');
+			$modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
+			$modelsListIDs = array_column($modelsList, 'modelID');
+
+			foreach ($modelsList as $model) {
+				$files[] = $model['ufid'];
+
+			}
+
+			// 2. models_performance
+			$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');
+			$ModelsPerformance->deleteByModelIDs($modelsListIDs);
+
+			// 3. models
+			$Models->deleteByResampleIDs($resamplesListIDs);
+
+			$ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
+			$ModelsVariables->deleteByModelIDs($modelsListIDs);
+
+			// 3. dataset_resamples_mappings
+			$DatasetResamplesMappings = $this->get('SIMON\Dataset\DatasetResamplesMappings');
+			$DatasetResamplesMappings->deleteByQueueIDs($queueID);
+
+			// 3. dataset_resamples
+			$DatasetResamples->deleteByQueueIDs($queueID);
+
+			// 3. dataset_proportions
+			$DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
+			$DatasetProportions->deleteByResampleIDs($resamplesListIDs);
+
+			// 3. dataset_queue
+			$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+			$DatasetQueue->deleteByQueueIDs($queueID);
+
+			$FileSystem = $this->get('SIMON\System\FileSystem');
+
+			$FileSystem->deleteFilesByIDs(array_unique($files));
 		}
-
-		// 2. models_performance
-		$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');
-		$ModelsPerformance->deleteByModelIDs($modelsListIDs);
-
-		// 3. models
-		$Models->deleteByResampleIDs($resamplesListIDs);
-
-		$ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
-		$ModelsVariables->deleteByModelIDs($modelsListIDs);
-
-		// 3. dataset_resamples_mappings
-		$DatasetResamplesMappings = $this->get('SIMON\Dataset\DatasetResamplesMappings');
-		$DatasetResamplesMappings->deleteByQueueIDs($queueID);
-
-		// 3. dataset_resamples
-		$DatasetResamples->deleteByQueueIDs($queueID);
-
-		// 3. dataset_proportions
-		$DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
-		$DatasetProportions->deleteByResampleIDs($resamplesListIDs);
-
-		// 3. dataset_queue
-		$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
-		$DatasetQueue->deleteByQueueIDs($queueID);
-
-		$FileSystem = $this->get('SIMON\System\FileSystem');
-
-		$FileSystem->deleteFilesByIDs(array_unique($files));
 
 		$success = true;
 	}

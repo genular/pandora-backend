@@ -134,11 +134,12 @@ preProcessDataset <- function(dataset) {
     # ==> 2 PREPROCCESING: Skewness and normalizing of the numeric predictors
     preProcessMapping <- NULL
     if(length(dataset$preProcess) > 0 ){
-        transformations <- paste(dataset$preProcess, sep=",")
-        message <- paste0("===> INFO: Pre-processing transformation (",transformations,") \r\n")
+        transformations <- paste(dataset$preProcess, sep=",", collapse = ",")
+        message <- paste0("===> INFO: Pre-processing transformation(s) (",transformations,") \r\n")
         cat(message)
 
         fs_status$info <- c(fs_status$info, message)
+
         preProcessedData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
         ## Final processed data-frame
         datasetData <- preProcessedData$processedMat

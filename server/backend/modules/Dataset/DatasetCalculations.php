@@ -41,7 +41,9 @@ class DatasetCalculations {
 
 			// Number of samples in Test set
 			$minimumSamples = ($totalSamples * (100 - $partitionSplit)) / 100;
-			if ($minimumSamples < 10) {
+			$minimumSamples = round($minimumSamples);
+			
+			if ($minimumSamples < 5) {
 				array_push($message, ["msg_info" => "invalid_sample_count_test", "data" => $minimumSamples]);
 				$isResampleValid = false;
 			}

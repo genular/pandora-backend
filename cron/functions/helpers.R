@@ -65,11 +65,30 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
         dataset <- data
     }
 
+    ### Make sure that ordering is correct!
+    value = c("medianImpute", "bagImpute", "knnImpute", "expoTrans", "YeoJohnson", "BoxCox", "center", "scale", "range", "ica", "spatialSign", "zv", "nzv", "conditionalX", "pca", "corr")
+    processing_values <- data.frame(value, stringsAsFactors=FALSE)
+    processing_values$order <- as.numeric(row.names(processing_values))
+
+    methods_sorted <- processing_values %>% filter(value %in% methods) %>% arrange(order) %>% select(value)
+    methods_sorted <- methods_sorted$value
+
+    transformations <- paste(methods_sorted, sep=",", collapse = ",")
+    message <- paste0("===> INFO: Pre-processing transformation sorted (",transformations,") \r\n")
+    cat(message)
+
+    if(length(colnames(dataset)) < 2){
+        message <- paste0("===> INFO: Pre-processing less than 2 columns detected removing some preprocessing methods\r\n")
+        cat(message)
+        ## Remove correlation if we have less than 2 columns
+        methods_sorted <- setdiff(methods_sorted, c("corr", "zv", "nzv", "pca"))
+    }
+
     # calculate the pre-process parameters from the dataset
     if(!is.null(outcome)){
-        preprocessParams <- caret::preProcess(dataset, method = methods, outcome = outcome, n.comp = 25)    
+        preprocessParams <- caret::preProcess(dataset, method = methods_sorted, outcome = outcome, n.comp = 25, verbose = TRUE, cutoff = 0.5)    
     }else{
-        preprocessParams <- caret::preProcess(dataset, method = methods, n.comp = 25)
+        preprocessParams <- caret::preProcess(dataset, method = methods_sorted, n.comp = 25, verbose = TRUE)   
     }
     # transform the dataset using the parameters
     processedMat <- predict(preprocessParams, newdata=dataset)

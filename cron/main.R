@@ -376,6 +376,13 @@ for (dataset in datasets) {
             cat(paste0("===> INFO: SKIPPING Model is already processed. Model: ", model_details$internal_id, "\r\n"))
             next()
         }
+        ## Check if Queue Task still exsist (if user deleted a queue while processing was running this will make sure to sop processing as well)
+        queue_exsist <- db.apps.checkIfQueueExsist(serverData$queueID)
+        if(queue_exsist == FALSE){
+            cat(paste0("===> INFO: Queue not found in database. Skipping model processing\r\n"))
+            next()
+        }
+        
         ### Remove previously loaded libraries for previous model
         if(length(loaded_libraries_for_model) > 0){
              cat(paste0("===> INFO: Unloading packages of previous model: ",paste(loaded_libraries_for_model, collapse = ",")," \r\n"))

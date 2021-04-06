@@ -26,7 +26,7 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
         ## 1st - Get all saved models for selected IDs
         modelsDetails <- db.apps.getModelsDetailsData(modelsIDs)
 
-        data <- NULL
+        dat <- NULL
         outcome_column <- NULL
 
         for(i in 1:nrow(modelsDetails)) {
@@ -34,11 +34,12 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
             modelPath <- downloadDataset(model$remotePathMain)    
             modelData <- loadRObject(modelPath)
 
-            data <- modelData$info$data
+            dat <- modelData$info$data$training
             ## training, testing
             outcome_column <- modelData$info$outcome
         }
 
+        print(str(dat))
 
         ## 1. Histogram and density plots with multiple groups
         ## 1.1 Overlaid histograms
