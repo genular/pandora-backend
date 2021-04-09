@@ -287,23 +287,13 @@ mplot_importance <- function(var,
 #' @param model_name Character. Model's name
 #' @param subtitle Character. Subtitle to show in plot
 #' @param interval Numeric. Interval for breaks in plot
-#' @param plotly Boolean. Use plotly for plot's output for an interactive plot
-#' @param save Boolean. Save output plot into working directory
-#' @param subdir Character. Sub directory on which you wish to save the plot
-#' @param file_name Character. File name as you wish to save the plot
 #' @export
 mplot_roc <- function(tag,
                       score,
                       model_name = NA,
                       subtitle = NA,
-                      interval = 0.2,
-                      plotly = FALSE,
-                      save = FALSE,
-                      subdir = NA,
-                      file_name = "viz_roc.png") {
-  # require(pROC)
-  # require(ggplot2)
-  # require(plotly)
+                      interval = 0.2) {
+
   
   if (length(tag) != length(score)) {
     message("The tag and score vectors should be the same length.")
@@ -324,7 +314,7 @@ mplot_roc <- function(tag,
   
   
   p <- ggplot(coords, aes(x = x, y = y)) +
-    geom_line(colour = "deepskyblue", size = 1) +
+    geom_line(colour = "#D3D3D3", size = 1) +
     geom_point(colour = "blue3",
                size = 0.9,
                alpha = 0.4) +
@@ -348,10 +338,10 @@ mplot_roc <- function(tag,
       breaks = seq(0, 1, interval),
       expand = c(0.001, 0.001)
     ) +
-    theme_minimal() +
+
     theme(axis.ticks = element_line(color = "grey80")) +
     coord_equal() +
-    ggtitle("ROC Curve: AUC") +
+
     annotate(
       "text",
       x = 0.25,
@@ -367,28 +357,8 @@ mplot_roc <- function(tag,
       label = paste0("95% CI: ", round(100 * ci[c("min"), ], 2), "-", round(100 *
                                                                               ci[c("max"), ], 2))
     )
-  
-  if (!is.na(subtitle)) {
-    p <- p + labs(subtitle = subtitle)
-  }
-  
-  if (!is.na(model_name)) {
-    p <- p + labs(caption = model_name)
-  }
-  
-  if (plotly == TRUE) {
-    p <- ggplotly(p)
-  }
-  
-  if (!is.na(subdir)) {
-    dir.create(file.path(getwd(), subdir), recursive = T)
-    file_name <- paste(subdir, file_name, sep = "/")
-  }
-  
-  if (save == TRUE) {
-    p <- p + ggsave(file_name, width = 6, height = 6)
-  }
-  
+
+
   return(p)
   
 }

@@ -198,6 +198,7 @@ class ResumableUpload {
 		$fp = fopen($this->temp_dir . "/" . $saveName . $extension, 'w');
 		if ($fp === false) {
 			$this->errors[] = 'cannot create the destination file';
+			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload - Cannot create the destination file");
 			return false;
 		}
 
@@ -223,6 +224,7 @@ class ResumableUpload {
 			while (file_exists($rel_path . "/" . $orig_file_name . "_" . (++$i) . $extension) and $i < 10000) {}
 			if ($i >= 10000) {
 				$this->errors = "Can not create unique name for saving file " . $orig_file_name . $extension;
+				$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload - Cannot create unique name for saving file " . $orig_file_name . $extension);
 				return false;
 			}
 			return $orig_file_name . "_" . $i;

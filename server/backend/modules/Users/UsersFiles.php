@@ -13,6 +13,7 @@ use \Medoo\Medoo;
 use \Monolog\Logger;
 use \SIMON\Helpers\Cache as Cache;
 use \SIMON\Helpers\Helpers as Helpers;
+use \SIMON\System\FileSystem as FileSystem;
 
 class UsersFiles {
 
@@ -194,5 +195,89 @@ class UsersFiles {
 		}
 
 		return ($details);
+	}
+
+
+
+	/**
+	 * [remapColumsToOriginal description]
+	 * @param  [type] $fileInput    [directory-name]
+	 * @param  [type] $recordID     [archive-name.tar.gz]
+	 * @param  [type] $downloadType [archive-name.tar.gz]
+	 * @return [type]             [description]
+	 */
+
+	public function remapColumsToOriginal($fileInput, $selectedOptions, $columnMappings){
+
+		$selectedOptions = json_decode($selectedOptions, true);
+		$allMappings = array_merge($selectedOptions["features"], $selectedOptions["outcome"], $selectedOptions["classes"]);
+
+
+		$file_contents = file_get_contents($fileInput);
+
+		// Load CSV file to associative array
+		$lines = explode( "\n", $file_contents );
+		$headers = str_getcsv( array_shift( $lines ) );
+		$data = array();
+		foreach ( $lines as $line ) {
+			if(trim($line) === ""){
+				continue;
+			}
+			$row = array();
+			foreach ( str_getcsv( $line ) as $key => $field ){
+				$row[ $headers[ $key ] ] = $field;
+			}
+			$row = array_filter( $row );
+			$data[] = $row;
+
+		}
+		// Remap array data
+		$remappedData = [];
+		foreach ($data as $csvRow) {
+			$remappedRow = [];
+
+			foreach ($csvRow as $csvRowKey => $csvRowValue) {
+				// Remap column values
+				if($columnMappings !== false){
+					foreach ($columnMappings as $columnMapping) {
+						if($csvRowKey === $columnMapping["class_column"]){
+							if($columnMapping["class_remapped"] === $csvRowValue){
+								$csvRowValue = $columnMapping["class_original"];
+							}
+						}
+					}
+				}
+				// remap column keys
+				foreach ($allMappings as $mapping) {
+					if($mapping["remapped"] === $csvRowKey){
+						$csvRowKey = $mapping["original"];
+					}
+				}
+				$remappedRow[$csvRowKey] = $csvRowValue;
+			}
+			if(count($remappedRow) > 0){
+				$remappedData[] = $remappedRow;
+			}
+		}
+		
+		// Empty existing file
+		$f = @fopen($fileInput, "r+");
+		if ($f !== false) {
+		    ftruncate($f, 0);
+		    fclose($f);
+		}
+
+		// Save new data to the existing file
+		$has_header = false;
+		foreach ($remappedData as $c) {
+			$fp = fopen($fileInput, 'a');
+			if (!$has_header) {
+				fputcsv($fp, array_keys($c));
+				$has_header = true;
+			}
+			fputcsv($fp, $c);
+			fclose($fp);
+		}
+		return ($fileInput);
 	}
 }

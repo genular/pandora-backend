@@ -93,13 +93,17 @@ simon$handle$plots$summary$renderPlot <- expression(
             data$info$differences <- R.utils::captureOutput(summary(diff(resamps)))
             data$info$differences <- paste(data$info$differences, collapse="\n")
             data$info$differences <- toString(RCurl::base64Encode(data$info$differences, "txt"))
+
+
+
+            unique_pred_levels <- unique(c(levels(modelPredictionData$pred), levels(modelPredictionData$obs)))
            
             ## 4. ROC_AUC_PLOT
             tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
             tempdir(check = TRUE)
             svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
-                plot <- ggplot(modelPredictionData, aes(m=B, d=factor(obs, levels = c("A", "B")), fill = method, color = method)) + 
+                plot <- ggplot(modelPredictionData, aes(m=B, d=factor(obs, levels = unique_pred_levels), fill = method, color = method)) + 
                     geom_roc(hjust = -0.4, vjust = 1.5, linealpha = 1, increasing = TRUE) + 
                     coord_equal() +
                     style_roc(major.breaks = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1),

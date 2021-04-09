@@ -47,4 +47,24 @@ class DatasetResamplesMappings {
 		]);
 		return ($data->rowCount());
 	}
+
+	public function getMappingsForResample($resampleID){
+
+		$columns = [
+			"id [Int]",
+			"dqid [Int]",
+			"class_column",
+			"class_type [Int]",
+			"class_original",
+			"class_remapped"
+		];
+		$conditions = [
+			"drid" => $resampleID,
+			"ORDER" => ["id" => "DESC"],
+		];
+		$details = $this->database->select($this->table_name, $columns, $conditions);
+
+		return ($details);
+
+	}
 }

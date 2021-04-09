@@ -1,7 +1,7 @@
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
 #' @GET /plots/modelsummary/render-plot
-simon$handle$plots$modelsummary$renderPlot <- expression(
+simon$handle$plots$modelInterpretation$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
@@ -51,7 +51,7 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
         }
 
         plot_unique_hash <- list(
-            training = list(
+            partial_dependence = list(
                 auc_roc = digest::digest(paste0(resampleID, "_",args$settings,"_training_auc"), algo="md5", serialize=F),
                 partial_dependence =  digest::digest(paste0(resampleID, "_",args$settings,"_training_partial_dependence"), algo="md5", serialize=F)
             ),

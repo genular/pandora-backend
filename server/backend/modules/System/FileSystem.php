@@ -296,7 +296,7 @@ class FileSystem {
 	 * @param  [type] $input can be file_id from users_files table or full path to the requested file
 	 * @return [type]          [description]
 	 */
-	public function downloadFile($input, $new_file_name = false) {
+	public function downloadFile($input, $new_file_name = false, $cache = true) {
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile: " . $input);
 
 		$remotePath = $input;
@@ -313,30 +313,43 @@ class FileSystem {
 		$file_path_gz = $file_path . ".tar.gz";
 
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile local file-path: " . $file_path);
-		// Skip downloading if file is already downloaded and extracted
-		if (file_exists($file_path)) {
-			@unlink($file_path_gz);
-			return $file_path;
-		}
-
+		
 		$ungz_cmd = $this->targz . " xf " . $file_path_gz . " -C " . $this->temp_dir . " --verbose";
-		// Skip downloading if compressed file is already downloaded
-		if (file_exists($file_path_gz)) {
-			$extracted_file = trim(shell_exec($ungz_cmd));
-			if ($file->getBasename('.tar.gz') !== $extracted_file) {
-				$file_path = str_replace($file->getBasename('.tar.gz'), $extracted_file, $file_path);
+
+		if($cache === true){
+			// Skip downloading if file is already downloaded and extracted
+			if (file_exists($file_path)) {
+				@unlink($file_path_gz);
+				return $file_path;
 			}
-			return $file_path;
+
+			// Skip downloading if compressed file is already downloaded
+			if (file_exists($file_path_gz)) {
+				$extracted_file = trim(shell_exec($ungz_cmd));
+				if ($file->getBasename('.tar.gz') !== $extracted_file) {
+					$file_path = str_replace($file->getBasename('.tar.gz'), $extracted_file, $file_path);
+				}
+				return $file_path;
+			}
+		}else{
+			if (file_exists($file_path_gz)) {
+				unlink($file_path_gz);
+			}
+			if (file_exists($file_path)) {
+				unlink($file_path);
+			}
 		}
 
 		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile remote file-path: " . $file_path);
 
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($remotePath);
+
 		$contents = stream_get_contents($stream);
 		if (is_resource($contents)) {
 			fclose($contents);
 		}
+
 		file_put_contents($file_path_gz, $contents);
 
 		$extracted_file = trim(shell_exec($ungz_cmd));
@@ -372,8 +385,14 @@ class FileSystem {
 
 		if (file_exists($inputPath)) {
 			$status = true;
+			if(is_file($inputPath)){
+				$inputCMDPath = basename($inputPath);
+			}else{
+				$inputCMDPath = $inputPath;
+			}
+
 			// tar -zcvf /tmp/out.tar.gz /var/log/nginx & openssl aes-256-cbc -k simon2021 -a -salt -in /tmp/out.tar.gz -out /tmp/out.tar.gz.enc
-			$gz_cmd = $this->targz . " -zcvf " . $ouputPath . " " . $inputPath;
+			$gz_cmd = "cd ".dirname($inputPath)." && ".$this->targz . " -zcvf " . $ouputPath . " " . $inputCMDPath;
 			
 			$command_output = trim(shell_exec($gz_cmd));
 			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem compressFileOrDirectory: " . $gz_cmd);
@@ -383,8 +402,11 @@ class FileSystem {
 
 		if (file_exists($ouputPath) && $status === true) {
 			$status = $this->Config->get('default.backend.server.url') . "/downloads/" . $outputFileName;
+		}else{
+			$status = false;
 		}
 
 		return ($status);
 	}
+
 }

@@ -129,6 +129,7 @@ class DatasetResamples {
 		$columns =
 			[
 			"dataset_resamples.id(resampleID) [Int]",
+			"dataset_resamples.dqid(queueID) [Int]",
 			"dataset_resamples.ufid(ufid) [Int]",
 			"dataset_resamples.ufid_train(ufid_train) [Int]",
 			"dataset_resamples.ufid_test(ufid_test) [Int]",

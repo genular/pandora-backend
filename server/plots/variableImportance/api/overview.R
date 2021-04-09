@@ -1,7 +1,7 @@
-#* Plot out data from the iris dataset
+#* Render models overview plot
 #* @serializer contentType list(type='image/png')
-#' @post /plots/variableImportance/renderPlot
-simon$handle$plots$variableImportance$renderPlot <- expression(
+#' @post /plots/variableImportance/renderOverviewPlot
+simon$handle$plots$variableImportance$renderOverviewPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = TRUE, data = NULL, image = NULL, image_png = NULL)
@@ -115,3 +115,5 @@ simon$handle$plots$variableImportance$renderPlot <- expression(
         return(list(status = results$status, image = results$image, image_png = results$image_png))
     }
 )
+
+

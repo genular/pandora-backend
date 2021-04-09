@@ -217,8 +217,14 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
 	$Helpers = $this->get('SIMON\Helpers\Helpers');
 
+	$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+	$DatasetResamplesMappings = $this->get('SIMON\Dataset\DatasetResamplesMappings');
+	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
+
+	$queueID = false;
 
 	$submitData = false;
 	if (isset($args['submitData'])) {
@@ -232,11 +238,15 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 
 		$recordDetails = false;
 		if ($downloadType === "queue") {
-			$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
 			$recordDetails = $DatasetQueue->getDetailsByID($recordID, $user_id);
+
+			$queueID = $recordDetails["id"];
+
 		} else if ($downloadType === "resample") {
-			$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
 			$recordDetails = $DatasetResamples->getDetailsByID($recordID, $user_id);
+
+			$queueID = $recordDetails["queueID"];
+
 		} else if ($downloadType === "models") {
 			$Models = $this->get('SIMON\Models\Models');
 			$recordDetails = $Models->getDetailsByID($recordID, $user_id);
@@ -273,9 +283,35 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 
 			if (isset($fileDetails['file_path'])) {
 				$display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
-				// get link with a new name
-				$download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
-				$downloadLinks[] = ["filename" => $display_filename, "download_url" => $download_url];
+
+				// get remote link with a new name
+				// $download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
+				$download_filename = str_replace(".tar.gz","", $display_filename);
+
+				if ($downloadType === "resample") {
+					$download_filename =  $recordDetails["resampleID"]."_".$download_filename;
+					$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
+					$columnMappings = $DatasetResamplesMappings->getMappingsForResample($recordDetails["resampleID"]);
+				}else if ($downloadType === "queue") {
+					$download_filename =  $queueID."_".$download_filename;
+					$queueDetails = $recordDetails;
+					$columnMappings = false;
+				}
+
+				// Download and de-compress
+				$fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
+
+				if ($downloadType !== "models") {
+					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings);
+				}
+
+		
+				$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/download' compressing file for download: " . $fileInput);
+				$download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);
+
+				if ($download_url !== false) {
+					$downloadLinks[] = ["filename" => $display_filename, "download_url" => $download_url];
+				}
 			}
 		}
 		// TODO 3rd if model download is requested also download variable_importance and model overview sheet
