@@ -232,7 +232,7 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
                         result <- length(valuesOriginal)
                     }
 
-                    if(result != ""){
+                    if(!is.null(result) || result != ""){
                         i <- i + 1
                         ID <- paste0("element_", i)
                         props[[ID]] <- list()

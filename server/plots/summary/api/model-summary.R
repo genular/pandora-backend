@@ -65,35 +65,53 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
         ## 1st - Get all saved models for selected IDs
         modelsDetails <- db.apps.getModelsDetailsData(modelsIDs)
 
-        dat <- NULL
-        outcome_column <- NULL
+        trainingPredictions <- NULL
+        testingPredictions <- NULL
 
         for(i in 1:nrow(modelsDetails)) {
             model <- modelsDetails[i,]
             modelPath <- downloadDataset(model$remotePathMain)
             if(modelPath == FALSE){
-                return (list(success = FALSE, message = "Remote Error. Cannot locate and load file"))
+                return (list(success = FALSE, message = "Remote download error. Cannot locate and load model file."))
             } 
             modelData <- loadRObject(modelPath)
 
-            save(modelData, file = "/tmp/modelData")
 
-            dat <- modelData$info$data$training
-            ## training, testing
-            outcome_column <- modelData$info$outcome
+            if (modelData$training$raw$status == TRUE) {
+                if(is.null(trainingPredictions)){
+                    trainingPredictions <- cbind(modelData$training$raw$data$pred, method = modelData$training$raw$data$method)
+                }else{
+                    modelData$training$raw$data$pred$method <- modelData$training$raw$data$method
+                    trainingPredictions <- dplyr::bind_rows(trainingPredictions, modelData$training$raw$data$pred)
+                }
+
+                if(!is.null(modelData$predictions$raw$predictions)){
+                    if("B" %in% colnames(modelData$predictions$raw$predictions)){
+                        predData <- as.data.frame(cbind(modelData$info$data$testing[[modelData$info$outcome]], modelData$predictions$raw$predictions[, "B"], modelData$training$raw$data$method))
+                        names(predData) <- c("referenceData", "predictionObject", "method")
+                        if(is.null(testingPredictions)){
+                            testingPredictions <- predData
+                        }else{
+                            testingPredictions <- dplyr::bind_rows(testingPredictions, predData)
+                        }
+                    }
+                }
+            }
         }
 
-        # Plot AUC Training
-        modelPredictionData <- cbind(modelData$training$raw$data$pred, method = modelData$training$raw$data$method)
 
-        tmp_path <- plot_auc_roc_training(modelPredictionData, settings, plot_unique_hash[["training"]][["auc_roc"]])
-        res.data$training$auc_roc = optimizeSVGFile(tmp_path)
-        res.data$training$auc_roc_png = convertSVGtoPNG(tmp_path)
+        if(!is.null(trainingPredictions)){
+            tmp_path <- plot_auc_roc_training(trainingPredictions, settings, plot_unique_hash[["training"]][["auc_roc"]])
+            res.data$training$auc_roc = optimizeSVGFile(tmp_path)
+            res.data$training$auc_roc_png = convertSVGtoPNG(tmp_path)
+        }
         
         # Plot AUC Testing
-        tmp_path <- plot_auc_roc_testing(modelData, settings, plot_unique_hash[["testing"]][["auc_roc"]])
-        res.data$testing$auc_roc = optimizeSVGFile(tmp_path)
-        res.data$testing$auc_roc_png = convertSVGtoPNG(tmp_path)
+        if(!is.null(testingPredictions)){
+            tmp_path <- plot_auc_roc_testing(testingPredictions, settings, plot_unique_hash[["testing"]][["auc_roc"]])
+            res.data$testing$auc_roc = optimizeSVGFile(tmp_path)
+            res.data$testing$auc_roc_png = convertSVGtoPNG(tmp_path)
+        }
         
         # Plot AUC Testing FULL
         #tmp_path <- plot_auc_roc_testing_full(modelData, settings, plot_unique_hash[["testing"]][["auc_roc_full"]])
@@ -112,6 +130,7 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
         #res.data$training$feature_interaction = optimizeSVGFile(tmp_path)
         #res.data$training$feature_interaction_png = convertSVGtoPNG(tmp_path)
 
+        ## https://stackoverflow.com/questions/30997876/how-to-obtain-coefficient-for-matthews-correlation-after-running-these-two-lines
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(

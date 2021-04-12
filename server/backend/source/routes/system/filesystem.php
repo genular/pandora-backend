@@ -117,6 +117,83 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 });
 
+
+/**
+ * Local file upload - upload file that is already on the system
+ * @param  {local_file_path} Path to the file in local PHP Back-end file-system
+ * @return {json} JSON encoded API response object
+ */
+$app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_file_name:.*}', function (Request $request, Response $response, array $args) {
+	$success = false;
+	$message = array();
+
+	$FileSystem = $this->get('SIMON\System\FileSystem');
+	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
+	$ResumableUpload = $this->get('SIMON\System\ResumableUpload');
+
+	$Helpers = $this->get('SIMON\Helpers\Helpers');
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$local_file_path = $request->getAttribute('local_file_path');
+
+	$local_file_path = base64_decode($local_file_path);
+
+	$new_file_name = $request->getAttribute('new_file_name');
+	$new_file_name = base64_decode($new_file_name);
+
+	
+	if(file_exists($local_file_path)){
+		$success = true;
+		$uploaded_path = $local_file_path;
+	}
+
+
+	// File upload is finished!
+	if ($success === true) {
+		// Validate File Header and rename it to standardize column names!
+		$details = $Helpers->validateCSVFileHeader($uploaded_path);
+
+
+		if (count($details["message"]) === 0) {
+			$renamed_path = $Helpers->renamePathToHash($details);
+			// Compress original file to GZ archive format
+			$gzipped_path = $Helpers->compressPath($renamed_path);
+			// Upload compressed file to the Storage
+			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
+			// Save reference to Database
+			$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+
+
+			if (file_exists($renamed_path)) {
+				@unlink($renamed_path);
+			}
+			if (file_exists($gzipped_path)) {
+				@unlink($gzipped_path);
+			}
+
+			$file_details = $UsersFiles->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
+			if ($file_details !== false) {
+				$message = array(
+					"id" => $file_details["id"],
+					"size" => $file_details["size"],
+					"display_filename" => $file_details["display_filename"],
+					"extension" => $file_details["extension"],
+					"mime_type" => $file_details["mime_type"],
+					"item_type" => $file_details["item_type"],
+				);
+			}
+		} else {
+			$success = false;
+			$message = $details["message"];
+		}
+	}
+	
+    return $response->withHeader('Content-Type', 'text/html')->write('<script>window.close();</script>');
+
+});
+
 /**
  * Retrieves list of files for the user, uploaded in specific user directory
  *
@@ -212,6 +289,9 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = false;
 	$message = false;
+
+	$config = $this->get('Noodlehaus\Config');
+	$backend_server_url = $config->get('default.backend.server.url');
 
 	$FileSystem = $this->get('SIMON\System\FileSystem');
 	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
@@ -310,7 +390,10 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 				$download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);
 
 				if ($download_url !== false) {
-					$downloadLinks[] = ["filename" => $display_filename, "download_url" => $download_url];
+					$downloadLinks[] = ["filename" => $display_filename, 
+					"download_url" => $download_url, 
+					"local_download_url" => $backend_server_url."/backend/system/filesystem/local-upload/".urlencode(base64_encode($fileInput))."/".urlencode(base64_encode($download_filename))."?HTTP_X_TOKEN=".urlencode($user_details['session_id'])
+					];
 				}
 			}
 		}

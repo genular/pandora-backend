@@ -57,8 +57,8 @@ $app->add(new TokenAuthentication([
 		$output = [];
 
 		$output['error'] = [
-			'msg' => $tokenAuth->getResponseMessage(),
-			'token' => $tokenAuth->getResponseToken(),
+			'message' => $tokenAuth->getResponseMessage(),
+			//'token' => $tokenAuth->getResponseToken(),
 			'status' => $status,
 			'error' => true,
 		];

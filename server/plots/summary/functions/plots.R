@@ -1,15 +1,10 @@
-plot_auc_roc_training <- function(modelPredictionData, settings, tmp_hash){
+plot_auc_roc_training <- function(trainingPredictions, settings, tmp_hash){
 
-	save(modelPredictionData, file = "/tmp/modelPredictionData")
-	save(settings, file = "/tmp/settings")
-	save(tmp_hash, file = "/tmp/tmp_hash")
-
-	
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-	unique_pred_levels <- unique(c(levels(modelPredictionData$pred), levels(modelPredictionData$obs)))
+	unique_pred_levels <- unique(c(levels(trainingPredictions$pred), levels(trainingPredictions$obs)))
 
-	plotData <- ggplot(modelPredictionData, aes(m=B, d=factor(obs, levels = unique_pred_levels), fill = method, color = method)) + 
+	plotData <- ggplot(trainingPredictions, aes(m=B, d=factor(obs, levels = unique_pred_levels), fill = method, color = method)) + 
 	    geom_roc(hjust = -0.4, vjust = 1.5, linealpha = 1, increasing = TRUE, pointsize = settings$pointSize, labelsize = settings$labelSize) + 
 	    coord_equal() +
 	    style_roc(major.breaks = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1),
@@ -32,19 +27,11 @@ plot_auc_roc_training <- function(modelPredictionData, settings, tmp_hash){
 }
 
 
-plot_auc_roc_testing <- function(modelData, settings, tmp_hash){
+plot_auc_roc_testing <- function(testingPredictions, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-	# unique_pred_levels <- unique(c(levels(modelPredictionData$pred), levels(modelPredictionData$obs))
 
-	referenceData <- modelData$info$data$testing[[modelData$info$outcome]]
-	predictionObject <- modelData$predictions$raw$predictions[, "B"]
-
-	inputData <- as.data.frame(cbind(referenceData, predictionObject))
-	inputData$method <- modelData$training$raw$data$method
-
-
-	plotData <- ggplot(inputData, aes(m = predictionObject, d = factor(referenceData), fill = method, color = method)) + 
+	plotData <- ggplot(testingPredictions, aes(m = predictionObject, d = factor(referenceData), fill = method, color = method)) + 
 	    geom_roc(hjust = -0.4, vjust = 1.5, linealpha = 1, increasing = TRUE, pointsize = settings$pointSize, labelsize = settings$labelSize) + 
 	    coord_equal() +
 	    style_roc(major.breaks = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1),
