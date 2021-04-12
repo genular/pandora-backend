@@ -2,6 +2,8 @@ plot_auc_roc_training <- function(trainingPredictions, settings, tmp_hash){
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
+    save(trainingPredictions, file = "/tmp/trainingPredictions")
+    
 	unique_pred_levels <- unique(c(levels(trainingPredictions$pred), levels(trainingPredictions$obs)))
 
 	plotData <- ggplot(trainingPredictions, aes(m=B, d=factor(obs, levels = unique_pred_levels), fill = method, color = method)) + 
@@ -30,6 +32,7 @@ plot_auc_roc_training <- function(trainingPredictions, settings, tmp_hash){
 plot_auc_roc_testing <- function(testingPredictions, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
+    save(testingPredictions, file = "/tmp/testingPredictions")
 
 	plotData <- ggplot(testingPredictions, aes(m = predictionObject, d = factor(referenceData), fill = method, color = method)) + 
 	    geom_roc(hjust = -0.4, vjust = 1.5, linealpha = 1, increasing = TRUE, pointsize = settings$pointSize, labelsize = settings$labelSize) + 

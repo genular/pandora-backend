@@ -76,7 +76,7 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
             } 
             modelData <- loadRObject(modelPath)
 
-
+            save(modelData, file = "/tmp/modelData")
             if (modelData$training$raw$status == TRUE) {
                 if(is.null(trainingPredictions)){
                     trainingPredictions <- cbind(modelData$training$raw$data$pred, method = modelData$training$raw$data$method)
@@ -87,7 +87,7 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
 
                 if(!is.null(modelData$predictions$raw$predictions)){
                     if("B" %in% colnames(modelData$predictions$raw$predictions)){
-                        predData <- as.data.frame(cbind(modelData$info$data$testing[[modelData$info$outcome]], modelData$predictions$raw$predictions[, "B"], modelData$training$raw$data$method))
+                        predData <- as.data.frame(cbind(modelData$info$data$testing[[modelData$info$outcome]], modelData$predictions$raw$predictions[, "B"], modelData$training$raw$data$method), stringsAsFactors = FALSE)
                         names(predData) <- c("referenceData", "predictionObject", "method")
                         if(is.null(testingPredictions)){
                             testingPredictions <- predData
@@ -108,6 +108,10 @@ simon$handle$plots$modelsummary$renderPlot <- expression(
         
         # Plot AUC Testing
         if(!is.null(testingPredictions)){
+
+            testingPredictions$predictionObject <- as.numeric(testingPredictions$predictionObject)
+            testingPredictions$referenceData <- as.numeric(testingPredictions$referenceData)
+                        
             tmp_path <- plot_auc_roc_testing(testingPredictions, settings, plot_unique_hash[["testing"]][["auc_roc"]])
             res.data$testing$auc_roc = optimizeSVGFile(tmp_path)
             res.data$testing$auc_roc_png = convertSVGtoPNG(tmp_path)
