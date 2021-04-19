@@ -120,11 +120,18 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         }
 
         if(error_check == FALSE){
+
+            save(dataset_filtered, file = "/tmp/dataset_filtered")
             data <- cor(dataset_filtered, use = settings$na_action, method = settings$correlation_method)
 
+            save(data, file = "/tmp/data")
 
             if(settings$significance$enable == TRUE){
                 p.mat <- corTest(data, settings$confidence$level$value)
+
+                if(settings$significance$adjust_p_value == TRUE){
+                    p.mat[[1]] <- p.adjust(p.mat[[1]], method = "BH")
+                }
             }
 
             args <- list(data,
