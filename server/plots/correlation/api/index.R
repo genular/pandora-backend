@@ -100,9 +100,10 @@ simon$handle$plots$correlation$renderPlot <- expression(
 
         if(settings$significance$enable == TRUE){
             p.mat <- corTest(data, settings$confidence$level$value)
-            if(settings$significance$adjust_p_value == TRUE){
-                p.mat[[1]] <- p.adjust(p.mat[[1]], method = "BH")
-            }
+                if(settings$significance$adjust_p_value == TRUE){
+                    pAdj <- p.adjust(p.mat[[1]], method = "BH")
+                    p.mat[[1]] <- matrix(pAdj, ncol = dim(p.mat[[1]])[1])
+                }
         }
 
         args <- list(data,

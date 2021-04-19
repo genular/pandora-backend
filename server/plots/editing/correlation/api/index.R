@@ -74,7 +74,7 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         resp_check <- getPreviouslySavedResponse(plot_unique_hash, response_data, 3)
         if(is.list(resp_check)){
             print("==> Serving request response from cache")
-            return(resp_check)
+            # return(resp_check)
         }
 
         ## 1st - Get JOB and his Info from database
@@ -127,10 +127,13 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
             save(data, file = "/tmp/data")
 
             if(settings$significance$enable == TRUE){
+                print("==> Info: significance enable corTest")
                 p.mat <- corTest(data, settings$confidence$level$value)
 
                 if(settings$significance$adjust_p_value == TRUE){
-                    p.mat[[1]] <- p.adjust(p.mat[[1]], method = "BH")
+                    print("==> Info: Adjusting p-values")
+                    pAdj <- p.adjust(p.mat[[1]], method = "BH")
+                    p.mat[[1]] <- matrix(pAdj, ncol = dim(p.mat[[1]])[1])
                 }
             }
 
