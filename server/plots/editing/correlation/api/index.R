@@ -121,10 +121,10 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
 
         if(error_check == FALSE){
 
-            save(dataset_filtered, file = "/tmp/dataset_filtered")
+            #save(dataset_filtered, file = "/tmp/dataset_filtered")
             data <- cor(dataset_filtered, use = settings$na_action, method = settings$correlation_method)
 
-            save(data, file = "/tmp/data")
+            #save(data, file = "/tmp/data")
 
             if(settings$significance$enable == TRUE){
                 print("==> Info: significance enable corTest")
