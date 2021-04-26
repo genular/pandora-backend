@@ -91,9 +91,9 @@ plot.heatmap <- function(   data,
                             fontSizeRow,
                             fontSizeCol,
                             fontSizeNumbers,
-                            settings = NULL){
+                            settings = NULL,
+                            pallets = c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds")){
 
-    pallets <- c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds")
 
     if(!is.null(removeNA) & removeNA == TRUE){
         data <- data[complete.cases(data), ]
@@ -168,6 +168,8 @@ plot.heatmap <- function(   data,
     dotsPerCm = 96 / 2.54 #how many points per cm
     picw = picwIn * 2.54 * dotsPerCm
     pich = pichIn * 2.54 * dotsPerCm
+
+
 
 
     input_args <- c(list(t_data,

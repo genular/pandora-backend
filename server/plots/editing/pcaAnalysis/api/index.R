@@ -230,12 +230,15 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         input_data_num <- input_data[,sapply(input_data, is.numeric)]
 
+
         res.pca <- PCA(input_data, scale.unit = FALSE, ncp = 5, graph = FALSE)
+        #res.pca <- FAMD(input_data, graph = FALSE)
 
         res.info$pca <- convertToString(summary(res.pca))
         res.info$kmo <- convertToString(kmo_test(input_data_num))
         res.info$bartlett <- convertToString(psych::cortest.bartlett(cor(input_data_num), n = nrow(input_data_num)))
 
+        print("=====> Eigenvalues / Variances")
         # Eigenvalues / Variances
         eig.val <- get_eigenvalue(res.pca)
         res.info$eig <- convertToString(eig.val)
