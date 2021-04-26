@@ -81,7 +81,7 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
         message <- paste0("===> INFO: Pre-processing less than 2 columns detected removing some preprocessing methods\r\n")
         cat(message)
         ## Remove correlation if we have less than 2 columns
-        methods_sorted <- setdiff(methods_sorted, c("corr", "zv", "nzv", "pca"))
+        methods_sorted <- setdiff(methods_sorted, c("corr", "zv", "nzv", "pca")) 
     }
 
     # calculate the pre-process parameters from the dataset

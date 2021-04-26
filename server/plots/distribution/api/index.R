@@ -76,29 +76,36 @@ simon$handle$plots$distribution$renderPlot <- expression(
 
         datasetPath <- downloadDataset(remotePath)   
         data <- data.table::fread(datasetPath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+
         ## Remove all other than necessary selectedColumns
         data <- data[, names(data) %in% c(resampleDetails[[1]]$features$remapped, resampleDetails[[1]]$outcome$remapped)]
 
-
+        print("Remapping outcome column values")
         data[[resampleDetails[[1]]$outcome$remapped]] <- plyr::mapvalues(data[[resampleDetails[[1]]$outcome$remapped]], 
                                from=resampleMappings$class_remapped, 
                                to=resampleMappings$class_original)
         
-        colnames(data)[which(names(data) == resampleDetails[[1]]$outcome$remapped)] <- resampleDetails[[1]]$outcome$original
 
-        data_plot <- reshape2::melt(data, id.vars=resampleDetails[[1]]$outcome$original)
+        print("Melting data")
+        data_plot <- reshape2::melt(data, id.vars=resampleDetails[[1]]$outcome$remapped)
+
+        print("Renaming variables")
+        print(unique(data_plot$variable))
 
         data_plot$variable <- plyr::mapvalues(data_plot$variable, 
                                from=resampleDetails[[1]]$features$remapped, 
                                to=resampleDetails[[1]]$features$original)
 
+        print("Plotting variables 1")
+        print(unique(data_plot$variable))
+        print(resampleDetails[[1]]$outcome$remapped)
 
         ## 1. Histogram and density plots with multiple groups
         ## 1.1 Overlaid histograms
         tmp_path <- tempfile(pattern = plot_unique_hash[["histogram"]], tmpdir = tempdir(), fileext = ".svg")
         tempdir(check = TRUE)
         svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            plot <- ggplot(data_plot, aes_string(x="value", fill=resampleDetails[[1]]$outcome$original)) +
+            plot <- ggplot(data_plot, aes_string(x="value", fill=resampleDetails[[1]]$outcome$remapped)) +
                       geom_histogram(binwidth=.5, position="dodge") +
                       facet_wrap(~variable, scales="free_y") +
                       guides(fill=guide_legend(title=resampleDetails[[1]]$outcome$original)) + 
@@ -117,14 +124,16 @@ simon$handle$plots$distribution$renderPlot <- expression(
         response_data$histogram <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
         response_data$histogram_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
 
+        print("Plotting variables 2")
         ## 1.2 Density plots
         tmp_path <- tempfile(pattern = plot_unique_hash[["density"]], tmpdir = tempdir(), fileext = ".svg")
         tempdir(check = TRUE)
         svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            plot <- ggplot(data_plot, aes_string(x="value", colour=resampleDetails[[1]]$outcome$original)) + 
+            plot <- ggplot(data_plot, aes_string(x="value", colour=resampleDetails[[1]]$outcome$remapped)) + 
                       geom_density() + 
                       facet_wrap(~variable, scales="free_y") +
                       guides(fill=guide_legend(title=resampleDetails[[1]]$outcome$original)) + 
+                      labs(color = resampleDetails[[1]]$outcome$original) +
                       ylab("Density") + 
                       xlab("Value")
             print(plot)
@@ -140,13 +149,15 @@ simon$handle$plots$distribution$renderPlot <- expression(
         response_data$density <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
         response_data$density_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
 
+        print("Plotting variables 3")
         ## 1.3 Boxplot
         tmp_path <- tempfile(pattern = plot_unique_hash[["boxplot"]], tmpdir = tempdir(), fileext = ".svg")
         tempdir(check = TRUE)
         svg(tmp_path, width = 12, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            plot <- ggplot(data_plot, aes_string(x=resampleDetails[[1]]$outcome$original, y="value", fill=resampleDetails[[1]]$outcome$original)) + 
+            plot <- ggplot(data_plot, aes_string(x=resampleDetails[[1]]$outcome$remapped, y="value", fill=resampleDetails[[1]]$outcome$remapped)) + 
                       geom_boxplot() + 
                       facet_wrap(~variable)+
+                      labs(fill = resampleDetails[[1]]$outcome$original) +
                       theme(axis.text.x=element_blank(),
                             axis.ticks.x=element_blank())
             print(plot)

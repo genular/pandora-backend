@@ -142,7 +142,7 @@ preProcessDataset <- function(dataset) {
 
         preProcessedData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
         ## Final processed data-frame
-        datasetData <- preProcessedData$processedMat
+        datasetData <- preProcessedData$processedMat 
 
         if("pca" %in% dataset$preProcess){
             preProcessMapping <- preProcessedData$preprocessParams$rotation

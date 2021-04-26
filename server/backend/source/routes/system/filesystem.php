@@ -382,7 +382,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 				$fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
 
 				if ($downloadType !== "models") {
-					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings);
+					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings); 
 				}
 
 		
