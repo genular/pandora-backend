@@ -227,10 +227,9 @@ class UsersFiles {
 			foreach ( str_getcsv( $line ) as $key => $field ){
 				$row[ $headers[ $key ] ] = $field;
 			}
-			$row = array_filter( $row );
 			$data[] = $row;
-
 		}
+
 		// Remap array data
 		$remappedData = [];
 		foreach ($data as $csvRow) {
