@@ -193,6 +193,17 @@ class Helpers {
 
 		$path_parts = pathinfo($filePath);
 
+		// Check if we have BOM in the file
+		$fileContent = file_get_contents($filePath);
+		$bom = pack("CCC", 0xef, 0xbb, 0xbf);
+		if (0 === strncmp($fileContent, $bom, 3)) {
+			// BOM Detected
+			$bom = pack('H*','EFBBBF');
+    		$fileContent = preg_replace("/^$bom/", '', $fileContent);
+			//$fileContent = mb_convert_encoding($fileContent, "UTF-8");
+			file_put_contents($filePath, $fileContent);
+		}
+
 		$data = array(
 			'info' => $path_parts,
 			'dirname' => $path_parts['dirname'],

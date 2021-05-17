@@ -141,19 +141,24 @@ preProcessDataset <- function(dataset) {
         fs_status$info <- c(fs_status$info, message)
 
         preProcessedData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
-        ## Final processed data-frame
-        datasetData <- preProcessedData$processedMat 
+        if(!is.null(preProcessedData)){
+            ## Final processed data-frame
+            datasetData <- preProcessedData$processedMat 
 
-        if("pca" %in% dataset$preProcess){
-            preProcessMapping <- preProcessedData$preprocessParams$rotation
-            ## res.var <- factoextra::get_pca_var(res.pca)
-            ## res.var$coord          # Coordinates
-            ## res.var$contrib        # Contributions to the PCs
-            ## res.var$cos2           # Quality of representation 
-            ## corrplot::corrplot(res.var$cos2, is.corr = FALSE)
-        }else if("ica" %in% dataset$preProcess){
-            ## TODO not implemented
-            ## preProcessMapping <- preProcessedData$processedMat
+            if("pca" %in% dataset$preProcess){
+                preProcessMapping <- preProcessedData$preprocessParams$rotation
+                ## res.var <- factoextra::get_pca_var(res.pca)
+                ## res.var$coord          # Coordinates
+                ## res.var$contrib        # Contributions to the PCs
+                ## res.var$cos2           # Quality of representation 
+                ## corrplot::corrplot(res.var$cos2, is.corr = FALSE)
+            }else if("ica" %in% dataset$preProcess){
+                ## TODO not implemented
+                ## preProcessMapping <- preProcessedData$processedMat
+            }
+        }else{
+            message <- paste0("===> INFO: Could not apply preprocessing transformations, continuing without preprocessing.. \r\n")
+            cat(message)
         }
     }
 
