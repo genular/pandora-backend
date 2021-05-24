@@ -8,6 +8,8 @@
 node_modules
 demo_data
 
+.phpintel
+
 # Example code in package build process
 *-Ex.R
 

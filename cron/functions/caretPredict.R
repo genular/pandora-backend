@@ -326,3 +326,62 @@ caretPredict <- function(trainingFit, dataTesting, outcomeColumn, model_details)
 
     return(results)
 }
+
+#' @title Perform RFE with caret
+#' @description Perform RFE with caret and return list of rel avant predictors
+#' @param data Data frame with features and outcome
+#' @param model_details Details frame of current model
+#' @param problemType classification or regression
+#' @param outcomeColumn Name of the outcome column in data
+#' @return predictors
+recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
+    set.seed(1337)
+    results <- list(status = FALSE, modelData = NULL, modelPredictors = NULL)
+
+
+    save(data, file = "/tmp/data")
+    save(model_details, file = "/tmp/model_details")
+    save(outcomeColumn, file = "/tmp/outcomeColumn")
+
+    rfeControl <- caret::rfeControl(
+        method = "repeatedcv",
+        number = 10,
+        repeats = 5,
+        functions = caret::rfFuncs, 
+        returnResamp = "all",
+        saveDetails = TRUE,
+        allowParallel = TRUE
+    )
+
+
+    data_x <- data[,!(names(data) %in% outcomeColumn)]
+    data_y <- data[,c(outcomeColumn)]
+
+    subset_size_seq <- generateRFESizes(data_x)
+
+    train_args <- list(data_x, base::as.factor(base::make.names(data_y)), sizes = subset_size_seq, rfeControl = rfeControl)
+
+    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$modelData <- R.utils::withTimeout(do.call(caret::rfe, train_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+
+    # Ignore warnings while processing errors, actually we should move this to have training suppressed as well!?
+    options(warn = -1)
+    if(!inherits(model.execution, "error") && !inherits(results$modelData, 'try-error') && !is.null(results$modelData)){
+        results$status <- TRUE
+    }else{
+        if(inherits(results$modelData, 'try-error')){
+            message <- base::geterrmessage()
+            model.execution$message <- message
+        }
+        # cat(paste0("===> ERROR: caretTrainModel: ",model.execution$message," \r\n"))
+        results$modelData <- model.execution$message
+    }
+
+    # Restore default warning reporting
+    options(warn=0)
+
+    if(results$status == TRUE){
+        results$modelPredictors <- caret::predictors(results$modelData)
+    }
+
+    return(results)
+}

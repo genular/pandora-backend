@@ -44,6 +44,7 @@ p_load(dplyr)
 
 source("cron/functions/database.R")
 source("cron/functions/helpers.R")
+source("cron/functions/resampleHelpers.R")
 source("cron/functions/caretPredict.R")
 source("cron/functions/postProcessModel.R")
 source("cron/functions/preProcessDataset.R")
@@ -137,10 +138,11 @@ if(length(serverData) < 1){
             if(length(process_list) == 0){
                 cat(paste0("===> INFO: Deleting PID file no CRON process is detected as running \r\n"))
                 invisible(file.remove(UPTIME_PID))
+                file.create(UPTIME_PID)
             }else{
                 cat(paste0("===> INFO: Quitting found  ",length(process_list)," running processes \r\n"))
+                quit()
             }
-            quit()
         }
     }
 }
@@ -201,6 +203,7 @@ generateData <- function(serverData){
 }
 ## Get data and generate data partitions if necessarily
 datasets <- generateData(serverData)
+
 # Simple total/skipped metrics
 total_datasets <- length(datasets)
 skipped_datasets <- 0
@@ -241,6 +244,8 @@ for (dataset in datasets) {
 
     if(filePathTraining == FALSE || filePathTraining == FALSE){
         message <- paste0("===> ERROR: SKIPPING Dataset processing cannot locate downloaded Training or Testing files \r\n")
+        message <- paste0("===> ERROR: SKIPPING INFO: remotePathTrain: ",dataset$remotePathTrain," filePathTraining: ",filePathTraining,"\r\n")
+        message <- paste0("===> ERROR: SKIPPING INFO: remotePathTest: ",dataset$remotePathTest," filePathTraining: ",filePathTesting,"\r\n")
         cat(message)
         updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message, "id", dataset$resampleID)
@@ -250,7 +255,7 @@ for (dataset in datasets) {
 
     ## Don't try to make predictions if Training failed or we have less than 10 samples in testing dataset
     if (is.null(dataset$samples_testing) || as.numeric(dataset$samples_testing) <= 10) {
-        message <- paste0("===> ERROR: SKIPPING Cannot make predictions on the model, not enough samples in test set (>=10) \r\n")
+        message <- paste0("===> ERROR: SKIPPING Cannot make predictions on the model, not enough samples in test set (>=10) samples_testing: ",dataset$samples_testing," \r\n")
         cat(message)
         updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message, "id", dataset$resampleID)
@@ -468,20 +473,40 @@ for (dataset in datasets) {
             if (predictionObject$status == TRUE) {
                 ## RAW predictions
                 predictionProcessed <- NULL
+
+                positivePredictionValue <-outcome_mapping[1, ]
+                negativePredictionValue <-outcome_mapping[2, ]
+
                 ## Make a cutoff and re-level the data
                 if(predictionObject$type == "prob"){
-                    ## Class prediction is based on a 50% probability cutoff. 
-                    threshold <- 0.5
-                    predictionsTmpCutOff <- base::factor( ifelse(predictionObject$predictions[, outcome_mapping[1, ]$class_remapped] > threshold, outcome_mapping[1, ]$class_remapped, outcome_mapping[2, ]$class_remapped) )
-                    ## More than one class is successfully predicted (A & B)
-                    if(length(unique(predictionsTmpCutOff)) > 1){
-                        predictionProcessed      <- relevel(predictionsTmpCutOff, outcome_mapping[1, ]$class_remapped)
-                    ## Only one unique class is predicted (A)
-                    } else if(length(predictionsTmpCutOff) > 1){
-                        predictionProcessed      <- predictionsTmpCutOff
-                    ## Nothing is predicted
+                    valuesProcessedCheck <- TRUE
+                    if(outcome_mapping[1, ]$class_remapped %in% colnames(predictionObject$predictions)){
+                        positivePredictionValue <-outcome_mapping[1, ]
+                        negativePredictionValue <-outcome_mapping[2, ]
                     }else{
-                        predictionProcessed <- NULL
+                        if(outcome_mapping[2, ]$class_remapped %in% colnames(predictionObject$predictions)){
+                            cat(paste0("===> ERROR: Could not find any predictions for ",outcome_mapping[1, ]$class_remapped," inverting classes and using ",positivePredictionValue$class_remapped," for positive value. TODO: fix roc plot \r\n"))
+                            positivePredictionValue <-outcome_mapping[2, ]
+                            negativePredictionValue <-outcome_mapping[1, ]
+                        }else{
+                            valuesProcessedCheck <- FALSE
+                        }
+                    }
+
+                    if(valuesProcessedCheck == TRUE){
+                        ## Class prediction is based on a 50% probability cutoff. 
+                        threshold <- 0.5
+                        predictionsTmpCutOff <- base::factor( ifelse(predictionObject$predictions[, positivePredictionValue$class_remapped] > threshold, positivePredictionValue$class_remapped, negativePredictionValue$class_remapped) )
+                        ## More than one class is successfully predicted (A & B)
+                        if(length(unique(predictionsTmpCutOff)) > 1){
+                            predictionProcessed <- relevel(predictionsTmpCutOff, positivePredictionValue$class_remapped)
+                        ## Only one unique class is predicted (A)
+                        } else if(length(predictionsTmpCutOff) > 1){
+                            predictionProcessed <- predictionsTmpCutOff
+                        ## Nothing is predicted
+                        }else{
+                            predictionProcessed <- NULL
+                        }
                     }
 
                 }else if(predictionObject$type == "raw"){
@@ -504,7 +529,7 @@ for (dataset in datasets) {
                     if(predictionObject$type == "prob" && !is.null(predictionObject$predictions)){
                         cat(paste0("===> INFO: Calculating pROC, pAUC \r\n"))
 
-                        predROC <- getPredictROC(modelData$testing[[dataset$outcome]], predictionObject$predictions[, outcome_mapping[1, ]$class_remapped], model_details)
+                        predROC <- getPredictROC(modelData$testing[[dataset$outcome]], predictionObject$predictions[, positivePredictionValue$class_remapped], model_details)
 
                         if(predROC$status == TRUE){
                             predictionAUC <- list(roc = predROC$data, auc = pROC::auc(predROC$data))

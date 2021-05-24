@@ -103,3 +103,33 @@ compressPath <- function(filepath_local){
 
     return (list(gzipped_path=gzipped_path, renamed_path=renamed_path))
 }
+
+
+saveAndUploadObject <- function(saveObject, userID, saveToPath, uploadToPath, saveObjectType, remove = TRUE){
+
+    saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
+    saveDataPaths$path_initial <- saveToPath
+
+    if(saveObjectType == "RData"){
+        cat(paste0("===> INFO: Saving object as Rdata file to: ",saveDataPaths$path_initial," \r\n"))
+        save(saveObject, file = saveDataPaths$path_initial)
+    }else{
+        cat(paste0("===> INFO: Saving object as csv file to: ",saveDataPaths$path_initial," \r\n"))
+        data.table::fwrite(saveObject, file = saveDataPaths$path_initial, showProgress = TRUE)
+    }
+
+    path_details = compressPath(saveDataPaths$path_initial)
+    
+    saveDataPaths$renamed_path = path_details$renamed_path
+    saveDataPaths$gzipped_path = path_details$gzipped_path
+
+    saveDataPaths$file_path = uploadFile(userID, saveDataPaths$gzipped_path, uploadToPath)
+    
+    if(remove == TRUE){
+        if(file.exists(saveDataPaths$renamed_path)){ file.remove(saveDataPaths$renamed_path) }
+        if(file.exists(saveDataPaths$gzipped_path)){ file.remove(saveDataPaths$gzipped_path) }
+    }
+
+
+    return(saveDataPaths)
+}

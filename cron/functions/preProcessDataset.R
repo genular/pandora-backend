@@ -1,188 +1,65 @@
 #' @title preProcessDataset
 #' @description Makes Train and Testing sets for the given dataset.
 #' @param dataset
+#' dataset$remotePathMain
+#' dataset$outcome
+#' dataset$features
+#' dataset$preProcess
+#' dataset$userID
+#' dataset$queueID
+#' dataset$resampleID
+#' dataset$resampleDataSource
 #' @return boolean
 preProcessDataset <- function(dataset) {
+    success <- TRUE
 
     cat(paste0("===> INFO: preProcessDataset: started: ", dataset$remotePathMain,"\r\n"))
 
-    filepath_extracted <- downloadDataset(dataset$remotePathMain)
-    ## If data is missing cancel processing! 
-    if(filepath_extracted == FALSE){
-        message <- paste0("===> ERROR: Cannot download remote dataset data\r\n")
-        cat(message)
+    globalDataset <- loadGlobalDataset(dataset$remotePathMain, dataset$resampleID)
 
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
-        appendDatabaseFiled("dataset_resamples", "error", message)
-        return(FALSE)
+    status <- checkSelectedOutcomeColumns(dataset$outcome, dataset$resampleID)
+    if(status == FALSE){
+        return(status)
     }
 
-    glabalDataset <- data.table::fread(filepath_extracted, header = T, stringsAsFactors = FALSE, data.table = FALSE)
-
-    #####################################################
-    ## Combine Outcome and Classes
-    outcome_and_classes <- c(dataset$outcome, dataset$classes)
-    #####################################################
-
-    if(length(dataset$outcome) != 1){
-
-        message <- paste0("===> ERROR: Invalid number (",length(dataset$outcome),") of outcome columns detected. Currently only one is supported.")
-        cat(message)
-
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
-        appendDatabaseFiled("dataset_resamples", "error", message)
-        return(FALSE)
-    }
-
-    ## Create local job processing dir /tmp/xyz
+    ## Create local job processing directory /tmp/xyz
     JOB_DIR <- initilizeDatasetDirectory(dataset)
-
-    fs_status <- list(error = c(), info = c())
-
     ## Remove all other than necessary columns, this should already be removed on intersect generation in PHP
-    datasetData <- glabalDataset[, names(glabalDataset) %in% c(dataset$features, dataset$outcome, dataset$classes)]
-    rm(glabalDataset)
-
-    outcome_unique <- unique(datasetData[[dataset$outcome]])
-    outcome_unique_count <- length(outcome_unique)
-
-    if(outcome_unique_count < 2 || outcome_unique_count > 702){
-        cat(paste0("===> ERROR: You have: ", outcome_unique_count, " outcome class. You should have anything between 2-702 including 2 and 702.\r\n"))
-        print(outcome_unique)
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
-        appendDatabaseFiled("dataset_resamples", "error", paste0("Incorrect number of outcome class levels in main dataset: ", outcome_unique_count), "id", dataset$resampleID)
-        return(FALSE)
-    }
-
-    ## Remap outcome classes with A & B values
-    mappings <- matrix(ncol=4, nrow=outcome_unique_count)
-
-    ## Generate letters: LIMIT: 702 letters
-    outcome_remapping <- c(LETTERS, sapply(LETTERS, function(x) paste0(x, LETTERS)))
-    ## Convert "outcome" to characters and then do replacing
-    datasetData[[dataset$outcome]] <- as.character(datasetData[[dataset$outcome]])
-
-    m_count <- 1
-    remap_count <- 1
-    for(outcome_item in outcome_unique){
-        mappings[m_count, ][1] <- dataset$outcome
-        mappings[m_count, ][2] <- 2
-        mappings[m_count, ][3] <- outcome_item
-        mappings[m_count, ][4] <- outcome_remapping[remap_count]
-
-        datasetData[[dataset$outcome]][datasetData[[dataset$outcome]] == outcome_item] <- outcome_remapping[remap_count]
-        m_count <- m_count + 1
-        remap_count <- remap_count + 1
-    }
-
-    ## Extract all non numeric column values and convert them to numeric
-    non_numeric_column_ids <- unlist(lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , is.numeric))  
-    non_numeric_column_names <- colnames(datasetData)[!non_numeric_column_ids]
-
-    if(length(non_numeric_column_names) > 0){
-        for (column_name in non_numeric_column_names){
-            column_unique <- unique(datasetData[[column_name]])
-
-            ## Extend the matrix
-            mappings <- rbind(mappings, length(column_unique))
-
-            column_remapping <- seq(1, length(column_unique), by=1)
-            ## Convert "column" to characters and then do replacing
-            datasetData[[column_name]] <- as.character(datasetData[[column_name]])
-
-            remap_count <- 1
-            ##   class_column class_type class_original class_remapped
-            ## 1      column0          2       cyclists              A
-            ## 2      column0          2   noncyclists               B
-            ## 3      column0          2 wannabecyclist              C
-            for(column_item in column_unique){
-                ## class_column
-                mappings[m_count, ][1] <- column_name
-                ## class_type
-                mappings[m_count, ][2] <- 2
-                ## class_original
-                mappings[m_count, ][3] <- column_item
-                ## class_remapped
-                mappings[m_count, ][4] <- column_remapping[remap_count]
-
-                datasetData[[column_name]][datasetData[[column_name]] == column_item] <- column_remapping[remap_count]
-                m_count <- m_count + 1
-                remap_count <- remap_count + 1
-            }
-        }
-    }
-
-    ## Convert it to data-frame
-    mappings <- as.data.frame(mappings)
-    colnames(mappings) <- c("class_column", "class_type", "class_original", "class_remapped")
-
-    query <- paste0("INSERT IGNORE INTO `dataset_resamples_mappings` 
-                        (`id`, `dqid`, `drid`, `class_column`, `class_type`, `class_original`, `class_remapped`, `created`) 
-                    VALUES", paste(sprintf("(NULL, '%s', '%s', '%s', '%s', '%s', '%s', NOW())", dataset$queueID, dataset$resampleID,
-        mappings$class_column, mappings$class_type, mappings$class_original, mappings$class_remapped), collapse = ","))
-
-    results <- dbExecute(databasePool, query)
-    rm(mappings)
-
+    datasetData <- globalDataset[, names(globalDataset) %in% c(dataset$features, dataset$outcome, dataset$classes)]
     ## Maintain outcome as factors
     datasetData[[dataset$outcome]] <- as.factor(datasetData[[dataset$outcome]])
-
+    ## Combine Outcome and Classes
+    outcome_and_classes <- c(dataset$outcome, dataset$classes)
     ## Convert all columns expect "outcome_and_classes" column to numeric values! 
-    ## Same as above mappings but just in case we missed some!
     datasetData[, !names(datasetData) %in% outcome_and_classes] <- lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , as.numeric)
 
-    # ==> 2 PREPROCCESING: Skewness and normalizing of the numeric predictors
-    preProcessMapping <- NULL
-    if(length(dataset$preProcess) > 0 ){
-        transformations <- paste(dataset$preProcess, sep=",", collapse = ",")
-        message <- paste0("===> INFO: Pre-processing transformation(s) (",transformations,") \r\n")
-        cat(message)
-
-        fs_status$info <- c(fs_status$info, message)
-
-        preProcessedData <- preProcessData(datasetData, dataset$outcome, outcome_and_classes, dataset$preProcess)
-        if(!is.null(preProcessedData)){
-            ## Final processed data-frame
-            datasetData <- preProcessedData$processedMat 
-
-            if("pca" %in% dataset$preProcess){
-                preProcessMapping <- preProcessedData$preprocessParams$rotation
-                ## res.var <- factoextra::get_pca_var(res.pca)
-                ## res.var$coord          # Coordinates
-                ## res.var$contrib        # Contributions to the PCs
-                ## res.var$cos2           # Quality of representation 
-                ## corrplot::corrplot(res.var$cos2, is.corr = FALSE)
-            }else if("ica" %in% dataset$preProcess){
-                ## TODO not implemented
-                ## preProcessMapping <- preProcessedData$processedMat
-            }
-        }else{
-            message <- paste0("===> INFO: Could not apply preprocessing transformations, continuing without preprocessing.. \r\n")
-            cat(message)
-        }
+    status <- checkSelectedOutcomeValues(datasetData, dataset$outcome)
+    if(status == FALSE){
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values"), "id", dataset$resampleID)
+        return(status)
     }
 
-    ## Save newly generated components
-    if(!is.null(preProcessMapping)){            
-        saveDataPaths = list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "")
-        ## JOB_DIR is temporarily directory on our local file-system
-        saveDataPaths$path_initial <- paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_preProcessMapping.RData")
-        save(preProcessMapping, file = saveDataPaths$path_initial)
+    ## make mappings of outcome values
+    resampleMappings <- generateResampleMappings(datasetData, dataset$outcome, outcome_and_classes, dataset$queueID, dataset$resampleID)
+    ## Remap dataframe with mappings
+    datasetData <- ramapColumnValuesByMappings(datasetData, resampleMappings, "class_original", "class_remapped")
 
-        path_details = compressPath(saveDataPaths$path_initial)
-        saveDataPaths$renamed_path = path_details$renamed_path
-        saveDataPaths$gzipped_path = path_details$gzipped_path
+    ## Preprocess resample data
+    preProcessMapping <- preProcessResample(datasetData, dataset$preProcess, dataset$outcome, outcome_and_classes)
+    if(!is.null(preProcessMapping)){
+        ## 2. Save on file-system
+        saveDataPaths <- saveAndUploadObject(preProcessMapping, dataset$userID, 
+            paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_preProcessMapping.RData"), 
+            paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/data"),
+            "RData")
 
-        saveDataPaths$file_path = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/data"))
-        file_id <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+        ## 2. Save in database
+        preProcessMappingFileID <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
     }
 
     ## Split datasetData into testing and training subsets based on Outcome column
     data <- createDataPartitions(datasetData, outcome = dataset$outcome, split = dataset$partitionSplit)
-
-    samples <- list(total = nrow(datasetData), training = nrow(data$training), testing = nrow(data$testing))
-    rm(datasetData)
-
     ## Coerce data to a standard data.frame
     data$training <- as.data.frame(data$training)
     data$testing <- as.data.frame(data$testing)
@@ -191,71 +68,86 @@ preProcessDataset <- function(dataset) {
     data$training <- data$training[order(data$training[[dataset$outcome]]), ]
     data$testing <- data$testing[order(data$testing[[dataset$outcome]]), ]
 
+    updateDatabaseFiled("dataset_resamples", "samples_training",nrow(data$training), "id", dataset$resampleID)
+    updateDatabaseFiled("dataset_resamples", "samples_testing", nrow(data$testing), "id", dataset$resampleID)
+
     ## Calculate dataset proportions
     datasetProportions(dataset$resampleID, dataset$outcome, dataset$classes, data)
 
-    ## Make a backup of partitioned data
-    splits = list(
-        training =  list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "", ufid = ""),
-        testing =  list(path_initial = "", renamed_path = "", gzipped_path = "", file_path = "", ufid = "")
-    )
+    saveDataPaths <- saveAndUploadObject(data$training, dataset$userID, 
+        paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_training_partition.csv"), 
+        paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"),
+        "csv", FALSE)
+    savedFileIDTrain <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
 
-    #######################
-    # Give it a unique filename to prevent filename clashes
-    # since when processing happens all files from all resamples are downloaded in same /tmp directory on file-system
-    splits$training$path_initial <- paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_training_partition.csv")
-    data.table::fwrite(data$training, file = splits$training$path_initial, showProgress = FALSE)
+    updateDatabaseFiled("dataset_resamples", "ufid_train", savedFileIDTrain, "id", dataset$resampleID)
 
-    fileDetails = compressPath(splits$training$path_initial)
-    splits$training$renamed_path = fileDetails$renamed_path
-    splits$training$gzipped_path = fileDetails$gzipped_path
+    saveDataPaths <- saveAndUploadObject(data$testing, dataset$userID, 
+        paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_testing_partition.csv"), 
+        paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"),
+        "csv", FALSE)
+    savedFileIDTest <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+    updateDatabaseFiled("dataset_resamples", "ufid_test", savedFileIDTest, "id", dataset$resampleID)
 
-    splits$training$file_path <- uploadFile(dataset$userID, splits$training$gzipped_path, paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"))
-    splits$training$ufid <- db.apps.simon.saveFileInfo(dataset$userID, splits$training)
-
-    if(file.exists(splits$training$renamed_path)){ file.remove(splits$training$renamed_path) }
-    if(file.exists(splits$training$gzipped_path)){ file.remove(splits$training$gzipped_path) }
-    #######################
-    splits$testing$path_initial <- paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_testing_partition.csv")
-    data.table::fwrite(data$testing, file = splits$testing$path_initial, showProgress = FALSE)
-
-    fileDetails = compressPath(splits$testing$path_initial)
-    splits$testing$renamed_path = fileDetails$renamed_path
-    splits$testing$gzipped_path = fileDetails$gzipped_path
-
-    splits$testing$file_path <- uploadFile(dataset$userID, splits$testing$gzipped_path, paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"))
-    splits$testing$ufid <- db.apps.simon.saveFileInfo(dataset$userID, splits$testing)
-
-    if(file.exists(splits$testing$renamed_path)){ file.remove(splits$testing$renamed_path) }
-    if(file.exists(splits$testing$gzipped_path)){ file.remove(splits$testing$gzipped_path) }
-    #######################
-    
-    if(is.null(splits$training$ufid) || is.null(splits$testing$ufid)){
-        message <- paste0("===> ERROR: Cannot save partitioned data into database, detected file ids: ",splits$training$ufid," - ", splits$testing$ufid)
+    if(is.null(savedFileIDTest) || is.null(savedFileIDTrain)){
+        success <- FALSE
+        message <- paste0("===> ERROR: Cannot save partitioned data into database, detected file ids: ",savedFileIDTrain," - ", savedFileIDTest)
         cat(message)
 
         updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
-        return(FALSE)
+        return(success)
+    }
+    updateDatabaseFiled("dataset_resamples", "status", 3, "id", dataset$resampleID)
+
+    ## If we successfully generated and preprocessed current resample check if we need to do RFE
+    if(dataset$resampleDataSource == 0 & dataset$backwardSelection == 1){
+        message <- paste0("===> INFO: Starting Recursive Feature Elimination\r\n")
+        cat(message)
+
+        rfeResults <- recursiveFeatureElimination(data$training, list(process_timeout = 1000), dataset$outcome)
+
+        if(rfeResults$status == TRUE){
+            message <- paste0("===> INFO: RFE selected ",length(rfeResults$modelPredictors)," columns\r\n")
+            cat(message)
+
+            ## 1. Save the new resample in databse with newly selected features
+            rfeResampleID <- db.apps.simon.saveRecursiveFeatureElimination(rfeResults$modelData, rfeResults$modelPredictors, data$training, dataset$resampleID)
+
+            if(rfeResampleID == FALSE){
+                message <- paste0("===> ERROR: Error creating new resample from RFE results \r\n")
+                cat(message)
+            }
+            ## 2. Save the RFE model on file-system
+            saveDataPaths <- saveAndUploadObject(rfeResults, dataset$userID, 
+                paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_rfe_model.RData"), 
+                paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/models"),
+                "RData", FALSE)
+            ## 3. Save the file in database
+            rfeFileID <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+
+            ## 4. Generate new train and test files from original resample and update newly created one in database
+            rfeData <- list(training = data$training, testing = NULL)
+            rfeData$training <- rfeData$training[, names(rfeData$training) %in% c(rfeResults$modelPredictors, dataset$outcome, dataset$classes)]
+            rfeData$testing <- rfeData$testing[, names(rfeData$testing) %in% c(rfeResults$modelPredictors, dataset$outcome, dataset$classes)]
+            ## Calculate an save dataset proportions
+            datasetProportions(rfeResampleID, dataset$outcome, dataset$classes, rfeData)
+            ## Copy mappings from original
+
+            ## save files
+
+            ## update RFE resample with new IDS
+
+
+        }else{
+            message <- paste0("===> ERROR: Could not process RFE, continuing without RFE \r\n")
+            cat(message)
+            str(rfeResults)
+        }
+        ## Mark resample as RFF processed
+        updateDatabaseFiled("dataset_resamples", "data_source", 2, "id", dataset$resampleID)
     }
 
-    sql <- paste0("UPDATE dataset_resamples SET 
-                            ufid_train=?ufid_train,
-                            ufid_test=?ufid_test,
-                            samples_training=?samples_training,
-                            samples_testing=?samples_testing,
-                            status=?status
-                    WHERE dataset_resamples.id=?resampleID;")
 
-    query <- sqlInterpolate(databasePool, sql,
-                            ufid_train=as.numeric(splits$training$ufid),
-                            ufid_test=as.numeric(splits$testing$ufid),
-                            samples_training=as.numeric(samples$training),
-                            samples_testing=as.numeric(samples$testing),
-                            status=as.numeric(3),
-                            resampleID=as.numeric(dataset$resampleID))
-
-    dbExecute(databasePool, query)
-
-    return(TRUE)
+    return(success)
 }

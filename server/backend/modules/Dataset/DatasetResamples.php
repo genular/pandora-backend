@@ -90,12 +90,19 @@ class DatasetResamples {
 	 * @param  [type] $outcome  [description]
 	 * @return [type]           [description]
 	 */
-	public function createResample($queueID, $fileID, $resample, $outcome) {
+	public function createResample($queueID, $fileID, $resample, $outcome, $submitData = []) {
+
+		$data_source = 1;
+		if(isset($submitData["backwardSelection"])){
+			if($submitData["backwardSelection"] === true){
+				$data_source = 0;
+			}
+		}
 
 		$this->database->insert($this->table_name, [
 			"dqid" => $queueID,
 			"ufid" => $fileID,
-			"data_source" => 1, // 1 - Initial
+			"data_source" => $data_source, // 0 - shadow  - we use it for RFE or something else - it is not displayed to user, 1 - normal - use it to display it to user
 			"samples_total" => $resample["totalSamples"],
 			"samples_training" => 0,
 			"samples_testing" => 0,

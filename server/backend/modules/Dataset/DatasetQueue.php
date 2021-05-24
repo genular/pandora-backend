@@ -118,9 +118,10 @@ class DatasetQueue {
 	 * @param  [type] $submitData          [description]
 	 * @param  [type] $allOtherSelections  [description]
 	 * @param  [type] $allSelectedFeatures [description]
+	 * @param  [type] $isImpute [description]
 	 * @return [type]                      [description]
 	 */
-	public function createQueue($user_id, $submitData, $allOtherSelections, $allSelectedFeatures) {
+	public function createQueue($user_id, $submitData, $allOtherSelections, $allSelectedFeatures, $isImpute) {
 		$queue_id = 0;
 		$serverGroups = 2;
 
@@ -195,8 +196,9 @@ class DatasetQueue {
 					"time_series" => $submitData["timeSeriesDate"],
 					"preProcess" => $submitData["selectedPreProcess"],
 					"partitionSplit" => $submitData["selectedPartitionSplit"]]),
-				"impute" => intval($submitData["backwardSelection"]),
+				"impute" => intval($isImpute),
 				"extraction" => intval($submitData["extraction"]),
+				"backwardSelection" => intval($submitData["backwardSelection"]),
 				"sparsity" => 0,
 				"packages" => json_encode($packages),
 				"status" => 0,

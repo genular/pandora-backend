@@ -150,3 +150,56 @@ findImportantVariables  <- function(max_auc, min_auc, min_score, max_score, min_
 
     return(results)
 }
+
+generateRFESizes <- function(data_x){
+        max_subset_size <- ncol(data_x)
+
+        is_subset_size_odd <- TRUE
+        if((is_subset_size_odd %% 2) == 0) {
+            is_subset_size_odd <- FALSE
+        }
+        seq_size <- 1
+
+        if(max_subset_size >= 1 & max_subset_size <= 10){
+            seq_size <- 2   
+        }else if(max_subset_size > 10 & max_subset_size <= 100){
+            seq_size <- 5       
+        }else if(max_subset_size > 100 & max_subset_size <= 1000){
+            seq_size <- 10          
+        }else if(max_subset_size > 1000 & max_subset_size <= 10000){
+            seq_size <- 25          
+        }else if(max_subset_size > 10000 & max_subset_size <= 100000){
+            seq_size <- 50          
+        }else if(max_subset_size > 10000 & max_subset_size <= 10000000){
+            seq_size <- 75          
+        }else if(max_subset_size > 10000000){
+            seq_size <- 100         
+        }
+
+        tmp <- 2^(2:seq_size)
+        tmp <- tmp[tmp < max_subset_size]
+        tmp_min <- min(tmp)-1
+        tmp_max <- max(tmp)
+
+        if(tmp_min < 10 & tmp_min > 1){
+            max_subset_size_seq <- c(seq(from = 1, to =tmp_min, by = 1), tmp)   
+        }else if(tmp_min < 100){
+            max_subset_size_seq <- c(seq(from = 1, to = tmp_min, by = 5), tmp)
+        }else if(tmp_min < 1000){
+            max_subset_size_seq <- c(seq(from = 1, to = tmp_min, by = 10), tmp)
+        }else if(tmp_min < 10000){
+            max_subset_size_seq <- c(seq(from = 1, to = tmp_min, by = 100), tmp)
+        }else if(tmp_min < 100000){
+            max_subset_size_seq <- c(seq(from = 1, to = tmp_min, by = 1000), tmp)
+        }
+
+        ## Add more random sizes
+        max_subset_size_seq <- c(max_subset_size_seq, sample(1:seq_size*4, size=seq_size*4, replace=TRUE))
+        max_subset_size_seq <- unique(max_subset_size_seq)
+
+        cat(paste0("===> RFE: max_subset_size: ",max_subset_size,"\r\n"))
+        cat(paste0("===> RFE: seq_size: ",seq_size,"\r\n"))
+        cat(paste0("===> RFE: tmp_min: ",tmp_min,"\r\n"))
+
+        return(max_subset_size_seq)
+}

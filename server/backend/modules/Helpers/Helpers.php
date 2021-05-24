@@ -498,7 +498,9 @@ EOFC;
 				}
 			}
 			reset($objects);
-			rmdir($dir);
+			if (is_dir($dir)) {
+				rmdir($dir);
+			}
 		}
 	}
 

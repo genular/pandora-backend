@@ -94,6 +94,11 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$reachabilityDistance = 2
         }
 
+        if(is_var_empty(settings$legendPosition) == TRUE){
+            settings$legendPosition = "right"
+        }
+
+
         plot_unique_hash <- list(
             tsne_plot = list(
                 main_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_plot_main"), algo="md5", serialize=F)

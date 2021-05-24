@@ -45,7 +45,7 @@ plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){
 	    geom_point(size = settings$pointSize) +
 	    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 	    scale_color_brewer(palette=settings$colorPalette) + 
-        theme(text=element_text(size=settings$fontSize))
+        theme(text=element_text(size=settings$fontSize), legend.position = settings$legendPosition)
 
 
     tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
@@ -69,13 +69,13 @@ plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable
     	plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable)) + 
 				    geom_point(size = settings$pointSize) +
 				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
-			        theme(text=element_text(size=settings$fontSize))
+			        theme(text=element_text(size=settings$fontSize), legend.position = settings$legendPosition)
 	}else{
 		plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = colorVariable))+ 
 				    geom_point(size = settings$pointSize) +
             		scale_color_continuous(low = "gray", high = "red", guide = "colourbar", aesthetics = "colour") +
 				    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
-			        theme(text=element_text(size=settings$fontSize))
+			        theme(text=element_text(size=settings$fontSize), legend.position = settings$legendPosition)
 	}
 
 
@@ -167,7 +167,7 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 						guides(colour = FALSE) +
 						labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
 	    				scale_color_brewer(palette=settings$colorPalette) + 
-        				theme(text=element_text(size=settings$fontSize))
+        				theme(text=element_text(size=settings$fontSize), legend.position = settings$legendPosition)
 
     tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
     svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")

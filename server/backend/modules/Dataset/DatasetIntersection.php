@@ -184,10 +184,14 @@ class DatasetIntersection {
 	 * input vectors of shared data
 	 * All other JSON keys except "sql" are just informational
 	 *
+	 * @param  [string] $filePath
 	 * @param  [string] $outcome [table column containing outcome variable]
+	 * @param  [array] $features
+	 * @param  [boolean] $extraction
+	 * @param  [boolean] $backwardSelection
 	 * @return [string]          [path to the file containing results]
 	 */
-	public function generateDataPresets($filePath, $outcome, $features, $extraction) {
+	public function generateDataPresets($filePath, $outcome, $features, $extraction, $backwardSelection) {
 
 		$data = [];
 		$headerMapping = [];

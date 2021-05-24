@@ -389,7 +389,10 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
     }
     
     if("renamed_path" %in% names(paths)){
-        size <- file.info(paths$renamed_path)$size
+        if(file.exists(paths$renamed_path)){
+            size <- file.info(paths$renamed_path)$size
+        }
+
         filename <- basename(paths$renamed_path)
         file_hash <- digest::digest(paths$renamed_path, algo="sha256", serialize=F, file=TRUE)
     }
@@ -653,4 +656,90 @@ db.apps.simon.saveVariableImportance <- function(varImportance, modelID){
     updateDatabaseFiled("models", "mv_hash", mv_hash, "id", modelID)
 
     return(results)
+}
+
+#' @title Save RFE results
+#' @description  Save new resample with selected columns from RFE
+#' @param modelData
+#' @param modelPredictors
+#' @param dataTraining
+#' @param resampleID
+#' @return 
+db.apps.simon.saveRecursiveFeatureElimination <- function(modelData, modelPredictors, dataTraining, resampleID){
+
+    newResampleID <- FALSE
+
+    query <- sqlInterpolate(databasePool, "SELECT * FROM `dataset_resamples` WHERE `id` = ?resampleID AND `data_source` = ?data_source AND `status` = ?status LIMIT 1;", resampleID=resampleID, data_source=0, status=3)
+    originalResample <- dbGetQuery(databasePool, query)
+
+
+    sql <- "INSERT INTO `dataset_resamples`
+                (
+                    `id`,
+                    `dqid`,
+                    `ufid`,
+                    `ufid_train`,
+                    `ufid_test`,
+                    `data_source`,
+                    `samples_total`,
+                    `samples_training`,
+                    `samples_testing`,
+                    `features_total`,
+                    `selectedOptions`,
+                    `datapoints`,
+                    `problemtype`,
+                    `status`,
+                    `servers_finished`,
+                    `processing_time`,
+                    `error`,
+                    `created`,
+                    `updated`
+                )
+                    VALUES
+                (
+                    NULL,
+                    ?dqid,
+                    ?ufid,
+                    NULL,
+                    NULL,
+                    '1',
+                    ?samples_total,
+                    ?samples_training,
+                    ?samples_testing,
+                    ?features_total,
+                    ?selected_options,
+                    ?datapoints,
+                    NULL,
+                    '3',
+                    '0',
+                    NULL,
+                    NULL,
+                    NOW(),
+                    NOW()
+                );"
+
+
+    selectedOptions <- list(jsonlite::fromJSON(originalResample$selectedOptions))
+    selectedOptions[[1]]$features <- modelPredictors
+    selectedOptions[[1]]$parentResampleID <- resampleID
+
+    query <- pool::sqlInterpolate(databasePool, sql, 
+            dqid=originalResample$dqid, 
+            ufid=originalResample$ufid, 
+            # ufid_train=originalResample$ufid_train, 
+            # ufid_test=originalResample$ufid_test, 
+            samples_total=as.numeric(originalResample$samples_total), 
+            samples_training=as.numeric(originalResample$samples_training), 
+            samples_testing=as.numeric(originalResample$samples_testing), 
+            features_total=as.numeric(length(modelPredictors)), 
+            selected_options=base::toString(jsonlite::toJSON(selectedOptions[[1]], pretty=TRUE)), 
+            datapoints=as.numeric(length(modelPredictors) * nrow(dataTraining))
+        )
+
+    results <- dbExecute(databasePool, query)
+    if(results == 1){
+        newResampleID <- dbGetQuery(databasePool, "SELECT last_insert_id();")[1,1]
+    }
+    
+    return(newResampleID)
 }
