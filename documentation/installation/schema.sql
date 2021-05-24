@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 95.216.176.70:3307
--- Generation Time: Apr 05, 2020 at 12:39 PM
+-- Generation Time: May 24, 2021 at 03:38 PM
 -- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
 -- PHP Version: 7.2.10-0ubuntu0.18.04.1
 
@@ -53,11 +53,12 @@ CREATE TABLE `dataset_queue` (
   `name` varchar(255) DEFAULT NULL COMMENT 'Queue name',
   `uniqueHash` char(64) DEFAULT NULL COMMENT 'MD5 hash of :\nuserID\nselected header values\nselected files IDs\npackages,\nextraction\nfeature_selection',
   `selectedOptions` longtext COMMENT 'JSON encoded list of features, outcomes and classes to analyze:\nname\ndataType\nitemType\ntotalNaValues\nunique',
-  `impute` tinyint(6) DEFAULT '0' COMMENT 'Should we do additional inputation?\n1 - median\n2 - mean \n3- genetic',
+  `impute` tinyint(6) DEFAULT '0' COMMENT 'Should we do additional inputation on dataset.\nmedianImpute, bagImpute, knnImpute',
   `extraction` tinyint(4) DEFAULT '0' COMMENT 'Should we do array intersection',
+  `backwardSelection` tinyint(4) DEFAULT '0' COMMENT 'Are we doing recursive feature elimination.\n0 - No\n1 - Yes',
   `sparsity` float DEFAULT NULL,
   `packages` longtext COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n	packageID: \n	serverGroup:\n}',
-  `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors',
+  `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors\n7 User Paused\n8 User resumed',
   `processing_time` int(11) DEFAULT '0' COMMENT 'Total processing time - miliseconds',
   `servers_total` int(11) DEFAULT '0' COMMENT 'Total number of created cloud servers that needs to do processing',
   `created` datetime DEFAULT NULL COMMENT 'Initial Created time',
@@ -78,7 +79,7 @@ CREATE TABLE `dataset_resamples` (
   `ufid` int(11) DEFAULT NULL COMMENT 'User File ID, if Extraction is on new Files are genereated from main File in Queue',
   `ufid_train` int(11) DEFAULT NULL COMMENT 'Train set User File ID',
   `ufid_test` int(11) DEFAULT NULL COMMENT 'Test set User File ID',
-  `data_source` tinyint(6) DEFAULT NULL COMMENT '1 - initial\n2 - ???\n',
+  `data_source` tinyint(6) DEFAULT NULL COMMENT 'What kind of resmaple is this?\n0 - shadow  - we use it for RFE or something else - it is not displayed to user\n1 - normal - use it to display it to user\n',
   `samples_total` int(11) DEFAULT NULL COMMENT 'Total samples in Set',
   `samples_training` int(11) DEFAULT NULL COMMENT 'Total samples in Training Set',
   `samples_testing` int(11) DEFAULT NULL COMMENT 'Total samples in Testing Set',
@@ -86,7 +87,7 @@ CREATE TABLE `dataset_resamples` (
   `selectedOptions` longtext COMMENT 'JSON Remapped Predictor Variables for specific intersection if extraction is used',
   `datapoints` int(11) DEFAULT NULL COMMENT '(Features * rows)',
   `problemType` tinyint(6) DEFAULT NULL COMMENT 'Type of problem:\n1- classification\n2- regression\n3- nn',
-  `status` tinyint(6) DEFAULT NULL COMMENT '0 Created/Selected - Active\n1  Deselected - Inactive\n2 R partitions Created\n3 R Cron Processing\n4 Finished\n5 Errors',
+  `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 Deselected\n2 Selected\n3 R train/test partitions created\n4 R cron started processing\n5 Finished Success\n6 Finished Errors',
   `servers_finished` int(11) DEFAULT '0' COMMENT 'Total number of cloud servers that finished processing',
   `processing_time` int(11) DEFAULT NULL COMMENT 'Total processing time in miliseconds',
   `error` longtext COMMENT 'Errors regarding dataset. Zero Variance etc..',
