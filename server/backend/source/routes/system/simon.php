@@ -232,9 +232,9 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
         if ($queueID !== 0) {
             // CALCULATE INTERSECTIONS
             foreach ($submitData["selectedOutcome"] as $selectedOutcome) {
-                $resamples = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"], $backwardSelection);
 
-         
+                $resamples = $DatasetIntersection->generateDataPresets($tempFilePath, $selectedOutcome, $allSelectedFeatures, $submitData["extraction"], $backwardSelection, $isImpute);
+
 
                 // If we didn't do multi-set intersection or impute check if some of the columns contain Invalid data
                 if ($isImpute === false && $submitData["extraction"] === false && count($resamples["info"]["invalidColumns"]) > 0) {
@@ -250,6 +250,8 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
                     // remove resamples and force user needs to select new columns since some have non  numeric data
                     continue;
                 }
+
+
                 // Check if have good amount of samples and adjust appropriate status and message variables
                 $resamples["resamples"] = $DatasetCalculations->validateSampleSize($resamples["resamples"], $submitData["selectedPartitionSplit"]);
 
