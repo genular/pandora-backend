@@ -181,9 +181,9 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 
 cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
-	save(clust_plot_tsne, file="/tmp/clust_plot_tsne")
-	save(settings, file="/tmp/settings")
-	save(tmp_hash, file="/tmp/tmp_hash")
+	# save(clust_plot_tsne, file="/tmp/clust_plot_tsne")
+	# save(settings, file="/tmp/settings")
+	# save(tmp_hash, file="/tmp/tmp_hash")
 
 	## To be sure remove all other non numeric columns
 	clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster)
@@ -214,8 +214,8 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	                      plotRatio=1,
 	                      
 	                      clustDistance="euclidean",
-	                      clustLinkage="ward.D2",
-	                      clustOrdering=1,
+	                      clustLinkage="ward.D2", 
+	                      clustOrdering=5, # original ordering
 	                      
 	                      fontSizeGeneral=10,
 	                      fontSizeRow=9,

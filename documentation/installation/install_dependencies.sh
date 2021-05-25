@@ -382,6 +382,16 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     fi
     echo ""
 
+    ## Add temporary fake github PAT to the environment just for GH auth so we get higher rate-limit
+    sudo echo "GITHUB_PAT=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" >> $HOME/.Renviron
+
+    export GITHUB_TOKEN=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
+    export GITHUB_PAT=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
+
+    ## Configure .Renviron
+    ## sudo cat $(R RHOME)/etc/Renviron
+    ## /usr/local/R/3.6.3/lib/R/etc/Renviron
+
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
 
