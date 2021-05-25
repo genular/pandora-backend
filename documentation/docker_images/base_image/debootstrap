@@ -164,23 +164,26 @@ __EOS__
 	apt-get install debconf-utils
 
 	# locale
+
+	echo "===> INSTALLATION preperation: installing locales START"
+
+	apt-get --no-install-recommends install -y locales autoconf libtool pkg-config make automake nuget mono-devel ca-certificates-mono
+
 	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
 	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
-	
-	apt-get install -y locales
 
-
-	export LC_ALL=en_US.UTF-8
 	export LANGUAGE=en_US.UTF-8
 	export LANG=en_US.UTF-8
 	export LC_CTYPE=en_US.UTF-8
+	export LC_ALL=en_US.UTF-8
 
-	echo "LC_ALL=en_US.UTF-8" >> /etc/environment
-	echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
-	echo "LANG=en_US.UTF-8" > /etc/locale.conf
+	echo "LC_ALL=en_US.UTF-8" | tee -a /etc/environment
+	echo "en_US.UTF-8 UTF-8" | tee -a /etc/locale.gen
+	echo "LANG=en_US.UTF-8" | tee -a /etc/locale.conf
 
-	locale-gen "en_US.UTF-8"
-	dpkg-reconfigure locales
+	locale-gen en_US.UTF-8
+
+	echo "===> INSTALLATION preperation: installing locales DONE"
 
 	# tzdata
 	echo 'Europe/Amsterdam' > /etc/timezone
