@@ -40,6 +40,12 @@ if [ -z "$FRESH_START" ]; then
 fi
 shift
 
+GITHUB_PAT="$1"
+if [ -z "$GITHUB_PAT" ]; then
+	GITHUB_PAT=n
+fi
+shift
+
 # get path to "chroot" in our current PATH
 chrootPath="$(type -P chroot || :)"
 if [ -z "$chrootPath" ]; then
@@ -67,7 +73,7 @@ unmount_paths(){
 rootfs_chroot() {
 	# "chroot" doesn't set PATH, so we need to set it explicitly to something our new debootstrap chroot can use appropriately!
 	# set PATH and chroot away!
-	mount_paths && PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
+	mount_paths && PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' LANGUAGE=en_US.UTF-8 LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
 		"$chrootPath" "$rootfsDir" "$@" && unmount_paths
 		
 }
@@ -140,6 +146,32 @@ __EOS__
 	export DEBIAN_PRIORITY=critical
 	export DEBCONF_NONINTERACTIVE_SEEN=true
 
+	# locale
+	echo "===> INSTALLATION preperation: installing locales START"
+	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
+	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
+
+	apt-get install -y locales
+
+	echo "LC_ALL=en_US.UTF-8" | tee -a /etc/environment
+	sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen
+	echo "LANG=en_US.UTF-8" | tee -a /etc/locale.conf
+
+	locale-gen
+
+	# Export env vars
+	echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc
+	echo "export LANG=en_US.UTF-8" >> ~/.bashrc
+	echo "export LANGUAGE=en_US.UTF-8" >> ~/.bashrc
+
+	export LANGUAGE=en_US.UTF-8
+	export LANG=en_US.UTF-8
+	export LC_CTYPE=en_US.UTF-8
+	export LC_ALL=en_US.UTF-8
+
+	echo "===> INSTALLATION preperation: installing locales DONE"
+
+
 	apt-get update && apt-get upgrade
 
 	# systemd require dbus
@@ -163,27 +195,6 @@ __EOS__
 	# package configuration utility
 	apt-get install debconf-utils
 
-	# locale
-
-	echo "===> INSTALLATION preperation: installing locales START"
-
-	apt-get --no-install-recommends install -y locales autoconf libtool pkg-config make automake nuget mono-devel ca-certificates-mono
-
-	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
-	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
-
-	export LANGUAGE=en_US.UTF-8
-	export LANG=en_US.UTF-8
-	export LC_CTYPE=en_US.UTF-8
-	export LC_ALL=en_US.UTF-8
-
-	echo "LC_ALL=en_US.UTF-8" | tee -a /etc/environment
-	echo "en_US.UTF-8 UTF-8" | tee -a /etc/locale.gen
-	echo "LANG=en_US.UTF-8" | tee -a /etc/locale.conf
-
-	locale-gen en_US.UTF-8
-
-	echo "===> INSTALLATION preperation: installing locales DONE"
 
 	# tzdata
 	echo 'Europe/Amsterdam' > /etc/timezone
@@ -575,7 +586,7 @@ if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
 
 	echo "Installing SIMON deps START"
 	(	set -x 
-		rootfs_chroot /bin/bash  /home/genular/install_dependencies.sh 
+		rootfs_chroot /bin/bash  /home/genular/install_dependencies.sh $GITHUB_PAT
 	)
 	## Docker specific : adjust permissions
 	( rootfs_chroot /bin/sh << '__EOS__'

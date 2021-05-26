@@ -12,6 +12,7 @@ WORKING_DIR=$(pwd)
 DATE_TAG=$(date +%Y_%m_%d)
 
 ROOT_FS=${WORKING_DIR}/images/${IMAGE_NAME}
+GITHUB_PAT=$1
 
 function finish {
 	sudo mount | grep -qs ${ROOT_FS}/dev 	  && sudo umount -lf ${ROOT_FS}/dev
@@ -35,8 +36,9 @@ if [ -f "./images/${IMAGE_NAME}_$DATE_TAG.tar" ]; then
 	sudo rm "./images/${IMAGE_NAME}_$DATE_TAG.tar"
 fi
 
+
 ## Build stable debian image currently (stretch/Debian 9) - new stable version (buster/Debian 10)
-build_command="sudo ./debootstrap $ROOT_FS stable $FRESH_START"
+build_command="sudo ./debootstrap $ROOT_FS stable $FRESH_START $GITHUB_PAT"
 
 echo "Building base docker image: "
 eval $build_command

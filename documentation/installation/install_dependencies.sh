@@ -59,6 +59,11 @@ GIT_BACKEND="https://github.com/genular/simon-backend.git"
 GIT_FRONTEND_LOCAL="/var/www/genular/simon-frontend"
 GIT_BACKEND_LOCAL="/var/www/genular/simon-backend"
 
+GITHUB_PAT_TOKEN="$1"
+if [ -z "$GITHUB_PAT_TOKEN" ]; then
+    GITHUB_PAT_TOKEN=n
+fi
+
 echo "${green}"
 printf "%*s\n" $(((${#title}+$COLUMNS)/2)) "$title"
 echo "This script will try to guide you via installation of simon and all its dependencies."
@@ -382,15 +387,14 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     fi
     echo ""
 
-    ## Add temporary fake github PAT to the environment just for GH auth so we get higher rate-limit
-    sudo echo "GITHUB_PAT=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" >> $HOME/.Renviron
+    if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
+        export GITHUB_TOKEN=$GITHUB_PAT
+        export GITHUB_PAT=$GITHUB_PAT
+        ## Add temporary fake github PAT to the environment just for GH auth so we get higher rate-limit
+        ## sudo echo "GITHUB_PAT=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" >> $HOME/.Renviron
+    fi
 
-    export GITHUB_TOKEN=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
-    export GITHUB_PAT=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
-
-    ## Configure .Renviron
-    ## sudo cat $(R RHOME)/etc/Renviron
-    ## /usr/local/R/3.6.3/lib/R/etc/Renviron
+    echo "${green}}==========> GitHub PAT token: $GITHUB_PAT ${clear}"
 
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
