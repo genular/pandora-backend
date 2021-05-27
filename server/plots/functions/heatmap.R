@@ -92,11 +92,17 @@ plot.heatmap <- function(   data,
                             fontSizeCol,
                             fontSizeNumbers,
                             settings = NULL,
-                            pallets = c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds")){
+                            pallets = c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds"),
+                            plotClustered = TRUE,
+                            orederingColumn = ""){
 
 
     if(!is.null(removeNA) & removeNA == TRUE){
         data <- data[complete.cases(data), ]
+    }
+
+    if(plotClustered == FALSE & orederingColumn != ""){
+      data <- data[with(data, order(data[[orederingColumn]])), ]
     }
 
     annotationColumn = NULL
@@ -157,10 +163,15 @@ plot.heatmap <- function(   data,
     }
 
     ## Transform data and order it by rowMeans
-    t_data <- t(data)
 
-    hClustRows <- calcOrdering(t_data, clustDistance, clustLinkage, clustOrdering)
-    hClustCols <- calcOrdering(t(t_data), clustDistance, clustLinkage, clustOrdering)
+    t_data <- t(data)
+    if(plotClustered == TRUE){
+        hClustRows <- calcOrdering(t_data, clustDistance, clustLinkage, clustOrdering)
+        hClustCols <- calcOrdering(t(t_data), clustDistance, clustLinkage, clustOrdering)
+    }else{
+        hClustRows <- FALSE
+        hClustCols <- FALSE
+    }
 
     #image dimensions:
     picwIn = plotWidth / 2.54
@@ -168,8 +179,6 @@ plot.heatmap <- function(   data,
     dotsPerCm = 96 / 2.54 #how many points per cm
     picw = picwIn * 2.54 * dotsPerCm
     pich = pichIn * 2.54 * dotsPerCm
-
-
 
 
     input_args <- c(list(t_data,

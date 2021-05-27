@@ -743,3 +743,30 @@ db.apps.simon.saveRecursiveFeatureElimination <- function(modelData, modelPredic
     
     return(newResampleID)
 }
+
+#' @title copyResampleMappings
+#' @description  Copy values from exsisting resample to a new one (duplicate)
+#' @param queueID
+#' @param resampleFromID
+#' @param resampleToID
+#' @return numeric
+copyResampleMappings <- function(queueID, resampleFromID, resampleToID){
+
+    sql <- "INSERT INTO dataset_resamples_mappings
+                (dqid, drid, class_column, class_type, class_original, class_remapped, class_possition, created)
+            SELECT 
+                dqid, ?resampleToID, class_column, class_type, class_original, class_remapped, class_possition, created
+            FROM 
+                dataset_resamples_mappings
+            WHERE 
+                dqid = ?queueID AND drid = ?resampleFromID;"
+
+    query <- sqlInterpolate(databasePool, sql,
+        queueID=queueID,
+        resampleToID=resampleToID, 
+        resampleFromID=resampleFromID)
+
+    results <- dbExecute(databasePool, query)
+
+    return(results)
+}

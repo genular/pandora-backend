@@ -46,7 +46,7 @@ checkSelectedOutcomeValues <- function(datasetData, selectedOutcomeColumns){
         print(outcome_unique)
     }
 
-    na_check <- sum(is.na(datasetData[[selectedOutcomeColumns]]))
+    na_check <- as.numeric(sum(is.na(datasetData[[selectedOutcomeColumns]])))
     
     if(na_check > 0){
         success <- FALSE
@@ -131,7 +131,7 @@ generateResampleMappings <- function(datasetData, selectedOutcomeColumns, outcom
 
     results <- dbExecute(databasePool, query)
 
-    return(mappings)
+    return(list(mappings = mappings, datasetData = datasetData))
 
 }
 
@@ -179,5 +179,5 @@ preProcessResample <- function(datasetData, preProcess, selectedOutcomeColumns, 
         }
     }
 
-    return(preProcessMapping)
+    return(list(preProcessMapping = preProcessMapping, datasetData = datasetData))
 }

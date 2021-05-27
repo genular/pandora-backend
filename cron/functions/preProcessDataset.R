@@ -43,13 +43,15 @@ preProcessDataset <- function(dataset) {
     ## make mappings of outcome values
     resampleMappings <- generateResampleMappings(datasetData, dataset$outcome, outcome_and_classes, dataset$queueID, dataset$resampleID)
     ## Remap dataframe with mappings
-    datasetData <- ramapColumnValuesByMappings(datasetData, resampleMappings, "class_original", "class_remapped")
+    datasetData <- ramapColumnValuesByMappings(datasetData, resampleMappings$mappings, "class_original", "class_remapped")
 
     ## Preprocess resample data
     preProcessMapping <- preProcessResample(datasetData, dataset$preProcess, dataset$outcome, outcome_and_classes)
-    if(!is.null(preProcessMapping)){
+    datasetData <- preProcessMapping$datasetData
+
+    if(!is.null(preProcessMapping$preProcessMapping)){ 
         ## 2. Save on file-system
-        saveDataPaths <- saveAndUploadObject(preProcessMapping, dataset$userID, 
+        saveDataPaths <- saveAndUploadObject(preProcessMapping$preProcessMapping, dataset$userID, 
             paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_preProcessMapping.RData"), 
             paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/data"),
             "RData")
@@ -70,6 +72,7 @@ preProcessDataset <- function(dataset) {
 
     updateDatabaseFiled("dataset_resamples", "samples_training",nrow(data$training), "id", dataset$resampleID)
     updateDatabaseFiled("dataset_resamples", "samples_testing", nrow(data$testing), "id", dataset$resampleID)
+
 
     ## Calculate dataset proportions
     datasetProportions(dataset$resampleID, dataset$outcome, dataset$classes, data)
@@ -98,6 +101,22 @@ preProcessDataset <- function(dataset) {
         appendDatabaseFiled("dataset_resamples", "error", message)
         return(success)
     }
+
+    ## Check number of unique outcomes in our partitions
+    status <- checkSelectedOutcomeValues(data$training, dataset$outcome)
+    if(status == FALSE){
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Training partition"), "id", dataset$resampleID)
+        return(status)
+    }
+
+    status <- checkSelectedOutcomeValues(data$testing, dataset$outcome)
+    if(status == FALSE){
+        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Testing partition"), "id", dataset$resampleID)
+        return(status)
+    }
+
     updateDatabaseFiled("dataset_resamples", "status", 3, "id", dataset$resampleID)
 
     ## If we successfully generated and preprocessed current resample check if we need to do RFE
@@ -132,12 +151,52 @@ preProcessDataset <- function(dataset) {
             rfeData$testing <- rfeData$testing[, names(rfeData$testing) %in% c(rfeResults$modelPredictors, dataset$outcome, dataset$classes)]
             ## Calculate an save dataset proportions
             datasetProportions(rfeResampleID, dataset$outcome, dataset$classes, rfeData)
-            ## Copy mappings from original
+            ## Copy mappings from original resample to our RFE one
+            status <- copyResampleMappings(dataset$queueID, dataset$resampleID, rfeResampleID)
 
-            ## save files
+            ## Save Train and Test files
+            ## Update RFE resample with newly saved files IDS
+            saveDataPaths <- saveAndUploadObject(rfeData$training, dataset$userID, 
+                paste0(JOB_DIR,"/data/",dataset$queueID,"_",rfeResampleID,"_training_partition.csv"), 
+                paste0("analysis/",dataset$queueID,"/",rfeResampleID,"/partitions"),
+                "csv", FALSE)
+            savedFileIDTrain <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
 
-            ## update RFE resample with new IDS
+            updateDatabaseFiled("dataset_resamples", "ufid_train", savedFileIDTrain, "id", rfeResampleID)
 
+            saveDataPaths <- saveAndUploadObject(rfeData$testing, dataset$userID, 
+                paste0(JOB_DIR,"/data/",dataset$queueID,"_",rfeResampleID,"_testing_partition.csv"), 
+                paste0("analysis/",dataset$queueID,"/",rfeResampleID,"/partitions"),
+                "csv", FALSE)
+            savedFileIDTest <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+            updateDatabaseFiled("dataset_resamples", "ufid_test", savedFileIDTest, "id", rfeResampleID)
+
+            if(is.null(savedFileIDTest) || is.null(savedFileIDTrain)){
+                success <- FALSE
+                message <- paste0("===> ERROR: RFE - Cannot save partitioned data into database, detected file ids: ",savedFileIDTrain," - ", savedFileIDTest)
+                cat(message)
+
+                updateDatabaseFiled("dataset_resamples", "status", 6, "id", rfeResampleID)
+                appendDatabaseFiled("dataset_resamples", "error", message)
+                return(success)
+            }
+
+            ## Check number of unique outcomes in our partitions
+            status <- checkSelectedOutcomeValues(rfeData$training, dataset$outcome)
+            if(status == FALSE){
+                updateDatabaseFiled("dataset_resamples", "status", 6, "id", rfeResampleID)
+                appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Training partition"), "id", rfeResampleID)
+                return(status)
+            }
+
+            status <- checkSelectedOutcomeValues(rfeData$testing, dataset$outcome)
+            if(status == FALSE){
+                updateDatabaseFiled("dataset_resamples", "status", 6, "id", rfeResampleID)
+                appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Testing partition"), "id", rfeResampleID)
+                return(status)
+            }
+
+            updateDatabaseFiled("dataset_resamples", "status", 3, "id", rfeResampleID)
 
         }else{
             message <- paste0("===> ERROR: Could not process RFE, continuing without RFE \r\n")

@@ -181,10 +181,6 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 
 cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
-	# save(clust_plot_tsne, file="/tmp/clust_plot_tsne")
-	# save(settings, file="/tmp/settings")
-	# save(tmp_hash, file="/tmp/tmp_hash")
-
 	## To be sure remove all other non numeric columns
 	clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster)
 
@@ -194,6 +190,15 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "cluster", settings$groupingVariables)] 
 	input_data <- info.norm.num %>% select(any_of(all_columns[! all_columns %in% c("tsne1", "tsne2", settings$groupingVariables)]))
+
+
+
+    if(settings$datasetAnalysisType == "heatmap"){
+    	plotClustered <- FALSE
+    }else{
+    	plotClustered <- TRUE
+    }
+
 
     input_args <- c(list(data=input_data, 
 	                      fileHeader=NULL,
@@ -210,18 +215,21 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	                      displayColnames=FALSE,
 	                      displayRownames=TRUE,
 	                      
-	                      plotWidth=12,
-	                      plotRatio=1,
+	                      plotWidth=settings$plot_size,
+	                      plotRatio=settings$aspect_ratio,
 	                      
 	                      clustDistance="euclidean",
-	                      clustLinkage="ward.D2", 
-	                      clustOrdering=5, # original ordering
+	                      clustLinkage=settings$datasetAnalysisClustLinkage, 
+	                      clustOrdering=settings$datasetAnalysisClustOrdering,
 	                      
-	                      fontSizeGeneral=10,
-	                      fontSizeRow=9,
+	                      fontSizeGeneral=settings$fontSize,
+	                      fontSizeRow=settings$fontSize,
 	                      fontSizeCol=9,
 	                      fontSizeNumbers=7,
-	                      settings=settings))
+	                      settings=settings,
+
+                          plotClustered = plotClustered,
+                          orederingColumn = settings$datasetAnalysisSortColumn))
 
 
     clustering_out <- FALSE

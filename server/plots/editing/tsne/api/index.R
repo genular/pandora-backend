@@ -98,6 +98,24 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$legendPosition = "right"
         }
 
+        ## dataset analysis settings
+
+        if(is_var_empty(settings$datasetAnalysisClustLinkage) == TRUE){
+            settings$datasetAnalysisClustLinkage = "ward.D2"
+        }
+
+        if(is_var_empty(settings$datasetAnalysisType) == TRUE){
+            settings$datasetAnalysisType = "heatmap"
+        }
+
+        if(is_var_empty(settings$datasetAnalysisSortColumn) == TRUE){
+            settings$datasetAnalysisSortColumn = "cluster"
+        }
+
+        if(is_var_empty(settings$datasetAnalysisClustOrdering) == TRUE){
+            settings$datasetAnalysisClustOrdering = 1
+        }
+
 
         plot_unique_hash <- list(
             tsne_plot = list(
