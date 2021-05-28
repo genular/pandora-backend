@@ -481,13 +481,13 @@ for (dataset in datasets) {
                 if(predictionObject$type == "prob"){
                     valuesProcessedCheck <- TRUE
                     if(outcome_mapping[1, ]$class_remapped %in% colnames(predictionObject$predictions)){
-                        positivePredictionValue <-outcome_mapping[1, ]
-                        negativePredictionValue <-outcome_mapping[2, ]
+                        positivePredictionValue <- outcome_mapping[1, ]
+                        negativePredictionValue <- outcome_mapping[2, ]
                     }else{
                         if(outcome_mapping[2, ]$class_remapped %in% colnames(predictionObject$predictions)){
                             cat(paste0("===> ERROR: Could not find any predictions for ",outcome_mapping[1, ]$class_remapped," inverting classes and using ",positivePredictionValue$class_remapped," for positive value. TODO: fix roc plot \r\n"))
-                            positivePredictionValue <-outcome_mapping[2, ]
-                            negativePredictionValue <-outcome_mapping[1, ]
+                            positivePredictionValue <- outcome_mapping[2, ]
+                            negativePredictionValue <- outcome_mapping[1, ]
                         }else{
                             valuesProcessedCheck <- FALSE
                         }
