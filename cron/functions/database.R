@@ -498,7 +498,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         ## Get only model training time
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
     }else{
-        training_time <- model_details$process_timeout
+        training_time <-  ceiling(model_details$process_timeout * 1000)
     }
 
     cat(paste0("===> INFO: Model training time: ", training_time ," milliseconds \r\n"))

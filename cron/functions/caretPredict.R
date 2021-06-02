@@ -251,7 +251,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     cat(paste0("===> INFO: Model RAW training start: ",model_time_start," Timeout: ",model_details$process_timeout,"\r\n"))
 
     train_args <- c(train_args, tuneList)
-    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=model_details$process_timeout, elapsed=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
+    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), substitute = FALSE, timeout=model_details$process_timeout, cpu=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
 
     # Ignore warnings while processing errors, actually we should move this to have training suppressed as well!?
     options(warn = -1)
