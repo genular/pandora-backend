@@ -497,7 +497,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
         cat(paste0("===> INFO: Model training time: ", training_time ," milliseconds \r\n"))
     }
-    
+
     if(is.null(training_time)){
         training_time <- 0
     }
@@ -541,11 +541,12 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         processing_time=processing_time)
 
     results <- dbExecute(databasePool, query)
+    
     modelID <- NULL
-    query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `resampleID` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=model_status)
+    query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `drid` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=model_status)
     results <- dbGetQuery(databasePool, query)
     if(nrow(results) > 0){
-        modelID <- results$id
+        modelID <- as.numeric(results$id)
     }
 
     ## Insert other model Variables:
