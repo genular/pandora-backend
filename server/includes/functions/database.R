@@ -94,10 +94,10 @@ db.apps.getCronJobQueue <- function(data){
             resampleOptions <- list(jsonlite::fromJSON(results[i, ]$resampleOptions))
             partitionSplit <- queueOptions[[1]]$partitionSplit
            
-            if(is.null(queueOptions[[1]][["modelProcessingTimeLimit"]])){
+            if(is.null(resampleOptions[[1]][["modelProcessingTimeLimit"]])){
                 modelProcessingTimeLimit <- 300
             }else{
-                modelProcessingTimeLimit <- queueOptions[[1]]$modelProcessingTimeLimit
+                modelProcessingTimeLimit <- resampleOptions[[1]]$modelProcessingTimeLimit
             }
 
             datasets[[i]] <- list(

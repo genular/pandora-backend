@@ -330,11 +330,12 @@ for (dataset in datasets) {
         model_details <- dataset$packages[dataset$packages$internal_id %in% model,]
         ## Set timeout from database (user selected in Start Analysis) - used for model training
         if(is.null(dataset[["modelProcessingTimeLimit"]])){
+            print(dataset)
             model_details$process_timeout <- 300
         }else{
             model_details$process_timeout <- as.numeric(dataset$modelProcessingTimeLimit)
         }
-        cat(paste0("======> INFO: Setting model processing timeout limit to: ",model_details$process_timeout," seconds \r\n"))
+        cat(paste0("===> INFO: Setting model processing timeout limit to: ",model_details$process_timeout," seconds \r\n"))
 
         model_details$model_specific_args <- NULL
         ## Interface can be formula or matrix
