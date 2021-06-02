@@ -276,7 +276,7 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
 
 
     model_time_end <- Sys.time()
-    time_passed <- as.numeric(ceiling(difftime(c(model_time_end, model_time_start),  units = c("secs"))))
+    time_passed <- as.numeric(ceiling(difftime(model_time_end, model_time_start,  units = c("secs"))))
 
     cat(paste0("===> INFO: Model RAW training stop: ",model_time_end," Time passed (sec): ",time_passed,"\r\n"))
 
