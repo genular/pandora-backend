@@ -484,7 +484,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         processing_time <- 0
         cat(paste0("===> WARNING: Cannot calculate processing time. Time start: ",model_time_start," \r\n"))
     }else{
-        cat(paste0("===> INFO: Model processing time: ", processing_time ," ms \r\n"))
+        cat(paste0("===> INFO: Model processing time: ", processing_time ," ms, Time start: ",model_time_start," Time end: ",Sys.time()," \r\n"))
     }
 
     if(length(errors) > 0){
@@ -497,11 +497,10 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
     if (trainModel$status == TRUE) {
         ## Get only model training time
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
+    }else{
+        training_time <- model_details$process_timeout
     }
 
-    if(is.null(training_time)){
-        training_time <- 0
-    }
     cat(paste0("===> INFO: Model training time: ", training_time ," milliseconds \r\n"))
 
     sql <- "INSERT INTO `models`
