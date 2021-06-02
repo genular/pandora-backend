@@ -483,6 +483,8 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
     if(is.null(processing_time)){
         processing_time <- 0
         cat(paste0("===> WARNING: Cannot calculate processing time. Time start: ",model_time_start," \r\n"))
+    }else{
+        cat(paste0("===> INFO: Model processing time: ", processing_time ," ms \r\n"))
     }
 
     if(length(errors) > 0){
@@ -495,12 +497,12 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
     if (trainModel$status == TRUE) {
         ## Get only model training time
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
-        cat(paste0("===> INFO: Model training time: ", training_time ," milliseconds \r\n"))
     }
 
     if(is.null(training_time)){
         training_time <- 0
     }
+    cat(paste0("===> INFO: Model training time: ", training_time ," milliseconds \r\n"))
 
     sql <- "INSERT INTO `models`
                 (
@@ -541,7 +543,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
         processing_time=processing_time)
 
     results <- dbExecute(databasePool, query)
-    
+
     modelID <- NULL
     query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `drid` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=model_status)
     results <- dbGetQuery(databasePool, query)

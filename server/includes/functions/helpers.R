@@ -51,7 +51,7 @@ getExtension <- function(file){
 #' @return numeric
 calculateTimeDifference <- function(start_time, unit = "ms"){
     current_time <- Sys.time()
-    time_passed <- as.numeric(difftime(current_time, start_time,  units = c("secs")))
+    time_passed <- as.numeric(ceiling(difftime(current_time, start_time,  units = c("secs"))))
     if(unit == "ms"){
         time_passed <- ceiling(time_passed * 1000)  
     }
