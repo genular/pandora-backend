@@ -93,6 +93,12 @@ db.apps.getCronJobQueue <- function(data){
             queueOptions <- list(jsonlite::fromJSON(results[i, ]$queueOptions))
             resampleOptions <- list(jsonlite::fromJSON(results[i, ]$resampleOptions))
             partitionSplit <- queueOptions[[1]]$partitionSplit
+           
+            if(is.null(queueOptions[[1]][["modelProcessingTimeLimit"]])){
+                modelProcessingTimeLimit <- 300
+            }else{
+                modelProcessingTimeLimit <- queueOptions[[1]]$modelProcessingTimeLimit
+            }
 
             datasets[[i]] <- list(
                     queueID = results[i, ]$queueID,
@@ -107,6 +113,7 @@ db.apps.getCronJobQueue <- function(data){
                     backwardSelection = results[i, ]$backwardSelection,
                     preProcess = queueOptions[[1]]$preProcess,
                     partitionSplit = (partitionSplit / 100),
+                    modelProcessingTimeLimit = modelProcessingTimeLimit,
                     regressionFormula = queueOptions[[1]]$formula$remapped,
                     samples_total = results[i, ]$samples_total,
                     samples_training = results[i, ]$samples_training,

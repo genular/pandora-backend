@@ -480,6 +480,10 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
 
     ## Get total amount of time needed for model to process - time in DB should always be in milliseconds
     processing_time <- calculateTimeDifference(model_time_start, unit = "ms")
+    if(is.null(processing_time)){
+        processing_time <- 0
+        cat(paste0("===> WARNING: Cannot calculate processing time. Time start: ",model_time_start," \r\n"))
+    }
 
     if(length(errors) > 0){
         model_status <- 0
@@ -491,7 +495,11 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
     if (trainModel$status == TRUE) {
         ## Get only model training time
         training_time <- ceiling(as.numeric(trainModel$data$times$everything[3]) * 1000)
-        cat(paste0("===> INFO: Model training time: ", training_time ," miliseconds \r\n"))
+        cat(paste0("===> INFO: Model training time: ", training_time ," milliseconds \r\n"))
+    }
+    
+    if(is.null(training_time)){
+        training_time <- 0
     }
 
     sql <- "INSERT INTO `models`
@@ -522,13 +530,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
                 )   ON DUPLICATE KEY UPDATE
                 drid=?drid, mpid=?mpid, status=?status, error=?error, training_time=?training_time, processing_time=?processing_time, updated=NOW();"
 
-    if(is.null(training_time)){
-        training_time <- 0
-    }
 
-    if(is.null(processing_time)){
-        processing_time <- 0
-    }
 
     query <- sqlInterpolate(databasePool, sql, 
         drid=resampleID, 
@@ -540,14 +542,10 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
 
     results <- dbExecute(databasePool, query)
     modelID <- NULL
-    if(results == 1){
-        modelID <- dbGetQuery(databasePool, "SELECT last_insert_id();")[1,1]
-    }else{
-        query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `resampleID` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=model_status)
-        results <- dbGetQuery(databasePool, query)
-        if(nrow(results) > 0){
-            modelID <- results$id
-        }
+    query <- sqlInterpolate(databasePool, "SELECT id FROM `models` WHERE `resampleID` = ?drid AND `mpid` = ?mpid AND `status` = ?status LIMIT 1;", drid=resampleID, mpid=model_details$id, status=model_status)
+    results <- dbGetQuery(databasePool, query)
+    if(nrow(results) > 0){
+        modelID <- results$id
     }
 
     ## Insert other model Variables:

@@ -122,11 +122,11 @@ getVariableImportance <- function(model, scale = TRUE) {
             caret::varImp(model, scale=scale)
         },
         error=function(msg) {
-            cat(paste0("===> ERROR: getVariableImportance: ",match.call()[[1]]," (error): ", msg, "\r\n"))
+            cat(paste0("===> ERROR: getVariableImportance: ",match.call()[[1]]," (error): ", msg))
             return(NULL)
         },
         warning=function(msg) {
-            cat(paste0("===> ERROR: getVariableImportance: ",match.call()[[1]]," (warning): ", msg, "\r\n"))
+            cat(paste0("===> ERROR: getVariableImportance: ",match.call()[[1]]," (warning): ", msg))
             return(NULL)
         },
         finally={}

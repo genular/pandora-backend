@@ -324,10 +324,18 @@ for (dataset in datasets) {
         }
         ## Used when saving model to models DB table to set training_time value
         model_time_start <- Sys.time()
+        error_models <- c()
+        trainModel <- NULL
 
         model_details <- dataset$packages[dataset$packages$internal_id %in% model,]
-        ## Set timeout for 5min - used for model training
-        model_details$process_timeout <- 300
+        ## Set timeout from database (user selected in Start Analysis) - used for model training
+        if(is.null(dataset[["modelProcessingTimeLimit"]])){
+            model_details$process_timeout <- 300
+        }else{
+            model_details$process_timeout <- as.numeric(dataset$modelProcessingTimeLimit)
+        }
+        cat(paste0("======> INFO: Setting model processing timeout limit to: ",model_details$process_timeout," seconds \r\n"))
+
         model_details$model_specific_args <- NULL
         ## Interface can be formula or matrix
         model_details$interface <- "matrix"
@@ -355,9 +363,8 @@ for (dataset in datasets) {
             cat(paste0("===> WARNING: RESTRICTED. Skipping model: ",model," \r\n"))
             next()
         }
-        error_models <- c()
 
-        cat(paste0("===> INFO: STARTING Model: ",paste0(model_details$internal_id, " " ,model_details$id," S: ",dataset$samples_total," F: ",length(dataset$features))," analysis at: ", Sys.time(),"\r\n"))
+        cat(paste0("===> INFO: STARTING Model: ",paste0(model_details$internal_id, " " ,model_details$id," S: ",dataset$samples_total," F: ",length(dataset$features))," analysis at: ",model_time_start,"\r\n"))
         model_info <- caret::getModelInfo(model = model_details$internal_id, regex = FALSE)[[1]]
         is_loaded <- FALSE
         
@@ -663,9 +670,12 @@ for (dataset in datasets) {
         if(length(error_models) > 0){
             cat(paste0("===> ERROR: Training of ",model," failed with ",length(error_models)," following errors: \r\n"))
             cat(paste0("===>        ", paste(error_models, collapse = " | "), "\r\n"))
+            ## Clear all processes that are in "hang" state from that method
+            ## process_list <- is_process_running("cron_analysis")
+            ## https://rdrr.io/cran/fscaret/src/R/timeout.R
         }
 
-        rm(trainModel)
+        # rm(trainModel)
     } ## END caret model/algorithm loop
 
     cat(paste0("===> INFO: Processing of resample ID: ",dataset$resampleID," END \r\n"))

@@ -98,6 +98,15 @@ class DatasetResamples {
 				$data_source = 0;
 			}
 		}
+		// Timelimit in seconds
+		$model_processing_time_limit = 300;
+		if(isset($submitData["modelProcessingTimeLimit"])){
+			$submitData["modelProcessingTimeLimit"] = (int) $submitData["modelProcessingTimeLimit"];
+			if($submitData["modelProcessingTimeLimit"] > 1){
+				// Convert minutes to seconds
+				$model_processing_time_limit = round($submitData["modelProcessingTimeLimit"] * 60);
+			}
+		}
 
 		$this->database->insert($this->table_name, [
 			"dqid" => $queueID,
@@ -107,7 +116,7 @@ class DatasetResamples {
 			"samples_training" => 0,
 			"samples_testing" => 0,
 			"features_total" => intval($resample["totalFeatures"]),
-			"selectedOptions" => json_encode(["outcome" => $outcome, "features" => $resample["listFeatures"], "subjects" => $resample["listSamples"]]),
+			"selectedOptions" => json_encode(["outcome" => $outcome, "features" => $resample["listFeatures"], "subjects" => $resample["listSamples"], "modelProcessingTimeLimit" => $model_processing_time_limit]),
 			"datapoints" => intval($resample["totalDatapoints"]),
 			"status" => 0, // 0 - Created
 			"servers_finished" => 0,

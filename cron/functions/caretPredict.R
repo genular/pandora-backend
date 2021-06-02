@@ -242,9 +242,13 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     }else if(model_details$interface == "formula"){
         train_args <- list(stats::as.formula(paste0(outcomeColumn, " ~.")), data = data, trControl = trControl)
     }else{
-        cat(paste0("===> ERROR: Model details interface is not defined! \r\n"))
+        cat(paste0("===> ERROR: model_details$interface is not defined \r\n"))
+        print(model_details)
         die()
     }
+
+    model_time_start <- Sys.time()
+    cat(paste0("===> INFO: Model RAW training start: ",model_time_start," Timeout: ",model_details$process_timeout,"\r\n"))
 
     train_args <- c(train_args, tuneList)
     model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
@@ -269,6 +273,12 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     }
     # Restore default warning reporting
     options(warn=0)
+
+
+    model_time_end <- Sys.time()
+    time_passed <- as.numeric(difftime(model_time_start, model_time_end,  units = c("secs")))
+
+    cat(paste0("===> INFO: Model RAW training stop: ",model_time_end," Time passed (sec): ",time_passed,"\r\n"))
 
     return(results)
 }
@@ -339,9 +349,9 @@ recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
     results <- list(status = FALSE, modelData = NULL, modelPredictors = NULL)
 
 
-    save(data, file = "/tmp/data")
-    save(model_details, file = "/tmp/model_details")
-    save(outcomeColumn, file = "/tmp/outcomeColumn")
+    #save(data, file = "/tmp/data")
+    #save(model_details, file = "/tmp/model_details")
+    #save(outcomeColumn, file = "/tmp/outcomeColumn")
 
     rfeControl <- caret::rfeControl(
         method = "repeatedcv",
