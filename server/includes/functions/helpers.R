@@ -440,3 +440,48 @@ optimizeSVGFile <- function(tmp_path){
 
     return(svg_data)
 }
+
+
+
+processTimeout <- function(expr, envir = parent.frame(), timeout, onTimeout=c("error", "warning", "silent")) {
+  # substitute expression so it is not executed as soon it is used
+  expr <- substitute(expr)
+
+  # match on_timeout
+  onTimeout <- match.arg(onTimeout)
+
+  # execute expr in separate fork
+  myfork <- parallel::mcparallel({
+    eval(expr, envir = envir)
+  }, silent = FALSE)
+
+  # wait max n seconds for a result.
+  myresult <- parallel::mccollect(myfork, wait = FALSE, timeout = timeout)
+  # kill fork after collect has returned
+  tools::pskill(myfork$pid, tools::SIGKILL)
+  tools::pskill(-1 * myfork$pid, tools::SIGKILL)
+
+  # clean up:
+  parallel::mccollect(myfork, wait = FALSE)
+
+  # timeout?
+  if (is.null(myresult)) {
+    if (onTimeout == "error") {
+      stop("reached elapsed time limit")
+    } else if (onTimeout == "warning") {
+      warning("reached elapsed time limit")
+    } else if (onTimeout == "silent") {
+      myresult <- NA
+    }
+  }
+
+  # move this to distinguish between timeout and NULL returns
+  myresult <- myresult[[1]]
+
+  if ("try-error" %in% class(myresult)) {
+    stop(attr(myresult, "condition"))
+  }
+
+  # send the buffered response
+  return(myresult)
+}

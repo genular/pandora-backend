@@ -177,6 +177,7 @@ class Models {
 				       models.status     AS status,
 				       models.error      AS error,
 				       models.processing_time    AS processing_time,
+				       models.training_time    AS training_time,
 				       models_packages.internal_id AS modelName
 
 				FROM   models
