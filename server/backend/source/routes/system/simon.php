@@ -23,9 +23,18 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
     $ModelsPackages = $this->get('SIMON\Models\ModelsPackages');
     $avaliablePackages = $ModelsPackages->getPackages();
 
+    foreach ($avaliablePackages as $packageKey => $packageValue) {
+        if($packageValue["internal_id"] === "null"){
+            unset($avaliablePackages[$packageKey]);
+        }
+    }
+
+
+
     $preselectedPackages = []; // ["naive_bayes", "hdda", "pcaNNet", "LogitBoost", "svmLinear2"];
 
-    $packages = array_map(function ($package) use ($preselectedPackages) {
+    $avaliablePackages = array_map(function ($package) use ($preselectedPackages) {
+
         if (in_array($package['internal_id'], $preselectedPackages)) {
             $package['preselected'] = 1;
         } else {
@@ -35,10 +44,16 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
         // if ($package['classification'] === false) {
         //  $package['disabled'] = true;
         // } else {
+        // Disable all packages and enable/disable them as needed from Javascript
         $package['disabled'] = true;
         // }
         return $package;
     }, $avaliablePackages);
+
+    foreach ($avaliablePackages as $packageKey => $packageValue) {
+        array_push($packages, $packageValue);
+    }
+
 
     return $response->withJson(["success" => $success, "message" => $packages]);
 });
