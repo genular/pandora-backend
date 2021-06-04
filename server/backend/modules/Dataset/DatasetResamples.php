@@ -179,6 +179,7 @@ class DatasetResamples {
 				       dataset_resamples.samples_training AS samplesTraining,
 				       dataset_resamples.samples_testing  AS samplesTesting,
 				       dataset_resamples.features_total   AS featuresTotal,
+				       dataset_resamples.selectedOptions  AS selectedOptions,
 				       dataset_resamples.datapoints       AS datapoints,
 				       dataset_resamples.status           AS status,
 				       dataset_resamples.processing_time  AS processing_time,

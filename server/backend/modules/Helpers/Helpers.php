@@ -21,6 +21,15 @@ class Helpers {
 		// Log anything.
 		$this->logger->addInfo("==> INFO SIMON\Helpers\Helpers constructed");
 	}
+	/**
+	 * [isJson description]
+	 * @param  [type] $string [description]
+	 * @return [type]        [description]
+	 */
+	public function isJson($string) {
+		json_decode($string);
+		return json_last_error() === JSON_ERROR_NONE;
+	}
 
 	/**
 	 * [castArrayValues description]
@@ -40,6 +49,8 @@ class Helpers {
 					} else {
 						$input[$rowKey][$rowItemKey] = intval($rowItemValue);
 					}
+				}else if ($this->isJson($rowItemValue)) {
+					$input[$rowKey][$rowItemKey] = json_decode($rowItemValue, true);
 				}
 			}
 		}
