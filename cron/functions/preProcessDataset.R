@@ -148,7 +148,7 @@ preProcessDataset <- function(dataset) {
             ## 4. Generate new train and test files from original resample and update newly created one in database
             rfeData <- list(training = data$training, testing = NULL)
             rfeData$training <- rfeData$training[, names(rfeData$training) %in% c(rfeResults$modelPredictors, dataset$outcome, dataset$classes)]
-            rfeData$testing <- rfeData$testing[, names(rfeData$testing) %in% c(rfeResults$modelPredictors, dataset$outcome, dataset$classes)]
+            rfeData$testing <- data$testing[, names(data$testing) %in% c(rfeResults$modelPredictors, dataset$outcome, dataset$classes)]
             ## Calculate an save dataset proportions
             datasetProportions(rfeResampleID, dataset$outcome, dataset$classes, rfeData)
             ## Copy mappings from original resample to our RFE one
@@ -205,6 +205,7 @@ preProcessDataset <- function(dataset) {
         }
         ## Mark resample as RFF processed
         updateDatabaseFiled("dataset_resamples", "data_source", 2, "id", dataset$resampleID)
+        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
     }
 
 

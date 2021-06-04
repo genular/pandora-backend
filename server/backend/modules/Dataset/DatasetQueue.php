@@ -316,7 +316,7 @@ class DatasetQueue {
 				LEFT JOIN dataset_resamples
 				    ON dataset_queue.id = dataset_resamples.dqid
 				    ## User deselected - 1
-				    AND dataset_resamples.status != 1
+				    AND dataset_resamples.status != 1 AND dataset_resamples.data_source != 2
 
 				LEFT JOIN models
 				    ON dataset_resamples.id = models.drid
