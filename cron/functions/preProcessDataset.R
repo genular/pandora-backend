@@ -30,8 +30,9 @@ preProcessDataset <- function(dataset) {
     datasetData[[dataset$outcome]] <- as.factor(datasetData[[dataset$outcome]])
     ## Combine Outcome and Classes
     outcome_and_classes <- c(dataset$outcome, dataset$classes)
-    ## Convert all columns expect "outcome_and_classes" column to numeric values! 
-    datasetData[, !names(datasetData) %in% outcome_and_classes] <- lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , as.numeric)
+
+    ## Convert all columns expect "outcome_and_classes" column to numeric values correcting NAs!
+    datasetData[, !names(datasetData) %in% outcome_and_classes] <- lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , function(x) as.numeric(as.character(x)))
 
     status <- checkSelectedOutcomeValues(datasetData, dataset$outcome)
     if(status == FALSE){

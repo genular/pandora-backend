@@ -77,13 +77,17 @@ simon$handle$plots$correlation$renderPlot <- expression(
                     results$image_png = as.character(RCurl::base64Encode(readBin(cachedFile_png, "raw", n = file.info(cachedFile_png)$size), "txt"))
                 }
 
-                return(list(status = results$status, image = results$image, image_png = results$image_png))
+                # return(list(status = results$status, image = results$image, image_png = results$image_png))
             }
         }
 
         ## 1st - Get JOB and his Info from database
         resampleDetails <- db.apps.getFeatureSetData(resampleID)
         ## save(resampleDetails, file = "/tmp/testing.rds")
+        if(!is.null(resampleDetails[[1]]$resampleChildID)){
+            print(paste0("===> Detected shadow re-sample: ",resampleID," switching to child one: ", resampleDetails[[1]]$resampleChildID))
+            resampleDetails <- db.apps.getFeatureSetData(resampleDetails[[1]]$resampleChildID)
+        }
 
         resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
         dataset <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
@@ -93,6 +97,7 @@ simon$handle$plots$correlation$renderPlot <- expression(
 
         names(dataset) <- plyr::mapvalues(names(dataset), from=resampleDetails[[1]]$features$remapped, to=resampleDetails[[1]]$features$original)
 
+        # print(dataset)
 
         ## TODO: also give this data for download!
         data <- cor(dataset, use = settings$na_action, method = settings$correlation_method)

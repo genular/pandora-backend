@@ -200,6 +200,7 @@ db.apps.getFeatureSetData <- function(resamplesID){
                 dataset_queue.packages,
                 dataset_queue.servers_total,
                 dataset_resamples.id AS resampleID,
+                dataset_resamples.data_source AS dataSource,
                 dataset_resamples.selectedOptions AS resampleOptions,
                 dataset_resamples.samples_total AS samples_total,
                 users_files_main.file_path AS remotePathMain,
@@ -254,10 +255,16 @@ db.apps.getFeatureSetData <- function(resamplesID){
 
             outcome <- resampleOptions[[1]]$outcome
             classes <- queueOptions[[1]]$classes
+
+            resampleChildID <- NULL
+            if(results[i, ]$dataSource == 2){
+                resampleChildID <- db.apps.getChildForResample(resampleID)
+            }
             
             datasets[[i]] <- list(
                     queueID = queueID,
                     resampleID = resampleID,
+                    resampleChildID = resampleChildID,
                     userID = userID,
                     remotePathMain =  remotePathMain,
                     remotePathTrain =  remotePathTrain,
@@ -274,6 +281,30 @@ db.apps.getFeatureSetData <- function(resamplesID){
         }
     }
     return(datasets)
+}
+
+#' @title db.apps.getChildForResample
+#' @description Get generated dataset(resample) for some "parent resample
+#' @param resampleChildID 
+db.apps.getChildForResample <- function(resampleID){
+    resampleChildID <- NULL
+
+    query <- "SELECT * FROM dataset_resamples WHERE id = ?resampleID LIMIT 1;"
+    query <- sqlInterpolate(databasePool, query, resampleID=resampleID)
+    results <- dbGetQuery(databasePool, query)
+
+
+    if(nrow(results) > 0 & results$data_source == 2){
+        subQuery <- "SELECT id FROM dataset_resamples WHERE ufid = ?ufid AND data_source = ?data_source AND samples_training = ?samples_training AND samples_testing = ?samples_testing LIMIT 1;"
+        subQuery <- sqlInterpolate(databasePool, subQuery, ufid=results$ufid, data_source=1, 
+                                   samples_training=results$samples_training, samples_testing=results$samples_testing)
+        subResults <- dbGetQuery(databasePool, subQuery)
+        if(nrow(subResults) > 0){
+            resampleChildID <- subResults$id
+        }
+    }
+
+    return(resampleChildID)
 }
 
 #' @title Get specific file details
