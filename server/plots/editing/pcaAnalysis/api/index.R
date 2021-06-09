@@ -269,7 +269,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         res.data$plot_var_cos2_correlation_png = convertSVGtoPNG(tmp_path)
 
         # Classify the variables into 3 groups using the kmeans clustering algorithm. 
-        set.seed(123)
+        set.seed(1337)
         res.km <- kmeans(var$coord, centers = 3, nstart = 256)
         grp <- as.factor(res.km$cluster)
 

@@ -91,6 +91,7 @@ plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable
 
 # KNN graph and Louvain community detection
 cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
+	set.seed(1337)
 	knn_clusters <- settings$knn_clusters
     if(nrow(tsne.norm$Y) < knn_clusters){
     	knn_clusters <- round(nrow(tsne.norm$Y) / 2)
@@ -119,7 +120,7 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 
 # Hierarchical clustering
 cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
-
+	set.seed(1337)
 	hc.norm = stats::hclust(dist(tsne.norm$Y), method = settings$clustLinkage) 
 	
 	info.norm$cluster = factor(cutree(hc.norm, settings$clustGroups))
@@ -134,7 +135,7 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
 
 # Mclust clustering
 cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
-
+	set.seed(1337)
 	mc.norm = Mclust(tsne.norm$Y, settings$clustGroups)
 	info.norm$cluster = factor(mc.norm$classification)
 	lc.cent = info.norm %>% group_by(cluster) %>% 
@@ -146,7 +147,7 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
 
 #Density-based clustering
 cluster_tsne_density <- function(info.norm, tsne.norm, settings){
-
+	set.seed(1337)
 	ds.norm = fpc::dbscan(tsne.norm$Y, settings$reachabilityDistance)
 	info.norm$cluster = factor(ds.norm$cluster)
 	lc.cent = info.norm %>% group_by(cluster) %>% 

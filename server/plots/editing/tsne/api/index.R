@@ -207,7 +207,7 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
 
 
 
-
+        set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
         ## Main t-SNE plot 
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
@@ -268,7 +268,7 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         }
 
         print(paste0("===> Clustering using", settings$clusterType))
-
+        set.seed(1337)
         if(settings$clusterType == "Louvain"){
            clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }else if(settings$clusterType == "Hierarchical"){
