@@ -15,7 +15,7 @@
 # 
 
 # https://developer.github.com/v3/repos/releases/#create-a-release
-tag_name="0.2.0" # Required. The name of the tag.
+tag_name="0.3.0" # Required. The name of the tag.
 target_commitish="master" # Specifies the commitish value that determines where the Git tag is created from. 
 name="" # The name of the release.
 body=""
