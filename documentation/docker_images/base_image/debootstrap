@@ -148,6 +148,10 @@ __EOS__
 
 	# locale
 	echo "===> INSTALLATION preperation: installing locales START"
+	apt-get clean && apt-get update && apt-get install -y locales
+	locale-gen "en_US.UTF-8"
+	dpkg-reconfigure locales
+
 	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
 	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
 
@@ -225,7 +229,7 @@ __EOS__
 if [ "$FRESH_START" == y ] ; then
 
 	( rootfs_chroot /bin/sh << '__EOS__'
-		curl -sL https://deb.nodesource.com/setup_15.x | bash -
+		curl -sL https://deb.nodesource.com/setup_16.x | bash -
 		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 __EOS__
@@ -285,7 +289,11 @@ echo "Installation of basic dependencies START"
 	sleep 7
 
 mysql --user=root <<_EOF_
-	UPDATE mysql.user SET Password=PASSWORD('genular') WHERE User='root';
+	FLUSH PRIVILEGES;
+	ALTER USER root@localhost IDENTIFIED VIA mysql_native_password 
+	USING PASSWORD('genular');
+	FLUSH PRIVILEGES;
+
 	DELETE FROM mysql.user WHERE User='';
 	DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 	DROP DATABASE IF EXISTS test;
