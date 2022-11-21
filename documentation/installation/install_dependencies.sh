@@ -399,11 +399,13 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         sudo Rscript -e "install.packages(c('devtools', 'remotes'), repo = 'https://cloud.r-project.org/')"
 
 
+
         if [ "${R_VERSION}" == "3.6.3" ] ; then
             ## New foreign package is only available for R > 4
             sudo Rscript -e "remotes::install_github('cran/foreign@726985b019b3d18b353f387c1211e5b147e97f71')"
             sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"
             sudo Rscript -e "devtools::install_github('astamm/nloptr@d3a894019d16738915fe561b56388533cb48f03a')"
+            sudo Rscript -e "devtools::install_github('cran/car')"
             sudo Rscript -e "devtools::install_github('husson/FactoMineR@3190c5d0ccb54b220e4e7b0b93713662c3bf55e0')"        
         else
             sudo Rscript -e "remotes::install_github('cran/foreign')"
@@ -471,7 +473,6 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
             sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
 
-            sudo Rscript -e "devtools::install_github('cran/car')"
             sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
 
             sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 

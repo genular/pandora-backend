@@ -359,6 +359,8 @@ echo "Installation of advanced dependencies START"
 
 	apt-get install libmagick++-dev
 
+	apt-get install cmake
+
 	echo "===========================================> INSTALLATION step: 6"
 	apt-get install php7.3-fpm php7.3-common php7.3-cli
 	echo "===========================================> php7.3-mysql"
