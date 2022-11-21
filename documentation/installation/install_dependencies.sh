@@ -471,7 +471,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
             sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
 
-            
+            sudo Rscript -e "devtools::install_github('cran/car')"
             sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
 
             sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
