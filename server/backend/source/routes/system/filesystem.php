@@ -57,7 +57,6 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 					$message[] = 'upload_success_chunks';
 				}
 			} else {
-
 				// File is not chunk is complete file
 				$uploaded_path = $ResumableUpload->moveUploadedFile($uploaded_path, $filename);
 				if ($uploaded_path !== false) {
@@ -68,15 +67,12 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 		}
 	}
 
-
 	// File upload is finished!
 	if ($success === true) {
 		// Validate File Header and rename it to standardize column names!
 		$details = $Helpers->validateCSVFileHeader($uploaded_path);
 
-
 		if (count($details["message"]) === 0) {
-
 			$renamed_path = $Helpers->renamePathToHash($details);
 			// Compress original file to GZ archive format
 			$gzipped_path = $Helpers->compressPath($renamed_path);
@@ -84,6 +80,8 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
 			// Save reference to Database
 			$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+
+			sleep(3);
 
 			// Delete and cleanup local files
 			if (file_exists($uploaded_path)) {
@@ -97,6 +95,7 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 			}
 
 			$file_details = $UsersFiles->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
+
 			if ($file_details !== false) {
 				$message = array(
 					"id" => $file_details["id"],

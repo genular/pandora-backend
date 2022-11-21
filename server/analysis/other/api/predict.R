@@ -15,7 +15,6 @@ simon$handle$analysis$other$predict$catboost$renderOptions <- expression(
     }
 )
 
-
 #' @get /analysis/other/predict/catboost/submit
 simon$handle$analysis$other$predict$catboost$submit <- expression(
     function(req, res, ...){
@@ -30,7 +29,6 @@ simon$handle$analysis$other$predict$catboost$submit <- expression(
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(RCurl::base64Decode(URLdecode(args$settings)))
         }
-
 
         package_installed <- TRUE
         if (!require("catboost", character.only=T, quietly=T)) {
@@ -53,8 +51,8 @@ simon$handle$analysis$other$predict$catboost$submit <- expression(
         filePathTesting <- downloadDataset(dataset$remotePathTest)
 
         ## Download dataset if not downloaded already
-        data$training <- data.table::fread(filePathTraining, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-        data$testing <- data.table::fread(filePathTesting, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        data$training <- loadDataFromFileSystem(filePathTraining)
+        data$testing <- loadDataFromFileSystem(filePathTesting)
 
         ## Coerce data to a standard data.frame
         data$training <- base::as.data.frame(data$training, stringsAsFactors = TRUE)

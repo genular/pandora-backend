@@ -1,4 +1,5 @@
-
+## T-Distributed Stochastic Neighbor Embedding using a Barnes-Hut Implementation
+## https://cran.r-project.org/web/packages/Rtsne/Rtsne.pdf
 calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 	info.norm <- dataset
 	names(info.norm) <- plyr::mapvalues(names(info.norm), from=fileHeader$remapped, to=fileHeader$original)
@@ -19,16 +20,28 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     }
 	header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
 
-	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), perplexity = perplexity, pca = TRUE, verbose = FALSE, max_iter = 2000, pca_scale = FALSE, pca_center = FALSE, check_duplicates = FALSE)
+	pca.scale <- TRUE
+	if(settings$preProcessDataset == TRUE){
+		pca.scale <- FALSE
+	}
+        
+
+	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), perplexity = perplexity, 
+		pca = TRUE, ## Whether an initial PCA step should be performed
+		verbose = FALSE, 
+		max_iter = 2000, 
+		pca_scale = pca.scale,  
+		pca_center = pca.scale, 
+		check_duplicates = FALSE)
 
 	info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
 
 	return(list(info.norm = info.norm, tsne.norm = tsne.norm, tsne_columns = header_mapped$original))
 }
 
+## Plot TSNE data
 plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
-
 
     print("============> plot_tsne")
     print(groupingVariable)
@@ -95,8 +108,11 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 	knn_clusters <- settings$knn_clusters
     if(nrow(tsne.norm$Y) < knn_clusters){
     	knn_clusters <- round(nrow(tsne.norm$Y) / 2)
-    	print(paste0("====> Quick-fix - Adjusting KNN k to: ", knn_clusters))
+    	print(paste0("====> Quick-fix - Rtsne->tsne.norm->Y rows: ",nrow(tsne.norm$Y)," Adjusting KNN k to half of it: ", knn_clusters))
     }
+
+    print(paste0("====>Maximum number of nearest neighbors to search: ", knn_clusters))
+
 
 	knn.norm = FNN::get.knn(as.matrix(tsne.norm$Y), k = knn_clusters)
 	knn.norm = data.frame(
@@ -186,20 +202,16 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster)
 
 	info.norm.num <- clust_plot_tsne$info.norm %>% select(where(is.numeric))
-
 	all_columns <- colnames(info.norm.num)
 
 	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "cluster", settings$groupingVariables)] 
 	input_data <- info.norm.num %>% select(any_of(all_columns[! all_columns %in% c("tsne1", "tsne2", settings$groupingVariables)]))
-
-
 
     if(settings$datasetAnalysisType == "heatmap"){
     	plotClustered <- FALSE
     }else{
     	plotClustered <- TRUE
     }
-
 
     input_args <- c(list(data=input_data, 
 	                      fileHeader=NULL,

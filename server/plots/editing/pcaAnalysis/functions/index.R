@@ -96,17 +96,18 @@ plot_scree <- function(pca_output, settings) {
 
 # http://www.opensubscriber.com/message/r-help@stat.math.ethz.ch/7315408.html
 # KMO Kaiser-Meyer-Olkin Measure of Sampling Adequacy 
-kmo_test = function( data ){ 
+kmo_test = function( data_correlation ){ 
     
-
-    X <- cor(as.matrix(data)) 
+    X <- data_correlation
     iX <- MASS::ginv(X) 
-    S2 <- diag(diag((iX^-1))) 
+    S2 <- diag(diag((iX^-1)))
+
     AIS <- S2%*%iX%*%S2                      # anti-image covariance matrix 
     IS <- X+AIS-2*S2                         # image covariance matrix 
     Dai <- sqrt(diag(diag(AIS))) 
     IR <- MASS::ginv(Dai)%*%IS%*%MASS::ginv(Dai)         # image correlation matrix 
     AIR <- MASS::ginv(Dai)%*%AIS%*%MASS::ginv(Dai)       # anti-image correlation matrix 
+
     a <- apply((AIR - diag(diag(AIR)))^2, 2, sum) 
     AA <- sum(a) 
     b <- apply((X - diag(nrow(X)))^2, 2, sum) 
@@ -122,8 +123,7 @@ kmo_test = function( data ){
     
     # Reporting the conclusion 
     if (kmo >= 0.00 && kmo < 0.50){ 
-      test <- 'The KMO test yields a degree of common variance 
-      unacceptable for FA.' 
+      test <- 'The KMO test yields a degree of common variance unacceptable for FA.' 
     } else if (kmo >= 0.50 && kmo < 0.60){ 
       test <- 'The KMO test yields a degree of common variance miserable.' 
     } else if (kmo >= 0.60 && kmo < 0.70){ 

@@ -19,12 +19,10 @@ simon$handle$plots$distribution$renderPlot <- expression(
             remoteDataset <- args$remoteDataset
         }
 
-
         plot_unique_hash <- list(histogram = digest::digest(paste0(resampleID, "_histogram_distribution"), algo="md5", serialize=F), 
             density = digest::digest(paste0(resampleID, "_density_distribution"), algo="md5", serialize=F), 
             boxplot = digest::digest(paste0(resampleID, "_boxplot_distribution"), algo="md5", serialize=F)
-            )
-
+        )
 
         tmp_dir <- tempdir(check = TRUE)
         tmp_check_count <- 0
@@ -74,9 +72,9 @@ simon$handle$plots$distribution$renderPlot <- expression(
         }
 
 
-        datasetPath <- downloadDataset(remotePath)   
-        data <- data.table::fread(datasetPath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        datasetPath <- downloadDataset(remotePath)
 
+        data <- loadDataFromFileSystem(datasetPath)
         ## Remove all other than necessary selectedColumns
         data <- data[, names(data) %in% c(resampleDetails[[1]]$features$remapped, resampleDetails[[1]]$outcome$remapped)]
 

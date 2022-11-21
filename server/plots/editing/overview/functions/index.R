@@ -45,9 +45,11 @@ save_tableplot = function(plot_data, path, settings){
 plot_matrix_plot = function(dataset, settings, fileHeader){
 
     print("Generating plot_matrix_plot")
-    ## Limit selected columns to 5
-    settings$selectedColumns <- tail(settings$selectedColumns, n=5)
 
+    if(length(settings$selectedColumns) > 5){
+        ## Limit selected columns to 5
+        settings$selectedColumns <- tail(settings$selectedColumns, n=5)
+    }
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
@@ -75,11 +77,10 @@ plot_matrix_plot = function(dataset, settings, fileHeader){
     }else{
         print("Generating plot_matrix_plot single")
 
-
         plot_dataset <- dataset %>% 
                     #select(responder, starts_with("tcell_elispot")) %>%
                     #filter(disease_severity == "severe") %>% 
-                    select_if(~sum(!is.na(.)) > 0) %>% 
+                    drop_na() %>% 
                     select(any_of(settings$selectedColumns))
 
         names(plot_dataset) <- plyr::mapvalues(names(plot_dataset), from=fileHeader$remapped, to=fileHeader$original)

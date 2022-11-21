@@ -44,7 +44,7 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
         fileHeader$original = as.character(fileHeader$original)
 
         ## Load dataset
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        dataset <- loadDataFromFileSystem(selectedFilePath)
 
         # we only want to show numeric cols
         valid_numeric <- NULL
@@ -71,27 +71,28 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
             mutate(valid_zv = if_else(remapped %in% valid_zv, 1, 0)) %>%
             mutate(valid_10p = if_else(remapped %in% valid_10p, 1, 0)) %>%
             mutate(na_percentage = na_percentage[na_percentage$variable == remapped, ]$value)
- 
+    
+        response_data$columns <- response_data$columns %>% arrange(desc(valid_10p))
 
-        data_summary <- summarytools::descr(dataset, stats = c("common"), transpose = TRUE, headings = FALSE)
-        data_summary <- as.data.frame(data_summary)
-        data_summary$remapped <- row.names(data_summary)
-        row.names(data_summary) <- NULL
+        # data_summary <- summarytools::descr(dataset, stats = c("common"), transpose = TRUE, headings = FALSE)
+        # data_summary <- as.data.frame(data_summary)
+        # data_summary$remapped <- row.names(data_summary)
+        # row.names(data_summary) <- NULL
 
-        response_data$summary <- data_summary %>% 
-            left_join(fileHeader, by = "remapped", keep = FALSE) %>% dplyr::select(Mean, Std.Dev, Min, Median, Max, N.Valid, Pct.Valid, original)
+        # response_data$summary <- data_summary %>% 
+        #     left_join(fileHeader, by = "remapped", keep = FALSE) %>% dplyr::select(Mean, Std.Dev, Min, Median, Max, N.Valid, Pct.Valid, original)
 
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["columns"]], tmpdir = tempdir(), fileext = ".RDS")
         saveCachedList(tmp_path, response_data$columns)
 
-        tmp_path <- tempfile(pattern = plot_unique_hash[["summary"]], tmpdir = tempdir(), fileext = ".RDS")
-        saveCachedList(tmp_path, response_data$summary)
+        # tmp_path <- tempfile(pattern = plot_unique_hash[["summary"]], tmpdir = tempdir(), fileext = ".RDS")
+        # saveCachedList(tmp_path, response_data$summary)
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
             columns = response_data$columns,
-            summary = response_data$summary,
+            # summary = response_data$summary,
             settings = settings,
             fileHeader = fileHeader,
             dataset = dataset
@@ -128,6 +129,10 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
 
         if(is_var_empty(settings$selectedColumns) == TRUE){
             settings$selectedColumns = NULL
+        }
+
+        if(is_var_empty(settings$cutOffColumnSize) == TRUE){
+            settings$cutOffColumnSize = 50
         }
 
         if(is_var_empty(settings$groupingVariable) == TRUE){
@@ -188,8 +193,8 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
 
         plot_all_columns <- FALSE
         if(is_null(settings$selectedColumns)) {
-            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(5) %>% arrange(position) %>% select(remapped)
-            settings$selectedColumns <- tail(selectedColumns$remapped, 5)
+            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(settings$cutOffColumnSize) %>% arrange(position) %>% select(remapped)
+            settings$selectedColumns <- tail(selectedColumns$remapped, settings$cutOffColumnSize)
             plot_all_columns <- TRUE
         }else if(length(settings$selectedColumns) == nrow(fileHeader)) {
             plot_all_columns <- TRUE
@@ -198,9 +203,10 @@ simon$handle$plots$editing$overview$renderPlot <- expression(
         settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariable)
 
         ## Load dataset
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-        dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
+        dataset <- loadDataFromFileSystem(selectedFilePath)
 
+        dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
+    
         if(!is.null(settings$preProcessedData)){
             ## Preprocess data except grouping variables
             preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable , methods = c("medianImpute", "center", "scale"))

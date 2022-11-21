@@ -315,7 +315,6 @@ db.apps.getFileDetails <-function(fileID){
                     FROM   users_files
                     WHERE  users_files.id IN(",paste(as.numeric(fileID), sep="' '", collapse=", "),")
                     ORDER BY users_files.id ASC;")
-    print(sql)
     
     query <- sqlInterpolate(databasePool, sql)
     results <- dbGetQuery(databasePool, query)

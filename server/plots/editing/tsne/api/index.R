@@ -13,7 +13,6 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             tsne_cluster_heatmap_plot = NULL, tsne_cluster_heatmap_plot_png = NULL
         )
 
-
         selectedFileID <- 0
         if("selectedFileID" %in% names(args)){
             selectedFileID <- as.numeric(args$selectedFileID)
@@ -25,6 +24,10 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
 
         if(is_var_empty(settings$selectedColumns) == TRUE){
             settings$selectedColumns = NULL
+        }
+
+        if(is_var_empty(settings$cutOffColumnSize) == TRUE){
+            settings$cutOffColumnSize = 50000
         }
 
         if(is_var_empty(settings$excludedColumns) == TRUE){
@@ -75,7 +78,6 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$plot_size <- 12
         }
 
-
         if(is_var_empty(settings$knn_clusters) == TRUE){
             settings$knn_clusters <- 250
         }
@@ -99,7 +101,6 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
         }
 
         ## dataset analysis settings
-
         if(is_var_empty(settings$datasetAnalysisClustLinkage) == TRUE){
             settings$datasetAnalysisClustLinkage = "ward.D2"
         }
@@ -116,6 +117,14 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$datasetAnalysisClustOrdering = 1
         }
 
+        if(is_var_empty(settings$anyNAValues) == TRUE){
+            settings$anyNAValues <- FALSE
+        }
+        
+        if(is_var_empty(settings$categoricalVariables) == TRUE){
+            settings$categoricalVariables <- FALSE
+        }
+
 
         plot_unique_hash <- list(
             tsne_plot = list(
@@ -126,7 +135,6 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             tsne_cluster_heatmap_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_heatmap_plot"), algo="md5", serialize=F),
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_render_plot"), algo="md5", serialize=F)
         )
-
 
         if(!is.null(settings$groupingVariables)){
             for(groupVariable in settings$groupingVariables){
@@ -171,44 +179,75 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
             settings$groupingVariables <- settings$groupingVariables$remapped
         }
 
-
+        # If no columns are selected, select by cut of size
         if(is_null(settings$selectedColumns)) {
             selectedColumns <- fileHeader %>% arrange(unique_count) %>% arrange(position) %>% select(remapped)
-            settings$selectedColumns <- selectedColumns$remapped
+            settings$selectedColumns <- tail(selectedColumns$remapped, n=settings$cutOffColumnSize)
         }
 
-        ## Load dataset
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-        dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
-
-
-        num_test <- dataset_filtered %>% select(where(is.numeric))
-        for (groupVariable in settings$groupingVariables) {
-            if(groupVariable %in% names(num_test)){
-                dataset_filtered[[groupVariable]] <-paste("g",dataset_filtered[[groupVariable]],sep="_")
+        # Remove grouping variables from selectedColumns and excludedColumns
+        if(!is_null(settings$groupingVariables)) {
+            if(is_null(settings$selectedColumns)) {
+                settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariables)
+            }
+            if(is_null(settings$excludedColumns)) {
+                settings$excludedColumns <-  setdiff(settings$excludedColumns, settings$groupingVariables)
+            }
+            if(is_null(settings$colorVariables)) {
+                settings$colorVariables <-  setdiff(settings$colorVariables, settings$groupingVariables)
             }
         }
 
-        if(!is.null(settings$preProcessDataset)){
-            print("=====> Preprocess data except grouping variables")
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = c("medianImpute", "center", "scale"))
-            dataset_filtered <- preProcessedData$processedMat
-            #preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("nzv", "zv"))
-            #dataset_filtered <- preProcessedData$processedMat
-        }else{
-            dataset_filtered <- dataset
+        # Remove any excluded columns from selected columns
+        if(!is_null(settings$excludedColumns)) {
+            ## Remove excluded from selected columns
+            settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$excludedColumns)
+            # settings$selectedColumns <- settings$selectedColumns[settings$selectedColumns %!in% settings$excludedColumns]
         }
 
+        ## Load dataset
+        dataset <- loadDataFromFileSystem(selectedFilePath)
+        dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
+
+        ## Check if grouping variable is numeric and add prefix to it
+        num_test <- dataset_filtered %>% select(where(is.numeric))
+        for (groupVariable in settings$groupingVariables) {
+            if(groupVariable %in% names(num_test)){
+                dataset_filtered[[groupVariable]] <- paste("g",dataset_filtered[[groupVariable]],sep="_")
+            }
+        }
+
+        print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
+        if(!is.null(settings$preProcessDataset)){
+            ## Preprocess data except grouping variables
+            preprocess_methods <- c("medianImpute", "center", "scale")
+            if(settings$categoricalVariables == TRUE){
+                preprocess_methods <- c("medianImpute")
+            }
+            print(paste0("=====> Preprocessing dataset: ", paste(preprocess_methods, collapse = ", ")))
+
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = preprocess_methods)
+            dataset_filtered <- preProcessedData$processedMat
+
+            print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
+
+        }
+
+        print(paste("==> Selected Columns 5: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
         if(settings$removeNA == TRUE){
-            print("=====> Data removeNA")
+            print(paste0("=====> Removing NA Values"))
             dataset_filtered <- na.omit(dataset_filtered)
         }
+        print(paste("==> Selected Columns 6: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
 
-
-
+        if(nrow(dataset_filtered) <= 2) {
+            print("==> No enough rows to proceed with PCA analysis")
+            return (list(success = FALSE, message = FALSE, details = FALSE))
+        }
 
         set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
+
         ## Main t-SNE plot 
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
         ## Color-by placeholder
@@ -288,6 +327,7 @@ simon$handle$plots$editing$tsne$renderPlot <- expression(
 
         print(paste0("===> Hierarchical clustering of clustered data"))
         tmp_path <- cluster_heatmap(clust_plot_tsne, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
+
         if(tmp_path != FALSE){
             res.data$tsne_cluster_heatmap_plot <- optimizeSVGFile(tmp_path)
             res.data$tsne_cluster_heatmap_plot_png <- convertSVGtoPNG(tmp_path)

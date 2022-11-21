@@ -13,15 +13,17 @@ that will help you to easily illustrate dynamic relationships and provide you wi
 
 Goal of this project is to make unified user interface that will empower anyone to extract meaningful information from their data and enable them to rapidly use machine learning algorithms. `It gives you freedom and control over your own data.`
 
-While `SIMON` can be used in across many different fields, 
+While `SIMON` can be used in across many different fields,
 our focus here is scientific community so we can enable scientist and other researchers in the field to quickly prototype around their data and get meaningful results out of it.
 
 ## More info [HERE](https://github.com/genular/simon-frontend) at main project repository
 
 ## License
-`SIMON` is open-source software for more informations please check `LICENCE` file.
+
+`SIMON` is open-source software for more information please check `LICENCE` file.
 
 ## Citation
+
 This software can be used for research purposes, you should cite
 the aforementioned papers in any resulting publication.
 

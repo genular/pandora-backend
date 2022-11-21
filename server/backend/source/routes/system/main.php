@@ -72,6 +72,15 @@ $app->get('/init/{secret:.*}', function (Request $request, Response $response, a
 	return $response->withStatus($status);
 });
 
+$app->get('/backend/system/serverload', function (Request $request, Response $response, array $args) {
+	$success = true;
+
+	$system = $this->get('SIMON\System\System');
+	$server_load = $system->getServerLoadInfo();
+
+	return $response->withJson(["success" => $success, "message" => $server_load]);
+});
+
 /**
  * Delete default values
  */

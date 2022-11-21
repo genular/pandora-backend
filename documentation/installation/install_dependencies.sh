@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SIMON installation script
+# SIMON dependencies installation script
 #
 clear
 
@@ -413,7 +413,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
         ## This package is not yet on CRAN. To install the latest development version you can install from the cloudyr drat repository:
         sudo Rscript -e "install.packages('aws.s3', repos = c('cloudyr' = 'http://cloudyr.github.io/drat'))"
-        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMySQL', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'mime', 'reshape2', 'plyr'), repos='http://cran.us.r-project.org')"
+        sudo Rscript -e "install.packages(c('BiocManager', 'plumber', 'config', 'DBI', 'pool', 'urltools', 'RMySQL', 'RMariaDB', 'PKI', 'data.table', 'RCurl', 'mime', 'reshape2', 'plyr', 'hablar'), repos='http://cran.us.r-project.org')"
         
 
         ## Check some shared deps
@@ -435,14 +435,29 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             echo "${green}==========> Installing PLOTS server dependencies${clear}"
             ## We need caret package to calculate resamples and display some of the plots in plots API
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
+            
+            ## Make sure we have Pandoc, prettydoc and seriation for vignettes
+            sudo Rscript -e "install.packages('prettydoc', repos='http://cran.us.r-project.org')"
+            sudo Rscript -e "install.packages('seriation', repos='http://cran.us.r-project.org')"
             sudo Rscript -e "devtools::install_github('taiyun/corrplot', build_vignettes = TRUE)"
+
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"
             sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer'), repos='http://cran.us.r-project.org')"
+            
             ## plotROC package & deps
             sudo Rscript -e "devtools::install_github('cran/XML')"
+
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                ## New XML package is only available for R > 4
+                sudo Rscript -e "remotes::install_github('cran/XML@7ab4aa451639a5b2fc73eb370b6d339d4f4c4979')"
+            else
+                sudo Rscript -e "remotes::install_github('cran/XML')"
+            fi
+
             sudo Rscript -e "install.packages('gridSVG', repos='http://R-Forge.R-project.org')"
             sudo Rscript -e "devtools::install_github('sachsmc/plotROC')"
-            ## Not used?
+            
+            ## lares package not used?
             sudo Rscript -e "devtools::install_github('laresbernardo/lares')"
 
             sudo Rscript -e "devtools::install_github('rapporter/pander')"  
@@ -456,7 +471,11 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
 
             sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
+            
+            ## Install ffbase tabplot dep
+            sudo Rscript -e "devtools::install_github('edwindj/ffbase', subdir='pkg')"
             sudo Rscript -e "devtools::install_github('mtennekes/tabplot')"
+
             sudo Rscript -e "devtools::install_github('ggobi/ggally')"
         fi
 
@@ -478,21 +497,44 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
 
             sudo Rscript -e "devtools::install_github('dashaub/supervisedPRIM')"
+            
             ## bartMachine dependencies
-            sudo Rscript -e "install.packages(c('car', 'missForest'))"
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                ## randomForest is available only for R > 4
+                sudo Rscript -e "remotes::install_github('cran/randomForest@bd3509cdc08aa7cd23495f836bbccbc5e4c4ea1b')"
+            else
+                sudo Rscript -e "remotes::install_github('cran/randomForest')"
+            fi
+            sudo Rscript -e "install.packages(c('car', 'missForest'), repos='http://cran.us.r-project.org')"
+            
             ## Install plsRglm from github
             sudo Rscript -e "devtools::install_github('fbertran/plsRglm')"
 
+            ## Maybe we already installed "caret" in step before (plots)
+            ## "caret" dependencies
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                ## fastICA is available only for R > 4
+                sudo Rscript -e "remotes::install_github('cran/fastICA@85a936d75b17334bf073d27fe3614c83e9cbe875')"
+            else
+                sudo Rscript -e "remotes::install_github('cran/fastICA')"
+            fi
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
 
-            ## Classification
+            ## Classification algorithms
             sudo Rscript -e "install.packages(c('PRROC', 'ada', 'adabag', 'fastAdaboost', 'bnclassify', 'kohonen', 'bartMachine', 'arm', 'binda', 'bst', 'C50', 'rrcov', 'deepboost', 'deepnet', 'kerndwd', 'evtree', 'extraTrees', 'frbs', 'mboost', 'xgboost', 'wsrf', 'VGAM', 'LiblineaR', 'sparseLDA', 'snn', 'sdwd', 'sda', 'rrcovHD', 'h2o', 'glmnet', 'hda', 'HDclassif', 'RWeka', 'kknn', 'HiDimDA', 'RSNNS', 'keras', 'monmlp', 'msaenet', 'rrlda', 'RRF', 'rpartScore', 'rotationForest', 'rocc', 'robustDA', 'rFerns', 'Rborist', 'randomGLM', 'protoclass', 'supervisedPRIM', 'stepPlr', 'penalizedLDA', 'partDSA', 'obliqueRF', 'ordinalNet', 'nodeHarvest', 'naivebayes'), repos='http://cran.us.r-project.org')"
-
             sudo Rscript -e "install.packages('CHAID', repos='http://R-Forge.R-project.org')"
+            
+            sudo Rscript -e "install.packages('mboost', repos='http://R-Forge.R-project.org')"
+
+            ## Set specific version
+            sudo Rscript -e "BiocManager::install(version = '3.9', ask = FALSE, force = TRUE)"
             sudo Rscript -e "BiocManager::install('vbmp', version = '3.9', update = FALSE, ask = FALSE)"
             sudo Rscript -e "BiocManager::install('gpls', version = '3.9', update = FALSE, ask = FALSE)"
             sudo Rscript -e "BiocManager::install('logicFS', version = '3.9', update = FALSE, ask = FALSE)"
-            sudo Rscript -e "devtools::install_github(c('cran/adaptDA', 'ramhiser/sparsediscrim', 'cran/elmNN', 'cran/FCNN4R', 'rstudio/tensorflow'))"
+            sudo Rscript -e "devtools::install_github(c('cran/adaptDA', 'ramhiser/sparsediscrim', 'cran/elmNN', 'rstudio/tensorflow'))"
+
+            sudo Rscript -e "install.packages('Rcpp', repos='https://RcppCore.github.io/drat')"
+            sudo Rscript -e "remotes::install_github('cran/FCNN4R')"
             
             echo "${yellow}}==========> Trying to install TensorFlow${clear}"
             echo ""
@@ -503,7 +545,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "tensorflow::install_tensorflow(method='auto')"
         fi 
 
-        ## PHP Backend environment
+        ## PHP Back-end environment
         if [ "${MODS[simon_api]}" == y ] ; then
             echo "${yellow}}==========> Trying to install pandas${clear}"
             echo ""

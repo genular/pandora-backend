@@ -402,7 +402,7 @@ $app->post('/backend/system/simon/dataset-queue/cancel', function (Request $requ
 });
 
 /**
- * Deletes all queue related data from the system
+ * Deletes all queue related data from the database and filesystem
  */
 $app->post('/backend/system/simon/dataset-queue/delete', function (Request $request, Response $response, array $args) {
     $success = false;

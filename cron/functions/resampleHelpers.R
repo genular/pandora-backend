@@ -14,7 +14,7 @@ loadGlobalDataset <- function(remotePathMain, resampleID){
         return(success)
     }
 
-    globalDataset <- data.table::fread(filepath_extracted, header = T, stringsAsFactors = FALSE, data.table = FALSE)
+    globalDataset <- loadDataFromFileSystem(filepath_extracted)
 
     return(globalDataset)
 }

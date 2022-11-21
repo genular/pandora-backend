@@ -70,9 +70,9 @@ simon$handle$plots$variableImportance$renderOverviewPlot <- expression(
         ## 1st - Get JOB and his Info from database
         resampleDetails <- db.apps.getFeatureSetData(resampleID)
         ## save(resampleDetails, file = "/tmp/testing.rds")
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        data <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-
+        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)
+        data <- loadDataFromFileSystem(resamplePath)
+        
         ## Remove all other than necessary columns
         data <- data[, names(data) %in% c(variables, resampleDetails[[1]]$outcome$remapped)]
         data[[resampleDetails[[1]]$outcome$remapped]] <- as.factor(data[[resampleDetails[[1]]$outcome$remapped]])

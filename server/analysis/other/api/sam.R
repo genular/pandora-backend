@@ -67,8 +67,9 @@ simon$handle$analysis$other$sam$renderPlot <- expression(
         resampleDetails <- db.apps.getFeatureSetData(resampleID)
 
         ## Download dataset if not downloaded already
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        dataset <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)  
+
+        dataset <- loadDataFromFileSystem(resamplePath)
 
         ## Remap outcome values to original ones
         dataset[[resampleDetails[[1]]$outcome$remapped]] <- as.factor(dataset[[resampleDetails[[1]]$outcome$remapped]])

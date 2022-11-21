@@ -269,6 +269,9 @@ echo "Installation of basic dependencies START"
 	echo "===> INSTALLATION step: 8"
 	apt-get install git
 
+	echo "===> INSTALLATION step: 8.0"
+	apt-get install pandoc
+
 	## Add support for git2r
 	echo "===> INSTALLATION step: 8.1"
 	apt-get install libgit2-dev

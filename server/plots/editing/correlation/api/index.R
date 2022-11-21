@@ -49,7 +49,8 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
 
         response_data <- list(
             correlation_plot = NULL, correlation_plot_png = NULL, 
-            saveObjectHash = NULL)
+            saveObjectHash = NULL
+        )
 
 
         selectedFileID <- 0
@@ -64,6 +65,10 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
 
         if(is_var_empty(settings$selectedColumns) == TRUE){
             settings$selectedColumns = NULL
+        }
+
+        if(is_var_empty(settings$cutOffColumnSize) == TRUE){
+            settings$cutOffColumnSize = 100
         }
 
         plot_unique_hash <- list(
@@ -90,11 +95,11 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         fileHeader$remapped = as.character(fileHeader$remapped)
         fileHeader$original = as.character(fileHeader$original)
 
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        dataset <- loadDataFromFileSystem(selectedFilePath)
 
         if(is_null(settings$selectedColumns)) {
-            selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(50) %>% arrange(position) %>% select(remapped)
-            settings$selectedColumns <- selectedColumns$remapped
+            selectedColumns <- fileHeader %>% arrange(unique_count) %>% arrange(position) %>% select(remapped)
+            settings$selectedColumns <- tail(selectedColumns$remapped, n=settings$cutOffColumnSize)
         }
 
         ## Remove all columns expect selected features
@@ -111,7 +116,16 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
         numeric_columns <- names(select_if(dataset, is.numeric))
         dropped_columns <- setdiff(settings$selectedColumns, numeric_columns)
 
-        dataset_filtered <- dataset %>% select(all_of(numeric_columns)) 
+        dataset_filtered <- dataset %>% select(all_of(numeric_columns))
+
+
+        ### DEFINE ALL RETURN VARIABLES 
+        data <- NULL
+        p.mat <- NULL
+        input_args <- NULL
+        corrplot_out <- NULL
+
+
         if(ncol(dataset_filtered) <= 1){
             error_check <- TRUE
             # Not enough numerical columns found in database.
@@ -156,8 +170,9 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
 
                             plotCI = if(settings$confidence$enable == TRUE) settings$confidence$ploting_method else "n",
                             tl.col = "black",
-                            addgrid.col="transparent"
-                            )
+                            addgrid.col="transparent",
+                            col=grDevices::colorRampPalette(c("blue","white","red"))(200)
+                        )
 
 
 
@@ -183,19 +198,20 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
             response_data$correlation_plot_png =  convertSVGtoPNG(tmp_path)
         }
 
-
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
-        processingData <- list(
-            corr_data = ifelse(exists("data") == TRUE, data, FALSE),
-            p.mat = ifelse(exists("p.mat") == TRUE, p.mat, FALSE),
-            input_args = ifelse(exists("input_args") == TRUE, input_args, FALSE),
-            corrplot = ifelse(exists("corrplot_out") == TRUE, corrplot_out, FALSE),
-            settings = ifelse(exists("settings") == TRUE, settings, FALSE),
-            dataset = ifelse(exists("dataset"), dataset, FALSE),
-            dataset_filtered_processed = ifelse(exists("dataset_filtered") == TRUE, dataset_filtered, FALSE)
+
+        processingData = list(
+            data = data,
+            p.mat = p.mat,
+            input_args = input_args,
+            corrplot = corrplot_out,
+            settings = settings,
+            dataset = dataset,
+            dataset_filtered_processed = dataset_filtered
         )
         saveCachedList(tmp_path, processingData)
+
         response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
         return (list(success = TRUE, message = response_data))

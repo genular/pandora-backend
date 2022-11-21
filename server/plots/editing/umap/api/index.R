@@ -25,6 +25,10 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
             settings$selectedColumns = NULL
         }
 
+        if(is_var_empty(settings$cutOffColumnSize) == TRUE){
+            settings$cutOffColumnSize = 50000
+        }
+
         if(is_var_empty(settings$excludedColumns) == TRUE){
             settings$excludedColumns = NULL
         }
@@ -78,6 +82,14 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
             settings$includeOtherGroups <- FALSE
         }
 
+        if(is_var_empty(settings$anyNAValues) == TRUE){
+            settings$anyNAValues <- FALSE
+        }
+        
+        if(is_var_empty(settings$categoricalVariables) == TRUE){
+            settings$categoricalVariables <- FALSE
+        }
+
         plot_unique_hash <- list(
             umap_plot = list(
                 main_plot = list(
@@ -122,14 +134,35 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
             settings$groupingVariables <- settings$groupingVariables$remapped
         }
 
-
+        # If no columns are selected, select by cut of size
         if(is_null(settings$selectedColumns)) {
             selectedColumns <- fileHeader %>% arrange(unique_count) %>% arrange(position) %>% select(remapped)
-            settings$selectedColumns <- selectedColumns$remapped
+            settings$selectedColumns <- tail(selectedColumns$remapped, n=settings$cutOffColumnSize)
+        }
+
+        # Remove grouping variables from selectedColumns and excludedColumns
+        if(!is_null(settings$groupingVariables)) {
+            if(is_null(settings$selectedColumns)) {
+                settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariables)
+            }
+            if(is_null(settings$excludedColumns)) {
+                settings$excludedColumns <-  setdiff(settings$excludedColumns, settings$groupingVariables)
+            }
+            if(is_null(settings$colorVariables)) {
+                settings$colorVariables <-  setdiff(settings$colorVariables, settings$groupingVariables)
+            }
+        }
+
+        # Remove any excluded columns from selected columns
+        if(!is_null(settings$excludedColumns)) {
+            ## Remove excluded from selected columns
+            settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$excludedColumns)
+            # settings$selectedColumns <- settings$selectedColumns[settings$selectedColumns %!in% settings$excludedColumns]
         }
 
         ## Load dataset
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        dataset <- loadDataFromFileSystem(selectedFilePath)
+        
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
 
 
@@ -140,20 +173,32 @@ simon$handle$plots$editing$umap$renderPlot <- expression(
             }
         }
 
+        print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
         if(!is.null(settings$preProcessDataset)){
-            print("=====> Preprocess data except grouping variables START")
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = c("medianImpute", "center", "scale"))
+            ## Preprocess data except grouping variables
+            preprocess_methods <- c("medianImpute", "center", "scale")
+            if(settings$categoricalVariables == TRUE){
+                preprocess_methods <- c("medianImpute")
+            }
+            print(paste0("=====> Preprocessing dataset: ", paste(preprocess_methods, collapse = ", ")))
+
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = preprocess_methods)
             dataset_filtered <- preProcessedData$processedMat
-            #preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("nzv", "zv"))
-            #dataset_filtered <- preProcessedData$processedMat
-            print("=====> Preprocess data except grouping variables END")
-        }else{
-            dataset_filtered <- dataset
+
+            print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
+
         }
 
+        print(paste("==> Selected Columns 5: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
         if(settings$removeNA == TRUE){
-            print("=====> Data removeNA")
+            print(paste0("=====> Removing NA Values"))
             dataset_filtered <- na.omit(dataset_filtered)
+        }
+        print(paste("==> Selected Columns 6: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
+
+        if(nrow(dataset_filtered) <= 2) {
+            print("==> No enough rows to proceed with PCA analysis")
+            return (list(success = FALSE, message = FALSE, details = FALSE))
         }
 
         print(paste0("=====> Main partition split: ", settings$selectedPartitionSplit))

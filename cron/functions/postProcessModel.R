@@ -45,7 +45,6 @@ getPredictROC <- function(responseData, predictionsData, model_details) {
         process.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(pROC::multiclass.roc, input_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
     }
     
-
     if(!inherits(process.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
         results$status <- TRUE
     }else{

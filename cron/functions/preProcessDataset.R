@@ -24,13 +24,20 @@ preProcessDataset <- function(dataset) {
 
     ## Create local job processing directory /tmp/xyz
     JOB_DIR <- initilizeDatasetDirectory(dataset)
+
+    cat(paste0("===> INFO: preProcessDataset: removing unnecessary columns: \r\n"))
+
     ## Remove all other than necessary columns, this should already be removed on intersect generation in PHP
     datasetData <- globalDataset[, names(globalDataset) %in% c(dataset$features, dataset$outcome, dataset$classes)]
+    
+    cat(paste0("===> INFO: preProcessDataset: defining factors: \r\n"))
     ## Maintain outcome as factors
     datasetData[[dataset$outcome]] <- as.factor(datasetData[[dataset$outcome]])
     ## Combine Outcome and Classes
     outcome_and_classes <- c(dataset$outcome, dataset$classes)
 
+    cat(paste0("===> INFO: preProcessDataset: converting columns to numeric: \r\n"))
+    ## Should we suppress warnings: suppressWarnings(as.numeric(c("1", "2", "X")))
     ## Convert all columns expect "outcome_and_classes" column to numeric values correcting NAs!
     datasetData[, !names(datasetData) %in% outcome_and_classes] <- lapply(datasetData[, !names(datasetData) %in% outcome_and_classes] , function(x) as.numeric(as.character(x)))
 

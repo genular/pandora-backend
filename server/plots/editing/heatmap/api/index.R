@@ -108,7 +108,7 @@ simon$handle$plots$editing$heatmap$renderPlot <- expression(
         fileHeader$remapped = as.character(fileHeader$remapped)
         fileHeader$original = as.character(fileHeader$original)
 
-        dataset <- data.table::fread(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        dataset <- loadDataFromFileSystem(selectedFilePath)
 
         if(is_null(settings$selectedColumns)) {
             print("Selected Columns are not set, taking initial ones")

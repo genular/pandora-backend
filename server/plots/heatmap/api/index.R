@@ -98,14 +98,13 @@ simon$handle$plots$heatmap$renderPlot <- expression(
             settings$selectedRows <- tail(resampleDetails[[1]]$features$remapped, 20)
         }
 
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        data <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)
+        
+        data <- loadDataFromFileSystem(resamplePath)
+
         ## Remove all other than necessary selectedColumns
         data <- data[, names(data) %in% c(settings$selectedRows, settings$selectedColumns)]
 
-
-
-        
         input_args <- c(list(data=data, 
                             resampleDetails=resampleDetails,
                             selectedColumns=settings$selectedColumns,

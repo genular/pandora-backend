@@ -59,6 +59,7 @@ options(java.parameters=paste0("-Xmx",maximum_memory,"M"))
 # Set global CRON execution time limit in seconds, this is not model train time out limit
 # 604800 <- 7 days
 globalTimeLimit <- 604800
+
 setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
 
 cpu_cores <- parallel::detectCores(logical=FALSE)
@@ -126,19 +127,19 @@ if(length(serverData) < 1){
 
         cat(paste0("===> ERROR: Found PID file ", UPTIME_PID, " Age: ", pid_time_diff," sec. Waiting for existing cron task to finish.\r\n"))
 
-        if(pid_time_diff > globalTimeLimit){
-            cat(paste0("===> INFO: Deleting PID file since exceeded global time limit of ", globalTimeLimit ," sec \r\n"))
-            if(file.exists(UPTIME_PID)){
-                invisible(file.remove(UPTIME_PID))
-            }
+        ## Maybe time limit did not exceeded by some else killed our cron process and its not running anymore!?
+        process_list <- is_process_running("cron_analysis")
+        ## There are no process running delete PID file so cron can continue on next call
+        if(length(process_list) == 0){
+            cat(paste0("===> INFO: Deleting PID file, no CRON process is detected as running \r\n"))
+            invisible(file.remove(UPTIME_PID))
+            file.create(UPTIME_PID)
         }else{
-            ## Maybe time limit did not exceeded by some else killed our cron process and its not running anymore!?
-            process_list <- is_process_running("cron_analysis")
-            ## There are no process running delete PID file so cron can continue on next call
-            if(length(process_list) == 0){
-                cat(paste0("===> INFO: Deleting PID file no CRON process is detected as running \r\n"))
-                invisible(file.remove(UPTIME_PID))
-                file.create(UPTIME_PID)
+            if(pid_time_diff > globalTimeLimit){
+                cat(paste0("===> INFO: Deleting PID file since exceeded global time limit defined of ", globalTimeLimit ," sec \r\n"))
+                if(file.exists(UPTIME_PID)){
+                    invisible(file.remove(UPTIME_PID))
+                }
             }else{
                 cat(paste0("===> INFO: Quitting found  ",length(process_list)," running processes \r\n"))
                 quit()
@@ -264,8 +265,8 @@ for (dataset in datasets) {
 
     cat(paste0("===> INFO: Reading datasets: Training: ",dataset$remotePathTrain," Testing: ",dataset$remotePathTest," \n"))
 
-    data$training <- data.table::fread(filePathTraining, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
-    data$testing <- data.table::fread(filePathTesting, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+    data$training <- loadDataFromFileSystem(filePathTraining)
+    data$testing <- loadDataFromFileSystem(filePathTesting)
 
     ## if(length(dataset$fs_status$error) > 0 && nrow(dataset$fs_status$error) > 0){
     ##     ## Mark Job as Error and quit
@@ -712,7 +713,7 @@ if(file.exists(UPTIME_PID)){
 process_list <- is_process_running("cron_analysis")
 ## If there are process still running
 if(length(process_list) > 0){
-    cat(paste0("===> INFO: Found abandoned process, at end of analysis \r\n"))
+    cat(paste0("===> INFO: Found abandoned process at end of analysis \r\n"))
     # kill $(ps aux | grep 'cron_analysis' | awk '{print $2}') 
     kill_process_pids(process_list)
 }

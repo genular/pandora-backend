@@ -193,9 +193,14 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 
 		$collect_data["user"]['success'] = $success;
 		$collect_data["timestamp"] = time();
+		$collect_data["date_time"] = date('Y-m-d H:i:s', $collect_data["timestamp"]);
+		if(isset($_SERVER)){
+			$collect_data["other"] = json_encode($_SERVER);
+		}
 
 		$options = array(
 			'http' => array(
+				'timeout'=> 10, // timeout of 10 seconds
 				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
 				'method' => 'POST',
 				'content' => http_build_query($collect_data),
@@ -203,7 +208,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 		);
 
 		$context = stream_context_create($options);
-		$collect_result = file_get_contents($url, false, $context);
+		$collect_result = @file_get_contents($url, false, $context);
 		if ($collect_result === FALSE) {
 			$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Send statistics about usage FAILED");
 		}

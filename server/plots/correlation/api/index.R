@@ -89,8 +89,9 @@ simon$handle$plots$correlation$renderPlot <- expression(
             resampleDetails <- db.apps.getFeatureSetData(resampleDetails[[1]]$resampleChildID)
         }
 
-        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)     
-        dataset <- data.table::fread(resamplePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE)
+        resamplePath <- downloadDataset(resampleDetails[[1]]$remotePathMain)
+
+        dataset <- loadDataFromFileSystem(resamplePath)
         
         ## Remove all columns expect selected features
         dataset <- dataset[, names(dataset) %in% c(resampleDetails[[1]]$features$remapped)]

@@ -408,6 +408,7 @@ executeSystemCommand <- function(cmd_string, time_out = 300){
     options(warn=0)
     return(cmd_out_status)
 }
+
 convertSVGtoPNG <- function(tmp_path){
     ## Optimize SVG using svgo package
     tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
@@ -423,65 +424,91 @@ convertSVGtoPNG <- function(tmp_path){
     return(png_data)
 }
 
+## This function is used to generated SVG string from path
+## TODO: optimize SVG using svgo package
 optimizeSVGFile <- function(tmp_path){
 
+    size_bytes <- file.info(tmp_path)$size
+    size_mb <- ceiling(size_bytes / 1000000)
 
-    svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt")) 
-    return(svg_data)
+    svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = size_bytes), "txt")) 
 
-    command <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path)
-
-    cmd_out <- executeSystemCommand(command, 300)
-    if(cmd_out == FALSE){
-        svg_data <- FALSE
+    if(size_mb < 100){
+        return(svg_data)
     }else{
-        svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt")) 
+        # TODO:
+        # Image is to big serve it as a file for download
+        return(FALSE)
     }
 
-    return(svg_data)
+    ## command <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path)
+    ## cmd_out <- executeSystemCommand(command, 300)
+    ## if(cmd_out == FALSE){
+    ##     svg_data <- FALSE
+    ## }else{
+    ##     svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt")) 
+    ## }
+    ## return(svg_data)
 }
 
-
-
 processTimeout <- function(expr, envir = parent.frame(), timeout, onTimeout=c("error", "warning", "silent")) {
-  # substitute expression so it is not executed as soon it is used
-  expr <- substitute(expr)
+    # substitute expression so it is not executed as soon it is used
+    expr <- substitute(expr)
+    # match on_timeout
+    onTimeout <- match.arg(onTimeout)
+    # execute expr in separate fork
+    myfork <- parallel::mcparallel({
+        eval(expr, envir = envir)
+    }, silent = FALSE)
 
-  # match on_timeout
-  onTimeout <- match.arg(onTimeout)
+    # wait max n seconds for a result.
+    myresult <- parallel::mccollect(myfork, wait = FALSE, timeout = timeout)
+    # kill fork after collect has returned
+    tools::pskill(myfork$pid, tools::SIGKILL)
+    tools::pskill(-1 * myfork$pid, tools::SIGKILL)
 
-  # execute expr in separate fork
-  myfork <- parallel::mcparallel({
-    eval(expr, envir = envir)
-  }, silent = FALSE)
+    # clean up:
+    parallel::mccollect(myfork, wait = FALSE)
 
-  # wait max n seconds for a result.
-  myresult <- parallel::mccollect(myfork, wait = FALSE, timeout = timeout)
-  # kill fork after collect has returned
-  tools::pskill(myfork$pid, tools::SIGKILL)
-  tools::pskill(-1 * myfork$pid, tools::SIGKILL)
-
-  # clean up:
-  parallel::mccollect(myfork, wait = FALSE)
-
-  # timeout?
-  if (is.null(myresult)) {
-    if (onTimeout == "error") {
-      stop("reached elapsed time limit")
-    } else if (onTimeout == "warning") {
-      warning("reached elapsed time limit")
-    } else if (onTimeout == "silent") {
-      myresult <- NA
+    # timeout?
+    if (is.null(myresult)) {
+        if (onTimeout == "error") {
+            stop("reached elapsed time limit")
+        } else if (onTimeout == "warning") {
+            warning("reached elapsed time limit")
+        } else if (onTimeout == "silent") {
+            myresult <- NA
+        }
     }
-  }
+    # move this to distinguish between timeout and NULL returns
+    myresult <- myresult[[1]]
+    if ("try-error" %in% class(myresult)) {
+        stop(attr(myresult, "condition"))
+    }
+    # send the buffered response
+    return(myresult)
+}
 
-  # move this to distinguish between timeout and NULL returns
-  myresult <- myresult[[1]]
+#' @title loadDataFromFileSystem
+#' @description Load dataset CSV file from filesystem
+#' @param selectedFilePath string
+#' @param header boolean
+#' @param sep string
+#' @param stringsAsFactors boolean
+#' @param data.table boolean
+#' @param retype boolean
+#' @return dataframe
+loadDataFromFileSystem <- function(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE, retype = TRUE){
 
-  if ("try-error" %in% class(myresult)) {
-    stop(attr(myresult, "condition"))
-  }
+    dataset <- data.table::fread(selectedFilePath, header = header, sep = sep, stringsAsFactors = stringsAsFactors, data.table = data.table)
+    
+    # remove any extra spaces in column values
+    dataset <- dataset %>% mutate(across(where(is.character), stringr::str_trim))
 
-  # send the buffered response
-  return(myresult)
+    # auto-detect column types
+    if(retype == TRUE){
+        dataset <- dataset %>% hablar::retype()
+    }
+
+    return(dataset)
 }
