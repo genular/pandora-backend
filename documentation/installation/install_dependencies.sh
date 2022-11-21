@@ -285,76 +285,73 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         echo ""
 
         if [ "$R_VERSION" != n ] ; then
+            
             R_URL="https://cloud.r-project.org/src/base/R-3/R-${R_VERSION}.tar.gz"
+
             if curl --head --fail --silent "$R_URL" >/dev/null; then
-                # Create temporary directory
-                mkdir -p "$HOME/R_tmp"
-                cd "$HOME/R_tmp" || exit 1
-
-                wget $R_URL
-                tar xvzf R-${R_VERSION}.tar.gz
-                rm R-${R_VERSION}.tar.gz
-
-                # Configure and make
-                cd R-${R_VERSION} || exit 1
-                ./configure --prefix=/usr/local/R/${R_VERSION} --enable-R-shlib --with-blas --with-lapack
-                make
-                sudo make install
-
-                # Cleanup
-                cd ../.. || exit 1
-                rm -rf "$HOME/R_tmp"
-
-                # Create symbolic links to the installed version
-                sudo ln -s /usr/local/R/${R_VERSION}/bin/R /usr/bin/R-${R_VERSION}
-                sudo ln -s /usr/local/R/${R_VERSION}/bin/Rscript /usr/bin/Rscript-${R_VERSION}
-
-                # Adjust permissions
-                sudo chmod o+w /usr/local/R/${R_VERSION}/lib64/R/library && sudo chmod o+w /usr/local/R/${R_VERSION}/lib64/R/doc -R
-
-                # Set as default system version
-                install_r_default=y
-                echo "${yellow}Do you want set this R version as default system one? (y/n) Enter y${clear}"
-                read -e install_r_default
-
-                if [ "${install_r_default}" == "" ] ; then
-                    install_r_default=y
-                fi
-
-                echo ""
-                if [ "$install_r_default" == y ] ; then
-                    sudo ln -s /usr/bin/R-${R_VERSION} /usr/bin/R
-                    sudo ln -s /usr/bin/Rscript-${R_VERSION} /usr/bin/Rscript
-                fi
-
-                ## Configure R with system java
-                ## Should we also set java home?: 
-                ## https://gist.githubusercontent.com/djangofan/5526565/raw/b6425dba457bdbad63604b571efe85b1b3716dd4/java-setup.sh
-                echo "${yellow}Configuring JAVA to work with R${clear}"
-                sudo R CMD javareconf
-
-                echo "${green}"
-                echo "================================================================="
-                echo ""
-                echo "R Installation is complete"
-                echo ""
-                echo "Version: $R_VERSION"
-                echo "Prefix: /usr/local/R/$R_VERSION"
-                echo ""
-                echo "Please make sure that environmental variables: JAVA_HOME & LD_LIBRARY_PATH are set properly."
-                echo "================================================================="
-                echo "${clear}"
-            else 
-                echo "${red}"
-                echo "================================================================="
-                echo ""
-                echo "R Installation failed. Remote R source file does not exist!"
-                echo ""
-                echo "File URL: $R_URL"
-                echo ""
-                echo "================================================================="
-                echo "${clear}"
+                echo "R Download file found on: $R_URL"
+            else
+                R_URL="https://cran.r-project.org/src/base/R-3/R-3.6.3.tar.gz"
+                echo "R Download file not found, fallback to default 3.6.3: $R_URL"
             fi
+
+            # Create temporary directory
+            mkdir -p "$HOME/R_tmp"
+            cd "$HOME/R_tmp" || exit 1
+
+            wget $R_URL
+            tar xvzf R-${R_VERSION}.tar.gz
+            rm R-${R_VERSION}.tar.gz
+
+            # Configure and make
+            cd R-${R_VERSION} || exit 1
+            ./configure --prefix=/usr/local/R/${R_VERSION} --enable-R-shlib --with-blas --with-lapack
+            make
+            sudo make install
+
+            # Cleanup
+            cd ../.. || exit 1
+            rm -rf "$HOME/R_tmp"
+
+            # Create symbolic links to the installed version
+            sudo ln -s /usr/local/R/${R_VERSION}/bin/R /usr/bin/R-${R_VERSION}
+            sudo ln -s /usr/local/R/${R_VERSION}/bin/Rscript /usr/bin/Rscript-${R_VERSION}
+
+            # Adjust permissions
+            sudo chmod o+w /usr/local/R/${R_VERSION}/lib64/R/library && sudo chmod o+w /usr/local/R/${R_VERSION}/lib64/R/doc -R
+
+            # Set as default system version
+            install_r_default=y
+            echo "${yellow}Do you want set this R version as default system one? (y/n) Enter y${clear}"
+            read -e install_r_default
+
+            if [ "${install_r_default}" == "" ] ; then
+                install_r_default=y
+            fi
+
+            echo ""
+            if [ "$install_r_default" == y ] ; then
+                sudo ln -s /usr/bin/R-${R_VERSION} /usr/bin/R
+                sudo ln -s /usr/bin/Rscript-${R_VERSION} /usr/bin/Rscript
+            fi
+
+            ## Configure R with system java
+            ## Should we also set java home?: 
+            ## https://gist.githubusercontent.com/djangofan/5526565/raw/b6425dba457bdbad63604b571efe85b1b3716dd4/java-setup.sh
+            echo "${yellow}Configuring JAVA to work with R${clear}"
+            sudo R CMD javareconf
+
+            echo "${green}"
+            echo "================================================================="
+            echo ""
+            echo "R Installation is complete"
+            echo ""
+            echo "Version: $R_VERSION"
+            echo "Prefix: /usr/local/R/$R_VERSION"
+            echo ""
+            echo "Please make sure that environmental variables: JAVA_HOME & LD_LIBRARY_PATH are set properly."
+            echo "================================================================="
+            echo "${clear}"
         fi
     fi
 
@@ -388,13 +385,13 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     echo ""
 
     if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
-        export GITHUB_TOKEN=$GITHUB_PAT
-        export GITHUB_PAT=$GITHUB_PAT
+        export GITHUB_TOKEN=$GITHUB_PAT_TOKEN
+        export GITHUB_PAT=$GITHUB_PAT_TOKEN
         ## Add temporary fake github PAT to the environment just for GH auth so we get higher rate-limit
-        ## sudo echo "GITHUB_PAT=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" >> $HOME/.Renviron
+        ## sudo echo "GITHUB_PAT=ghp_2zn4pg9nofBxN2d627UA7iBbj6xxxx" >> $HOME/.Renviron
     fi
 
-    echo "${green}}==========> GitHub PAT token: $GITHUB_PAT ${clear}"
+    echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
 
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
@@ -405,7 +402,14 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         if [ "${R_VERSION}" == "3.6.3" ] ; then
             ## New foreign package is only available for R > 4
             sudo Rscript -e "remotes::install_github('cran/foreign@726985b019b3d18b353f387c1211e5b147e97f71')"
-            sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"            
+            sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"
+            sudo Rscript -e "devtools::install_github('astamm/nloptr@d3a894019d16738915fe561b56388533cb48f03a')"
+            sudo Rscript -e "devtools::install_github('husson/FactoMineR@3190c5d0ccb54b220e4e7b0b93713662c3bf55e0')"        
+        else
+            sudo Rscript -e "remotes::install_github('cran/foreign')"
+            sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"
+            sudo Rscript -e "devtools::install_github('astamm/nloptr')"
+            sudo Rscript -e "devtools::install_github('husson/FactoMineR')"  
         fi
 
         ## server/backend/public/assets/datasets/Rdatasets.R
@@ -467,7 +471,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
             sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
 
-            sudo Rscript -e "install.packages(c('FactoMineR'), repo = 'https://cloud.r-project.org/')"
+            
             sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
 
             sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
