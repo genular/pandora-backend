@@ -185,7 +185,8 @@ if [ "${MODS[simon_cron]}" == y ] ; then
             install_dep=y
         fi
         if [ "$install_dep" == y ] ; then
-            sudo apt-get install libmariadbclient-dev
+            ## sudo apt-get install libmariadbclient-dev this is removed from latest MariDB
+            sudo apt-get install libmariadb-dev-compat libmariadb-dev
         else
             echo "${red}Please install this dependency manually${clear}";
             exit 1

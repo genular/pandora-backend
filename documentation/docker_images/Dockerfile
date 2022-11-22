@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 # escape=\
 
-FROM "genular/parent:0.3.0"
+FROM "genular/parent:master"
 
 MAINTAINER LogIN- "info@genular.com"
 
@@ -19,7 +19,7 @@ RUN chmod +x /tmp/prepare_docker_storage.sh
 
 ## Lets build and configure SIMON
 RUN su - genular -c 'cd /var/www/genular/simon-frontend \
-	&& git checkout . && git fetch && git checkout tags/0.3.0 && git pull origin tags/0.3.0 \
+	&& git checkout . && git fetch && git checkout master && git pull origin master \
 	&& yarn install --check-files \
 	&& yarn run webpack:web:prod \
 	--isDemoServer=false \
@@ -27,7 +27,7 @@ RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	--server_backend=http://localhost:3011 \
 	--server_homepage=http://localhost:3010 \
 	&& cd /var/www/genular/simon-backend/server/backend/ \
-	&& git checkout . && git fetch && git checkout tags/0.3.0 && git pull origin tags/0.3.0 \
+	&& git checkout . && git fetch && git checkout master && git pull origin master \
 	&& /usr/bin/php7.3 /usr/local/bin/composer install --ignore-platform-reqs \
 	&& /usr/bin/php7.3 /usr/local/bin/composer post-install /tmp/configuration.json'
 
