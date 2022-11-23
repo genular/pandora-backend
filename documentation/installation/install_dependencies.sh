@@ -110,6 +110,10 @@ for DEP in "${!DEPS[@]}"; do
     fi
 done
 
+echo "${red}Updating APT${clear}";
+sudo apt-get update
+lsb_release -a
+
 ## Check specific dependencies
 if [ "${MODS[simon_cron]}" == y ] ; then
     check_blas=$(ldconfig -p | grep openblas)
@@ -160,38 +164,39 @@ if [ "${MODS[simon_cron]}" == y ] ; then
         fi
     fi
 
-    check_libssh=$(ldconfig -p | grep libssh)
-    if [ -z "$check_libssh" ] ; then
-        install_dep=n
-        echo "${red}libssh is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
-        read -e install_dep
-        if [ "${install_dep}" == "" ] ; then
-            install_dep=y
-        fi
-        if [ "$install_dep" == y ] ; then
-            sudo apt-get install libssh2-1-dev
-        else
-            echo "${red}Please install this dependency manually${clear}";
-            exit 1
-        fi
-    fi
+    sudo apt-get install libssh2-1-dev
+    ## check_libssh=$(ldconfig -p | grep libssh)
+    ## if [ -z "$check_libssh" ] ; then
+    ##     install_dep=n
+    ##     echo "${red}libssh is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
+    ##     read -e install_dep
+    ##     if [ "${install_dep}" == "" ] ; then
+    ##         install_dep=y
+    ##     fi
+    ##     if [ "$install_dep" == y ] ; then
+    ##         sudo apt-get install libssh2-1-dev
+    ##     else
+    ##         echo "${red}Please install this dependency manually${clear}";
+    ##         exit 1
+    ##     fi
+    ## fi
 
-    check_libmariadbclient=$(ldconfig -p | grep libmariadbclient)
-    if [ -z "$check_libmariadbclient" ] ; then
-        install_dep=n
-        echo "${red}libmariadbclient-dev is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
-        read -e install_dep
-        if [ "${install_dep}" == "" ] ; then
-            install_dep=y
-        fi
-        if [ "$install_dep" == y ] ; then
-            ## sudo apt-get install libmariadbclient-dev this is removed from latest MariDB
-            sudo apt-get install libmariadb-dev-compat libmariadb-dev
-        else
-            echo "${red}Please install this dependency manually${clear}";
-            exit 1
-        fi
-    fi
+    ## check_libmariadbclient=$(ldconfig -p | grep libmariadbclient)
+    ## if [ -z "$check_libmariadbclient" ] ; then
+    ##     install_dep=n
+    ##     echo "${red}libmariadbclient-dev is probably missing. Should we try to install it now? (y/n) Enter y${clear}";
+    ##     read -e install_dep
+    ##     if [ "${install_dep}" == "" ] ; then
+    ##         install_dep=y
+    ##     fi
+    ##     if [ "$install_dep" == y ] ; then
+    ##         apt-get install libmariadb-dev-compat
+    ##         apt-get install libmariadb-dev
+    ##     else
+    ##         echo "${red}Please install this dependency manually${clear}";
+    ##         exit 1
+    ##     fi
+    ## fi
 
     check_libxml2=$(ldconfig -p | grep libxml2)
     if [ -z "$check_libxml2" ] ; then
@@ -247,8 +252,8 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
     if [ "$install_r" == y ] ; then
 
-        echo "${yellow}Enabling Source code repositories in /etc/apt/sources.list${clear}"
-        sudo sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+        # echo "${yellow}Enabling Source code repositories in /etc/apt/sources.list${clear}"
+        # sudo sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
 
         sudo apt-get update
 
@@ -388,8 +393,9 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
         export GITHUB_TOKEN=$GITHUB_PAT_TOKEN
         export GITHUB_PAT=$GITHUB_PAT_TOKEN
-        ## Add temporary fake github PAT to the environment just for GH auth so we get higher rate-limit
-        ## sudo echo "GITHUB_PAT=ghp_2zn4pg9nofBxN2d627UA7iBbj6xxxx" >> $HOME/.Renviron
+        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN\n" >> /home/genular/.Renviron
+        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN\n" >>  $(R RHOME)/etc/Renviron
+
     fi
 
     echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
@@ -399,6 +405,10 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
         sudo Rscript -e "install.packages(c('devtools', 'remotes'), repo = 'https://cloud.r-project.org/')"
 
+        if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
+            sudo Rscript -e "usethis::use_git_config(user.name = 'LogIN-', user.email = 'info@ivantomic.com')"
+            sudo Rscript -e "credentials::set_github_pat('$GITHUB_PAT_TOKEN')"
+        fi
 
 
         if [ "${R_VERSION}" == "3.6.3" ] ; then

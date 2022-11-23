@@ -124,12 +124,20 @@ cat > "$rootfsDir/etc/apt/sources.list" << '__EOS__'
 #                   OFFICIAL DEBIAN REPOS                    
 #------------------------------------------------------------------------------#
 
-###### Debian Main Repos
-deb https://deb.debian.org/debian/ stable main
-deb-src https://deb.debian.org/debian/ stable main
+deb http://deb.debian.org/debian bullseye main contrib non-free
+deb-src http://deb.debian.org/debian bullseye main contrib non-free
 
-deb https://deb.debian.org/debian/ stable-updates main
-deb-src https://deb.debian.org/debian/ stable-updates main
+deb http://deb.debian.org/debian-security  bullseye-security main contrib non-free
+deb-src http://deb.debian.org/debian-security  bullseye-security main contrib non-free
+
+deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+deb-src http://deb.debian.org/debian bullseye-updates main contrib non-free
+
+###### Debian Main Repos
+#deb https://deb.debian.org/debian/ stable main
+#deb-src https://deb.debian.org/debian/ stable main
+#deb https://deb.debian.org/debian/ stable-updates main
+#deb-src https://deb.debian.org/debian/ stable-updates main
 __EOS__
 
 ## Example: https://gist.github.com/takumin/952b5144e7b6466c6006
@@ -352,7 +360,11 @@ echo "Installation of advanced dependencies START"
 	apt-get install libssh2-1-dev
 
 	echo "===> INSTALLATION step: 4"
-	apt-get install libmariadbclient-dev
+	## This one is probabbly already instlled
+	apt-get install mariadb-client
+	## Needed for RMySQL package
+	apt-get install libmariadb-dev-compat
+	apt-get install libmariadb-dev
 
 	echo "===> INSTALLATION step: 5"
 	apt-get install tk tcl tcl-dev libxml2-dev unzip zip

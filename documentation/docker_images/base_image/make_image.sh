@@ -37,7 +37,7 @@ if [ -f "./images/${IMAGE_NAME}_$DATE_TAG.tar" ]; then
 fi
 
 
-## Build stable debian image currently (stretch/Debian 9) - new stable version (buster/Debian 10)
+## Build stable debian image currently (stretch/Debian 9) - new stable version 11.5
 build_command="sudo ./debootstrap $ROOT_FS stable $FRESH_START $GITHUB_PAT"
 
 echo "Building base docker image: "
