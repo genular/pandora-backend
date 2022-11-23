@@ -401,14 +401,18 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
+        
+        sudo Rscript -e "utils::setRepositories(ind = 0, addURLs = c(CRAN = 'https://cloud.r-project.org/'))"
 
-        sudo Rscript -e "install.packages(c('devtools', 'remotes'), repo = 'https://cloud.r-project.org/')"
+        sudo Rscript -e "install.packages('remotes', repo = 'https://cloud.r-project.org/')"
+        sudo Rscript -e "remotes::install_github('r-lib/usethis')"
+
+        sudo Rscript -e "remotes::install_github('r-lib/devtools')"
 
         if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
             sudo Rscript -e "usethis::use_git_config(user.name = 'LogIN-', user.email = 'info@ivantomic.com')"
             sudo Rscript -e "credentials::set_github_pat('$GITHUB_PAT_TOKEN')"
         fi
-
 
         if [ "${R_VERSION}" == "3.6.3" ] ; then
             ## New foreign package is only available for R > 4
