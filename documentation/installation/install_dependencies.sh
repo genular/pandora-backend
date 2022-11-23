@@ -633,6 +633,10 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
             if [ ! -d "$GIT_FRONTEND_LOCAL" ]; then
                 git clone --recursive $GIT_FRONTEND "$GIT_FRONTEND_LOCAL"
                 cd "$GIT_FRONTEND_LOCAL" || exit 1
+
+                git checkout master
+                git pull origin master --rebase
+
                 echo ""
                 echo "${red}Installing front-end dependencies${clear}"
                 yarn install
@@ -700,6 +704,9 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
             if [ ! -d "$GIT_BACKEND_LOCAL" ]; then
                 git clone --recursive $GIT_BACKEND "$GIT_BACKEND_LOCAL"
                 cd "$GIT_BACKEND_LOCAL" || exit 1
+                
+                git checkout master
+                git pull origin master --rebase
 
                 cp config.example.yml config.yml
                 cp ecosystem.config.example.js ecosystem.config.js
@@ -737,6 +744,8 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
                 chmod 777 "$GIT_BACKEND_LOCAL/server/backend/public/downloads"
 
                 touch "/var/log/simon-cron.log"
+                chmod 777 "/var/log/simon-cron.log"
+
                 chmod -R 777 "$GIT_BACKEND_LOCAL/cron/main.R"
 
                 sudo chown -hR $USER:www-data "/var/www/genular"
