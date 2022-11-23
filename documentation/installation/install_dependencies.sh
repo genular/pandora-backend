@@ -393,9 +393,8 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
         export GITHUB_TOKEN=$GITHUB_PAT_TOKEN
         export GITHUB_PAT=$GITHUB_PAT_TOKEN
-        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN\n" >> /home/genular/.Renviron
-        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN\n" >>  $(R RHOME)/etc/Renviron
-
+        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" >> /home/genular/.Renviron
+        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" >>  $(R RHOME)/etc/Renviron
     fi
 
     echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
@@ -568,7 +567,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             ## Install pandas requirements
             sudo apt-get install python3-pandas
 
-            sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1
+            sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
             # Optional dependencies for python-pandas
             #     python-pandas-datareader: pandas.io.data replacement (recommended)
             #     python-numexpr: needed for accelerating certain numerical operations (recommended)
