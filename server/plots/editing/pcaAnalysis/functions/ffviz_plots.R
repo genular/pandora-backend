@@ -2,9 +2,9 @@
 plots_fviz_var <- function(analysis_results, settings){
     res <- NULL
 
-    if(settings$method == "PCA"){
+    if(settings$analysis_method == "PCA"){
         res <- get_pca_var(analysis_results)
-    }else if(settings$method == "MCA"){
+    }else if(settings$analysis_method == "MCA"){
         res <- get_mca_var(analysis_results)
     }
 
@@ -14,9 +14,9 @@ plots_fviz_var <- function(analysis_results, settings){
 plots_fviz_ind <- function(analysis_results, settings){
     res <- NULL
 
-    if(settings$method == "PCA"){
+    if(settings$analysis_method == "PCA"){
         res <- get_pca_ind(analysis_results)
-    }else if(settings$method == "MCA"){
+    }else if(settings$analysis_method == "MCA"){
         res <- get_mca_ind(analysis_results)
     }
 
@@ -43,7 +43,7 @@ plots_fviz_eig <-function(inputData, settings, tmp_hash){
 plots_fviz_ind_grouped <- function(inputData, dataset, settings, groupingVariable, fileHeader, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-    if(settings$method == "PCA"){
+    if(settings$analysis_method == "PCA"){
         plotData <- fviz_pca_ind(inputData,
                                     geom.ind = "point", # show points only (nbut not "text")
                                     col.ind = dataset[[groupingVariable]], # color by groups
@@ -58,7 +58,7 @@ plots_fviz_ind_grouped <- function(inputData, dataset, settings, groupingVariabl
                                     legend.title = groupingVariable) + 
                                     #scale_fill_brewer(palette=settings$colorPalette) +
                                     theme(text=element_text(size=settings$fontSize))
-    }else if(settings$method == "MCA"){
+    }else if(settings$analysis_method == "MCA"){
         plotData <- fviz_mca_ind(inputData,
                                     geom.ind = "point", # show points only (nbut not "text")
                                     col.ind = dataset[[groupingVariable]], # color by groups
@@ -89,7 +89,7 @@ plots_fviz_ind_grouped <- function(inputData, dataset, settings, groupingVariabl
 plots_fviz_biplot_grouped <- function(inputData, dataset, settings, groupingVariable, fileHeader, tmp_hash){
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
-    if(settings$method == "PCA"){
+    if(settings$analysis_method == "PCA"){
         plotData <- fviz_pca_biplot(inputData, 
                                     # Individuals
                                     geom.ind = "point",
@@ -115,7 +115,7 @@ plots_fviz_biplot_grouped <- function(inputData, dataset, settings, groupingVari
                                     ) + 
                                     #scale_fill_brewer(palette=settings$colorPalette) +
                                     theme(text=element_text(size=settings$fontSize))
-    }else if(settings$method == "MCA"){
+    }else if(settings$analysis_method == "MCA"){
         plotData <- fviz_mca_biplot(inputData, 
                                     # Individuals
                                     geom.ind = "point",
@@ -160,12 +160,12 @@ plots_fviz_ind_vars <-function(inputData, choice = "cos2", type = "var", setting
 	if(type == "var"){
         if(cluster == TRUE){
             # Color variables by groups
-            if(settings$method == "PCA"){
+            if(settings$analysis_method == "PCA"){
                 plotData <- fviz_pca_var(inputData, col.var = choice, 
                                 palette = settings$colorPalette,
                                 labelsize = settings$labelSize,
                                 legend.title = "Cluster")
-            }else if(settings$method == "MCA"){
+            }else if(settings$analysis_method == "MCA"){
                 plotData <- fviz_mca_var(inputData, col.var = choice, 
                                 palette = settings$colorPalette,
                                 labelsize = settings$labelSize,
@@ -173,13 +173,13 @@ plots_fviz_ind_vars <-function(inputData, choice = "cos2", type = "var", setting
             }
 
         }else{
-            if(settings$method == "PCA"){
+            if(settings$analysis_method == "PCA"){
                 plotData <- fviz_pca_var(inputData, 
                                 col.var = choice,
                                 labelsize = settings$labelSize,
                                 gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
                                 repel = TRUE)
-            }else if(settings$method == "MCA"){
+            }else if(settings$analysis_method == "MCA"){
                 plotData <- fviz_mca_var(inputData, 
                                 col.var = choice,
                                 labelsize = settings$labelSize,
@@ -188,14 +188,14 @@ plots_fviz_ind_vars <-function(inputData, choice = "cos2", type = "var", setting
             }
         }
 	}else{
-        if(settings$method == "PCA"){
+        if(settings$analysis_method == "PCA"){
             plotData <- fviz_pca_ind(inputData,
                             col.ind = choice,
                             pointsize = settings$pointSize,
                             labelsize = settings$labelSize,
                             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
                             repel = TRUE)
-        }else if(settings$method == "MCA"){
+        }else if(settings$analysis_method == "MCA"){
             plotData <- fviz_mca_ind(inputData,
                             col.ind = choice,
                             pointsize = settings$pointSize,

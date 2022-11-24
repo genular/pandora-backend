@@ -395,6 +395,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         export GITHUB_PAT=$GITHUB_PAT_TOKEN
         sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" >> /home/genular/.Renviron
         sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" >>  $(R RHOME)/etc/Renviron
+        # sudo echo 'TZ="America/Los_Angeles"' >>  $(R RHOME)/etc/Renviron
     fi
 
     echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
@@ -459,8 +460,13 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             ## Make sure we have Pandoc, prettydoc and seriation for vignettes
             sudo Rscript -e "install.packages('prettydoc', repos='http://cran.us.r-project.org')"
             sudo Rscript -e "install.packages('seriation', repos='http://cran.us.r-project.org')"
-            sudo Rscript -e "devtools::install_github('taiyun/corrplot', build_vignettes = TRUE)"
 
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                sudo Rscript -e "devtools::install_github('taiyun/corrplot@bae0207d7560f1afc3e6ba640f7c6924dcba3c66', build_vignettes = TRUE)"
+            else
+                sudo Rscript -e "devtools::install_github('taiyun/corrplot', build_vignettes = TRUE)"
+            fi
+            
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"
             sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer'), repos='http://cran.us.r-project.org')"
             

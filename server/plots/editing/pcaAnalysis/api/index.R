@@ -148,8 +148,8 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         ## Method: PCA or MCA
         ## http://factominer.free.fr/factomethods/
-        if(is_var_empty(settings$method) == TRUE){
-            settings$method <- "MCA"
+        if(is_var_empty(settings$analysis_method) == TRUE){
+            settings$analysis_method <- "MCA"
         }
 
         if(is_var_empty(settings$anyNAValues) == TRUE){
@@ -290,7 +290,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         if(!is.null(settings$preProcessDataset) && settings$preProcessDataset == TRUE) {
             ## Preprocess data except grouping variables
             preprocess_methods <- c("medianImpute", "center", "scale")
-            if(settings$categoricalVariables == TRUE || settings$method == "MCA"){
+            if(settings$categoricalVariables == TRUE || settings$analysis_method == "MCA"){
                 preprocess_methods <- c("medianImpute")
             }
             print(paste0("=====> Preprocessing dataset", paste(preprocess_methods, collapse = ", ")))
@@ -337,13 +337,13 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             scale.unit <- FALSE
         }
         
-        print(paste("==> Using METHOD: ", settings$method))
+        print(paste("==> Using METHOD: ", settings$analysis_method))
 
         # write.csv(input_data,"/tmp/pca_testing.csv", row.names = FALSE)
 
-        if(settings$method == "PCA"){
+        if(settings$analysis_method == "PCA"){
             analysis_results <- PCA(input_data, scale.unit = scale.unit, ncp = 10, graph = FALSE)
-        }else if(settings$method == "MCA"){
+        }else if(settings$analysis_method == "MCA"){
             ## Convert to factors
             col_names <- names(input_data)
             input_data[,col_names] <- lapply(input_data[,col_names] , factor)
@@ -363,7 +363,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
             columns_with_na <- names(which(colSums(is.na(input_data_numeric))>0))
 
-            if(length(columns_with_na) == 0 && settings$method == "PCA"){
+            if(length(columns_with_na) == 0 && settings$analysis_method == "PCA"){
                 print("=====> Calculating KMO and bartlett")
                 data_correlation <- cor(input_data_numeric)
                 
@@ -372,7 +372,7 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             }else{
                 if(length(columns_with_na) > 0){
                     info_msg <- paste0("=====> Skipping calculation of KMO and bartlett, because of NA values in following columns: ",paste(columns_with_na, collapse = ", "))
-                }else if(settings$method == "MCA"){
+                }else if(settings$analysis_method == "MCA"){
                     info_msg <- paste0("=====> Skipping calculation of KMO and bartlett. Not supported for MCA method")
                 }
                 res.info$kmo <-  convertToString(info_msg)
@@ -402,11 +402,11 @@ simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         res.desc <- dimdesc(analysis_results, axes = c(1,2), proba = 0.05)
         print("=====> INFO: Dimension description DONE")
 
-        if(settings$method == "PCA"){
+        if(settings$analysis_method == "PCA"){
             # Description of dimension
             res.info$desc_dim_1 <- convertToString(round_df(res.desc$Dim.1$quanti, 4))
             res.info$desc_dim_2 <- convertToString(round_df(res.desc$Dim.2$quanti, 4))
-        }else if(settings$method == "MCA"){
+        }else if(settings$analysis_method == "MCA"){
             # Description of dimension
             res.info$desc_dim_1 <- convertToString(res.desc$Dim.1$quanti)
             res.info$desc_dim_2 <- convertToString(res.desc$Dim.2$quanti)
