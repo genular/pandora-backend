@@ -428,6 +428,8 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('astamm/nloptr')"
             sudo Rscript -e "devtools::install_github('husson/FactoMineR')"  
         fi
+        ## Markdown package
+        sudo Rscript -e "install.packages('markdown', repos='http://cran.us.r-project.org')"
 
         ## server/backend/public/assets/datasets/Rdatasets.R
         sudo Rscript -e "devtools::install_github('trinker/pacman')"
@@ -462,9 +464,9 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "install.packages('seriation', repos='http://cran.us.r-project.org')"
 
             if [ "${R_VERSION}" == "3.6.3" ] ; then
-                sudo Rscript -e "devtools::install_github('taiyun/corrplot@bae0207d7560f1afc3e6ba640f7c6924dcba3c66', build_vignettes = TRUE)"
+                sudo Rscript -e "devtools::install_github('taiyun/corrplot@bae0207d7560f1afc3e6ba640f7c6924dcba3c66')"
             else
-                sudo Rscript -e "devtools::install_github('taiyun/corrplot', build_vignettes = TRUE)"
+                sudo Rscript -e "devtools::install_github('taiyun/corrplot')"
             fi
             
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"

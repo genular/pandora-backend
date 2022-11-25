@@ -217,11 +217,20 @@ plots_fviz_ind_vars <-function(inputData, choice = "cos2", type = "var", setting
     return(tmp_path)
 }
 
+## Plot correlation matrix
 plots_corrplot <-function(inputData, settings, tmp_hash){
+
+    colors_num <- ifelse(ncol(inputData) > nrow(inputData), ncol(inputData), nrow(inputData))
+    colors_num <- (as.numeric(colors_num) * 5)
 
     tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
     svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-        plotData <- corrplot(inputData, is.corr=FALSE)
+        plotData <- corrplot(inputData, 
+                is.corr=FALSE,
+                tl.col = "black",
+                addgrid.col="transparent",
+                col=grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(11, "RdBu")))(colors_num)
+            )
         print(plotData)
     dev.off()   
 

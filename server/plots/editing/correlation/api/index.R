@@ -151,6 +151,9 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
                 }
             }
 
+            colors_num <- ifelse(ncol(data) > nrow(data), ncol(data), nrow(data))
+            colors_num <- (as.numeric(colors_num) * 5)
+    
             args <- list(data,
                             number.cex= 7/ncol(dataset_filtered),
                             tl.cex=settings$text_size$value,
@@ -171,7 +174,7 @@ simon$handle$plots$editing$correlation$renderPlot <- expression(
                             plotCI = if(settings$confidence$enable == TRUE) settings$confidence$ploting_method else "n",
                             tl.col = "black",
                             addgrid.col="transparent",
-                            col=grDevices::colorRampPalette(c("blue","white","red"))(200)
+                            col=grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(11, "RdBu")))(colors_num)
                         )
 
 
