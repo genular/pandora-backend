@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 # escape=\
 
-FROM "genular/parent:master"
+FROM "genular/base_image:master"
 
 MAINTAINER LogIN- "info@genular.com"
 

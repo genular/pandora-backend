@@ -9,7 +9,7 @@ LANG=en_US.UTF-8 sudo ./make_image.sh
 
 Command pre-installs basic genular dependencies from a Debian distribution and compile custom image out of it, that is than used latter on in Dockerfile.
 
-## Steps needed to publish parent genular image
+## Steps needed to publish PANDORA base image image
 
 After build is finished using `./make_image.sh` image will be compressed inside `./base_image/images` directory.
 
@@ -19,7 +19,7 @@ Command:
 Replace FILE_NAME with actual filename.
 
 ```bash
-sudo cat ./FILE_NAME.tar | sudo docker import - genular/parent:master
+sudo cat ./FILE_NAME.tar | sudo docker import - genular/base_image:master
 ```
 
 Check if image is properly imported
@@ -38,7 +38,7 @@ cat ~/my_password.txt | docker login --username foo --password-stdin
 ### 2. Push your image to on-line repository
 
 ```bash
-docker push genular/parent:master
+docker push genular/base_image:master
 ```
 
 #### 2.1 or upload to CDN
