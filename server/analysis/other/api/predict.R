@@ -1,5 +1,5 @@
 #' @get /analysis/other/predict/catboost/renderOptions
-simon$handle$analysis$other$predict$catboost$renderOptions <- expression(
+pandora$handle$analysis$other$predict$catboost$renderOptions <- expression(
     function(){
         data <- list()
 
@@ -16,7 +16,7 @@ simon$handle$analysis$other$predict$catboost$renderOptions <- expression(
 )
 
 #' @get /analysis/other/predict/catboost/submit
-simon$handle$analysis$other$predict$catboost$submit <- expression(
+pandora$handle$analysis$other$predict$catboost$submit <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

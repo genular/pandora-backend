@@ -6,11 +6,11 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2020-03-14 14:40:22
  */
-namespace SIMON\Models;
+namespace PANDORA\Models;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class ModelsPerformance {
 	protected $table_name = "models_performance";
@@ -27,7 +27,7 @@ class ModelsPerformance {
 		$this->logger = $logger;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsPerformance constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Models\ModelsPerformance constructed");
 	}
 
 	/**

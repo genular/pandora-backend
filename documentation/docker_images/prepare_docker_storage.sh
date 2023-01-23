@@ -61,13 +61,13 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 			# Set permissions on new directory to match existing one
 			sudo chmod --reference=/mnt/data/users /mnt/usrdata/users
 
-			## Change data directory in SIMON backend configuration file
-			cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/usrdata"}}}}'
+			## Change data directory in PANDORA backend configuration file
+			cd /var/www/genular/pandora-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/usrdata"}}}}'
 		fi
 	else
 		## Even /mnt/data/users doesn't exists
-		## Change data directory in SIMON backend configuration file
-		cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/usrdata"}}}}'
+		## Change data directory in PANDORA backend configuration file
+		cd /var/www/genular/pandora-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/usrdata"}}}}'
 	fi
 else
 	echo "Custom mount-point not requested, reseting configuration to default"
@@ -81,8 +81,8 @@ else
 			sudo cp -R -p /mnt/usrdata/users /mnt/data/users
 		fi
 	fi
-	## Change data directory in SIMON backend configuration file
-	cd /var/www/genular/simon-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/data"}}}}'
+	## Change data directory in PANDORA backend configuration file
+	cd /var/www/genular/pandora-backend/server/backend/ && composer post-install '{"default":{"storage":{"local":{"data_path":"/mnt/data"}}}}'
 fi
 
 ## Restart dependent services with new configuration

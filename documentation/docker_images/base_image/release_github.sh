@@ -23,7 +23,7 @@ draft=true
 prerelease=true
 ASSETS=()
 
-repos=( "genular/simon-frontend" "genular/simon-backend" )
+repos=( "genular/pandora" "genular/pandora-backend" )
 
 for repo in "${repos[@]}"
 do

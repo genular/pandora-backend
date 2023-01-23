@@ -1,29 +1,29 @@
 #!/usr/bin/env bash
 #
-# SIMON dependencies installation script
+# PANDORA dependencies installation script
 #
 clear
 
-title="Welcome to SIMON installation"
+title="Welcome to PANDORA installation"
 
 ## Basic requirements by module
 deps_missing=n
 
 declare -A DEPS
-DEPS[simon_api]="php composer git"
-DEPS[simon_cron]="node yarn java git flock gfortran openssl"
-DEPS[simon_plots]="node yarn nginx git"
-DEPS[simon_analysis]="node yarn nginx git"
-DEPS[simon_database]="mysql"
-DEPS[simon_frontend]="node yarn nginx git"
+DEPS[pandora_api]="php composer git"
+DEPS[pandora_cron]="node yarn java git flock gfortran openssl"
+DEPS[pandora_plots]="node yarn nginx git"
+DEPS[pandora_analysis]="node yarn nginx git"
+DEPS[pandora_database]="mysql"
+DEPS[pandora_frontend]="node yarn nginx git"
 
 declare -A MODS
-MODS[simon_api]=y
-MODS[simon_cron]=y
-MODS[simon_plots]=y
-MODS[simon_analysis]=y
-MODS[simon_database]=y
-MODS[simon_frontend]=y
+MODS[pandora_api]=y
+MODS[pandora_cron]=y
+MODS[pandora_plots]=y
+MODS[pandora_analysis]=y
+MODS[pandora_database]=y
+MODS[pandora_frontend]=y
 
 ## Defaults
 declare -A B_CONF
@@ -52,12 +52,12 @@ clear=$(tput sgr0)
 red=$(tput setaf 1)
 COLUMNS=$(tput cols)
 
-GIT_FRONTEND="https://github.com/genular/simon-frontend.git"
-GIT_BACKEND="https://github.com/genular/simon-backend.git"
+GIT_FRONTEND="https://github.com/genular/pandora.git"
+GIT_BACKEND="https://github.com/genular/pandora-backend.git"
 
 ## Defaults
-GIT_FRONTEND_LOCAL="/var/www/genular/simon-frontend"
-GIT_BACKEND_LOCAL="/var/www/genular/simon-backend"
+GIT_FRONTEND_LOCAL="/var/www/genular/pandora"
+GIT_BACKEND_LOCAL="/var/www/genular/pandora-backend"
 
 GITHUB_PAT_TOKEN="$1"
 if [ -z "$GITHUB_PAT_TOKEN" ]; then
@@ -66,7 +66,7 @@ fi
 
 echo "${green}"
 printf "%*s\n" $(((${#title}+$COLUMNS)/2)) "$title"
-echo "This script will try to guide you via installation of simon and all its dependencies."
+echo "This script will try to guide you via installation of pandora and all its dependencies."
 echo "Please make sure that all dependencies are successfully installed."
 echo "${clear}"
 echo ""
@@ -115,7 +115,7 @@ sudo apt-get update
 lsb_release -a
 
 ## Check specific dependencies
-if [ "${MODS[simon_cron]}" == y ] ; then
+if [ "${MODS[pandora_cron]}" == y ] ; then
     check_blas=$(ldconfig -p | grep openblas)
     if [ -z "$check_blas" ] ; then
         install_dep=n
@@ -225,7 +225,7 @@ fi
 # -----------------------------------------------------------------------------
 # => Install R by version and its dependencies from source
 # -----------------------------------------------------------------------------
-if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_analysis]}" == y ] ; then
+if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "${MODS[pandora_analysis]}" == y ] ; then
 
     r_installed=y
     install_r=n
@@ -383,7 +383,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
     # -----------------------------------------------------------------------------
     # => Install R packages
     # -----------------------------------------------------------------------------
-    echo "${yellow}Do you want to install main SIMON dependencies? (y/n) Enter y${clear}"
+    echo "${yellow}Do you want to install main PANDORA dependencies? (y/n) Enter y${clear}"
     read -e install_rdep
     if [ "${install_rdep}" == "" ] ; then
         install_rdep=y
@@ -440,12 +440,12 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         
 
         ## Check some shared deps
-        if [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_cron]}" == y ] ; then
+        if [ "${MODS[pandora_plots]}" == y ] || [ "${MODS[pandora_cron]}" == y ] ; then
             sudo Rscript -e "install.packages(c('R.utils'), repos='http://cran.us.r-project.org')"
             sudo Rscript -e "install.packages(c('tidyverse'), repo = 'https://cloud.r-project.org/')"
         fi
 
-        if [ "${MODS[simon_analysis]}" == y ] ; then
+        if [ "${MODS[pandora_analysis]}" == y ] ; then
             echo "${green}==========> Installing ANALYSIS server dependencies${clear}"
             sudo Rscript -e "BiocManager::install('impute', update = FALSE, ask = FALSE)"
             sudo Rscript -e "install.packages(c('samr'), repos='http://cran.us.r-project.org')"
@@ -454,7 +454,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
 
         fi
 
-        if [ "${MODS[simon_plots]}" == y ] ; then
+        if [ "${MODS[pandora_plots]}" == y ] ; then
             echo "${green}==========> Installing PLOTS server dependencies${clear}"
             ## We need caret package to calculate resamples and display some of the plots in plots API
             sudo Rscript -e "install.packages('caret', dependencies=TRUE, repos='http://cran.us.r-project.org')"
@@ -506,7 +506,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
             sudo Rscript -e "devtools::install_github('ggobi/ggally')"
         fi
 
-        if [ "${MODS[simon_cron]}" == y ] ; then
+        if [ "${MODS[pandora_cron]}" == y ] ; then
             echo "${green}==========> Installing CRON server dependencies{clear}"
             ## Shared cron deps
             sudo Rscript -e "install.packages(c('doMC'), repos='http://cran.us.r-project.org')"
@@ -573,7 +573,7 @@ if [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MOD
         fi 
 
         ## PHP Back-end environment
-        if [ "${MODS[simon_api]}" == y ] ; then
+        if [ "${MODS[pandora_api]}" == y ] ; then
             echo "${yellow}}==========> Trying to install pandas${clear}"
             echo ""
             ## Install pandas requirements
@@ -610,14 +610,14 @@ fi
 
 
 # -----------------------------------------------------------------------------
-# => Clone SIMON front-end from git
+# => Clone PANDORA front-end from git
 # -----------------------------------------------------------------------------
 echo "${yellow}Now when all dependencies are set lets configure system${clear}"
 echo ""
 
-if [ "${MODS[simon_frontend]}" == y ] ; then
+if [ "${MODS[pandora_frontend]}" == y ] ; then
 
-    echo "${yellow}Do you want to clone simon-frontend repository? (y/n) Enter y${clear}"
+    echo "${yellow}Do you want to clone pandora-frontend repository? (y/n) Enter y${clear}"
     read -e clone_frontend
     if [ "${clone_frontend}" == "" ] ; then
         clone_frontend=y
@@ -626,7 +626,7 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
 
     if [ "$clone_frontend" == y ] ; then
         echo "${yellow}Path to frontend root directory? (path/n) Enter default${clear}"
-        echo "${yellow}eg. /var/www/genular/simon-frontend${clear}"
+        echo "${yellow}eg. /var/www/genular/pandora${clear}"
         read -e GIT_FRONTEND_LOCAL
 
         if [ "${GIT_FRONTEND_LOCAL}" == "" ] ; then
@@ -634,7 +634,7 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
             sudo mkdir -p "/var/www/genular"
             sudo chown $USER "/var/www/genular"
 
-            GIT_FRONTEND_LOCAL="/var/www/genular/simon-frontend"
+            GIT_FRONTEND_LOCAL="/var/www/genular/pandora"
         fi
         
         echo ""
@@ -681,11 +681,11 @@ if [ "${MODS[simon_frontend]}" == y ] ; then
     fi
 fi
 # -----------------------------------------------------------------------------
-# => Clone SIMON backend-end from git
+# => Clone PANDORA backend-end from git
 # -----------------------------------------------------------------------------
-if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[simon_plots]}" == y ] || [ "${MODS[simon_analysis]}" == y ] ; then
+if [ "${MODS[pandora_api]}" == y ] || [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "${MODS[pandora_analysis]}" == y ] ; then
 
-    echo "${yellow}Do you want to clone simon-backend repository? (y/n) Enter y${clear}"
+    echo "${yellow}Do you want to clone pandora-backend repository? (y/n) Enter y${clear}"
     read -e clone_backend
     if [ "${clone_backend}" == "" ] ; then
         clone_backend=y
@@ -697,7 +697,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
 
     if [ "$clone_backend" == y ] ; then
         echo "${yellow}Please enter path to backend root directory? (path/n) Enter default${clear}"
-        echo "${yellow}eg. /var/www/genular/simon-backend${clear}"
+        echo "${yellow}eg. /var/www/genular/pandora-backend${clear}"
         read -e GIT_BACKEND_LOCAL
 
         if [ "${GIT_BACKEND_LOCAL}" == "" ] ; then
@@ -705,7 +705,7 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
             sudo mkdir -p "/var/www/genular"
             sudo chown $USER "/var/www/genular"
             
-            GIT_BACKEND_LOCAL="/var/www/genular/simon-backend"
+            GIT_BACKEND_LOCAL="/var/www/genular/pandora-backend"
         fi
 
         echo ""
@@ -749,13 +749,13 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
 
                 ## Create logs directory
                 mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
-                touch "$GIT_BACKEND_LOCAL/server/backend/source/logs/simon.log"
+                touch "$GIT_BACKEND_LOCAL/server/backend/source/logs/pandora.log"
                 chmod -R 777 "$GIT_BACKEND_LOCAL/server/backend/source/logs"
                 
                 chmod 777 "$GIT_BACKEND_LOCAL/server/backend/public/downloads"
 
-                touch "/var/log/simon-cron.log"
-                chmod 777 "/var/log/simon-cron.log"
+                touch "/var/log/pandora-cron.log"
+                chmod 777 "/var/log/pandora-cron.log"
 
                 chmod -R 777 "$GIT_BACKEND_LOCAL/cron/main.R"
 
@@ -775,8 +775,8 @@ if [ "${MODS[simon_api]}" == y ] || [ "${MODS[simon_cron]}" == y ] || [ "${MODS[
     echo "${red}"
     echo "# Since you will run analysis here on shared server you need to create cron task that will check for any new queues to process"
     echo "# We suggest creating crontab task like this"
-    echo "chmod 777 /var/www/genular/simon-backend/cron/main.R"
-    echo "*/2 * * * * /usr/bin/flock -n ${B_CONF[data_path]}/simon_cron.pid /var/www/genular/simon-backend/cron/main.R > /var/log/simon-cron.log 2>&1"
+    echo "chmod 777 /var/www/genular/pandora-backend/cron/main.R"
+    echo "*/2 * * * * /usr/bin/flock -n ${B_CONF[data_path]}/pandora_cron.pid /var/www/genular/pandora-backend/cron/main.R > /var/log/pandora-cron.log 2>&1"
     echo "${clear}"
 fi
 
@@ -809,6 +809,6 @@ if [ "$install_database" == y ] ; then
         sleep 10
         echo "${yellow}Database import done${clear}"
     else
-        echo "${red}Cannot locate simon-backend directory! Exiting..${clear}"
+        echo "${red}Cannot locate pandora-backend directory! Exiting..${clear}"
     fi
 fi

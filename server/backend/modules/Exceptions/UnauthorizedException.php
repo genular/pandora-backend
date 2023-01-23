@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:24:41
  */
-namespace SIMON\Exceptions;
+namespace PANDORA\Exceptions;
 
 use Slim\Middleware\TokenAuthentication\UnauthorizedExceptionInterface;
 

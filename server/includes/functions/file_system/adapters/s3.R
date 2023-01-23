@@ -10,17 +10,17 @@ downloadFile <- function(file_path_from, file_path_to){
     create_directory(file_path_to_basedir)
 
     downloaded_path <- save_object(file_path_from,
-                         bucket = simonConfig$storage$s3$bucket,
+                         bucket = pandoraConfig$storage$s3$bucket,
                          file = file_path_to,
                          overwrite = TRUE,
                          check_region = FALSE,
-                         key = simonConfig$storage$s3$key,
-                         secret = simonConfig$storage$s3$secret,
+                         key = pandoraConfig$storage$s3$key,
+                         secret = pandoraConfig$storage$s3$secret,
                          accelerate = TRUE,
                          dualstack = TRUE,
                          url_style = "path",
-                         base_url = simonConfig$storage$s3$endpoint,
-                         region = simonConfig$storage$s3$region,
+                         base_url = pandoraConfig$storage$s3$endpoint,
+                         region = pandoraConfig$storage$s3$region,
                          verbose = FALSE)
 
    cat(paste0("===> INFO: file download end: ",downloaded_path," \r\n"))
@@ -36,15 +36,15 @@ checkFileExists <- function(file_path){
     cat(paste0("===> INFO: check remote exist start: ",file_path," \r\n"))
     start_time <- Sys.time()
     exists <-  object_exists(file_path, 
-                         bucket = simonConfig$storage$s3$bucket,
+                         bucket = pandoraConfig$storage$s3$bucket,
                          check_region = FALSE,
-                         key = simonConfig$storage$s3$key,
-                         secret = simonConfig$storage$s3$secret,
+                         key = pandoraConfig$storage$s3$key,
+                         secret = pandoraConfig$storage$s3$secret,
                          accelerate = TRUE,
                          dualstack = TRUE,
                          url_style = "path",
-                         base_url = simonConfig$storage$s3$endpoint,
-                         region = simonConfig$storage$s3$region,
+                         base_url = pandoraConfig$storage$s3$endpoint,
+                         region = pandoraConfig$storage$s3$region,
                          verbose = FALSE
                          )
     end_time <- Sys.time()
@@ -77,17 +77,17 @@ uploadFile <- function(user_id, file_from, upload_directory, retry_count = 0){
     ## Lets make actual upload
     status <- put_object(file_from, 
                         object = file_to, 
-                        bucket = simonConfig$storage$s3$bucket,
+                        bucket = pandoraConfig$storage$s3$bucket,
                         multipart = TRUE,
                         show_progress = FALSE,
                         check_region = FALSE,
-                        key = simonConfig$storage$s3$key,
-                        secret = simonConfig$storage$s3$secret,
+                        key = pandoraConfig$storage$s3$key,
+                        secret = pandoraConfig$storage$s3$secret,
                         accelerate = TRUE,
                         dualstack = TRUE,
                         url_style = "path",
-                        base_url = simonConfig$storage$s3$endpoint,
-                        region = simonConfig$storage$s3$region,
+                        base_url = pandoraConfig$storage$s3$endpoint,
+                        region = pandoraConfig$storage$s3$region,
                         verbose = FALSE)
 
     end_time <- Sys.time()

@@ -33,7 +33,7 @@ $app->get('/backend/queue/list', function (Request $request, Response $response,
 		);
 	}
 
-	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+	$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 	$paginatedData = $DatasetQueue->getDatasetQueueList($user_id, $page, $limit, $sort, $filters);
 
 	if ($paginatedData) {
@@ -76,7 +76,7 @@ $app->post('/backend/queue/update', function (Request $request, Response $respon
 		$updateValue = trim($submitData['updateValue']);
 		// Different actions
 		if ($updateAction === "queueName") {
-			$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+			$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 			$privilage = $DatasetQueue->isOwner($user_id, $updateID);
 
 			if ($privilage) {
@@ -112,11 +112,11 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 	$measurements = $request->getQueryParam('measurements', []);
 
 	if (is_numeric($queueID)) {
-		$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+		$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 		$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
 
 		if ($queueDetails !== false) {
-			$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');
+			$ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
 
 			list($queuePerformace, $queuePerformaceVariables) = $ModelsPerformance->getPerformaceVariables([$queueID], "queueID", "MAX", $measurements);
 
@@ -127,13 +127,13 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$selectedOptions = json_decode($queueDetails["selectedOptions"], true);
 			$queueDetails["selectedOptions"] = $selectedOptions;
 
-			$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+			$DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
 			$resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
 			$resamplesListIDs = array_column($resamplesList, 'resampleID');
 
 			list($resamplesPerformace, $resamplesPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($resamplesListIDs, "resampleID", "MAX", $measurements);
 
-			$DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
+			$DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
 			$resamplesProportions = $DatasetProportions->getDatasetResamplesProportions($resamplesListIDs);
 			// Count number of unique values inside the class
 			$queueDetails["selectedOptions"]["classes"] = $DatasetProportions->getUniqueValuesCountForClasses($resamplesListIDs, $queueDetails["selectedOptions"]["classes"]);
@@ -158,7 +158,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 				unset($queueDetails["selectedOptions"]["excludeFeatures"]);
 			}
 
-			$Models = $this->get('SIMON\Models\Models');
+			$Models = $this->get('PANDORA\Models\Models');
 			$modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
 
 			$modelsListIDs = array_column($modelsList, 'modelID');
@@ -167,7 +167,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 
 			$modelsListNameIDs = array_column($modelsList, 'modelName');
 
-			$ModelsPackages = $this->get('SIMON\Models\ModelsPackages');
+			$ModelsPackages = $this->get('PANDORA\Models\ModelsPackages');
 			$modelPackagesDetails = $ModelsPackages->getPackages(1, null, $modelsListNameIDs);
 
 			$modelsList = $Models->assignPackageDetailsToModels($modelsList, $modelPackagesDetails);
@@ -196,7 +196,7 @@ $app->get('/backend/queue/details', function (Request $request, Response $respon
 	$success = true;
 	$message = [];
 
-	$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+	$DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
 
 	$config = $this->get('Noodlehaus\Config');
 	$redirectURL = $config->get('default.frontend.server.url');
@@ -237,14 +237,14 @@ $app->get('/backend/queue/resamples/details', function (Request $request, Respon
 
 	if (is_array($resampleIDs)) {
 
-		$Models = $this->get('SIMON\Models\Models');
+		$Models = $this->get('PANDORA\Models\Models');
 
 		// $modelsWhereClause = [($hideFailedModels === false ? "models.error LIKE '%'" : "models.error = ''")];
 		$modelsWhereClause = [];
 		$modelsList = $Models->getDatasetResamplesModels($resampleIDs, $user_id, $modelsWhereClause);
 
 		$modelsListIDs = array_column($modelsList, 'modelID');
-		$ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');
+		$ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
 
 		list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements);
 		$modelsList = $Models->assignMesurmentsToModels($modelsList, $modelsPerformace, $modelsPerformaceVariables);
@@ -295,10 +295,10 @@ $app->get('/backend/queue/resamples/features/suggest/{submitData:.*}', function 
 	}
 
 	if ($resampleID) {
-		$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+		$DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
 		$options = $DatasetResamples->getResampleOptions($resampleID, $user_id);
 
-		$DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
+		$DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
 
 		if ($inputType === "features") {
 			$data = $DatasetProportions->mapRenamedToOriginal("remapped", $options["resampleOptions"]["features"], $options["queueOptions"]);

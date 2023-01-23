@@ -1,8 +1,8 @@
 <!--
-Thanks for reporting issues back to SIMON! This is the issue tracker of SIMON.
+Thanks for reporting issues back to PANDORA! This is the issue tracker of PANDORA.
 To make it possible for us to help you please fill out below information carefully. 
 
-Note that SIMON is an open source project. Most of our volunteers are home users and thus primarily care about issues that affect home users. 
+Note that PANDORA is an open source project. Most of our volunteers are home users and thus primarily care about issues that affect home users. 
 Our paid engineers prioritize issues of our customers. If you are neither a home user nor a customer, consider paying somebody to fix your issue, do it yourself or become a customer.
 -->
 
@@ -32,7 +32,7 @@ Tell us what happens instead
 
 **R version:**
 
-**SIMON version:**
+**PANDORA version:**
 
 ### Client configuration
 
@@ -49,13 +49,13 @@ Insert your web-server log here
 
 </details>
 
-#### SIMON log
+#### PANDORA log
 
 <details>
-<summary>SIMON log</summary>
+<summary>PANDORA log</summary>
 
 ```
-Insert your SIMON log here
+Insert your PANDORA log here
 ```
 
 </details>

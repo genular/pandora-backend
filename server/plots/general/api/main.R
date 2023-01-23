@@ -1,7 +1,7 @@
 # If the URL gets called the browser will automatically download the file.
 #' @serializer contentType list(type="application/octet-stream")
 #' @post /plots/general/downloadSavedObject
-simon$handle$plots$general$downloadSavedObject <- expression(
+pandora$handle$plots$general$downloadSavedObject <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

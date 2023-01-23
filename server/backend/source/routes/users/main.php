@@ -15,7 +15,7 @@ $app->post('/backend/user/login', function (Request $request, Response $response
 	$success = false;
 	$authToken = false;
 
-	$Users = $this->get('SIMON\Users\Users');
+	$Users = $this->get('PANDORA\Users\Users');
 	$post = $request->getParsedBody();
 
 	if (isset($post['username']) && isset($post['password'])) {
@@ -34,7 +34,7 @@ $app->post('/backend/user/login', function (Request $request, Response $response
 
 $app->post('/backend/user/logout', function (Request $request, Response $response, array $args) {
 	$success = false;
-	$Users = $this->get('SIMON\Users\Users');
+	$Users = $this->get('PANDORA\Users\Users');
 
 	$user_details = $request->getAttribute('user');
 	if (is_array($user_details)) {
@@ -45,7 +45,7 @@ $app->post('/backend/user/logout', function (Request $request, Response $respons
 
 $app->get('/backend/user/avatar', function (Request $request, Response $response, array $args) {
 	$success = false;
-	$Users = $this->get('SIMON\Users\Users');
+	$Users = $this->get('PANDORA\Users\Users');
 
 	$user_id = (int) $request->getQueryParam('id', 0);
 
@@ -94,7 +94,7 @@ $app->get('/backend/user/details', function (Request $request, Response $respons
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$Users = $this->get('SIMON\Users\Users');
+	$Users = $this->get('PANDORA\Users\Users');
 
 	$user_details = $Users->getUsersByUserId($user_id);
 
@@ -117,19 +117,19 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 
 	$message = [];
 
-	$users = $this->get('SIMON\Users\Users');
+	$users = $this->get('PANDORA\Users\Users');
 	$config = $this->get('Noodlehaus\Config');
-	$system = $this->get('SIMON\System\System');
+	$system = $this->get('PANDORA\System\System');
 
 	// Lets try to reset all data if there are no users registered in database!
 	$totalUsersRegistered = $users->countTotalUsers();
-	$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Total registered users: " . $totalUsersRegistered);
+	$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Total registered users: " . $totalUsersRegistered);
 	if ($totalUsersRegistered < 1) {
 		/** Empty all database tables */
-		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Reseting mysql tables");
+		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Reseting mysql tables");
 		$system->reset();
 		/** Initialize measurement variables */
-		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Initialize measurement variables");
+		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Initialize measurement variables");
 		$sysInit = $system->init();
 	} else {
 		$sysInit = true;
@@ -175,7 +175,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 			/** Is user already registered in database? **/
 			if ($userExsistCheck === false) {
 				$validation_hash = md5($username . $email . $firstName);
-				$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' registering user");
+				$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' registering user");
 				$user_id = $users->register($username, $password, $email, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash, $account_type);
 
 				$post["user"]["user_id"] = $user_id;
@@ -186,8 +186,8 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 	if ($user_id === null) {
 		$success = false;
 	} else {
-		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Send statistics about usage");
-		$url = 'https://snap.genular.org/simon.php';
+		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage");
+		$url = 'https://snap.genular.org/pandora.php';
 		$collect_data = $post;
 		unset($collect_data["user"]['password']);
 
@@ -210,13 +210,13 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 		$context = stream_context_create($options);
 		$collect_result = @file_get_contents($url, false, $context);
 		if ($collect_result === FALSE) {
-			$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' Send statistics about usage FAILED");
+			$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage FAILED");
 		}
 	}
 
 	// If user is successfully registered send verification email
 	if ($success !== false && $validation_hash !== null) {
-		$this->get('Monolog\Logger')->info("SIMON '/backend/user/register' verification email");
+		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' verification email");
 
 		$sendgrid_configured = true;
 		if ($config->get('default.sendgrid_api') === null || strlen($config->get('default.sendgrid_api')) < 20) {
@@ -268,7 +268,7 @@ $app->get('/backend/user/verify/{validation_hash:.*}', function (Request $reques
 
 	$validation_hash = $args['validation_hash'];
 	if (strlen($validation_hash) === 32) {
-		$controller = $this->get('SIMON\Users\Users');
+		$controller = $this->get('PANDORA\Users\Users');
 		$dbResults = $controller->checkUserByValidationHash($validation_hash);
 		if ($dbResults) {
 			$controller->updateField("users", ["email_status" => 1], ["id" => $dbResults["id"]]);

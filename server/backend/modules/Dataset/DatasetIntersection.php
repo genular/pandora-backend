@@ -6,14 +6,14 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2020-04-29 11:56:00
  */
-namespace SIMON\Dataset;
+namespace PANDORA\Dataset;
 
 use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\Writer;
 use Noodlehaus\Config as Config;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class DatasetIntersection {
 
@@ -38,7 +38,7 @@ class DatasetIntersection {
 
         $this->temp_dir = "/tmp/" . $this->Config->get('default.salt') . "/uploads";
         
-        $this->logger->addInfo("==> INFO => SIMON\Dataset\DatasetIntersection constructed: " . $this->temp_dir);
+        $this->logger->addInfo("==> INFO => PANDORA\Dataset\DatasetIntersection constructed: " . $this->temp_dir);
 
         if (!file_exists($this->temp_dir)) {
             $this->Helpers->createDirectory($this->temp_dir);
@@ -139,7 +139,7 @@ class DatasetIntersection {
                             try {
                                 $datasets[$resampleGroupDataKey]["writer"]->insertOne(array_values($recordCopy));
                             } catch (CannotInsertRecord $e) {
-                                $this->logger->addInfo("==> ERROR => SIMON\Dataset\DatasetIntersection CannotInsertRecord " . $queueID . ": " . json_encode($e->getData()));
+                                $this->logger->addInfo("==> ERROR => PANDORA\Dataset\DatasetIntersection CannotInsertRecord " . $queueID . ": " . json_encode($e->getData()));
                             }
                         }
                     }
@@ -204,7 +204,7 @@ class DatasetIntersection {
 
         $reader->setHeaderOffset(0);
         $dataHeader = $reader->getHeader();
-        // file_put_contents("/mnt/genular/simon-backend/SHARED_DATA/uploads/data", implode(',', $dataHeader));
+        // file_put_contents("/mnt/genular/pandora-backend/SHARED_DATA/uploads/data", implode(',', $dataHeader));
         // exit;
         $this->outcomeColumn = $outcome["remapped"];
 

@@ -2,12 +2,12 @@
 This file is used as pm2 process manager configuration file
 
 R_CONFIG_ACTIVE = "production"
-pm2 start ecosystem.config.js --only simon-analysis
-pm2 start ecosystem.config.js --only simon-general
-pm2 start ecosystem.config.js --only simon-plots
+pm2 start ecosystem.config.js --only pandora-analysis
+pm2 start ecosystem.config.js --only pandora-general
+pm2 start ecosystem.config.js --only pandora-plots
 
 pm2 status
-pm2 logs --raw simon-general
+pm2 logs --raw pandora-general
 */
 
 const backendPath = PLACEHOLDER;
@@ -40,7 +40,7 @@ const watchOptions = {
 module.exports = {
     apps: [
         {
-            name: "simon-analysis",
+            name: "pandora-analysis",
             cwd: backendPath,
             script: "./server/analysis/index.R",
             args: "analysis",
@@ -53,7 +53,7 @@ module.exports = {
             }
         },
         {
-            name: "simon-plots",
+            name: "pandora-plots",
             cwd: backendPath,
             script: "./server/plots/index.R",
             args: "plots",
@@ -66,7 +66,7 @@ module.exports = {
             }
         }
         // {
-        //     name: "simon-analysis-python",
+        //     name: "pandora-analysis-python",
         //     cwd: backendPath,
         //     script: "./server/python/run.py",
         //     args: "analysis-python",

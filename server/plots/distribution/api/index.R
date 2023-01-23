@@ -1,7 +1,7 @@
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
 #' @GET /plots/distribution/render-plot
-simon$handle$plots$distribution$renderPlot <- expression(
+pandora$handle$plots$distribution$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

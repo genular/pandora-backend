@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:10:02
  */
-namespace SIMON\Users;
+namespace PANDORA\Users;
 use \Medoo\Medoo;
 use \Monolog\Logger;
 
@@ -20,7 +20,7 @@ class UsersSessions {
 	) {
 		$this->database = $database;
 		$this->logger = $logger;
-		$this->logger->addInfo("==> INFO: SIMON\Users\UsersSessions constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Users\UsersSessions constructed");
 	}
 
 	/**

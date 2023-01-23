@@ -1,7 +1,7 @@
 #' Main Endpoint
 #' @serializer boxedJSON
 #' @get /
-simon$handle$default <- expression(
+pandora$handle$default <- expression(
     function(){
       return(Sys.time())
     }
@@ -10,16 +10,16 @@ simon$handle$default <- expression(
 #' Status Details Endpoint
 #' @serializer unboxedJSON
 #' @get /stats
-simon$handle$stats <- expression(
+pandora$handle$stats <- expression(
     function(req, res){
         status <- "success"
 
         current_time <- as.POSIXct(format(Sys.time()), tz="GMT")
 
-        simon_started_at <- as.numeric(scan(UPTIME_PID, quiet = TRUE))
-        simon_started_at <- as.POSIXct(simon_started_at, origin="1970-01-01", tz="GMT")
+        pandora_started_at <- as.numeric(scan(UPTIME_PID, quiet = TRUE))
+        pandora_started_at <- as.POSIXct(pandora_started_at, origin="1970-01-01", tz="GMT")
 
-        total_time <- difftime(current_time, simon_started_at,  units = c("secs"))
+        total_time <- difftime(current_time, pandora_started_at,  units = c("secs"))
         total_time_ms <- ceiling((as.numeric(total_time, units="secs") * 1000))
 
         data_count <- db.getTotalCount(c("users", "models", "models_performance"))
@@ -39,7 +39,7 @@ simon$handle$stats <- expression(
 #' Status Endpoint
 #' @serializer unboxedJSON
 #' @get /status/<hash>
-simon$handle$status <- expression(
+pandora$handle$status <- expression(
     function(hash, req){
         status <- "error"
 
@@ -58,7 +58,7 @@ simon$handle$status <- expression(
         server_details <- list() 
 
         for(server_name in SERVER_TYPES){
-            server_details[[i]] <- list(type = server_name, host = simonConfig[[server_name]]$server$host, port = simonConfig[[server_name]]$server$port)
+            server_details[[i]] <- list(type = server_name, host = pandoraConfig[[server_name]]$server$host, port = pandoraConfig[[server_name]]$server$port)
             i <- i + 1
         }
 

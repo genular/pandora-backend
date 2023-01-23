@@ -6,13 +6,13 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-03-27 14:36:10
  */
-namespace SIMON\System;
+namespace PANDORA\System;
 use Noodlehaus\Config as Config;
 
 // PSR 7 standard.
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class ResumableUpload {
 	protected $database;
@@ -37,11 +37,11 @@ class ResumableUpload {
 
 		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/uploads";
 
-		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload constructed: " . $this->temp_dir);
+		$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload constructed: " . $this->temp_dir);
 		// Create temporary directory if it doesn't exists
 		if (!file_exists($this->temp_dir)) {
 			$check = $this->Helpers->createDirectory($this->temp_dir);
-			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload created directory: " . $check);
+			$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload created directory: " . $check);
 		}
 	}
 	/**
@@ -59,11 +59,11 @@ class ResumableUpload {
 		$saveName = $this->getNextAvailableFilename($this->temp_dir, $filename, $extension);
 		$savePath = $this->temp_dir . "/" . $saveName . $extension;
 		
-		$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload move_uploaded_file: " . $tmp_file_path. " - " . $savePath);
+		$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload move_uploaded_file: " . $tmp_file_path. " - " . $savePath);
 
 		$resp = move_uploaded_file($tmp_file_path, $savePath);
 		if ($resp) {
-			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload file moved: " . $resp);
+			$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload file moved: " . $resp);
 			// Read data with file_get_contents then use mb_convert_encoding to convert to UTF-8
 			$fileContent = file_get_contents($savePath);
 			$fileContent = mb_convert_encoding($fileContent, "UTF-8", "auto");
@@ -71,7 +71,7 @@ class ResumableUpload {
 
 			return $savePath;
 		} else {
-			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload file not moved: " . $resp);
+			$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload file not moved: " . $resp);
 			return false;
 		}
 	} 
@@ -91,7 +91,7 @@ class ResumableUpload {
 		$file_chunks_folder = $this->temp_dir . "/" . $identifier;
 		if (!is_dir($file_chunks_folder)) {
 			$this->Helpers->createDirectory($file_chunks_folder);
-			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload created file_chunks_folder: " . $file_chunks_folder);
+			$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload created file_chunks_folder: " . $file_chunks_folder);
 		}
 
 		$filename = $this->Helpers->sanitizeFileName($filename); # remove problematic symbols
@@ -198,7 +198,7 @@ class ResumableUpload {
 		$fp = fopen($this->temp_dir . "/" . $saveName . $extension, 'w');
 		if ($fp === false) {
 			$this->errors[] = 'cannot create the destination file';
-			$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload - Cannot create the destination file");
+			$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload - Cannot create the destination file");
 			return false;
 		}
 
@@ -224,7 +224,7 @@ class ResumableUpload {
 			while (file_exists($rel_path . "/" . $orig_file_name . "_" . (++$i) . $extension) and $i < 10000) {}
 			if ($i >= 10000) {
 				$this->errors = "Can not create unique name for saving file " . $orig_file_name . $extension;
-				$this->logger->addInfo("==> INFO: SIMON\System\ResumableUpload - Cannot create unique name for saving file " . $orig_file_name . $extension);
+				$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload - Cannot create unique name for saving file " . $orig_file_name . $extension);
 				return false;
 			}
 			return $orig_file_name . "_" . $i;

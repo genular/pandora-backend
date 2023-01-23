@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:18:09
  */
-namespace SIMON\Organization;
+namespace PANDORA\Organization;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
@@ -23,7 +23,7 @@ class Organization {
 		$this->database = $database;
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Organization constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Organization constructed");
 	}
 
 	/**

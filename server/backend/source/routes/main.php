@@ -13,7 +13,7 @@ require 'source/routes/users/dashboard.php';
 require 'source/routes/system/main.php';
 require 'source/routes/system/validation.php';
 require 'source/routes/system/filesystem.php';
-require 'source/routes/system/simon.php';
+require 'source/routes/system/pandora.php';
 
 require 'source/routes/organization/main.php';
 

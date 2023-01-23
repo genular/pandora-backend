@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-03-06 10:51:18
  */
-namespace SIMON\System;
+namespace PANDORA\System;
 
 use Composer\Script\Event;
 use Symfony\Component\Yaml\Yaml;

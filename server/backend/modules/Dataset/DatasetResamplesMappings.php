@@ -6,12 +6,12 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:24:46
  */
-namespace SIMON\Dataset;
+namespace PANDORA\Dataset;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
-use \SIMON\System\FileSystem as FileSystem;
+use \PANDORA\Helpers\Helpers as Helpers;
+use \PANDORA\System\FileSystem as FileSystem;
 
 class DatasetResamplesMappings {
 	protected $table_name = "dataset_resamples_mappings";
@@ -31,7 +31,7 @@ class DatasetResamplesMappings {
 		$this->FileSystem = $FileSystem;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetResamplesMappings constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Dataset\DatasetResamplesMappings constructed");
 	}
 
 	/**

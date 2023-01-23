@@ -6,10 +6,10 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:08:18
  */
-namespace SIMON\Users;
+namespace PANDORA\Users;
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class UsersDetails {
 
@@ -27,7 +27,7 @@ class UsersDetails {
 		$this->logger = $logger;
 		$this->Helpers = $Helpers;
 
-		$this->logger->addInfo("==> INFO: SIMON\Users\UsersDetails constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Users\UsersDetails constructed");
 	}
 
 	/**

@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-03-15 12:09:37
  */
-namespace SIMON\Dataset;
+namespace PANDORA\Dataset;
 
 use League\Csv\Reader;
 use League\Csv\Statement;
@@ -24,7 +24,7 @@ class DatasetCalculations {
 		$this->database = $database;
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetCalculations constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Dataset\DatasetCalculations constructed");
 	}
 	/**
 	 * Checks if we have good sample size

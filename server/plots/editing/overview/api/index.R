@@ -1,7 +1,7 @@
 #* Get available column stats
 #* @serializer contentType list(type='image/png')
 #' @post /plots/editing/overview/getAvaliableColumns
-simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
+pandora$handle$plots$editing$overview$getAvaliableColumns <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
@@ -108,7 +108,7 @@ simon$handle$plots$editing$overview$getAvaliableColumns <- expression(
 #* Plot tableplot
 #* @serializer contentType list(type='image/png')
 #' @post /plots/editing/overview/render-plot
-simon$handle$plots$editing$overview$renderPlot <- expression(
+pandora$handle$plots$editing$overview$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

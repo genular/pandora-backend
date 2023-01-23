@@ -1,7 +1,7 @@
 #* Generate t-SNE plot
 #* @serializer contentType list(type='image/png')
 #' @post /plots/editing/tsne/renderPlot
-simon$handle$plots$editing$tsne$renderPlot <- expression(
+pandora$handle$plots$editing$tsne$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

@@ -9,7 +9,7 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 use Slim\Middleware\TokenAuthentication;
-use \SIMON\Exceptions\UnauthorizedException as UnauthorizedException;
+use \PANDORA\Exceptions\UnauthorizedException as UnauthorizedException;
 
 $app->add(new TokenAuthentication([
 	'path' => '/backend',
@@ -37,7 +37,7 @@ $app->add(new TokenAuthentication([
 		/**
 		 * Call authentication logic class
 		 */
-		$UsersSessions = $container->get('SIMON\Users\UsersSessions');
+		$UsersSessions = $container->get('PANDORA\Users\UsersSessions');
 
 		/**
 		 * Verify if token is valid on database
@@ -46,7 +46,7 @@ $app->add(new TokenAuthentication([
 		$user_id = $UsersSessions->getUserIdBySessionId($session_id);
 		$initial_db_connect = microtime(true) - $start;
 		if ($user_id) {
-			// $this->logger->addInfo("====================> SIMON REQUEST STARTS: " . $user_id["uid"]);
+			// $this->logger->addInfo("====================> PANDORA REQUEST STARTS: " . $user_id["uid"]);
 			return $request->withAttribute('user', ["user_id" => intval($user_id["uid"]), "session_id" => $session_id, "initial_db_connect" => $initial_db_connect]);
 		} else {
 			throw new UnauthorizedException('Invalid Authentication');

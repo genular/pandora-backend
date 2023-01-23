@@ -6,11 +6,11 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-04-15 15:02:51
  */
-namespace SIMON\Models;
+namespace PANDORA\Models;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class ModelsVariables {
 	protected $table_name = "models_variables";
@@ -27,7 +27,7 @@ class ModelsVariables {
 		$this->logger = $logger;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsVariables constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Models\ModelsVariables constructed");
 	}
 
 	/**

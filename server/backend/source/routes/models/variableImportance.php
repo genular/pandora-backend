@@ -31,16 +31,16 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 
 	$sort_by = $request->getQueryParam('sort_by', 'feature_name');
 
-	$ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
+	$ModelsVariables = $this->get('PANDORA\Models\ModelsVariables');
 	$variableImportanceData = $ModelsVariables->getVariableImportance($modelsID, intval($page), intval($page_size), $sort, $sort_by);
 
-	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+	$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 	$queueDetails = $DatasetQueue->getDetailsByID($pqid, $user_id);
 
 	$selectedOptions = json_decode($queueDetails["selectedOptions"], true);
 	$queueDetails["selectedOptions"] = $selectedOptions;
 
-	$DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
+	$DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
 	$variableImportanceData = $DatasetProportions->mapRenamedToOriginal("feature_name", $variableImportanceData, $queueDetails["selectedOptions"]);
 
 	$totalItems = $ModelsVariables->countTotalVariables($modelsID);

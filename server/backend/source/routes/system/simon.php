@@ -10,7 +10,7 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-$app->post('/backend/system/simon/available-packages', function (Request $request, Response $response, array $args) {
+$app->post('/backend/system/pandora/available-packages', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = "";
     $packages = array();
@@ -20,7 +20,7 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
         $selectedFiles = json_decode(base64_decode(urldecode($post['selectedFiles'])), true);
     }
 
-    $ModelsPackages = $this->get('SIMON\Models\ModelsPackages');
+    $ModelsPackages = $this->get('PANDORA\Models\ModelsPackages');
     $avaliablePackages = $ModelsPackages->getPackages();
 
     foreach ($avaliablePackages as $packageKey => $packageValue) {
@@ -58,13 +58,13 @@ $app->post('/backend/system/simon/available-packages', function (Request $reques
     return $response->withJson(["success" => $success, "message" => $packages]);
 });
 
-$app->get('/backend/system/simon/header/{selectedFiles:.*}/verify', function (Request $request, Response $response, array $args) {
+$app->get('/backend/system/pandora/header/{selectedFiles:.*}/verify', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = array();
 
     $config = $this->get('Noodlehaus\Config');
-    $UsersFiles = $this->get('SIMON\Users\UsersFiles');
-    $Helpers = $this->get('SIMON\Helpers\Helpers');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    $Helpers = $this->get('PANDORA\Helpers\Helpers');
 
     $selectedFiles = [];
     if (isset($args['selectedFiles'])) {
@@ -100,13 +100,13 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/verify', function (Re
     return $response->withJson(["success" => $success, "message" => $message]);
 });
 
-$app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*}', function (Request $request, Response $response, array $args) {
+$app->get('/backend/system/pandora/header/{selectedFiles:.*}/suggest/{userInput:.*}', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = array();
 
     $config = $this->get('Noodlehaus\Config');
-    $UsersFiles = $this->get('SIMON\Users\UsersFiles');
-    $Helpers = $this->get('SIMON\Helpers\Helpers');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    $Helpers = $this->get('PANDORA\Helpers\Helpers');
 
     $userInput = base64_decode(urldecode($args['userInput']));
 
@@ -155,7 +155,7 @@ $app->get('/backend/system/simon/header/{selectedFiles:.*}/suggest/{userInput:.*
     return $response->withJson(["success" => $success, "message" => $message]);
 });
 
-$app->post('/backend/system/simon/pre-analysis', function (Request $request, Response $response, array $args) {
+$app->post('/backend/system/pandora/pre-analysis', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = [];
     $queue_message = [];
@@ -164,13 +164,13 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
 
     $config = $this->get('Noodlehaus\Config');
 
-    $FileSystem = $this->get('SIMON\System\FileSystem');
-    $UsersFiles = $this->get('SIMON\Users\UsersFiles');
-    $DatasetIntersection = $this->get('SIMON\Dataset\DatasetIntersection');
-    $DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
-    $DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
-    $DatasetCalculations = $this->get('SIMON\Dataset\DatasetCalculations');
-    $Helpers = $this->get('SIMON\Helpers\Helpers');
+    $FileSystem = $this->get('PANDORA\System\FileSystem');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    $DatasetIntersection = $this->get('PANDORA\Dataset\DatasetIntersection');
+    $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
+    $DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
+    $DatasetCalculations = $this->get('PANDORA\Dataset\DatasetCalculations');
+    $Helpers = $this->get('PANDORA\Helpers\Helpers');
 
     $user_details = $request->getAttribute('user');
     $initial_db_connect = $user_details['initial_db_connect'];
@@ -343,12 +343,12 @@ $app->post('/backend/system/simon/pre-analysis', function (Request $request, Res
         "initial_db_connect" => $initial_db_connect]);
 });
 
-$app->post('/backend/system/simon/dataset-queue', function (Request $request, Response $response, array $args) {
+$app->post('/backend/system/pandora/dataset-queue', function (Request $request, Response $response, array $args) {
     $success = true;
     $updateCount = 0;
 
-    $DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
-    $DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+    $DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
+    $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 
     // 1 - Global Administrator / 2 - User / 3 - Organization Administrator / 4 - Organization User
     // $user_details["user"]["id"]
@@ -379,10 +379,10 @@ $app->post('/backend/system/simon/dataset-queue', function (Request $request, Re
     return $response->withJson(["success" => $success, "message" => $updateCount]);
 });
 
-$app->post('/backend/system/simon/dataset-queue/cancel', function (Request $request, Response $response, array $args) {
+$app->post('/backend/system/pandora/dataset-queue/cancel', function (Request $request, Response $response, array $args) {
     $success = true;
 
-    $DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+    $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 
     $user_details = $request->getAttribute('user');
     $user_id = $user_details['user_id'];
@@ -404,10 +404,10 @@ $app->post('/backend/system/simon/dataset-queue/cancel', function (Request $requ
 /**
  * Deletes all queue related data from the database and filesystem
  */
-$app->post('/backend/system/simon/dataset-queue/delete', function (Request $request, Response $response, array $args) {
+$app->post('/backend/system/pandora/dataset-queue/delete', function (Request $request, Response $response, array $args) {
     $success = false;
 
-    $DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+    $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 
     $user_details = $request->getAttribute('user');
     $user_id = $user_details['user_id'];
@@ -426,14 +426,14 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
             $queueIDs = [$queueIDs];
         }
 
-        $this->get('Monolog\Logger')->info("SIMON '/backend/system/simon/dataset-queue/delete' processing queueIDs:" . count($queueIDs));
+        $this->get('Monolog\Logger')->info("PANDORA '/backend/system/pandora/dataset-queue/delete' processing queueIDs:" . count($queueIDs));
 
         foreach ($queueIDs as $queueID) {
-            $this->get('Monolog\Logger')->info("SIMON '/backend/system/simon/dataset-queue/delete' processing queueID:" . $queueID);
+            $this->get('Monolog\Logger')->info("PANDORA '/backend/system/pandora/dataset-queue/delete' processing queueID:" . $queueID);
 
             $files = [];
 
-            $DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
+            $DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
             $resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
             $resamplesListIDs = array_column($resamplesList, 'resampleID');
 
@@ -443,7 +443,7 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
                 $files[] = $resample['ufid_test'];
             }
 
-            $Models = $this->get('SIMON\Models\Models');
+            $Models = $this->get('PANDORA\Models\Models');
             $modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
             $modelsListIDs = array_column($modelsList, 'modelID');
 
@@ -452,31 +452,31 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
             }
 
             // 2. models_performance
-            $ModelsPerformance = $this->get('SIMON\Models\ModelsPerformance');
+            $ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
             $ModelsPerformance->deleteByModelIDs($modelsListIDs);
 
             // 3. models
             $Models->deleteByResampleIDs($resamplesListIDs);
 
-            $ModelsVariables = $this->get('SIMON\Models\ModelsVariables');
+            $ModelsVariables = $this->get('PANDORA\Models\ModelsVariables');
             $ModelsVariables->deleteByModelIDs($modelsListIDs);
 
             // 3. dataset_resamples_mappings
-            $DatasetResamplesMappings = $this->get('SIMON\Dataset\DatasetResamplesMappings');
+            $DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
             $DatasetResamplesMappings->deleteByQueueIDs($queueID);
 
             // 3. dataset_resamples
             $DatasetResamples->deleteByQueueIDs($queueID);
 
             // 3. dataset_proportions
-            $DatasetProportions = $this->get('SIMON\Dataset\DatasetProportions');
+            $DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
             $DatasetProportions->deleteByResampleIDs($resamplesListIDs);
 
             // 3. dataset_queue
-            $DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+            $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
             $DatasetQueue->deleteByQueueIDs($queueID);
 
-            $FileSystem = $this->get('SIMON\System\FileSystem');
+            $FileSystem = $this->get('PANDORA\System\FileSystem');
 
             $FileSystem->deleteFilesByIDs(array_unique($files));
         }
@@ -490,10 +490,10 @@ $app->post('/backend/system/simon/dataset-queue/delete', function (Request $requ
 /**
  * Deletes all queue related data from the system
  */
-$app->get('/backend/system/simon/dataset-resample/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
+$app->get('/backend/system/pandora/dataset-resample/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
     $success = false;
 
-    $DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+    $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 
     $user_details = $request->getAttribute('user');
     $user_id = $user_details['user_id'];
@@ -519,14 +519,14 @@ $app->get('/backend/system/simon/dataset-resample/delete/{submitData:.*}', funct
 /**
  * Generate system log file for the debugging purpose
  */
-$app->get('/backend/system/simon/generate-log-file/{submitData:.*}', function (Request $request, Response $response, array $args) {
+$app->get('/backend/system/pandora/generate-log-file/{submitData:.*}', function (Request $request, Response $response, array $args) {
     $success = false;
 
     $message = false;
 
-    $FileSystem = $this->get('SIMON\System\FileSystem');
+    $FileSystem = $this->get('PANDORA\System\FileSystem');
 
-    $UsersFiles = $this->get('SIMON\Users\UsersFiles');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
 
     $user_details = $request->getAttribute('user');
     $user_id = $user_details['user_id'];
@@ -534,8 +534,8 @@ $app->get('/backend/system/simon/generate-log-file/{submitData:.*}', function (R
     $downloadLinks = [];
 
     $compress_locations = [
-        "/var/log/simon-cron.log" => "simon_cron_log.tar.gz",
-        realpath(realpath(dirname(__DIR__)) . "/../logs/simon.log") => "simon_backend_log.tar.gz",
+        "/var/log/pandora-cron.log" => "pandora_cron_log.tar.gz",
+        realpath(realpath(dirname(__DIR__)) . "/../logs/pandora.log") => "pandora_backend_log.tar.gz",
         "/home/login/.pm2/logs" => "pm2_server_logs.tar.gz",
         "/root/.pm2/logs" => "pm2_server_logs.tar.gz",
         "/var/log/nginx" => "nginx_server_logs.tar.gz",
@@ -549,7 +549,7 @@ $app->get('/backend/system/simon/generate-log-file/{submitData:.*}', function (R
         "/var/log/cron_log" => "supervisor_cron_log.tar.gz"
     ];
 
-    // Compress SIMON cron log file
+    // Compress PANDORA cron log file
     foreach ($compress_locations as $fileInput => $fileOutput) {
         $download_url = $FileSystem->compressFileOrDirectory($fileInput, $fileOutput);
 

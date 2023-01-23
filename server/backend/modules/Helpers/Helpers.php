@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2021-02-03 15:27:08
  */
-namespace SIMON\Helpers;
+namespace PANDORA\Helpers;
 use \Monolog\Logger;
 
 class Helpers {
@@ -19,7 +19,7 @@ class Helpers {
 
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO SIMON\Helpers\Helpers constructed");
+		$this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
 	}
 	/**
 	 * [isJson description]
@@ -200,7 +200,7 @@ class Helpers {
 	 */
 	public function validateCSVFileHeader($filePath) {
 
-		$this->logger->addInfo("==> INFO: SIMON\Helpers\Helpers\validateCSVFileHeader: filePath: " . $filePath);
+		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: filePath: " . $filePath);
 
 		$path_parts = pathinfo($filePath);
 
@@ -272,10 +272,10 @@ EOFC;
 
 				$pandas_output = shell_exec($pandas_command);
 
-				$this->logger->addInfo("==> INFO: SIMON\Helpers\Helpers\validateCSVFileHeader: pandas_command: ");
+				$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: pandas_command: ");
 				$this->logger->addInfo($pandas_command);
 
-				// $this->logger->addInfo("==> INFO: SIMON\Helpers\Helpers\validateCSVFileHeader: pandas_output: ");
+				// $this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: pandas_output: ");
 				// $this->logger->addInfo($pandas_output);
 
 				$pandas_output = json_decode(trim($pandas_output), true);

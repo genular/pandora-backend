@@ -14,7 +14,7 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 	$success = true;
 	$recordAvaliable = false;
 
-	$system = $this->get('SIMON\System\System');
+	$system = $this->get('PANDORA\System\System');
 
 	$validationTable = urldecode(base64_decode($args['validationTable']));
 	$validationField = urldecode(base64_decode($args['validationField']));

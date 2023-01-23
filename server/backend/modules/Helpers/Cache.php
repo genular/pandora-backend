@@ -6,12 +6,12 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:24:16
  */
-namespace SIMON\Helpers;
+namespace PANDORA\Helpers;
 use \League\Flysystem\Adapter\Local as Local;
 use \League\Flysystem\Filesystem as Filesystem;
 use \MatthiasMullie\Scrapbook\Adapters\Flysystem as Flysystem;
 use Noodlehaus\Config as Config;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 use \Monolog\Logger;
 
 // https://www.scrapbook.cash/interfaces/key-value-store/
@@ -31,7 +31,7 @@ class Cache {
 		$this->Config = $Config;
 		$this->Helpers = $Helpers;
 		
-		$this->logger->addInfo("==> INFO: SIMON\Helpers\Cache constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Cache constructed");
 
 		$cache_directory = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/cache";
 
@@ -39,9 +39,9 @@ class Cache {
 
 		if (!is_dir($cache_directory)) {
 			$check = $this->Helpers->createDirectory($cache_directory);
-			$this->logger->addInfo("==> INFO => SIMON\Helpers\Cache directory created: " . $cache_directory); 
+			$this->logger->addInfo("==> INFO => PANDORA\Helpers\Cache directory created: " . $cache_directory); 
 		}else{
-			$this->logger->addInfo("==> INFO => SIMON\Helpers\Cache directory exists: " . $cache_directory);
+			$this->logger->addInfo("==> INFO => PANDORA\Helpers\Cache directory exists: " . $cache_directory);
 		}
 		// create Flysystem object
 		$adapter = new Local($cache_directory,  0);

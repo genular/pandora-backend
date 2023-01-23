@@ -65,7 +65,7 @@ preProcessDataset <- function(dataset) {
             "RData")
 
         ## 2. Save in database
-        preProcessMappingFileID <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+        preProcessMappingFileID <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
     }
 
     ## Split datasetData into testing and training subsets based on Outcome column
@@ -89,7 +89,7 @@ preProcessDataset <- function(dataset) {
         paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_training_partition.csv"), 
         paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"),
         "csv", FALSE)
-    savedFileIDTrain <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+    savedFileIDTrain <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
     updateDatabaseFiled("dataset_resamples", "ufid_train", savedFileIDTrain, "id", dataset$resampleID)
 
@@ -97,7 +97,7 @@ preProcessDataset <- function(dataset) {
         paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_testing_partition.csv"), 
         paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"),
         "csv", FALSE)
-    savedFileIDTest <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+    savedFileIDTest <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
     updateDatabaseFiled("dataset_resamples", "ufid_test", savedFileIDTest, "id", dataset$resampleID)
 
     if(is.null(savedFileIDTest) || is.null(savedFileIDTrain)){
@@ -139,7 +139,7 @@ preProcessDataset <- function(dataset) {
             cat(message)
 
             ## 1. Save the new resample in databse with newly selected features
-            rfeResampleID <- db.apps.simon.saveRecursiveFeatureElimination(rfeResults$modelData, rfeResults$modelPredictors, data$training, dataset$resampleID)
+            rfeResampleID <- db.apps.pandora.saveRecursiveFeatureElimination(rfeResults$modelData, rfeResults$modelPredictors, data$training, dataset$resampleID)
 
             if(rfeResampleID == FALSE){
                 message <- paste0("===> ERROR: Error creating new resample from RFE results \r\n")
@@ -151,7 +151,7 @@ preProcessDataset <- function(dataset) {
                 paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/models"),
                 "RData", FALSE)
             ## 3. Save the file in database
-            rfeFileID <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+            rfeFileID <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
             ## 4. Generate new train and test files from original resample and update newly created one in database
             rfeData <- list(training = data$training, testing = NULL)
@@ -168,7 +168,7 @@ preProcessDataset <- function(dataset) {
                 paste0(JOB_DIR,"/data/",dataset$queueID,"_",rfeResampleID,"_training_partition.csv"), 
                 paste0("analysis/",dataset$queueID,"/",rfeResampleID,"/partitions"),
                 "csv", FALSE)
-            savedFileIDTrain <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+            savedFileIDTrain <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
             updateDatabaseFiled("dataset_resamples", "ufid_train", savedFileIDTrain, "id", rfeResampleID)
 
@@ -176,7 +176,7 @@ preProcessDataset <- function(dataset) {
                 paste0(JOB_DIR,"/data/",dataset$queueID,"_",rfeResampleID,"_testing_partition.csv"), 
                 paste0("analysis/",dataset$queueID,"/",rfeResampleID,"/partitions"),
                 "csv", FALSE)
-            savedFileIDTest <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+            savedFileIDTest <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
             updateDatabaseFiled("dataset_resamples", "ufid_test", savedFileIDTest, "id", rfeResampleID)
 
             if(is.null(savedFileIDTest) || is.null(savedFileIDTrain)){

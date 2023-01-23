@@ -1,7 +1,7 @@
 #* Render models overview plot
 #* @serializer contentType list(type='image/png')
 #' @post /plots/variableImportance/renderOverviewPlot
-simon$handle$plots$variableImportance$renderOverviewPlot <- expression(
+pandora$handle$plots$variableImportance$renderOverviewPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = TRUE, data = NULL, image = NULL, image_png = NULL)

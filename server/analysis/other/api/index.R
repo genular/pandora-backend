@@ -1,5 +1,5 @@
 #' @get /analysis/other/sam/renderOptions
-simon$handle$analysis$other$availablePackages <- expression(
+pandora$handle$analysis$other$availablePackages <- expression(
     function(){
         r_version <- shortRversion()
         data <- lapply(caret::getModelInfo(), function(x){

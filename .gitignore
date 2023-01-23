@@ -43,7 +43,7 @@ config.yml
 ecosystem.config.js
 
 database_schema.mwb.bak
-simon_backend.pid
+pandora_backend.pid
 
 dumps/*
 
@@ -55,7 +55,7 @@ availablePackages.json
 server/backend/public/downloads/*
 !server/backend/public/downloads/index.html
 
-SIMON_DATA
+PANDORA_DATA
 SHARED_DATA
 
 *.log

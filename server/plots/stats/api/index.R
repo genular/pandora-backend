@@ -1,5 +1,5 @@
-#' @get /apps/simon/dataset/multiClass
-simon$handle$plots$stats$multiClass <- expression(
+#' @get /apps/pandora/dataset/multiClass
+pandora$handle$plots$stats$multiClass <- expression(
     function(req, res, ...){
         status <- "success"
         args <- as.list(match.call())
@@ -21,8 +21,8 @@ simon$handle$plots$stats$multiClass <- expression(
     }
 )
 
-#' @get /apps/simon/dataset/twoClass
-simon$handle$plots$stats$twoClass <- expression(
+#' @get /apps/pandora/dataset/twoClass
+pandora$handle$plots$stats$twoClass <- expression(
     function(req, res, ...){
         status <- "success"
         data <- list(

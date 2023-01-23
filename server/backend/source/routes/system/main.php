@@ -13,18 +13,18 @@ use Slim\Http\Response;
  * Index page
  */
 $app->get('/', function (Request $request, Response $response, array $args) {
-	$this->get('Monolog\Logger')->info("SIMON '/' route");
+	$this->get('Monolog\Logger')->info("PANDORA '/' route");
 	// Render index view
 	return $this->get('Slim\Views\PhpRenderer')->render($response, 'index.phtml', $args);
 });
 
 $app->get('/backend/system/status/{secret:.*}', function (Request $request, Response $response, array $args) {
-	$this->get('Monolog\Logger')->info("SIMON '/system/status/{secret:.*}' route");
+	$this->get('Monolog\Logger')->info("PANDORA '/system/status/{secret:.*}' route");
 
 	$status = 301;
 	$success = false;
 
-	$system = $this->get('SIMON\System\System');
+	$system = $this->get('PANDORA\System\System');
 	$config = $this->get('Noodlehaus\Config');
 
 	$configData = $config->all();
@@ -61,7 +61,7 @@ $app->get('/init/{secret:.*}', function (Request $request, Response $response, a
 
 	$requestSecret = $args['secret'];
 	if (strcmp($systemSecret, $requestSecret) == 0) {
-		$system = $this->get('SIMON\System\System');
+		$system = $this->get('PANDORA\System\System');
 		$system->init();
 		// $system->scrapeHelpDocumentation();
 		$status = 200;
@@ -75,7 +75,7 @@ $app->get('/init/{secret:.*}', function (Request $request, Response $response, a
 $app->get('/backend/system/serverload', function (Request $request, Response $response, array $args) {
 	$success = true;
 
-	$system = $this->get('SIMON\System\System');
+	$system = $this->get('PANDORA\System\System');
 	$server_load = $system->getServerLoadInfo();
 
 	return $response->withJson(["success" => $success, "message" => $server_load]);
@@ -92,7 +92,7 @@ $app->get('/reset/{secret:.*}', function (Request $request, Response $response, 
 
 	$userSecret = $args['secret'];
 	if (strcmp($systemSecret, $userSecret) == 0) {
-		$system = $this->get('SIMON\System\System');
+		$system = $this->get('PANDORA\System\System');
 		$system->reset();
 		$status = 200;
 		$success = true;

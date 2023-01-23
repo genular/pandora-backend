@@ -47,29 +47,29 @@ docker push genular/parent:master
 rclone copy ./genular.tar genular-spaces:genular/docker-parent-images
 ```
 
-## Steps needed to publish child genular SIMON image
+## Steps needed to publish child genular PANDORA image
 
-Auto-build is configure on [Docker Hub](https://hub.docker.com/?namespace=genular). Whenever new change is detected in repository container `genular/simon:latest` will be build-ed _automatically_.
+Auto-build is configure on [Docker Hub](https://hub.docker.com/?namespace=genular). Whenever new change is detected in repository container `genular/pandora:latest` will be build-ed _automatically_.
 
 To do it _manually_ first build docker image from Dockerfile:
 
 ### 1. Check/Adjust configuration variables in Dockerfile
 
 You can get example of configuration JSON by executing following command
-`cd simon-backend/server/backend && composer generate-docker-config`
+`cd pandora-backend/server/backend && composer generate-docker-config`
 This will create a new file: `documentation/docker_images/configuration.json` where you can add/remove custom configuration variables and place it in `./configuration.example.json`
 
 ### 2. Build docker image
 
 Remove `--network=host` if needed.
-`docker build --no-cache --network=host --tag "genular/simon:latest" --file ./Dockerfile .`
+`docker build --no-cache --network=host --tag "genular/pandora:latest" --file ./Dockerfile .`
 
-## 3. Running SIMON Container
+## 3. Running PANDORA Container
 
-In order to run a test instance of `SIMON` we first need to prepare the environment.
+In order to run a test instance of `PANDORA` we first need to prepare the environment.
 If you finished installing docker please continue.
 
-Lets pull the [genular/simon](https://cloud.docker.com/u/genular/repository/docker/genular/simon) image from [Docker Hub](https://hub.docker.com/?namespace=genular).
+Lets pull the [genular/pandora](https://cloud.docker.com/u/genular/repository/docker/genular/pandora) image from [Docker Hub](https://hub.docker.com/?namespace=genular).
 Then we will run a docker container with appropriately mounted volumes and port mapping. By default the container would run with a local file-system inside of it.
 
 After you installed docker and its running, please open your favorite Terminal and run the command below.
@@ -79,7 +79,7 @@ If on Windows - open `Windows Power Shell`
 
 ```bash
 # Important: if you are using Windows replace newline separators in the command: "\" with "`"
-# To use custom directory as file-system backend: --volume /mnt/genular/simon-backend/SHARED_DATA:/mnt/usrdata \
+# To use custom directory as file-system backend: --volume /mnt/genular/pandora-backend/SHARED_DATA:/mnt/usrdata \
 docker run --rm --network=host \
     --detach \
     --name genular \
@@ -92,10 +92,10 @@ docker run --rm --network=host \
     --publish 3011:3011 \
     --publish 3012:3012 \
     --publish 3013:3013 \
-    genular/simon:latest
+    genular/pandora:latest
 ```
 
-Once command is executed and the container is started you can open SIMON on `http://localhost:3010` and create your account.
+Once command is executed and the container is started you can open PANDORA on `http://localhost:3010` and create your account.
 
 -   If you get asked please allow connections through your Windows Firewall.
 

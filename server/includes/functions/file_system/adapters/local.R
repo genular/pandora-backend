@@ -10,7 +10,7 @@ downloadFile <- function(file_path_from, file_path_to){
     create_directory(file_path_from_basedir)
 
     # copy the files to the new folder
-    file.copy(file.path(simonConfig$storage$local$data_path, file_path_from), file_path_to)
+    file.copy(file.path(pandoraConfig$storage$local$data_path, file_path_from), file_path_to)
 
     return(file_path_to)
 }
@@ -20,7 +20,7 @@ downloadFile <- function(file_path_from, file_path_to){
 #' @param file_path
 #' @return boolean
 checkFileExists <- function(file_path){
-    file_path <- file.path(simonConfig$storage$local$data_path, file_path)
+    file_path <- file.path(pandoraConfig$storage$local$data_path, file_path)
 
     cat(paste0("===> INFO: checkFileExists: ",file_path," \r\n"))
     exists <- FALSE
@@ -42,7 +42,7 @@ uploadFile <- function(user_id, file_from, upload_directory, retry_count = 0){
     filename <- basename(file_from)
     file_to = paste0("users/",user_id , "/" , upload_directory , "/" , filename)
 
-    cat(paste0("===> INFO: upload file start: ",file_from," - ",file.path(simonConfig$storage$local$data_path, file_to)," \r\n"))
+    cat(paste0("===> INFO: upload file start: ",file_from," - ",file.path(pandoraConfig$storage$local$data_path, file_to)," \r\n"))
 
     exists <- checkFileExists(file_to)
     if(exists == TRUE){
@@ -51,7 +51,7 @@ uploadFile <- function(user_id, file_from, upload_directory, retry_count = 0){
         file_to = paste0("users/",user_id , "/" , upload_directory , "/", uniqueIDHash , "_" , filename)
     }
     
-    local_file_to <- file.path(simonConfig$storage$local$data_path, file_to)
+    local_file_to <- file.path(pandoraConfig$storage$local$data_path, file_to)
     local_file_basedir <- dirname(local_file_to)
     create_directory(local_file_basedir)
 

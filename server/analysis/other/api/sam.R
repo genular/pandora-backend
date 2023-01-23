@@ -1,5 +1,5 @@
 #' @get /analysis/other/sam/renderOptions
-simon$handle$analysis$other$sam$renderOptions <- expression(
+pandora$handle$analysis$other$sam$renderOptions <- expression(
     function(){
         data <- list()
 
@@ -49,7 +49,7 @@ simon$handle$analysis$other$sam$renderOptions <- expression(
 )
 
 #' @get /analysis/other/sam/renderPlot
-simon$handle$analysis$other$sam$renderPlot <- expression(
+pandora$handle$analysis$other$sam$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

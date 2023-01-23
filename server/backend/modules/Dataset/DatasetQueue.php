@@ -6,12 +6,12 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2021-02-03 12:31:33
  */
-namespace SIMON\Dataset;
+namespace PANDORA\Dataset;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
-use \SIMON\Models\ModelsPackages as ModelsPackages;
+use \PANDORA\Helpers\Helpers as Helpers;
+use \PANDORA\Models\ModelsPackages as ModelsPackages;
 
 class DatasetQueue {
 	protected $table_name = "dataset_queue";
@@ -33,7 +33,7 @@ class DatasetQueue {
 		$this->ModelsPackages = $ModelsPackages;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetQueue constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Dataset\DatasetQueue constructed");
 	}
 	/**
 	 * Checks if file is owned by specific user

@@ -1,6 +1,6 @@
 {
-    "name": "simon/backend",
-    "description": "PHP API Backend Service for SIMON Backend Server",
+    "name": "pandora/backend",
+    "description": "PHP API Backend Service for PANDORA Backend Server",
     "type": "project",
     "require": {
 
@@ -40,12 +40,12 @@
     },
     "scripts": {
         "start": "php -S 127.0.0.1:8186 -t ./public",
-        "post-install": ["SIMON\\System\\ComposerScripts::updateConfiguration"],
-        "generate-docker-config": ["SIMON\\System\\ComposerScripts::generateDockerConfiguration"]
+        "post-install": ["PANDORA\\System\\ComposerScripts::updateConfiguration"],
+        "generate-docker-config": ["PANDORA\\System\\ComposerScripts::generateDockerConfiguration"]
     },
     "autoload": {
         "psr-4": {
-            "SIMON\\": ["modules/"]
+            "PANDORA\\": ["modules/"]
         }
     },
     "minimum-stability": "dev",

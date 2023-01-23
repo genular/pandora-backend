@@ -1,5 +1,5 @@
 #' @get /plots/correlation/renderOptions
-simon$handle$plots$correlation$renderOptions <- expression(
+pandora$handle$plots$correlation$renderOptions <- expression(
     function(){
         data <- list()
 
@@ -43,7 +43,7 @@ simon$handle$plots$correlation$renderOptions <- expression(
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
 #' @post /plots/correlation/renderPlot
-simon$handle$plots$correlation$renderPlot <- expression(
+pandora$handle$plots$correlation$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = FALSE, data = NULL, image = NULL, image_png = NULL)

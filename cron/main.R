@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript --vanilla
 
 ## Warning: This CRON should be run called in following way:
-## * * * * * /usr/bin/flock -n /tmp/simon_backend.pid /path/to/cron.R
+## * * * * * /usr/bin/flock -n /tmp/pandora_backend.pid /path/to/cron.R
 
 ## Set ROOT working directory since CRON is maybe not called from root
 raw_args <- commandArgs(trailingOnly=FALSE)
@@ -75,7 +75,7 @@ if(cpu_cores > 1 && cpu_cores <= 5){
     cat(paste0("===> INFO: Adding CPU cores (3): ",CORES," \r\n"))
 }
 
-cat(paste0("===> INFO: Starting SIMON analysis with ",CORES," CPU cores and ",maximum_memory," MB allocated \r\n"))
+cat(paste0("===> INFO: Starting PANDORA analysis with ",CORES," CPU cores and ",maximum_memory," MB allocated \r\n"))
 
 queue_start_time <- Sys.time()
 
@@ -83,12 +83,12 @@ queue_start_time <- Sys.time()
 registerDoMC(CORES)
 
 script.dir <- dirname(thisFileLocation())
-sourceFile <- paste0(script.dir, "/SIMON_DATA")
+sourceFile <- paste0(script.dir, "/PANDORA_DATA")
 
 ## Configuration variable to detect mode of processing
 isStandAlone <- FALSE
 if(!file.exists(sourceFile)){
-    ## If there is no SIMON_DATA configuration file it means we are running on stand alone machine
+    ## If there is no PANDORA_DATA configuration file it means we are running on stand alone machine
     cat(paste0("===> INFO: Cannot locate source server file, falling back to single server mode! \r\n"))
     isStandAlone <- TRUE
 }
@@ -589,7 +589,7 @@ for (dataset in datasets) {
         ## Load dplyr since some packages overwrite it
         p_load(dplyr)
         ## Save failed model so we don't process it again
-        methodDetails <- db.apps.simon.saveMethodAnalysisData(
+        methodDetails <- db.apps.pandora.saveMethodAnalysisData(
                                                                 dataset$resampleID, 
                                                                 trainModel,
                                                                 predictionConfusionMatrix,
@@ -605,13 +605,13 @@ for (dataset in datasets) {
 
         if(trainModel$status == TRUE){
             if(!is.null(trainingVariableImportance)){
-                db.apps.simon.saveVariableImportance(
+                db.apps.pandora.saveVariableImportance(
                     trainingVariableImportance,
                     methodDetails$modelID
                 )
             }
             ## All in one object for user to download
-            simonData <- list(
+            pandoraData <- list(
                 ## General processing info
                 info = list(
                     resampleID = dataset$resampleID,
@@ -646,14 +646,14 @@ for (dataset in datasets) {
             ## JOB_DIR is temporarily directory on our local file-system
             saveDataPaths$path_initial <- paste0(JOB_DIR,"/models/modelID_",model_details$internal_id,"_", methodDetails$modelID, ".RData")
             ## Save data in .RData since write_feather supports only data-frames
-            save(simonData, file = saveDataPaths$path_initial)
+            save(pandoraData, file = saveDataPaths$path_initial)
             path_details = compressPath(saveDataPaths$path_initial)
             
             saveDataPaths$renamed_path = path_details$renamed_path
             saveDataPaths$gzipped_path = path_details$gzipped_path
 
             saveDataPaths$file_path = uploadFile(dataset$userID, saveDataPaths$gzipped_path, paste0("analysis/",serverData$queueID,"/",dataset$resampleID,"/models"))
-            file_id <- db.apps.simon.saveFileInfo(dataset$userID, saveDataPaths)
+            file_id <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
             if(!is.null(file_id)){
                 updateDatabaseFiled("models", "ufid", file_id, "id", methodDetails$modelID)    

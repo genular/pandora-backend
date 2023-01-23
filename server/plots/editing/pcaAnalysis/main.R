@@ -8,5 +8,5 @@ source(paste0("server/",SERVER_NAME,"/editing/pcaAnalysis/functions/ffviz_plots.
 source(paste0("server/",SERVER_NAME,"/editing/pcaAnalysis/functions/index.R"))
 
 ## POST & GET Declarations
-simon$handle$plots$editing$pcaAnalysis = list()
+pandora$handle$plots$editing$pcaAnalysis = list()
 source(paste0("server/",SERVER_NAME,"/editing/pcaAnalysis/api/index.R"))

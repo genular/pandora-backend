@@ -6,11 +6,11 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-01-25 16:08:25
  */
-namespace SIMON\Users;
+namespace PANDORA\Users;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Organization\Organization as Organization;
+use \PANDORA\Organization\Organization as Organization;
 
 class UsersOrganization {
 
@@ -28,7 +28,7 @@ class UsersOrganization {
 		$this->logger = $logger;
 		$this->Organization = $Organization;
 
-		$this->logger->addInfo("==> INFO: SIMON\Users\UsersOrganization constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Users\UsersOrganization constructed");
 	}
 
 	/**

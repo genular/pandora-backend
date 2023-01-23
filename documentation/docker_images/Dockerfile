@@ -17,8 +17,8 @@ COPY ./configuration.example.json /tmp/configuration.json
 COPY ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
 RUN chmod +x /tmp/prepare_docker_storage.sh
 
-## Lets build and configure SIMON
-RUN su - genular -c 'cd /var/www/genular/simon-frontend \
+## Lets build and configure PANDORA
+RUN su - genular -c 'cd /var/www/genular/pandora \
 	&& git checkout . && git fetch && git checkout master && git pull origin master \
 	&& yarn install --check-files \
 	&& yarn run webpack:web:prod \
@@ -26,7 +26,7 @@ RUN su - genular -c 'cd /var/www/genular/simon-frontend \
 	--server_frontend=http://localhost:3010 \
 	--server_backend=http://localhost:3011 \
 	--server_homepage=http://localhost:3010 \
-	&& cd /var/www/genular/simon-backend/server/backend/ \
+	&& cd /var/www/genular/pandora-backend/server/backend/ \
 	&& git checkout . && git fetch && git checkout master && git pull origin master \
 	&& /usr/bin/php7.3 /usr/local/bin/composer install --ignore-platform-reqs \
 	&& /usr/bin/php7.3 /usr/local/bin/composer post-install /tmp/configuration.json'

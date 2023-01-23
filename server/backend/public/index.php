@@ -35,7 +35,7 @@ $settings = require 'source/config/settings.php';
 
 /** Check if application is called from command line
  *	and add command line support should be called like this:
- *  php simon-backend/server/backend/public/index.php backend/system/status/bb5dc8842ca31d4603d6aa11448d1654
+ *  php pandora-backend/server/backend/public/index.php backend/system/status/bb5dc8842ca31d4603d6aa11448d1654
  *  php public/index.php backend/system/cron
  */
 if (PHP_SAPI == 'cli') {

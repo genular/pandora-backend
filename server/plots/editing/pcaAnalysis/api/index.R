@@ -1,7 +1,7 @@
 #* Plot out data from the selected dataset
 #* @serializer contentType list(type='image/png')
 #' @post /plots/editing/pcaAnalysis/renderPlot
-simon$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
+pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

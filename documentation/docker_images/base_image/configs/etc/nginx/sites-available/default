@@ -4,7 +4,7 @@ server {
 	listen 3010 default_server;
 	listen [::]:3010 default_server;
 
-	root /var/www/genular/simon-frontend/compiled/web;
+	root /var/www/genular/pandora/compiled/web;
 
 	server_name _;
     index index.html;

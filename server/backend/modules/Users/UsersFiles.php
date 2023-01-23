@@ -6,14 +6,14 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-04-18 13:08:04
  */
-namespace SIMON\Users;
+namespace PANDORA\Users;
 
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Cache as Cache;
-use \SIMON\Helpers\Helpers as Helpers;
-use \SIMON\System\FileSystem as FileSystem;
+use \PANDORA\Helpers\Cache as Cache;
+use \PANDORA\Helpers\Helpers as Helpers;
+use \PANDORA\System\FileSystem as FileSystem;
 
 class UsersFiles {
 
@@ -40,7 +40,7 @@ class UsersFiles {
 		$this->Cache = $Cache;
 		$this->Helpers = $Helpers;
 
-		$this->logger->addInfo("==> INFO: SIMON\Users\UsersFiles constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Users\UsersFiles constructed");
 	}
 	/**
 	 * Checks if file is owned by specific user

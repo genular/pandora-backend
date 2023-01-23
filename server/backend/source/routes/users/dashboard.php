@@ -21,7 +21,7 @@ $app->get('/backend/dashboard/stats', function (Request $request, Response $resp
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 
-	$Models = $this->get('SIMON\Models\Models');
+	$Models = $this->get('PANDORA\Models\Models');
 	$statistics = $Models->getStatistics($user_id);
 	if ($statistics) {
 		$message = $statistics;

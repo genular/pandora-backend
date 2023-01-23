@@ -14,16 +14,16 @@ if(is.na(SERVER_NAME) || is.null(SERVER_NAME)){
     SERVER_NAME <- "cron_analysis"
 }
 
-simonConfig <- config::get(file = "config.yml")
+pandoraConfig <- config::get(file = "config.yml")
 
 
-if(!(SERVER_NAME %in% names(simonConfig))){
+if(!(SERVER_NAME %in% names(pandoraConfig))){
     if(SERVER_NAME != "cron_analysis"){
         stop("Cannot find configuration for given server name!")    
     }
 }
 
-TEMP_DIR <- paste0("/tmp/", simonConfig$salt)
+TEMP_DIR <- paste0("/tmp/", pandoraConfig$salt)
 UPTIME_PID <- paste0(TEMP_DIR, "/uptime_",SERVER_NAME,".pid")
 
 ## Load libraries that are commonly used
@@ -33,11 +33,11 @@ p_load(urltools)
 
 databasePool <- pool::dbPool(
         drv = RMySQL::MySQL(), ## RMySQL::MySQL() --- RMariaDB::MariaDB()
-        dbname = simonConfig$database$dbname,
-        host = simonConfig$database$host,
-        port = simonConfig$database$port,
-        username = simonConfig$database$user,
-        password = simonConfig$database$password,
+        dbname = pandoraConfig$database$dbname,
+        host = pandoraConfig$database$host,
+        port = pandoraConfig$database$port,
+        username = pandoraConfig$database$user,
+        password = pandoraConfig$database$password,
         maxSize = 600, 
         idleTimeout = 3600000
     )
@@ -58,7 +58,7 @@ source("server/includes/functions/database.R")
 create_directory(TEMP_DIR)
 
 ## local or remote
-WORKING_MODE <- get_working_mode(simonConfig)
+WORKING_MODE <- get_working_mode(pandoraConfig)
 source("server/includes/functions/file_system/main.R")
 
  cat(paste0("===> INFO: WORKING MODE: ",WORKING_MODE," \r\n"))
@@ -71,7 +71,7 @@ if(WORKING_MODE == "local"){
 }
 
 ## MAIN Route handler
-simon <- list(filter = list(), handle = list(analysis = list(), general = list(), plots = list() ))
+pandora <- list(filter = list(), handle = list(analysis = list(), general = list(), plots = list() ))
 
 ## Load Shared API Endpoints
 source("server/includes/api/main.R")

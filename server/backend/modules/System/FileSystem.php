@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2021-02-04 16:11:22
  */
-namespace SIMON\System;
+namespace PANDORA\System;
 use Aws\S3\S3Client as S3Client;
 use League\Flysystem\Adapter\Local as Local;
 use League\Flysystem\AwsS3v3\AwsS3Adapter as AwsS3Adapter;
@@ -15,8 +15,8 @@ use League\Flysystem\Filesystem as Flysystem;
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
-use \SIMON\Users\UsersFiles as UsersFiles;
+use \PANDORA\Helpers\Helpers as Helpers;
+use \PANDORA\Users\UsersFiles as UsersFiles;
 
 class FileSystem {
 
@@ -52,11 +52,11 @@ class FileSystem {
 		// 
 		$this->temp_dir = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/downloads";
 
-		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem constructed: " . $this->temp_dir);
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem constructed: " . $this->temp_dir);
 		// Create temporary directory if it doesn't exists
 		if (!file_exists($this->temp_dir)) {
 			$check = $this->Helpers->createDirectory($this->temp_dir);
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem directory created: " . $check);
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem directory created: " . $check);
 		}
 
 		$this->targz = $this->Helpers->which_cmd("tar");
@@ -72,7 +72,7 @@ class FileSystem {
 		if ($this->Config->get('settings')["is_docker"] === true ||
 			$this->Config->get('settings')["is_connected"] === false || $s3_configured === false) {
 
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using local storage: " . $this->Config->get('default.storage.local.data_path'));
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem using local storage: " . $this->Config->get('default.storage.local.data_path'));
 
 			$this->storage_type = "local";
 			$adapter = new Local(
@@ -93,7 +93,7 @@ class FileSystem {
 			// Otherwise use remote s3 storage
 		} else if ($this->Config->get('settings')["is_connected"] === true && $s3_configured === true) {
 
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem using S3 remote storage");
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem using S3 remote storage");
 
 			$this->client = new S3Client([
 				'credentials' => [
@@ -109,7 +109,7 @@ class FileSystem {
 			$adapter = new AwsS3Adapter($this->client, $this->Config->get('default.storage.s3.bucket'));
 
 		} else {
-			die("Error: SIMON\System\FileSystem Cannot configure file-system");
+			die("Error: PANDORA\System\FileSystem Cannot configure file-system");
 		}
 
 		// Check if tar is available
@@ -173,7 +173,7 @@ class FileSystem {
 			$copy_to = $public_directory . "/" . $copy_to_filename;
 			$downloadLink = $this->Config->get('default.backend.server.url') . "/downloads/" . $copy_to_filename;
 
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem getDownloadLink: " . $copy_from . " " . $copy_to);
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem getDownloadLink: " . $copy_from . " " . $copy_to);
 
 			if (!file_exists($copy_to)) {
 				if (file_exists($copy_from)) {
@@ -217,7 +217,7 @@ class FileSystem {
 			if (!is_numeric($id)) {
 				continue;
 			}
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem deleteFilesByIDs: " . $id);
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem deleteFilesByIDs: " . $id);
 			$details = $this->UsersFiles->getFileDetails($id, ["file_path"], true);
 			$this->deleteFileByID($id, $details['file_path']);
 		}
@@ -297,7 +297,7 @@ class FileSystem {
 	 * @return [type]          [description]
 	 */
 	public function downloadFile($input, $new_file_name = false, $cache = true) {
-		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile: " . $input);
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile: " . $input);
 
 		$remotePath = $input;
 		if (is_numeric($input)) {
@@ -312,7 +312,7 @@ class FileSystem {
 		$file_path = $this->temp_dir . "/" . $file->getBasename('.tar.gz');
 		$file_path_gz = $file_path . ".tar.gz";
 
-		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile local file-path: " . $file_path);
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile local file-path: " . $file_path);
 		
 		$ungz_cmd = $this->targz . " xf " . $file_path_gz . " -C " . $this->temp_dir . " --verbose";
 
@@ -340,7 +340,7 @@ class FileSystem {
 			}
 		}
 
-		$this->logger->addInfo("==> INFO: SIMON\System\FileSystem downloadFile remote file-path: " . $file_path);
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile remote file-path: " . $file_path);
 
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($remotePath);
@@ -391,13 +391,13 @@ class FileSystem {
 				$inputCMDPath = $inputPath;
 			}
 
-			// tar -zcvf /tmp/out.tar.gz /var/log/nginx & openssl aes-256-cbc -k simon2021 -a -salt -in /tmp/out.tar.gz -out /tmp/out.tar.gz.enc
+			// tar -zcvf /tmp/out.tar.gz /var/log/nginx & openssl aes-256-cbc -k pandora2021 -a -salt -in /tmp/out.tar.gz -out /tmp/out.tar.gz.enc
 			$gz_cmd = "cd ".dirname($inputPath)." && ".$this->targz . " -zcvf " . $ouputPath . " " . $inputCMDPath;
 			
 			$command_output = trim(shell_exec($gz_cmd));
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem compressFileOrDirectory: " . $gz_cmd);
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem compressFileOrDirectory: " . $gz_cmd);
 		} else {
-			$this->logger->addInfo("==> INFO: SIMON\System\FileSystem compressFileOrDirectory file doesn't exsist: " . $inputPath);
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem compressFileOrDirectory file doesn't exsist: " . $inputPath);
 		}
 
 		if (file_exists($ouputPath) && $status === true) {

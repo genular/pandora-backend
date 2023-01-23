@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2018-06-08 16:12:49
  */
-namespace SIMON\Models;
+namespace PANDORA\Models;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
@@ -23,7 +23,7 @@ class ModelsPerformanceVariables {
 		$this->database = $database;
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsPerformanceVariables constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Models\ModelsPerformanceVariables constructed");
 	}
 
 }

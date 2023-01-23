@@ -6,16 +6,16 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-03-12 16:04:33
  */
-namespace SIMON\Users;
+namespace PANDORA\Users;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
-use \SIMON\System\FileSystem as FileSystem;
-use \SIMON\Users\UsersApps as UsersApps;
-use \SIMON\Users\UsersDetails as UsersDetails;
-use \SIMON\Users\UsersOrganization as UsersOrganization;
-use \SIMON\Users\UsersSessions as UsersSessions;
+use \PANDORA\Helpers\Helpers as Helpers;
+use \PANDORA\System\FileSystem as FileSystem;
+use \PANDORA\Users\UsersApps as UsersApps;
+use \PANDORA\Users\UsersDetails as UsersDetails;
+use \PANDORA\Users\UsersOrganization as UsersOrganization;
+use \PANDORA\Users\UsersSessions as UsersSessions;
 
 class Users {
 
@@ -51,7 +51,7 @@ class Users {
 		$this->UsersSessions = $UsersSessions;
 		$this->FileSystem = $FileSystem;
 
-		$this->logger->addInfo("==> INFO: SIMON\Users constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Users constructed");
 	}
 	/**
 	 * Get number of total users in database

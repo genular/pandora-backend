@@ -1,6 +1,6 @@
 #' @title getProcessingEntries
 #' @description Returns next processing queue from database. Used if cron is used in single server mode.
-#' Otherwise base64 encoded data from SIMON_DATA that is created by could.init script is used
+#' Otherwise base64 encoded data from PANDORA_DATA that is created by could.init script is used
 #' @return data-frame
 getProcessingEntries <- function(){
     queue = list()
@@ -338,12 +338,12 @@ datasetProportions <- function(resampleID, outcomes, classes, data){
         props$result), collapse = ","))
     dbExecute(databasePool, query)
 }
-#' @title db.apps.simon.saveFileInfo
+#' @title db.apps.pandora.saveFileInfo
 #' @description Used to save newly generated Test/Train partitions files to MySQL
 #' @param uid 
 #' @param paths 
 #' @return string
-db.apps.simon.saveFileInfo <- function(uid, paths){
+db.apps.pandora.saveFileInfo <- function(uid, paths){
     ufid <- NULL
 
     extension <- ".csv"
@@ -413,12 +413,12 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
         last_id <- dbGetQuery(databasePool, "SELECT last_insert_id();")
         ufid <- last_id[1,1]
     }else{
-        print(paste0("====>>> ERROR: db.apps.simon.saveFileInfo ", results))
+        print(paste0("====>>> ERROR: db.apps.pandora.saveFileInfo ", results))
     }
     return(ufid)
 }
 
-#' @title db.apps.simon.saveFeatureSetsInfo
+#' @title db.apps.pandora.saveFeatureSetsInfo
 #' @description 
 #' @param data 
 #' @param samples
@@ -426,7 +426,7 @@ db.apps.simon.saveFileInfo <- function(uid, paths){
 #' @param pqid
 #' @param error
 #' @return 
-db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqid, error){
+db.apps.pandora.saveFeatureSetsInfo <- function(data, samples, total_features, pqid, error){
     fs_id <- NULL
 
     sql <- "INSERT IGNORE INTO `feature_sets` 
@@ -461,7 +461,7 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
     return(fs_id)
 }
 
-#' @title db.apps.simon.saveMethodAnalysisData
+#' @title db.apps.pandora.saveMethodAnalysisData
 #' @description Save Model data into database with all performance measurements
 #' @param resampleID ID of current processing re-sample
 #' @param trainModel Complete model produces by caret::train
@@ -474,7 +474,7 @@ db.apps.simon.saveFeatureSetsInfo <- function(data, samples, total_features, pqi
 #' @param errors Character vector with listed errors that occurred during training
 #' @param model_time_start Sys.time() object with model starting time
 #' @return list
-db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, model_details, performanceVariables, predAUC, prAUC, predPostResample, errors, model_time_start){
+db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, model_details, performanceVariables, predAUC, prAUC, predPostResample, errors, model_time_start){
     model_status <- 1
     training_time <- NULL
 
@@ -633,7 +633,7 @@ db.apps.simon.saveMethodAnalysisData <- function(resampleID, trainModel, predCon
 #' @param varImportance
 #' @param modelID
 #' @return 
-db.apps.simon.saveVariableImportance <- function(varImportance, modelID){
+db.apps.pandora.saveVariableImportance <- function(varImportance, modelID){
     modelID <-as.numeric(modelID)
     ## Order dataframe for consistency, mostly because of md5 hash function
     varImportanceOrdered <- varImportance[order(varImportance$features, decreasing=F),]$features
@@ -665,7 +665,7 @@ db.apps.simon.saveVariableImportance <- function(varImportance, modelID){
 #' @param dataTraining
 #' @param resampleID
 #' @return 
-db.apps.simon.saveRecursiveFeatureElimination <- function(modelData, modelPredictors, dataTraining, resampleID){
+db.apps.pandora.saveRecursiveFeatureElimination <- function(modelData, modelPredictors, dataTraining, resampleID){
 
     newResampleID <- FALSE
 

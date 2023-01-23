@@ -1,7 +1,7 @@
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
 #' @post /plots/heatmap/renderPlot
-simon$handle$plots$heatmap$renderPlot <- expression(
+pandora$handle$plots$heatmap$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
         results <- list(status = FALSE, data = NULL, image = NULL)

@@ -250,7 +250,7 @@ echo "Installation of basic dependencies START"
 ( rootfs_chroot /bin/sh << '__EOS__'
 	apt-get update
 
-	## Install basic dependencies needed for SIMON
+	## Install basic dependencies needed for PANDORA
 	echo "===> INSTALLATION step: 1"
 	apt-get install nginx
 	
@@ -332,7 +332,7 @@ cp "$rootfsDir/../../configs/etc/nginx/nginx.conf" "$rootfsDir/etc/nginx/nginx.c
 cp "$rootfsDir/../../configs/etc/nginx/sites-available/default" "$rootfsDir/etc/nginx/sites-available/default"
 cp "$rootfsDir/../../configs/etc/nginx/sites-available/genular.conf" "$rootfsDir/etc/nginx/sites-available/genular.conf"
 
-## Add SIMON analysis CRONtab file
+## Add PANDORA analysis CRONtab file
 cp "$rootfsDir/../../configs/etc/cron.d/genular" "$rootfsDir/etc/cron.d/genular"
 chmod +x "$rootfsDir/etc/cron.d/genular"
 touch "$rootfsDir/var/log/cron.log"
@@ -351,7 +351,7 @@ echo "Installation of advanced dependencies START"
 	apt-get update
 	apt-get install vim
 
-	## Install basic dependencies needed for SIMON
+	## Install basic dependencies needed for PANDORA
 	echo "===> INSTALLATION step: 0"
 	apt install build-essential libssl-dev
 
@@ -482,7 +482,7 @@ echo "Installation of advanced dependencies START"
 	php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 
-	## We will use this directory in SIMON to save data into
+	## We will use this directory in PANDORA to save data into
 	mkdir "/mnt/data" && chmod 777 "/mnt/data"
 	## If user mounts custom directory for data persistance we will use this one
 	mkdir "/mnt/usrdata" && chmod 777 "/mnt/usrdata"
@@ -625,7 +625,7 @@ fi
 
 if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
 
-	echo "Installing SIMON deps START"
+	echo "Installing PANDORA deps START"
 	(	set -x 
 		rootfs_chroot /bin/bash  /home/genular/install_dependencies.sh $GITHUB_PAT
 	)
@@ -634,7 +634,7 @@ if [ -f "$rootfsDir/home/genular/install_dependencies.sh" ]; then
 		chown -hR genular:www-data "/var/www/genular"
 __EOS__
 	)
-	echo "Installing SIMON deps END"
+	echo "Installing PANDORA deps END"
 
 fi
 

@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2021-02-04 14:55:57
  */
-namespace SIMON\System;
+namespace PANDORA\System;
 
 // PSR 7 standard.
 use GuzzleHttp\Client as HTTPClient;
@@ -14,7 +14,7 @@ use GuzzleHttp\RequestOptions;
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class System {
 	protected $database;
@@ -55,7 +55,7 @@ class System {
 		$this->HTTPClient = $HTTPClient;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\System constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\System constructed");
 	}
 
 	/**
@@ -63,7 +63,7 @@ class System {
 	 * @return [type] [description]
 	 */
 	public function init() {
-		$this->logger->addInfo("==> INFO: SIMON\System initializing");
+		$this->logger->addInfo("==> INFO: PANDORA\System initializing");
 		$this->initModelPerformanceVariables();
 		$this->initModelsPacakges();
 	}
@@ -132,7 +132,7 @@ class System {
 	 */
 	public function reset() {
 		foreach ($this->tables as $table) {
-			$this->logger->addInfo("==> INFO: SIMON\System deleting records from: " . $table);
+			$this->logger->addInfo("==> INFO: PANDORA\System deleting records from: " . $table);
 			$this->database->delete($table, []);
 		}
 	}
@@ -210,7 +210,7 @@ class System {
 		$packages = [];
 
 		$endpoint = $this->Config->get('default.analysis.server.url') . "/analysis/other/available-packages";
-		$this->logger->addInfo("==> INFO: SIMON\System\initModelsPacakges fetching packages from: " . $endpoint);
+		$this->logger->addInfo("==> INFO: PANDORA\System\initModelsPacakges fetching packages from: " . $endpoint);
 
 		try {
 			$res = $this->HTTPClient->request('GET', $endpoint, ['verify' => false, 'allow_redirects' => true, 'connect_timeout' => 1200, 'timeout' => 1200, 'debug' => false]);
@@ -225,7 +225,7 @@ class System {
 			}
 		} catch (\GuzzleHttp\Exception\ServerException $e) {
 			$httpError = $e->getResponse()->getBody()->getContents();
-			$this->logger->error("SIMON\System initModelsPacakges ClientException " . $httpError);
+			$this->logger->error("PANDORA\System initModelsPacakges ClientException " . $httpError);
 		}
 
 		if (count($data) > 0) {

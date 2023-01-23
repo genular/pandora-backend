@@ -21,11 +21,11 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 	$success = false;
 	$message = array();
 
-	$FileSystem = $this->get('SIMON\System\FileSystem');
-	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
-	$ResumableUpload = $this->get('SIMON\System\ResumableUpload');
+	$FileSystem = $this->get('PANDORA\System\FileSystem');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+	$ResumableUpload = $this->get('PANDORA\System\ResumableUpload');
 
-	$Helpers = $this->get('SIMON\Helpers\Helpers');
+	$Helpers = $this->get('PANDORA\Helpers\Helpers');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -37,12 +37,12 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 		foreach ($_FILES as $file) {
 			if ($file['error'] !== 0) {
 				$message[] = 'file_error_' . $file['error'];
-				$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/upload' file_error " . json_encode($file));
+				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' file_error " . json_encode($file));
 				continue;
 			}
 			if (!$file['tmp_name']) {
 				$message[] = 'file_error_tmp';
-				$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/upload' file_error_tmp " . json_encode($file));
+				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' file_error_tmp " . json_encode($file));
 				continue;
 			}
 			$uploaded_path = $file['tmp_name'];
@@ -126,11 +126,11 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 	$success = false;
 	$message = array();
 
-	$FileSystem = $this->get('SIMON\System\FileSystem');
-	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
-	$ResumableUpload = $this->get('SIMON\System\ResumableUpload');
+	$FileSystem = $this->get('PANDORA\System\FileSystem');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+	$ResumableUpload = $this->get('PANDORA\System\ResumableUpload');
 
-	$Helpers = $this->get('SIMON\Helpers\Helpers');
+	$Helpers = $this->get('PANDORA\Helpers\Helpers');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -205,7 +205,7 @@ $app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $
 	$message = false;
 
 	$Config = $this->get('Noodlehaus\Config');
-	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -245,8 +245,8 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 	$success = true;
 	$message = false;
 
-	$FileSystem = $this->get('SIMON\System\FileSystem');
-	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
+	$FileSystem = $this->get('PANDORA\System\FileSystem');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -292,13 +292,13 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	$config = $this->get('Noodlehaus\Config');
 	$backend_server_url = $config->get('default.backend.server.url');
 
-	$FileSystem = $this->get('SIMON\System\FileSystem');
-	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
-	$Helpers = $this->get('SIMON\Helpers\Helpers');
+	$FileSystem = $this->get('PANDORA\System\FileSystem');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+	$Helpers = $this->get('PANDORA\Helpers\Helpers');
 
-	$DatasetResamples = $this->get('SIMON\Dataset\DatasetResamples');
-	$DatasetResamplesMappings = $this->get('SIMON\Dataset\DatasetResamplesMappings');
-	$DatasetQueue = $this->get('SIMON\Dataset\DatasetQueue');
+	$DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
+	$DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
+	$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -327,7 +327,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 			$queueID = $recordDetails["queueID"];
 
 		} else if ($downloadType === "models") {
-			$Models = $this->get('SIMON\Models\Models');
+			$Models = $this->get('PANDORA\Models\Models');
 			$recordDetails = $Models->getDetailsByID($recordID, $user_id);
 
 		}
@@ -385,7 +385,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 				}
 
 		
-				$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/download' compressing file for download: " . $fileInput);
+				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/download' compressing file for download: " . $fileInput);
 				$download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);
 
 				if ($download_url !== false) {
@@ -416,8 +416,8 @@ $app->get('/backend/system/filesystem/file-details/{selectedFiles:.*}', function
 	$message = array();
 
 	$config = $this->get('Noodlehaus\Config');
-	$UsersFiles = $this->get('SIMON\Users\UsersFiles');
-	$Helpers = $this->get('SIMON\Helpers\Helpers');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+	$Helpers = $this->get('PANDORA\Helpers\Helpers');
 
 	$selectedFiles = [];
 	if (isset($args['selectedFiles'])) {
@@ -425,7 +425,7 @@ $app->get('/backend/system/filesystem/file-details/{selectedFiles:.*}', function
 	}
 
 	foreach ($selectedFiles["selectedFilesIDs"] as $selectedFileID) {
-		$this->get('Monolog\Logger')->info("SIMON '/backend/system/filesystem/file-details' getting details " . $selectedFileID);
+		$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/file-details' getting details " . $selectedFileID);
 
 		$details = $UsersFiles->getFileDetails($selectedFileID, ["details"], true);
 

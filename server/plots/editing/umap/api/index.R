@@ -1,7 +1,7 @@
 #* Generate umap plot
 #* @serializer contentType list(type='image/png')
 #' @post /plots/editing/umap/renderPlot
-simon$handle$plots$editing$umap$renderPlot <- expression(
+pandora$handle$plots$editing$umap$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 

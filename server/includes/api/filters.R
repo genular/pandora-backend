@@ -1,12 +1,12 @@
 #* @filter logger
-simon$filter$logger <- function(req){
+pandora$filter$logger <- function(req){
     cat(as.character(Sys.time()), "-",  req$REQUEST_METHOD, req$PATH_INFO, "-",  req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n")
     plumber::forward()
 }
 
 #* @filter cors
-simon$filter$cors <- function(req, res){
-    res$setHeader("Access-Control-Allow-Origin", simonConfig$frontend$server$url)
+pandora$filter$cors <- function(req, res){
+    res$setHeader("Access-Control-Allow-Origin", pandoraConfig$frontend$server$url)
     res$setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD")
     res$setHeader("Access-Control-Allow-Headers", "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Origin,Accept,X-Token")
     
@@ -19,7 +19,7 @@ simon$filter$cors <- function(req, res){
 }
 
 #* @filter authentication
-simon$filter$authentication <- function(req, res){
+pandora$filter$authentication <- function(req, res){
     route_whitelist <- c('/analysis/other/available-packages', '/plots/general/download-saved-object')
     current_route <- req$PATH_INFO
 

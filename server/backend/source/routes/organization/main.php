@@ -14,7 +14,7 @@ $app->post('/backend/organization/', function (Request $request, Response $respo
 	$success = true;
 	$message = false;
 
-	$fileSystem = $this->get('SIMON\System\FileSystem');
+	$fileSystem = $this->get('PANDORA\System\FileSystem');
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
 

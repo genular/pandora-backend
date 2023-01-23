@@ -6,7 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2021-02-04 10:35:21
  */
-namespace SIMON\Models;
+namespace PANDORA\Models;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
@@ -23,7 +23,7 @@ class ModelsPackages {
 		$this->database = $database;
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Models\ModelsPackages constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Models\ModelsPackages constructed");
 	}
 
 	/**

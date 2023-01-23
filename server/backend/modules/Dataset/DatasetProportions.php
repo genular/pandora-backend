@@ -6,11 +6,11 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-04-15 10:31:21
  */
-namespace SIMON\Dataset;
+namespace PANDORA\Dataset;
 
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Helpers as Helpers;
+use \PANDORA\Helpers\Helpers as Helpers;
 
 class DatasetProportions {
 	protected $table_name = "dataset_proportions";
@@ -27,7 +27,7 @@ class DatasetProportions {
 		$this->logger = $logger;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: SIMON\Dataset\DatasetProportions constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\Dataset\DatasetProportions constructed");
 	}
 
 	/**
@@ -260,7 +260,7 @@ class DatasetProportions {
 			}
 			## In case we didn't make mapping since database value are missing add unique value manually
 			if ($isClassMapped === false) {
-				$this->logger->addError("==> ERROR: SIMON\Dataset\DatasetProportions\getUniqueValuesCountForClasses cannot find mapping: " . $classesKey . " - " . implode(",", $resampleIDs));
+				$this->logger->addError("==> ERROR: PANDORA\Dataset\DatasetProportions\getUniqueValuesCountForClasses cannot find mapping: " . $classesKey . " - " . implode(",", $resampleIDs));
 				$classes[$classesKey]["unique"] = 0;
 			}
 		}

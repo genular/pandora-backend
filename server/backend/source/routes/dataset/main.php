@@ -14,7 +14,7 @@ $app->post('/backend/dataset/', function (Request $request, Response $response, 
 	$success = true;
 	$message = false;
 
-	$fileSystem = $this->get('SIMON\System\FileSystem');
+	$fileSystem = $this->get('PANDORA\System\FileSystem');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -34,7 +34,7 @@ $app->get('/backend/dataset/import/public/list/{submitData:.*}', function (Reque
 	$success = false;
 	$message = [];
 
-	$fileSystem = $this->get('SIMON\System\FileSystem');
+	$fileSystem = $this->get('PANDORA\System\FileSystem');
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -54,7 +54,7 @@ $app->get('/backend/dataset/import/public/list/{submitData:.*}', function (Reque
 	$custom = isset($submitData['custom']) ? $submitData['custom'] : "";
 
 	if ($submitData && isset($submitData['page'])) {
-		$PublicDatabases = $this->get('SIMON\PublicDatabases\PublicDatabases');
+		$PublicDatabases = $this->get('PANDORA\PublicDatabases\PublicDatabases');
 		list($paginatedData, $countData) = $PublicDatabases->getList($user_id, $page, $limit, $sort_by, $sort, $custom);
 
 		// Lets just convert CSV from example field to associative array
@@ -100,10 +100,10 @@ $app->get('/backend/dataset/import/public/import/{submitData:.*}', function (Req
 
 	if ($datasetIDs && count($datasetIDs) > 0) {
 
-		$PublicDatabases = $this->get('SIMON\PublicDatabases\PublicDatabases');
-		$Helpers = $this->get('SIMON\Helpers\Helpers');
-		$FileSystem = $this->get('SIMON\System\FileSystem');
-		$UsersFiles = $this->get('SIMON\Users\UsersFiles');
+		$PublicDatabases = $this->get('PANDORA\PublicDatabases\PublicDatabases');
+		$Helpers = $this->get('PANDORA\Helpers\Helpers');
+		$FileSystem = $this->get('PANDORA\System\FileSystem');
+		$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
 
 		foreach ($datasetIDs as $datasetIDsKey => $datasetID) {
 			$message[$datasetIDsKey] = [

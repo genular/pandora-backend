@@ -6,14 +6,14 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2019-03-08 16:27:54
  */
-namespace SIMON\PublicDatabases;
+namespace PANDORA\PublicDatabases;
 
 use Noodlehaus\Config as Config;
 use \Medoo\Medoo;
 use \Monolog\Logger;
-use \SIMON\Helpers\Cache as Cache;
-use \SIMON\Helpers\Helpers as Helpers;
-use \SIMON\System\FileSystem as FileSystem;
+use \PANDORA\Helpers\Cache as Cache;
+use \PANDORA\Helpers\Helpers as Helpers;
+use \PANDORA\System\FileSystem as FileSystem;
 
 class PublicDatabases {
 	protected $table_name = "public_databases";
@@ -43,7 +43,7 @@ class PublicDatabases {
 		$this->Helpers = $Helpers;
 		$this->FileSystem = $FileSystem;
 
-		$this->logger->addInfo("==> INFO: SIMON\PublicDatabases\PublicDatabases constructed");
+		$this->logger->addInfo("==> INFO: PANDORA\PublicDatabases\PublicDatabases constructed");
 	}
 
 	/**
