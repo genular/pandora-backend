@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="200" src="https://github.com/genular/pandora/raw/master/src/app/assets/logo/png/dark_logo_transparent@2x.png">
+    <img width="200" src="https://github.com/genular/pandora/raw/master/src/app/assets/logo/png/favicon.png">
 </p>
 
 > Back-end interface for PANDORA
