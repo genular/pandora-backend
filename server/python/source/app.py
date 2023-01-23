@@ -23,10 +23,11 @@ def create_app():
     app.config.from_object(app_config)
 
     @app.route('/', methods=['GET'])
+    
     def index():
         """
         example endpoint
         """
-        return 'Congratulations! Your first endpoint is workin'
+        return 'Congratulations! Your first endpoint is working'
 
     return app

@@ -11,12 +11,13 @@ class Configuration(object):
     Development environment configuration
     """
     with open('./config.yml', 'r') as configFile:
-        config = yaml.load(configFile)
+        print(configFile)
+        config = yaml.full_load(configFile)
 
     CONFIG = config["default"]
     DEBUG = True
     TESTING = False
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    #JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+    #SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
 app_config = Configuration

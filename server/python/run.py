@@ -6,7 +6,9 @@
 from source.app import create_app
 
 if __name__ == '__main__':
+	
 	app = create_app()
+
 	app.run(host=app.config["CONFIG"]["analysis_python"]["server"]["proxy_host"], 
 		port=app.config["CONFIG"]["analysis_python"]["server"]["proxy_port"], 
 		debug=app.config["CONFIG"]["analysis_python"]["server"]["debug"], 
