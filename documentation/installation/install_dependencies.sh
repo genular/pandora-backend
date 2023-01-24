@@ -417,11 +417,15 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
 
         if [ "${R_VERSION}" == "3.6.3" ] ; then
             ## New foreign package is only available for R > 4
+            sudo Rscript -e "remotes::install_github('hojsgaard/pbkrtest@48c9a6f76037abbe8bdba1cebab4d85d601103d9')"
             sudo Rscript -e "remotes::install_github('cran/foreign@726985b019b3d18b353f387c1211e5b147e97f71')"
             sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"
             sudo Rscript -e "devtools::install_github('astamm/nloptr@d3a894019d16738915fe561b56388533cb48f03a')"
             sudo Rscript -e "devtools::install_github('cran/car')"
-            sudo Rscript -e "devtools::install_github('husson/FactoMineR@3190c5d0ccb54b220e4e7b0b93713662c3bf55e0')"        
+            sudo Rscript -e "devtools::install_github('husson/FactoMineR@3190c5d0ccb54b220e4e7b0b93713662c3bf55e0')"
+
+            sudo Rscript -e "devtools::install_github('cran/rstatix')"
+            sudo Rscript -e "devtools::install_github('kassambara/ggpubr@2ad5180bc85e39091cd72659df730df011c7e62e')"
         else
             sudo Rscript -e "remotes::install_github('cran/foreign')"
             sudo Rscript -e "devtools::install_github('harrelfe/Hmisc')"
@@ -534,6 +538,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
             fi
             sudo Rscript -e "install.packages(c('car', 'missForest'), repos='http://cran.us.r-project.org')"
             
+
             ## Install plsRglm from github
             sudo Rscript -e "devtools::install_github('fbertran/plsRglm')"
 
@@ -567,7 +572,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
             echo ""
             ## Install tensorflow requirements
             ## Install pip and virtualenv for Python 2 
-            sudo apt-get install python-pip python-virtualenv
+            sudo apt-get install python3-pip python3-virtualenv python3-venv
             ## https://tensorflow.rstudio.com/tensorflow/reference/install_tensorflow.html
             sudo Rscript -e "tensorflow::install_tensorflow(method='auto')"
         fi 
