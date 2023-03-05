@@ -187,7 +187,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 		$success = false;
 	} else {
 		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage");
-		$url = 'https://snap.genular.org/pandora.php';
+		$url = 'https://snap.genular.org/simon.php';
 		$collect_data = $post;
 		unset($collect_data["user"]['password']);
 
