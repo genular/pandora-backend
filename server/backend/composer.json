@@ -20,7 +20,7 @@
         "league/flysystem-sftp": "^1.0",
         "aws/aws-sdk-php": "^3.61",
         "guzzlehttp/guzzle": "^6.3",
-        "league/csv": "^9.0",
+        "league/csv": "9.7.3",
         "league/container": "^2.4",
         "matthiasmullie/scrapbook": "^1.4",
         "paquettg/php-html-parser": "^1.7",

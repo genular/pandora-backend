@@ -168,29 +168,39 @@ class UsersFiles {
 	 * @param  boolean $cache            [description]
 	 * @return [type]                    [description]
 	 */
-	public function getAllFilesByUserID($user_id, $upload_directory, $cache = true, $sort = "DESC", $sort_by = "id") {
+	public function getAllFilesByUserID($user_id, $upload_directory, $cache = true, $sort = "DESC", $sort_by = "id", $include_directories = false){
 
 		$cache_key = $this->table_name . "_getAllFilesByUserID_" . md5($user_id . $upload_directory . $sort . $sort_by);
 
 		$details = $this->Cache->getArray($cache_key);
 
+
+
 		if ($cache === false || $details === false) {
 			$columns = [
 				"id",
 				"item_type",
+				"file_path",
 				"size",
 				"display_filename",
 				"extension",
 				"mime_type",
 			];
+
+			$item_type = 1;
+			if($include_directories) {
+				$item_type =  [1, 3];
+			}
+
 			$conditions = [
 				'uid' => $user_id,
-				'item_type' => 1,
-				'file_path[~]' => $upload_directory,
+				'item_type' => $item_type,
+				'file_path[~]' => "%".$upload_directory."%",
 				'ORDER' => [$sort_by => $sort],
 			];
-
 			$details = $this->database->select($this->table_name, $columns, $conditions);
+
+
 			$this->Cache->setArray($cache_key, $details, 5000);
 		}
 

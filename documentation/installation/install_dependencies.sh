@@ -213,6 +213,41 @@ if [ "${MODS[pandora_cron]}" == y ] ; then
             exit 1
         fi
     fi
+
+    ## Install salmon
+    cd /tmp
+    wget https://github.com/COMBINE-lab/salmon/releases/download/v1.9.0/salmon-1.9.0_linux_x86_64.tar.gz
+    sudo tar xvzf salmon-1.9.0_linux_x86_64.tar.gz -C /usr/src
+    sudo mv /usr/src/salmon-1.9.0_linux_x86_64 /usr/src/salmon
+    sudo ln -s /usr/src/salmon/bin/salmon /usr/bin/salmon
+
+    cd /usr/src/salmon
+
+    sudo mkdir -p /usr/src/salmon/index/human
+    sudo mkdir -p /usr/src/salmon/index/mouse
+    sudo chmod -R 777 /usr/src/salmon/index
+
+    sudo mkdir -p /usr/src/salmon/index_processed/human
+    sudo mkdir -p /usr/src/salmon/index_processed/mouse
+    sudo chmod 777 -R /usr/src/salmon/index_processed
+
+    cd /usr/src/salmon/index/human
+    wget ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
+    wget ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz
+    cat Homo_sapiens.GRCh38.cdna.all.fa.gz Homo_sapiens.GRCh38.ncrna.fa.gz > Homo_sapiens.GRCh38.rna.fa.gz
+    rm Homo_sapiens.GRCh38.ncrna.fa.gz
+    rm Homo_sapiens.GRCh38.cdna.all.fa.gz
+
+
+    cd /usr/src/salmon/index/mouse
+    wget https://ftp.ensembl.org/pub/current_fasta/mus_musculus/cdna/Mus_musculus.GRCm39.cdna.all.fa.gz
+
+    salmon index --threads 64 --transcripts /usr/src/salmon/index/human/Homo_sapiens.GRCh38.cdna.all.fa.gz --index /usr/src/salmon/index_processed/human
+    salmon index --threads 64 --transcripts /usr/src/salmon/index/mouse/Mus_musculus.GRCm39.cdna.all.fa.gz --index /usr/src/salmon/index_processed/mouse
+
+    sudo rm -Rf /usr/src/salmon/index/human
+    sudo rm -Rf /usr/src/salmon/index/mouse
+    
 fi
 
 echo "${clear}"

@@ -195,7 +195,7 @@ class Helpers {
 
 	/**
 	 * [validateCSVFileHeader description]
-	 * @param  [type] $filePath [description]
+	 * @param  [type] $filePath
 	 * @return [type]           [description]
 	 */
 	public function validateCSVFileHeader($filePath) {
@@ -203,17 +203,6 @@ class Helpers {
 		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: filePath: " . $filePath);
 
 		$path_parts = pathinfo($filePath);
-
-		// Check if we have BOM in the file
-		$fileContent = file_get_contents($filePath);
-		$bom = pack("CCC", 0xef, 0xbb, 0xbf);
-		if (0 === strncmp($fileContent, $bom, 3)) {
-			// BOM Detected
-			$bom = pack('H*','EFBBBF');
-    		$fileContent = preg_replace("/^$bom/", '', $fileContent);
-			//$fileContent = mb_convert_encoding($fileContent, "UTF-8");
-			file_put_contents($filePath, $fileContent);
-		}
 
 		$data = array(
 			'info' => $path_parts,
@@ -228,8 +217,23 @@ class Helpers {
 			'details' => array("header" => array("original" => "", "formatted" => [])),
 			'message' => []
 		);
+
+		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: extension: ". $data['extension']);
 		// Skip header check for system files and do it only for user files
-		if (file_exists($filePath) && $data['item_type'] === 1) {
+		if (file_exists($filePath) && $data['item_type'] === 1 && $data['extension'] === '.csv'){
+
+			// Check if we have BOM in the file and remove it
+			$fileContent = file_get_contents($filePath);
+			$bom = pack("CCC", 0xef, 0xbb, 0xbf);
+
+			if (0 === strncmp($fileContent, $bom, 3)) {
+				// BOM Detected
+				$bom = pack('H*','EFBBBF');
+	    		$fileContent = preg_replace("/^$bom/", '', $fileContent);
+				//$fileContent = mb_convert_encoding($fileContent, "UTF-8");
+				file_put_contents($filePath, $fileContent);
+			}
+
 			$header = trim(fgets(fopen($filePath, 'r')));
 			// Remove newline character from header
 			if (substr($header, -2) === "\n") {
@@ -272,11 +276,8 @@ EOFC;
 
 				$pandas_output = shell_exec($pandas_command);
 
-				$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: pandas_command: ");
-				$this->logger->addInfo($pandas_command);
-
-				// $this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: pandas_output: ");
-				// $this->logger->addInfo($pandas_output);
+				// $this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: pandas_command: ");
+				// $this->logger->addInfo($pandas_command);
 
 				$pandas_output = json_decode(trim($pandas_output), true);
 
@@ -293,7 +294,7 @@ EOFC;
 			} else {
 				array_push($data['message'], "delimiters_check");
 			}
-		}
+		} // Header check for user files
 
 		return ($data);
 	}

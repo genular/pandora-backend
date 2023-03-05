@@ -272,6 +272,7 @@ class FileSystem {
 		$file_basename = basename($file_from);
 
 		$file_to = "users/" . $user_id . "/" . $upload_directory . "/" . $file_basename;
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem uploadFile START: " . $file_to);
 
 		$exists = $this->filesystem->has($file_to);
 		if ($exists === true) {
@@ -287,6 +288,8 @@ class FileSystem {
 		if (is_resource($stream)) {
 			fclose($stream);
 		}
+		
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem uploadFile END: " . $file_to);
 
 		return $file_to;
 	}

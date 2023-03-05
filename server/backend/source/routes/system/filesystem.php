@@ -10,11 +10,59 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
+
+
+/**
+ * Retrieves list of files for the user, uploaded in specific user directory
+ *
+ * @param  {object} submitData Object containing one string variable: selectedDirectory that corresponds to upload_directory column in users_files table
+ * @return {json} JSON encoded API response object
+ */ 
+$app->get('/backend/system/filesystem/create/{submitData:.*}', function (Request $request, Response $response, array $args) {
+	$success = false;
+	$message = false;
+
+	$Config = $this->get('Noodlehaus\Config');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$submitData = false;
+	if (isset($args['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+	}
+
+	$directoryPath = null;
+	if ($submitData && isset($submitData['directoryPath'])) {
+		$directoryPath = $submitData['directoryPath'];
+	}
+
+	if($directoryPath){
+		// get all sub-directories separated by "/"
+		$directoryPath = explode("/", $directoryPath);
+
+		$fullPath = "";
+
+		foreach ($directoryPath as $subdirectory) {
+			$fullPath .= $fullPath . "/" . $subdirectory;
+			// Check if directory exists and if not create one
+			if(!$UsersFiles->isDirectory($user_id, $fullPath)){
+				$UsersFiles->createDirectory($user_id, $fullPath);
+			}
+
+		}
+	}
+
+	return $response->withJson(["success" => $success, "message" => $data]);
+
+});
+
+
 /**
  * Multi part ajax file upload
  *
  * @param  {array} $_FILES
- *
  * @return {json} JSON encoded API response object
  */
 $app->post('/backend/system/filesystem/upload', function (Request $request, Response $response, array $args) {
@@ -32,6 +80,12 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 	$post = $request->getParsedBody();
 	$uploadedFiles = $request->getUploadedFiles();
+
+	$uploadPath = "uploads";
+	if ($request->hasHeader('U-Path')) {
+		$uploadPath =  reset($request->getHeader('U-Path'));
+	}
+
 
 	if (!empty($_FILES)) {
 		foreach ($_FILES as $file) {
@@ -73,12 +127,25 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 		$details = $Helpers->validateCSVFileHeader($uploaded_path);
 
 		if (count($details["message"]) === 0) {
+
+			$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' renamePathToHash " . json_encode($details));
 			$renamed_path = $Helpers->renamePathToHash($details);
-			// Compress original file to GZ archive format
-			$gzipped_path = $Helpers->compressPath($renamed_path);
+
+			if($details['extension'] === ".csv"){
+				// Compress original file to GZ archive format
+				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' renamed_path " . $renamed_path);
+				$gzipped_path = $Helpers->compressPath($renamed_path);
+			}else{
+				$gzipped_path = $renamed_path;
+			}
+
 			// Upload compressed file to the Storage
-			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, "uploads");
+			$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' uploadFile " . $gzipped_path);
+			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, $uploadPath);
+
 			// Save reference to Database
+			$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' insertFileToDatabase " . $remote_path);
+
 			$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
 
 			sleep(3);
@@ -117,6 +184,54 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 });
 
 
+
+/**
+ * Create Directory
+ */ 
+$app->get('/backend/system/filesystem/directory-create/{submitData:.*}', function (Request $request, Response $response, array $args) {
+	$success = true;
+	$message = false;
+
+	$Config = $this->get('Noodlehaus\Config');
+	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$submitData = false;
+	if (isset($args['submitData'])) {
+		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+	}
+
+	$currentDirectory = false;
+	if ($submitData && isset($submitData['currentDirectory'])) {
+		$currentDirectory = $submitData['currentDirectory'];
+	}
+
+	$subDirectory = false;
+	if ($submitData && isset($submitData['subDirectory'])) {
+		$subDirectory = $submitData['subDirectory'];
+	}
+	
+	$details = [];
+	$details['item_type'] = 3;
+	$details['basename'] = md5($subDirectory);
+	$details['filename'] = $subDirectory;
+	$details['filesize'] = null;
+	$details['extension'] = "directory";
+	$details['mime_type'] = "text/plain";
+	$details['file_hash'] = null;
+	$details['details'] = [];
+
+	$remote_path = "users/".$user_id."/".$currentDirectory."/".$subDirectory;
+
+	// Save reference to Database
+	$message = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+
+	return $response->withJson(["success" => $success, "message" =>  $message]);
+
+});
+
 /**
  * Local file upload - upload file that is already on the system
  * @param  {local_file_path} Path to the file in local PHP Back-end file-system
@@ -153,7 +268,6 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 	if ($success === true) {
 		// Validate File Header and rename it to standardize column names!
 		$details = $Helpers->validateCSVFileHeader($uploaded_path);
-
 
 		if (count($details["message"]) === 0) {
 			$renamed_path = $Helpers->renamePathToHash($details);
@@ -195,11 +309,9 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 
 /**
  * Retrieves list of files for the user, uploaded in specific user directory
- *
  * @param  {object} submitData Object containing one string variable: selectedDirectory that corresponds to upload_directory column in users_files table
- *
  * @return {json} JSON encoded API response object
- */
+ */ 
 $app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
@@ -228,17 +340,30 @@ $app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $
 		$sort_by = $submitData['settings']['sort_by'];
 	}
 
-	$data = $UsersFiles->getAllFilesByUserID($user_id, "uploads", false, $sort, $sort_by);
+	$include_directories = true;
+	$data = $UsersFiles->getAllFilesByUserID($user_id, $selectedDirectory, false, $sort, $sort_by, $include_directories);
 
-	return $response->withJson(["success" => $success, "message" => $data]);
+	// Remove item if current path is not the root item path
+	$selected_directory_prefix = "users/".$user_id."/".$selectedDirectory;
+	foreach ($data as $item_id => $item){
+		$item_directory_prefix = pathinfo($item['file_path'], PATHINFO_DIRNAME);
+		if($selected_directory_prefix !== $item_directory_prefix){
+			unset($data[$item_id]);
+		}
+	}
+
+	$message = [];
+	foreach ($data as $item) {
+		$message[] = $item;
+	}
+
+	return $response->withJson(["success" => $success, "message" =>  $message]);
 
 });
 
 /**
  * Deletes file from database and from file system
- *
  * @param  {int} fileID ID of the desired file to be deleted from users_files database table
- *
  * @return {json} JSON encoded API response object
  */
 $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
@@ -258,11 +383,41 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 
 	if (isset($submitData['selectedFiles'])) {
 		foreach ($submitData['selectedFiles'] as $selectedFilesKey => $selectedFilesValue) {
-			$fileID = (int) $selectedFilesValue;
+
+			$fileID = (int) $selectedFilesValue['fileId'];
+			$fileType = (int) $selectedFilesValue['item_type']; // 1 - file, 3 - directory
+
 			$file_details = $UsersFiles->getFileDetails($fileID, ["uid", "file_path"], false);
 
 			if ($file_details !== false && $user_id == $file_details["uid"]) {
-				$message = $FileSystem->deleteFileByID($fileID, $file_details["file_path"]);
+
+				if($fileType === 1){
+					$message = $FileSystem->deleteFileByID($fileID, $file_details["file_path"]);	
+				}else if($fileType === 3){
+					
+					$selectedDirectory = $file_details["file_path"];
+					$data = $UsersFiles->getAllFilesByUserID($user_id, $selectedDirectory, false, "DESC", "id", true);
+
+					// Remove item if current path is not the root item path
+					foreach ($data as $item_id => $item){
+						if((int)$item['item_type'] === 1){
+							$item_directory_prefix = pathinfo($item['file_path'], PATHINFO_DIRNAME);	
+						}else if((int)$item['item_type'] === 3){
+							$item_directory_prefix = $item['file_path'];
+						}
+
+						if($selectedDirectory !== $item_directory_prefix){
+							unset($data[$item_id]);
+						}
+					}
+
+					foreach ($data as $item) {
+						$message = $FileSystem->deleteFileByID($item["id"], $item["file_path"]);	
+					}
+					$message = true;
+				}
+				
+
 				if ($message === false) {
 					$success = false;
 				}

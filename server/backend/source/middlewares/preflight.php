@@ -17,7 +17,7 @@ $app->add(function (Request $request, Response $response, $next) use ($container
 		'Access-Control-Allow-Credentials' => 'true',
 		'Access-Control-Max-Age' => '60',
 		'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD',
-		'Access-Control-Allow-Headers' => 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Origin,Accept,X-Token',
+		'Access-Control-Allow-Headers' => 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Origin,Accept,X-Token,U-Path',
 	];
 
 	if (!$request->isOptions()) {
