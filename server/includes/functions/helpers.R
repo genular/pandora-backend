@@ -263,13 +263,19 @@ checkCachedList <- function(cachePath){
 #' @param cachePath path to the cached data
 #' @param data path to the cached data
 #' @return boolean
-saveCachedList <- function(cachePath, data){
+saveCachedList <- function(cachePath, data, type = "Rdata"){
     if (file.exists(cachePath)) {
         #Delete file if it exists
         file.remove(cachePath)
     }
     
-    save(data, file = cachePath)    
+    if(type == "Rdata"){
+        save(data, file = cachePath)
+    }else if(type == "csv"){
+        write.csv(data, file = cachePath, row.names = FALSE)
+    }else{
+        save(data, file = cachePath)
+    }
 }
 
 #' @title Check if All Elements in Character Vector are Numeric

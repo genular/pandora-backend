@@ -133,7 +133,8 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
             tsne_cluster_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_plot"), algo="md5", serialize=F),
             tsne_cluster_heatmap_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_heatmap_plot"), algo="md5", serialize=F),
-            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_render_plot"), algo="md5", serialize=F)
+            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_render_plot"), algo="md5", serialize=F),
+            saveDatasetHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_dataset_export"), algo="md5", serialize=F)
         )
 
         if(!is.null(settings$groupingVariables)){
@@ -350,6 +351,12 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
-        return (list(success = TRUE, message = res.data, info.norm = clust_plot_tsne$info.norm))
+
+
+        tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
+        saveCachedList(tmp_path, clust_plot_tsne$info.norm, type = "csv")
+        res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)
+
+        return (list(success = TRUE, message = res.data))
     }
 )

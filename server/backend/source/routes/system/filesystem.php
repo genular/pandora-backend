@@ -83,7 +83,8 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 	$uploadPath = "uploads";
 	if ($request->hasHeader('U-Path')) {
-		$uploadPath =  reset($request->getHeader('U-Path'));
+	    $pathArray = $request->getHeader('U-Path');
+	    $uploadPath = reset($pathArray);
 	}
 
 
