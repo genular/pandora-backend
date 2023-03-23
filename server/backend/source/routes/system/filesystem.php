@@ -82,11 +82,14 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 	$uploadedFiles = $request->getUploadedFiles();
 
 	$uploadPath = "uploads";
-	if ($request->hasHeader('U-Path')) {
-	    $pathArray = $request->getHeader('U-Path');
-	    $uploadPath = reset($pathArray);
+
+	if ($request->getHeader('U-Path')) {
+		$uploadPath = $request->getHeader('U-Path');
+		// get first element from array
+		$uploadPath = $uploadPath[0];
 	}
 
+	$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' uploadPath " . $uploadPath);
 
 	if (!empty($_FILES)) {
 		foreach ($_FILES as $file) {
