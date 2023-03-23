@@ -511,10 +511,32 @@ loadDataFromFileSystem <- function(selectedFilePath, header = T, sep = ',', stri
     # remove any extra spaces in column values
     dataset <- dataset %>% mutate(across(where(is.character), stringr::str_trim))
 
+
     # auto-detect column types
     if(retype == TRUE){
+        print("Retyping columns")
         dataset <- dataset %>% hablar::retype()
     }
 
+    return(dataset)
+}
+#' @title castAllStringsToNA   
+#' @description Removes all strings/words from specified columns in dataset
+#' @param dataset dataframe
+#' @param excludeColumns character
+#' @return dataframe
+castAllStringsToNA <- function(dataset, excludeColumns = c()){
+
+    # 1. Check if there are any non-numeric values in dataset except in excludeColumns
+    includedColumns <- setdiff(colnames(dataset), excludeColumns)
+
+    # 2. If there are any non-numeric values in dataset except in excludeColumns, cast them all to NA
+    suppressWarnings({
+        dataset[includedColumns] <- lapply(dataset[includedColumns], function(column) {
+            as.numeric(column) # Will convert non-numeric values to NA with a warning
+        })
+    })
+
+    # 5. Return the modified dataset
     return(dataset)
 }

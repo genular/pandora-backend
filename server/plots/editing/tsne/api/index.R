@@ -210,6 +210,9 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         dataset <- loadDataFromFileSystem(selectedFilePath)
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
 
+        ## Cast all non numeric values to NA
+        dataset_filtered <- castAllStringsToNA(dataset_filtered, c(settings$colorVariables, settings$groupingVariables))
+
         ## Check if grouping variable is numeric and add prefix to it
         num_test <- dataset_filtered %>% select(where(is.numeric))
         for (groupVariable in settings$groupingVariables) {
@@ -248,6 +251,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
         set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
+
 
         ## Main t-SNE plot 
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
@@ -321,12 +325,22 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
            clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }
 
+        ## Get clusters from clust_plot_tsne$info.norm[["cluster"]] and add it to original dataset in "dataset" variable
+        dastaset_with_clusters <- dataset
+        if(nrow(dastaset_with_clusters) == nrow(clust_plot_tsne$info.norm)){
+            dastaset_with_clusters$cluster <- clust_plot_tsne$info.norm$cluster
+        }
+        ## Rename column names to its originals
+        names(dastaset_with_clusters) <- plyr::mapvalues(names(dastaset_with_clusters), from=fileHeader$remapped, to=fileHeader$original)
+        
+
         tmp_path <- plot_clustered_tsne(clust_plot_tsne$info.norm, clust_plot_tsne$cluster_data, settings, plot_unique_hash$tsne_cluster_plot)
         res.data$tsne_cluster_plot <- optimizeSVGFile(tmp_path)
         res.data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
 
 
         print(paste0("===> Hierarchical clustering of clustered data"))
+
         tmp_path <- cluster_heatmap(clust_plot_tsne, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
 
         if(tmp_path != FALSE){
@@ -354,7 +368,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
-        saveCachedList(tmp_path, clust_plot_tsne$info.norm, type = "csv")
+        saveCachedList(tmp_path, dastaset_with_clusters, type = "csv")
         res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)
 
         return (list(success = TRUE, message = res.data))
