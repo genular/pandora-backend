@@ -77,8 +77,8 @@ class FileSystem {
 			$this->storage_type = "local";
 			$adapter = new Local(
 				$this->Config->get('default.storage.local.data_path'),
-				0,
-				Local::DISALLOW_LINKS,
+				LOCK_SH,
+				Local::SKIP_LINKS,
 				[
 					'file' => [
 						'public' => 0777,
@@ -119,6 +119,8 @@ class FileSystem {
 
 		$this->filesystem = new Flysystem($adapter, new FConfig([
 			'disable_asserts' => true,
+			'visibility' => 'public',
+			'directory_visibility' => 'public'
 		]));
 	}
 	/**
@@ -343,8 +345,7 @@ class FileSystem {
 			}
 		}
 
-		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile remote file-path: " . $file_path);
-
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile save to file-path: " . $file_path);
 		// Retrieve a read-stream
 		$stream = $this->filesystem->readStream($remotePath);
 
@@ -352,7 +353,7 @@ class FileSystem {
 		if (is_resource($contents)) {
 			fclose($contents);
 		}
-
+		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile file_path_gz: " . $file_path_gz);
 		file_put_contents($file_path_gz, $contents);
 
 		$extracted_file = trim(shell_exec($ungz_cmd));
@@ -362,6 +363,7 @@ class FileSystem {
 
 		if ($new_file_name !== false) {
 			$new_file_name = $this->temp_dir . "/" . $new_file_name;
+			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile new_file_name: " . $new_file_name);
 			rename($file_path, $new_file_name);
 
 			$file_path = $new_file_name;
@@ -383,11 +385,11 @@ class FileSystem {
 		$status = false;
 
 		$public_directory = realpath(realpath(dirname(__DIR__)) . "/../public/downloads");
-
 		$ouputPath = $public_directory . "/" . $outputFileName;
 
 		if (file_exists($inputPath)) {
 			$status = true;
+
 			if(is_file($inputPath)){
 				$inputCMDPath = basename($inputPath);
 			}else{
@@ -396,8 +398,9 @@ class FileSystem {
 
 			// tar -zcvf /tmp/out.tar.gz /var/log/nginx & openssl aes-256-cbc -k pandora2021 -a -salt -in /tmp/out.tar.gz -out /tmp/out.tar.gz.enc
 			$gz_cmd = "cd ".dirname($inputPath)." && ".$this->targz . " -zcvf " . $ouputPath . " " . $inputCMDPath;
-			
 			$command_output = trim(shell_exec($gz_cmd));
+		
+
 			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem compressFileOrDirectory: " . $gz_cmd);
 		} else {
 			$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem compressFileOrDirectory file doesn't exsist: " . $inputPath);

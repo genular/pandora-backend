@@ -477,19 +477,17 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		$recordDetails = false;
 		if ($downloadType === "queue") {
 			$recordDetails = $DatasetQueue->getDetailsByID($recordID, $user_id);
-
 			$queueID = $recordDetails["id"];
 
 		} else if ($downloadType === "resample") {
 			$recordDetails = $DatasetResamples->getDetailsByID($recordID, $user_id);
-
 			$queueID = $recordDetails["queueID"];
 
 		} else if ($downloadType === "models") {
 			$Models = $this->get('PANDORA\Models\Models');
 			$recordDetails = $Models->getDetailsByID($recordID, $user_id);
-
 		}
+
 		// 1st fetch all necessarily file IDs from database
 		$downloadIDs = [];
 		if ($recordDetails) {
@@ -522,6 +520,8 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 			if (isset($fileDetails['file_path'])) {
 				$display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
 
+
+
 				// get remote link with a new name
 				// $download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
 				$download_filename = str_replace(".tar.gz","", $display_filename);
@@ -539,11 +539,11 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 				// Download and de-compress
 				$fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
 
+
 				if ($downloadType !== "models") {
 					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings); 
 				}
 
-		
 				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/download' compressing file for download: " . $fileInput);
 				$download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);
 

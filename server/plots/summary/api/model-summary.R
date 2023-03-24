@@ -100,8 +100,9 @@ pandora$handle$plots$modelsummary$renderPlot <- expression(
         }
 
 
-        if(!is.null(trainingPredictions)){
+        if(!is.null(trainingPredictions)){ 
             tmp_path <- plot_auc_roc_training(trainingPredictions, settings, plot_unique_hash[["training"]][["auc_roc"]])
+
             res.data$training$auc_roc = optimizeSVGFile(tmp_path)
             res.data$training$auc_roc_png = convertSVGtoPNG(tmp_path)
         }
@@ -113,6 +114,7 @@ pandora$handle$plots$modelsummary$renderPlot <- expression(
             testingPredictions$referenceData <- as.numeric(testingPredictions$referenceData)
                         
             tmp_path <- plot_auc_roc_testing(testingPredictions, settings, plot_unique_hash[["testing"]][["auc_roc"]])
+            
             res.data$testing$auc_roc = optimizeSVGFile(tmp_path)
             res.data$testing$auc_roc_png = convertSVGtoPNG(tmp_path)
         }

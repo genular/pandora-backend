@@ -20,7 +20,7 @@ class UsersSessions {
 	) {
 		$this->database = $database;
 		$this->logger = $logger;
-		$this->logger->addInfo("==> INFO: PANDORA\Users\UsersSessions constructed");
+		// $this->logger->addInfo("==> INFO: PANDORA\Users\UsersSessions constructed");
 	}
 
 	/**

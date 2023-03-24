@@ -19,7 +19,7 @@ class Helpers {
 
 		$this->logger = $logger;
 		// Log anything.
-		$this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
+		//$this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
 	}
 	/**
 	 * [isJson description]

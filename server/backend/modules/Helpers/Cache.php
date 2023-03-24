@@ -31,7 +31,7 @@ class Cache {
 		$this->Config = $Config;
 		$this->Helpers = $Helpers;
 		
-		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Cache constructed");
+		//$this->logger->addInfo("==> INFO: PANDORA\Helpers\Cache constructed");
 
 		$cache_directory = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/cache";
 

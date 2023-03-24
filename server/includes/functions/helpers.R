@@ -506,9 +506,13 @@ processTimeout <- function(expr, envir = parent.frame(), timeout, onTimeout=c("e
 #' @return dataframe
 loadDataFromFileSystem <- function(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE, retype = TRUE){
 
-    dataset <- data.table::fread(selectedFilePath, header = header, sep = sep, stringsAsFactors = stringsAsFactors, data.table = data.table)
+    nastrings <- c("NA","","BLANK","<<VALUE-SUPPRESSED>>",'N/A',"NULL","(Missing)","#VALUE!","#DIV/0!","#REF!",
+                   "#NULL!","#N/A","#NUM!","missing","N A","N/A","NA","NA","N /A","N / A","N / A","N / A","na",
+                   "n a","n/a","na","na","n /a","n / a","a / a","n / a","null","\\?","\\*","\\.")
+
+    dataset <- data.table::fread(selectedFilePath, header = header, sep = sep, stringsAsFactors = stringsAsFactors, data.table = data.table, na.strings = nastrings)
     
-    # remove any extra spaces in column values
+    # remove any extra spaces in character column values
     dataset <- dataset %>% mutate(across(where(is.character), stringr::str_trim))
 
 

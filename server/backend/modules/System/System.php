@@ -55,7 +55,7 @@ class System {
 		$this->HTTPClient = $HTTPClient;
 		$this->Helpers = $Helpers;
 		// Log anything.
-		$this->logger->addInfo("==> INFO: PANDORA\System constructed");
+		// $this->logger->addInfo("==> INFO: PANDORA\System constructed");
 	}
 
 	/**
