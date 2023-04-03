@@ -26,7 +26,7 @@ class OpenAI {
 
 	public function get($prompt) {
 
-		$open_ai_key = "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";
+		$open_ai_key = "PLACEHOLDER";
 		$open_ai = new OpenAi($open_ai_key);
 
 		$complete = $open_ai->chat([
