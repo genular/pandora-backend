@@ -64,6 +64,10 @@ This will create a new file: `documentation/docker_images/configuration.json` wh
 Remove `--network=host` if needed.
 `docker build --no-cache --network=host --tag "genular/pandora:latest" --file ./Dockerfile .`
 
+#### 2.1. Publish new image
+
+`docker push genular/pandora:latest`
+
 ## 3. Running PANDORA Container
 
 In order to run a test instance of `PANDORA` we first need to prepare the environment.

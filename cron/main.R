@@ -141,7 +141,15 @@ if(length(serverData) < 1){
                     invisible(file.remove(UPTIME_PID))
                 }
             }else{
-                cat(paste0("===> INFO: Quitting found  ",length(process_list)," running processes \r\n"))
+                cat(paste0("===> INFO: Quitting, found ",length(process_list)," running process \r\n"))
+                ## Check for ghost processes that are not running anymore
+                if(length(process_list) == 1){
+                    ## Remove PID file
+                    if(file.exists(UPTIME_PID)){
+                        cat(paste0("======> INFO: Deleting UPTIME_PID file for ghost process \r\n"))
+                        invisible(file.remove(UPTIME_PID))
+                    }
+                }
                 quit()
             }
         }

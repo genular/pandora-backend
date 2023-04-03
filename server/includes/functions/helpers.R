@@ -518,7 +518,7 @@ loadDataFromFileSystem <- function(selectedFilePath, header = T, sep = ',', stri
 
     # auto-detect column types
     if(retype == TRUE){
-        print("Retyping columns")
+        print("Retyping columns (loadDataFromFileSystem)")
         dataset <- dataset %>% hablar::retype()
     }
 
