@@ -366,7 +366,6 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
 
-
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
         saveCachedList(tmp_path, dastaset_with_clusters, type = "csv")
         res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)

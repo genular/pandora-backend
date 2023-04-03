@@ -60,6 +60,7 @@ deployAPI<- function(pandora, options = list(host = "127.0.0.1", port = 8181)) {
     router$handle("GET", "/plots/editing/tsne/render-plot", pandora$handle$plots$editing$tsne$renderPlot, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/general/download-saved-object", pandora$handle$plots$general$downloadSavedObject, serializer=serializer_content_type("application/octet-stream"))
+    router$handle("GET", "/plots/general/get-temp-file-path", pandora$handle$plots$general$getObjectFilePath, serializer=serializer_unboxed_json())
 
     router$handle("GET", "/plots/editing/umap/render-plot", pandora$handle$plots$editing$umap$renderPlot, serializer=serializer_unboxed_json())
     

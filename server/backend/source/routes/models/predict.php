@@ -16,3 +16,25 @@ $app->get('/backend/models/predict', function (Request $request, Response $respo
 	// Render index view
 	return $this->get('Slim\Views\PhpRenderer')->render($response, 'predict/submit.phtml', $args);
 });
+
+
+
+$app->get('/backend/models/describe_experiment', function (Request $request, Response $response, array $args) {
+    $success = true;
+
+    $OpenAI = $this->get('PANDORA\Helpers\OpenAI');
+
+    // filename
+    // columns
+    // Prediction column: outcome
+    // Prediction column values: cyclists noncyclists
+    // User experiment design
+
+    // TABLE
+    // Describe results above, telling us the best performing ML model and tell us about over-fitting and other interesting features?
+
+    $response = $OpenAI->get("testing");
+
+    return $response->withJson(["success" => $success, "message" => 0]);
+});
+

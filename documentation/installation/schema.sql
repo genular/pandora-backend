@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.0-dev
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 95.216.176.70:3307
--- Generation Time: May 24, 2021 at 03:38 PM
--- Server version: 10.1.34-MariaDB-0ubuntu0.18.04.1
--- PHP Version: 7.2.10-0ubuntu0.18.04.1
+-- Host: 127.0.0.1
+-- Generation Time: Mar 24, 2023 at 05:52 PM
+-- Server version: 10.10.3-MariaDB-log
+-- PHP Version: 8.2.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -38,7 +37,7 @@ CREATE TABLE `dataset_proportions` (
   `value` varchar(255) DEFAULT NULL COMMENT 'proportion_class_name remapped value',
   `result` float DEFAULT NULL COMMENT 'Calculated number value',
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Proportions of Outcome and Classes Variables for specific dataset resample in Percentage and numeric format';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Proportions of Outcome and Classes Variables for specific dataset resample in Percentage and numeric format';
 
 -- --------------------------------------------------------
 
@@ -52,20 +51,20 @@ CREATE TABLE `dataset_queue` (
   `ufid` int(11) DEFAULT NULL COMMENT 'Users Files ID that is in question for processing',
   `name` varchar(255) DEFAULT NULL COMMENT 'Queue name',
   `uniqueHash` char(64) DEFAULT NULL COMMENT 'MD5 hash of :\nuserID\nselected header values\nselected files IDs\npackages,\nextraction\nfeature_selection',
-  `selectedOptions` longtext COMMENT 'JSON encoded list of features, outcomes and classes to analyze:\nname\ndataType\nitemType\ntotalNaValues\nunique',
-  `impute` tinyint(6) DEFAULT '0' COMMENT 'Should we do additional inputation on dataset.\nmedianImpute, bagImpute, knnImpute',
-  `extraction` tinyint(4) DEFAULT '0' COMMENT 'Should we do array intersection',
-  `backwardSelection` tinyint(4) DEFAULT '0' COMMENT 'Are we doing recursive feature elimination.\n0 - No\n1 - Yes',
+  `selectedOptions` longtext DEFAULT NULL COMMENT 'JSON encoded list of features, outcomes and classes to analyze:\nname\ndataType\nitemType\ntotalNaValues\nunique',
+  `impute` tinyint(6) DEFAULT 0 COMMENT 'Should we do additional inputation on dataset.\nmedianImpute, bagImpute, knnImpute',
+  `extraction` tinyint(4) DEFAULT 0 COMMENT 'Should we do array intersection',
+  `backwardSelection` tinyint(4) DEFAULT 0 COMMENT 'Are we doing recursive feature elimination.\n0 - No\n1 - Yes',
   `sparsity` float DEFAULT NULL,
-  `packages` longtext COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n	packageID: \n	serverGroup:\n}',
+  `packages` longtext DEFAULT NULL COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n packageID: \n serverGroup:\n}',
   `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors\n7 User Paused\n8 User resumed',
-  `processing_time` int(11) DEFAULT '0' COMMENT 'Total processing time - miliseconds',
-  `servers_total` int(11) DEFAULT '0' COMMENT 'Total number of created cloud servers that needs to do processing',
+  `processing_time` int(11) DEFAULT 0 COMMENT 'Total processing time - miliseconds',
+  `servers_total` int(11) DEFAULT 0 COMMENT 'Total number of created cloud servers that needs to do processing',
   `created` datetime DEFAULT NULL COMMENT 'Initial Created time',
   `created_ip_address` varchar(15) DEFAULT NULL,
   `updated` datetime DEFAULT NULL COMMENT 'Updated time',
   `updated_ip_address` varchar(15) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Main Model Processing JOB/task queue';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Main Model Processing JOB/task queue';
 
 -- --------------------------------------------------------
 
@@ -84,16 +83,16 @@ CREATE TABLE `dataset_resamples` (
   `samples_training` int(11) DEFAULT NULL COMMENT 'Total samples in Training Set',
   `samples_testing` int(11) DEFAULT NULL COMMENT 'Total samples in Testing Set',
   `features_total` int(11) DEFAULT NULL COMMENT 'Total number of Features',
-  `selectedOptions` longtext COMMENT 'JSON Remapped Predictor Variables for specific intersection if extraction is used',
+  `selectedOptions` longtext DEFAULT NULL COMMENT 'JSON Remapped Predictor Variables for specific intersection if extraction is used',
   `datapoints` int(11) DEFAULT NULL COMMENT '(Features * rows)',
   `problemType` tinyint(6) DEFAULT NULL COMMENT 'Type of problem:\n1- classification\n2- regression\n3- nn',
   `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 Deselected\n2 Selected\n3 R train/test partitions created\n4 R cron started processing\n5 Finished Success\n6 Finished Errors',
-  `servers_finished` int(11) DEFAULT '0' COMMENT 'Total number of cloud servers that finished processing',
+  `servers_finished` int(11) DEFAULT 0 COMMENT 'Total number of cloud servers that finished processing',
   `processing_time` int(11) DEFAULT NULL COMMENT 'Total processing time in miliseconds',
-  `error` longtext COMMENT 'Errors regarding dataset. Zero Variance etc..',
-  `created` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'Dataset Sample Creation Time',
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Datasets automaticaly made from specific dataset that is in queue if extraction is cecked,\ntaan intersection of data is used. Usefull in case of missing data';
+  `error` longtext DEFAULT NULL COMMENT 'Errors regarding dataset. Zero Variance etc..',
+  `created` datetime DEFAULT current_timestamp() COMMENT 'Dataset Sample Creation Time',
+  `updated` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Datasets automaticaly made from specific dataset that is in queue if extraction is cecked,\ntaan intersection of data is used. Usefull in case of missing data';
 
 -- --------------------------------------------------------
 
@@ -110,7 +109,7 @@ CREATE TABLE `dataset_resamples_components` (
   `component_name` varchar(255) DEFAULT NULL COMMENT 'Original user given name of the class',
   `rank_in_component` varchar(255) DEFAULT NULL COMMENT 'The proportion of variation retained by the principal components ',
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Resample component mappings if PCA or ICE preProcessing is used';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Resample component mappings if PCA or ICE preProcessing is used';
 
 -- --------------------------------------------------------
 
@@ -128,7 +127,7 @@ CREATE TABLE `dataset_resamples_mappings` (
   `class_remapped` varchar(255) DEFAULT NULL COMMENT 'Remmaped value of the class',
   `class_possition` int(11) DEFAULT NULL COMMENT 'If Type 1 - Possition of the column\n',
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Here we are saving remapping related to some resample. Like for example column names mappings or colum values mapping.\nMapping are done in order to santizie user input';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Here we are saving remapping related to some resample. Like for example column names mappings or colum values mapping.\nMapping are done in order to santizie user input';
 
 -- --------------------------------------------------------
 
@@ -143,13 +142,13 @@ CREATE TABLE `models` (
   `mpid` int(11) DEFAULT NULL COMMENT 'Model Packages ID',
   `mv_hash` char(32) DEFAULT NULL COMMENT 'models_variables MD5 signature hash',
   `status` tinyint(6) DEFAULT NULL COMMENT 'Analysis status\n0 - Model Failure\n1- Sucess',
-  `error` longtext COMMENT 'JSON encoded array of errors',
+  `error` longtext DEFAULT NULL COMMENT 'JSON encoded array of errors',
   `training_time` int(11) DEFAULT NULL COMMENT 'Only model training time - miliseconds',
   `processing_time` int(11) DEFAULT NULL COMMENT 'Total models processing time. Training, testing etc.. - miliseconds',
   `credits` int(11) DEFAULT NULL COMMENT 'Used credits in specific analysis',
-  `created` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'time created',
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Processed Models for Specific Dataset Resample';
+  `created` datetime DEFAULT current_timestamp() COMMENT 'time created',
+  `updated` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Processed Models for Specific Dataset Resample';
 
 -- --------------------------------------------------------
 
@@ -161,19 +160,19 @@ CREATE TABLE `models_packages` (
   `id` int(11) NOT NULL,
   `internal_id` varchar(255) DEFAULT NULL COMMENT 'caret ID - method name',
   `label` varchar(255) DEFAULT NULL COMMENT 'Human readible label',
-  `dependencies` longtext COMMENT 'JSON - R librarys needed to load for model processing',
-  `classification` tinyint(4) DEFAULT '0' COMMENT '1 - yes\n0 - no',
-  `regression` tinyint(4) DEFAULT '0' COMMENT '1 - yes\n0 - no',
-  `tags` longtext COMMENT 'JSON list of model tags',
-  `tuning_parameters` longtext COMMENT 'JSON - model tuning parametars',
-  `citations` longtext COMMENT 'JSON of citations for all libraries needed for this model',
-  `licenses` longtext COMMENT 'JSON of licenses for all libraries needed for this model',
+  `dependencies` longtext DEFAULT NULL COMMENT 'JSON - R librarys needed to load for model processing',
+  `classification` tinyint(4) DEFAULT 0 COMMENT '1 - yes\n0 - no',
+  `regression` tinyint(4) DEFAULT 0 COMMENT '1 - yes\n0 - no',
+  `tags` longtext DEFAULT NULL COMMENT 'JSON list of model tags',
+  `tuning_parameters` longtext DEFAULT NULL COMMENT 'JSON - model tuning parametars',
+  `citations` longtext DEFAULT NULL COMMENT 'JSON of citations for all libraries needed for this model',
+  `licenses` longtext DEFAULT NULL COMMENT 'JSON of licenses for all libraries needed for this model',
   `time_per_million` int(11) DEFAULT NULL COMMENT 'Average Time in miliseconds needed to process per milion datapoints\ndataponts = columns x rows',
-  `documentation` text COMMENT '{\npackageName: "",\npackageVersion: "",\nhtml_content: ""\n}',
+  `documentation` text DEFAULT NULL COMMENT '{\npackageName: "",\npackageVersion: "",\nhtml_content: ""\n}',
   `r_version` float DEFAULT NULL,
   `installed` tinyint(4) DEFAULT NULL COMMENT 'Is package installed or not',
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of ALL avaliable Packages on the system';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='List of ALL avaliable Packages on the system';
 
 -- --------------------------------------------------------
 
@@ -187,7 +186,7 @@ CREATE TABLE `models_performance` (
   `mpvid` int(11) DEFAULT NULL COMMENT 'Model Performance Variables ID',
   `prefValue` varchar(255) DEFAULT NULL COMMENT 'Value',
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Processed Model Variables for specific Model - AUC, Accuracy etc..';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Processed Model Variables for specific Model - AUC, Accuracy etc..';
 
 -- --------------------------------------------------------
 
@@ -198,8 +197,8 @@ CREATE TABLE `models_performance` (
 CREATE TABLE `models_performance_variables` (
   `id` int(11) NOT NULL,
   `value` varchar(255) DEFAULT NULL COMMENT 'Model Details ID',
-  `created` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='IDs of preference Value, used in model_performance';
+  `created` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='IDs of preference Value, used in model_performance';
 
 -- --------------------------------------------------------
 
@@ -215,7 +214,7 @@ CREATE TABLE `models_variables` (
   `score_no` float DEFAULT NULL COMMENT 'Inpact Score of feature on this model in internal model metrix',
   `rank` tinyint(6) DEFAULT NULL COMMENT 'Inpact Score of feature on this model in numbers',
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Variable Importance Scores for processed models';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Variable Importance Scores for processed models';
 
 -- --------------------------------------------------------
 
@@ -229,7 +228,7 @@ CREATE TABLE `organization` (
   `salt` char(16) DEFAULT NULL,
   `status` tinyint(1) DEFAULT NULL,
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Main Organization Table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Main Organization Table';
 
 -- --------------------------------------------------------
 
@@ -252,7 +251,7 @@ CREATE TABLE `organization_details` (
   `country` varchar(255) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Details related to specific Organization';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Details related to specific Organization';
 
 -- --------------------------------------------------------
 
@@ -264,18 +263,18 @@ CREATE TABLE `public_databases` (
   `id` int(11) NOT NULL,
   `uid` int(11) DEFAULT NULL COMMENT 'User ID of the dataset uploader',
   `title` varchar(255) DEFAULT NULL,
-  `description` text COMMENT 'Description of the dataset.\nMust have following sections: Description, Format, Source',
-  `format` text,
-  `source` text,
-  `references` text,
-  `example` text COMMENT 'This column must contain CSV header and 5 rows of values',
+  `description` text DEFAULT NULL COMMENT 'Description of the dataset.\nMust have following sections: Description, Format, Source',
+  `format` text DEFAULT NULL,
+  `source` text DEFAULT NULL,
+  `references` text DEFAULT NULL,
+  `example` text DEFAULT NULL COMMENT 'This column must contain CSV header and 5 rows of values',
   `rows` int(11) DEFAULT NULL COMMENT 'Total number of rows in the dataset',
   `columns` int(11) DEFAULT NULL COMMENT 'Number of columns in the dataset',
   `hash` char(32) DEFAULT NULL COMMENT 'MD5 hash of the data csv file, this hash is also filename',
   `sparsity` float DEFAULT NULL COMMENT 'Sparsity of a dataframe',
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated` datetime DEFAULT current_timestamp(),
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Database of example datasets that once can use';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Database of example datasets that once can use';
 
 -- --------------------------------------------------------
 
@@ -291,8 +290,8 @@ CREATE TABLE `public_databases_buckets` (
   `variable` varchar(255) DEFAULT NULL,
   `mesurment_value` int(11) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Bucket calculation for databases';
+  `updated` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Bucket calculation for databases';
 
 -- --------------------------------------------------------
 
@@ -307,8 +306,8 @@ CREATE TABLE `public_databases_mappings` (
   `position` int(11) DEFAULT NULL,
   `remapped` varchar(255) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Column mappings for the dataset';
+  `updated` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Column mappings for the dataset';
 
 -- --------------------------------------------------------
 
@@ -322,8 +321,8 @@ CREATE TABLE `public_databases_statistics` (
   `variable` varchar(45) DEFAULT NULL,
   `mesurment_value` varchar(45) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Column statistics for the given dataset';
+  `updated` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Column statistics for the given dataset';
 
 -- --------------------------------------------------------
 
@@ -336,9 +335,9 @@ CREATE TABLE `public_databases_votes` (
   `pdid` int(11) DEFAULT NULL COMMENT 'Public Databases ID',
   `uid` int(11) DEFAULT NULL,
   `direction` tinyint(1) DEFAULT NULL COMMENT 'Vote direction. 1/-1',
-  `updated` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated` datetime DEFAULT current_timestamp(),
   `created` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Upvote/Downvote table for databases';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Upvote/Downvote table for databases';
 
 -- --------------------------------------------------------
 
@@ -363,7 +362,7 @@ CREATE TABLE `servers` (
   `node_type` int(11) DEFAULT NULL COMMENT '1 - analysis - main cron task\n2 - plots - genaration of plots and data wrangling\n',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- --------------------------------------------------------
 
@@ -380,7 +379,7 @@ CREATE TABLE `users` (
   `email_status` tinyint(1) DEFAULT NULL COMMENT '1 - Confirmed\n0 - Unconfirmed',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Main Users Table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Main Users Table';
 
 -- --------------------------------------------------------
 
@@ -396,7 +395,7 @@ CREATE TABLE `users_apps` (
   `default` tinyint(4) DEFAULT NULL COMMENT 'Load Initially',
   `enabled` tinyint(4) DEFAULT NULL COMMENT 'Is enabled',
   `created` datetime DEFAULT NULL COMMENT 'Time Created'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Enabled Apps for specific User, modules';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Enabled Apps for specific User, modules';
 
 -- --------------------------------------------------------
 
@@ -412,9 +411,10 @@ CREATE TABLE `users_details` (
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(255) DEFAULT NULL,
   `account_type` tinyint(1) DEFAULT NULL COMMENT '1 - Global Administrator\n2 - User\n3 - Organization Administrator\n4 - Organization User',
+  `openai_api` varchar(255) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='All details regardion to specific User';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='All details regardion to specific User';
 
 -- --------------------------------------------------------
 
@@ -430,14 +430,14 @@ CREATE TABLE `users_files` (
   `file_path` varchar(255) DEFAULT NULL COMMENT 'Full path to the file with a filename, without base directory',
   `filename` char(32) DEFAULT NULL COMMENT 'MD5 safe filename ',
   `display_filename` varchar(255) DEFAULT NULL COMMENT 'Display filename',
-  `size` int(11) DEFAULT '0' COMMENT 'Filesize in bytes ot the original file not gzipped one',
+  `size` int(11) DEFAULT 0 COMMENT 'Filesize in bytes ot the original file not gzipped one',
   `extension` varchar(25) DEFAULT NULL COMMENT 'file extension',
   `mime_type` varchar(75) DEFAULT NULL,
-  `details` longtext COMMENT 'File details currently in following format:\n{\n	"header": {\n		"original": "",\n		"formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n	}\n}',
+  `details` longtext DEFAULT NULL COMMENT 'File details currently in following format:\n{\n "header": {\n   "original": "",\n   "formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n  }\n}',
   `file_hash` char(64) DEFAULT NULL COMMENT 'SHA256 hash of original file not gzipped one',
   `created` datetime DEFAULT NULL COMMENT 'timestamp',
   `updated` datetime DEFAULT NULL COMMENT 'timestamp'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Filestructure Table for all block storage Objects';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Filestructure Table for all block storage Objects';
 
 -- --------------------------------------------------------
 
@@ -447,9 +447,9 @@ CREATE TABLE `users_files` (
 
 CREATE TABLE `users_files_servers` (
   `id` int(11) NOT NULL,
-  `adapter_configuration` blob,
+  `adapter_configuration` blob DEFAULT NULL,
   `files_count` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Server mapping for users_files table';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Server mapping for users_files table';
 
 -- --------------------------------------------------------
 
@@ -465,7 +465,7 @@ CREATE TABLE `users_organization` (
   `account_type` tinyint(1) DEFAULT NULL COMMENT 'Account Type Inside Organization\n1- Oragnization Admin\n2- Organization User',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='If User is part of organization here it will be connected to it';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='If User is part of organization here it will be connected to it';
 
 -- --------------------------------------------------------
 
@@ -479,7 +479,7 @@ CREATE TABLE `users_sessions` (
   `session` char(64) DEFAULT NULL COMMENT 'Session Token',
   `remote_ip` varchar(45) DEFAULT NULL COMMENT 'IP used for Login',
   `created` datetime DEFAULT NULL COMMENT 'Session created Time'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Login Sessions for all users';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Login Sessions for all users';
 
 --
 -- Indexes for dumped tables

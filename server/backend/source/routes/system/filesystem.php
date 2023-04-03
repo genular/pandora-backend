@@ -244,6 +244,7 @@ $app->get('/backend/system/filesystem/directory-create/{submitData:.*}', functio
 $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_file_name:.*}', function (Request $request, Response $response, array $args) {
 	$success = false;
 	$message = array();
+	
 
 	$FileSystem = $this->get('PANDORA\System\FileSystem');
 	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
@@ -255,13 +256,12 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 	$user_id = $user_details['user_id'];
 
 	$local_file_path = $request->getAttribute('local_file_path');
-
 	$local_file_path = base64_decode($local_file_path);
+
 
 	$new_file_name = $request->getAttribute('new_file_name');
 	$new_file_name = base64_decode($new_file_name);
 
-	
 	if(file_exists($local_file_path)){
 		$success = true;
 		$uploaded_path = $local_file_path;
