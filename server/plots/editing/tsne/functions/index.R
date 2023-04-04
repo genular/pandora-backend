@@ -26,7 +26,9 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 	}
         
 
-	tsne.norm  <- Rtsne::Rtsne(as.matrix(tsne_data), perplexity = perplexity, 
+	tsne.norm  <- Rtsne::Rtsne(
+		as.matrix(tsne_data), 
+		perplexity = perplexity, 
 		pca = TRUE, ## Whether an initial PCA step should be performed
 		verbose = FALSE, 
 		max_iter = 2000, 
@@ -151,9 +153,14 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
 
 # Mclust clustering
 cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
+
+    print(paste("==> cluster_tsne_mclust clustGroups: ", settings$clustGroups))
+
 	set.seed(1337)
-	mc.norm = Mclust(tsne.norm$Y, settings$clustGroups)
+	mc.norm = mclust::Mclust(tsne.norm$Y, settings$clustGroups)
+
 	info.norm$cluster = factor(mc.norm$classification)
+
 	lc.cent = info.norm %>% group_by(cluster) %>% 
 							select(tsne1, tsne2) %>% 
 							summarize_all(mean)

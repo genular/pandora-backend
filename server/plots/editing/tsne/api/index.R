@@ -221,10 +221,10 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             }
         }
 
-        ## save(settings, fileHeader, dataset, dataset_filtered, file = "/tmp/configuration.RData")
+        save(settings, fileHeader, dataset, dataset_filtered, file = "/tmp/configuration.Rdata")
 
         print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
-        if(!is.null(settings$preProcessDataset)){
+        if(!is.null(settings$preProcessDataset) && settings$preProcessDataset == TRUE){
             ## Preprocess data except grouping variables
             preprocess_methods <- c("medianImpute", "center", "scale")
             if(settings$categoricalVariables == TRUE){

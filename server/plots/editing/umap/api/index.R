@@ -174,7 +174,7 @@ pandora$handle$plots$editing$umap$renderPlot <- expression(
         }
 
         print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
-        if(!is.null(settings$preProcessDataset)){
+        if(!is.null(settings$preProcessDataset) && settings$preProcessDataset == TRUE){
             ## Preprocess data except grouping variables
             preprocess_methods <- c("medianImpute", "center", "scale")
             if(settings$categoricalVariables == TRUE){

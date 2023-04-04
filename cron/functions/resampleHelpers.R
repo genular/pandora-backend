@@ -152,17 +152,30 @@ ramapColumnValuesByMappings <- function(datasetData, resampleMappings, mapFrom =
 preProcessResample <- function(datasetData, preProcess, selectedOutcomeColumns, outcome_and_classes){
     # ==> 2 PREPROCCESING: Skewness and normalizing of the numeric predictors
     preProcessMapping <- NULL
+    preProcessedData <- NULL
     if(length(preProcess) > 0 ){
         transformations <- paste(preProcess, sep=",", collapse = ",")
         message <- paste0("===> INFO: Pre-processing transformation(s) (",transformations,") \r\n")
         cat(message)
 
-        ## TODO: is corr is selected in preProcess remove it process all others and process corr last separately
-        ## if ("corr" %in% preProcess && length(preProcess) > 1) {
-        ##     preProcess <- preProcess[preProcess != "corr"]
-        ## }
+        impute_idx <- grepl("impute", tolower(preProcess), fixed = FALSE)
 
-        preProcessedData <- preProcessData(datasetData, selectedOutcomeColumns, outcome_and_classes, preProcess)
+        methods_impute <- preProcess[impute_idx]
+        methods_no_impute <- preProcess[!impute_idx]
+
+        message <- paste0("===> INFO: Pre-processing methods_impute: ",length(methods_impute)," methods_no_impute ",length(methods_no_impute),"\r\n")
+        cat(message)
+
+        if(length(methods_impute) > 0){
+            preProcess <- methods_impute
+            preProcessedData <- preProcessData(datasetData, selectedOutcomeColumns, outcome_and_classes, preProcess)
+            datasetData <- preProcessedData$processedMat
+        }
+
+        if(length(methods_no_impute) > 0){
+            preProcess <- methods_no_impute
+            preProcessedData <- preProcessData(datasetData, selectedOutcomeColumns, outcome_and_classes, preProcess)
+        }
 
         if(!is.null(preProcessedData)){
             ## Final processed data-frame

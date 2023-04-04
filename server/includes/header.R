@@ -40,8 +40,9 @@ databasePool <- pool::dbPool(
         password = pandoraConfig$database$password,
         maxSize = 600, 
         idleTimeout = 3600000
-    )
+)
 
+RNGkind("Mersenne-Twister")
 set.seed(1337) 
  
 ## If warn is one, warnings are printed as they occur.
