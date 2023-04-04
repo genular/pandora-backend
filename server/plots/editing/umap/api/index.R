@@ -184,9 +184,11 @@ pandora$handle$plots$editing$umap$renderPlot <- expression(
 
             preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = preprocess_methods)
             dataset_filtered <- preProcessedData$processedMat
-
             print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
 
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("corr", "nzv", "zv"))
+            dataset_filtered <- preProcessedData$processedMat
+            print(paste("==> Selected Columns 4.2: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
         }
 
         print(paste("==> Selected Columns 5: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))

@@ -491,8 +491,11 @@ for (dataset in datasets) {
                 ## RAW predictions
                 predictionProcessed <- NULL
 
-                positivePredictionValue <-outcome_mapping[1, ]
-                negativePredictionValue <-outcome_mapping[2, ]
+                ## TODO: adjust for multiple outcomes!
+                ## Calculate for each outcome separately via one-vs-all approach ?
+
+                positivePredictionValue <- outcome_mapping[1, ]
+                negativePredictionValue <- outcome_mapping[2, ]
 
                 ## Make a cutoff and re-level the data
                 if(predictionObject$type == "prob"){

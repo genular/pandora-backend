@@ -30,6 +30,7 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         )
 
         res.info <- list(
+            input_dataset_example = NULL,
             bartlett = NULL,
             kmo = NULL,
             pca = NULL,
@@ -180,7 +181,8 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
             plot_ind_contrib_corrplot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_contrib_corrplot"), algo="md5", serialize=F),
             plot_ind_contrib_bar_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"plot_ind_contrib_bar_plot"), algo="md5", serialize=F),
 
-            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca_all"), algo="md5", serialize=F)
+            saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca_all"), algo="md5", serialize=F),
+            saveDatasetHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_plot_pca_input_dataset"), algo="md5", serialize=F)
         )
 
         if(!is.null(settings$groupingVariables)){
@@ -290,17 +292,16 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         if(!is.null(settings$preProcessDataset) && settings$preProcessDataset == TRUE) {
             ## Preprocess data except grouping variables
             preprocess_methods <- c("medianImpute", "center", "scale")
+
             if(settings$categoricalVariables == TRUE || settings$analysis_method == "MCA"){
                 preprocess_methods <- c("medianImpute")
             }
             print(paste0("=====> Preprocessing dataset", paste(preprocess_methods, collapse = ", ")))
-
             preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = preprocess_methods)
             dataset_filtered <- preProcessedData$processedMat
-
             print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
 
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("nzv", "zv"))
+            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("corr", "nzv", "zv"))
             dataset_filtered <- preProcessedData$processedMat
             print(paste("==> Selected Columns 4.2: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
         }
@@ -339,7 +340,7 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         
         print(paste("==> Using METHOD: ", settings$analysis_method))
 
-        # write.csv(input_data,"/tmp/pca_testing.csv", row.names = FALSE)
+        res.info$input_dataset_example <- convertToString(str(input_data))
 
         if(settings$analysis_method == "PCA"){
             analysis_results <- PCA(input_data, scale.unit = scale.unit, ncp = 10, graph = FALSE)
@@ -545,7 +546,9 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
 
-        print("=====> INFO: Serving final result")
+        tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
+        saveCachedList(tmp_path, input_data, type = "csv")
+        res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)
 
         return (list(success = TRUE, message = res.data, details = res.info))
     }

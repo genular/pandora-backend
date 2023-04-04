@@ -474,7 +474,8 @@ db.apps.pandora.saveFeatureSetsInfo <- function(data, samples, total_features, p
 #' @param errors Character vector with listed errors that occurred during training
 #' @param model_time_start Sys.time() object with model starting time
 #' @return list
-db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, model_details, performanceVariables, predAUC, prAUC, predPostResample, errors, model_time_start){
+db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, 
+    model_details, performanceVariables, predAUC, prAUC, predPostResample, errors, model_time_start){
     model_status <- 1
     training_time <- NULL
 
