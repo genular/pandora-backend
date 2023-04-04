@@ -157,7 +157,13 @@ preProcessResample <- function(datasetData, preProcess, selectedOutcomeColumns, 
         message <- paste0("===> INFO: Pre-processing transformation(s) (",transformations,") \r\n")
         cat(message)
 
+        ## TODO: is corr is selected in preProcess remove it process all others and process corr last separately
+        ## if ("corr" %in% preProcess && length(preProcess) > 1) {
+        ##     preProcess <- preProcess[preProcess != "corr"]
+        ## }
+
         preProcessedData <- preProcessData(datasetData, selectedOutcomeColumns, outcome_and_classes, preProcess)
+
         if(!is.null(preProcessedData)){
             ## Final processed data-frame
             datasetData <- preProcessedData$processedMat 

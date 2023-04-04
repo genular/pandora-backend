@@ -221,6 +221,8 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             }
         }
 
+        ## save(settings, fileHeader, dataset, dataset_filtered, file = "/tmp/configuration.RData")
+
         print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
         if(!is.null(settings$preProcessDataset)){
             ## Preprocess data except grouping variables

@@ -33,7 +33,7 @@ plot_auc_roc_training <- function(trainingPredictions, settings, tmp_hash){
 plot_auc_roc_testing <- function(testingPredictions, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-    save(trainingPredictions, file = "/tmp/testingPredictions")
+    save(testingPredictions, file = "/tmp/testingPredictions")
     save(settings, file = "/tmp/settings")
 
 	plotData <- ggplot(testingPredictions, aes(m = predictionObject, d = factor(referenceData), fill = method, color = method)) + 
