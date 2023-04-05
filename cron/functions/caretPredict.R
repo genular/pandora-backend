@@ -373,26 +373,18 @@ recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
 
     # subset_size_seq <- generateRFESizes(data_x)
 
+
     # Set up training arguments
     train_args <- list(data_x, base::as.factor(base::make.names(data_y)), sizes = c(1:ncol(data_x)), rfeControl = rfeControl)
+
+    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$modelData <- R.utils::withTimeout(do.call(caret::rfe, train_args), 
+        #timeout=model_details$process_timeout,
+        timeout=3600,
+        onTimeout = "error") ), error = function(e){ return(e) } )
 
     # Suppress warnings temporarily
     options(warn = -1)
 
-    # Execute model training with timeout and capture output
-    model_execution <- tryCatch(
-        garbage <- R.utils::captureOutput(
-          results$modelData <- R.utils::withTimeout(
-            do.call(caret::rfe, train_args),
-            # timeout = model_details$process_timeout,
-            timeout = 3600, ## 60 minutes timeout
-            onTimeout = "error"
-          )
-    ), 
-        error = function(e) { return(e) }
-    )
-
-    # Check for errors in model execution
     if(!inherits(model.execution, "error") && !inherits(results$modelData, 'try-error') && !is.null(results$modelData)){
         results$status <- TRUE
     }else{
@@ -407,7 +399,6 @@ recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
     # Restore default warning reporting
     options(warn=0)
 
-    # Get model predictors if the model execution was successful
     if(results$status == TRUE){
         results$modelPredictors <- caret::predictors(results$modelData)
     }
