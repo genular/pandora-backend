@@ -346,6 +346,8 @@ caretPredict <- function(trainingFit, dataTesting, outcomeColumn, model_details)
 #' @return predictors
 recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
     set.seed(1337)
+    
+    # Initialize results list
     results <- list(status = FALSE, modelData = NULL, modelPredictors = NULL)
 
 
@@ -353,6 +355,7 @@ recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
     #save(model_details, file = "/tmp/model_details")
     #save(outcomeColumn, file = "/tmp/outcomeColumn")
 
+    # Set up RFE control
     rfeControl <- caret::rfeControl(
         method = "repeatedcv",
         number = 10,
@@ -364,17 +367,32 @@ recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
     )
 
 
+    # Separate predictor variables and outcome variable
     data_x <- data[,!(names(data) %in% outcomeColumn)]
     data_y <- data[,c(outcomeColumn)]
 
-    subset_size_seq <- generateRFESizes(data_x)
+    # subset_size_seq <- generateRFESizes(data_x)
 
-    train_args <- list(data_x, base::as.factor(base::make.names(data_y)), sizes = subset_size_seq, rfeControl = rfeControl)
+    # Set up training arguments
+    train_args <- list(data_x, base::as.factor(base::make.names(data_y)), sizes = c(1:ncol(data_x)), rfeControl = rfeControl)
 
-    model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$modelData <- R.utils::withTimeout(do.call(caret::rfe, train_args), timeout=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
-
-    # Ignore warnings while processing errors, actually we should move this to have training suppressed as well!?
+    # Suppress warnings temporarily
     options(warn = -1)
+
+    # Execute model training with timeout and capture output
+    model_execution <- tryCatch(
+        garbage <- R.utils::captureOutput(
+          results$modelData <- R.utils::withTimeout(
+            do.call(caret::rfe, train_args),
+            # timeout = model_details$process_timeout,
+            timeout = 3600, ## 60 minutes timeout
+            onTimeout = "error"
+          )
+    ), 
+        error = function(e) { return(e) }
+    )
+
+    # Check for errors in model execution
     if(!inherits(model.execution, "error") && !inherits(results$modelData, 'try-error') && !is.null(results$modelData)){
         results$status <- TRUE
     }else{
@@ -389,6 +407,7 @@ recursiveFeatureElimination <- function(data, model_details, outcomeColumn){
     # Restore default warning reporting
     options(warn=0)
 
+    # Get model predictors if the model execution was successful
     if(results$status == TRUE){
         results$modelPredictors <- caret::predictors(results$modelData)
     }

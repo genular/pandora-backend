@@ -218,7 +218,7 @@ preProcessDataset <- function(dataset) {
             updateDatabaseFiled("dataset_resamples", "status", 3, "id", rfeResampleID)
 
         }else{
-            message <- paste0("===> ERROR: Could not process RFE, continuing without RFE \r\n")
+            message <- paste0("===> ERROR: Could not process RFE, not creating any resamples in database.\r\n")
             cat(message)
             str(rfeResults)
         }
