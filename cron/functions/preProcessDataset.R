@@ -144,7 +144,7 @@ preProcessDataset <- function(dataset) {
                 cat(message)
 
                 print("*******************************************")
-                print(modelData)
+                print(rfeResults$modelData)
                 print("*******************************************")
             }
 
