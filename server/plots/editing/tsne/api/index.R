@@ -221,7 +221,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             }
         }
 
-        save(settings, fileHeader, dataset, dataset_filtered, file = "/tmp/configuration.Rdata")
+        ## save(settings, fileHeader, dataset, dataset_filtered, file = "/tmp/configuration.Rdata")
 
         print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
         if(!is.null(settings$preProcessDataset) && settings$preProcessDataset == TRUE){

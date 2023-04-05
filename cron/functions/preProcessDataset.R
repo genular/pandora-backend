@@ -55,6 +55,7 @@ preProcessDataset <- function(dataset) {
 
     ## Preprocess resample data
     preProcessMapping <- preProcessResample(datasetData, dataset$preProcess, dataset$outcome, outcome_and_classes)
+    
     datasetData <- preProcessMapping$datasetData
 
     if(!is.null(preProcessMapping$preProcessMapping)){ 
@@ -137,6 +138,16 @@ preProcessDataset <- function(dataset) {
         if(rfeResults$status == TRUE){
             message <- paste0("===> INFO: RFE selected ",length(rfeResults$modelPredictors)," columns\r\n")
             cat(message)
+
+            if(length(rfeResults$modelPredictors) > 0){
+                message <- paste0("===> INFO: Columns: ",paste(rfeResults$modelPredictors, sep=",", collapse = ",")," \r\n")
+                cat(message)
+
+                print("*******************************************")
+                print(modelData)
+                print("*******************************************")
+            }
+
 
             ## 1. Save the new resample in databse with newly selected features
             rfeResampleID <- db.apps.pandora.saveRecursiveFeatureElimination(rfeResults$modelData, rfeResults$modelPredictors, data$training, dataset$resampleID)
