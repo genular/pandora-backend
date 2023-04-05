@@ -133,7 +133,8 @@ preProcessDataset <- function(dataset) {
         message <- paste0("===> INFO: Starting Recursive Feature Elimination\r\n")
         cat(message)
 
-        rfeResults <- recursiveFeatureElimination(data$training, list(process_timeout = 1000), dataset$outcome)
+        ## Get only portion of data for RFE and leave other portion for model training
+        rfeResults <- recursiveFeatureElimination(data$training, list(process_timeout = 3600), dataset$outcome)
 
         if(rfeResults$status == TRUE){
             message <- paste0("===> INFO: RFE selected ",length(rfeResults$modelPredictors)," columns\r\n")

@@ -71,6 +71,10 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
             settings$cutOffColumnSize = 100
         }
 
+        if(is_var_empty(settings$preProcessDataset) == TRUE){
+            settings$preProcessDataset = NULL
+        }
+
         plot_unique_hash <- list(
             correlation_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_correlation_plot"), algo="md5", serialize=F), 
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_correlation_render_plot"), algo="md5", serialize=F)
@@ -113,12 +117,31 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
         dataset <- dataset %>% rename_(.dots=with(remapping_header, setNames(as.list(as.character(remapped)), original)))
 
         ## Drop all non numeric columns
-        numeric_columns <- names(select_if(dataset, is.numeric))
-        dropped_columns <- setdiff(settings$selectedColumns, numeric_columns)
+        dataset_filtered <- dataset
+        print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
+        if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
+            ## Preprocess data except grouping variables
 
-        dataset_filtered <- dataset %>% select(all_of(numeric_columns))
+            # if(settings$categoricalVariables == TRUE){
+            #     ## settings$preProcessDataset <- c("medianImpute")
+            # }
+            print(paste0("=====> Preprocessing dataset: ", paste(settings$preProcessDataset, collapse = ", ")))
 
+            ## Preprocess resample data
+            preProcessMapping <- preProcessResample(dataset_filtered, 
+                settings$preProcessDataset, 
+                NULL, 
+                NULL)
 
+            dataset_filtered <- preProcessMapping$datasetData
+
+            print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
+        }else{
+            print(paste("==> Selected Columns 4.2: Dropping all non numeric columns"))
+            numeric_columns <- names(select_if(dataset, is.numeric))
+            dropped_columns <- setdiff(settings$selectedColumns, numeric_columns)
+            dataset_filtered <- dataset %>% select(all_of(numeric_columns))
+        }
         ### DEFINE ALL RETURN VARIABLES 
         data <- NULL
         p.mat <- NULL
@@ -134,12 +157,9 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
         }
 
         if(error_check == FALSE){
-
             #save(dataset_filtered, file = "/tmp/dataset_filtered")
             data <- cor(dataset_filtered, use = settings$na_action, method = settings$correlation_method)
-
             #save(data, file = "/tmp/data")
-
             if(settings$significance$enable == TRUE){
                 print("==> Info: significance enable corTest")
                 p.mat <- corTest(data, settings$confidence$level$value)
@@ -176,8 +196,6 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
                             addgrid.col="transparent",
                             col=grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(11, "RdBu")))(colors_num)
                         )
-
-
 
             if(settings$confidence$enable == TRUE) {
                 input_args <- c(list(type = settings$plot_type), args)

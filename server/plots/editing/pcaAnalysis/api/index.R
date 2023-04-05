@@ -288,22 +288,23 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         }
 
         print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
-
-        if(!is.null(settings$preProcessDataset) && settings$preProcessDataset == TRUE) {
+        if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
             ## Preprocess data except grouping variables
-            preprocess_methods <- c("medianImpute", "center", "scale")
 
-            if(settings$categoricalVariables == TRUE || settings$analysis_method == "MCA"){
-                preprocess_methods <- c("medianImpute")
-            }
-            print(paste0("=====> Preprocessing dataset", paste(preprocess_methods, collapse = ", ")))
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables , methods = preprocess_methods)
-            dataset_filtered <- preProcessedData$processedMat
+            # if(settings$categoricalVariables == TRUE){
+            #     ## settings$preProcessDataset <- c("medianImpute")
+            # }
+            print(paste0("=====> Preprocessing dataset: ", paste(settings$preProcessDataset, collapse = ", ")))
+
+            ## Preprocess resample data
+            preProcessMapping <- preProcessResample(dataset_filtered, 
+                settings$preProcessDataset, 
+                settings$groupingVariables, 
+                settings$groupingVariables)
+
+            dataset_filtered <- preProcessMapping$datasetData
+
             print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
-
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariables , settings$groupingVariables ,  methods = c("corr", "nzv", "zv"))
-            dataset_filtered <- preProcessedData$processedMat
-            print(paste("==> Selected Columns 4.2: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
         }
 
         print(paste("==> Selected Columns 5: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))

@@ -3,6 +3,8 @@ p_load(plumber)
 p_load(tidyverse)
 
 source(paste0("cron/functions/helpers.R"))
+source(paste0("cron/functions/resampleHelpers.R"))
+
 
 source(paste0("server/",SERVER_NAME,"/correlation/main.R"))
 source(paste0("server/",SERVER_NAME,"/heatmap/main.R"))

@@ -135,15 +135,25 @@ pandora$handle$plots$editing$heatmap$renderPlot <- expression(
             }
         }
 
-        if(!is.null(settings$preProcessDataset)){
-            #print("===============> DATASET PREPROCESS")
-            preProcessedData <- preProcessData(dataset, settings$selectedColumns, settings$selectedColumns, methods = c("medianImpute", "center", "scale"))
-            dataset_filtered <- preProcessedData$processedMat
+        dataset_filtered <- dataset
+        print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
+        if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
+            ## Preprocess data except grouping variables
 
-            preProcessedData <- preProcessData(dataset_filtered, settings$selectedColumns, settings$selectedColumns,  methods = c("nzv", "zv"))
-            dataset_filtered <- preProcessedData$processedMat
-        }else{
-            dataset_filtered <- dataset
+            # if(settings$categoricalVariables == TRUE){
+            #     ## settings$preProcessDataset <- c("medianImpute")
+            # }
+            print(paste0("=====> Preprocessing dataset: ", paste(settings$preProcessDataset, collapse = ", ")))
+
+            ## Preprocess resample data
+            preProcessMapping <- preProcessResample(dataset_filtered, 
+                settings$preProcessDataset, 
+                settings$groupingVariables, 
+                settings$groupingVariables)
+
+            dataset_filtered <- preProcessMapping$datasetData
+
+            print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
         }
 
         if(settings$removeNA == TRUE){
