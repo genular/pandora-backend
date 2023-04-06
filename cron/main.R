@@ -492,7 +492,7 @@ for (dataset in datasets) {
                 predictionProcessed <- NULL
 
                 ## TODO: adjust for multiple outcomes!
-                ## Calculate for each outcome separately via one-vs-all approach ?
+                ## Calculate for each outcome separately via one-vs-all approach and get median values with multiclass.roc
 
                 positivePredictionValue <- outcome_mapping[1, ]
                 negativePredictionValue <- outcome_mapping[2, ]
@@ -519,7 +519,14 @@ for (dataset in datasets) {
                         predictionsTmpCutOff <- base::factor( ifelse(predictionObject$predictions[, positivePredictionValue$class_remapped] > threshold, positivePredictionValue$class_remapped, negativePredictionValue$class_remapped) )
                         ## More than one class is successfully predicted (A & B)
                         if(length(unique(predictionsTmpCutOff)) > 1){
-                            predictionProcessed <- relevel(predictionsTmpCutOff, positivePredictionValue$class_remapped)
+                            tryCatch({
+                                predictionProcessed <- relevel(predictionsTmpCutOff, ref = positivePredictionValue$class_remapped)
+                            }, error = function(e) {
+                                cat("===> ERROR: in predictionProcessed relevel function:", e$message, "\r\n")
+                                cat(print(predictionsTmpCutOff))
+                                cat(print(positivePredictionValue))
+                                predictionProcessed <- NULL
+                            })
                         ## Only one unique class is predicted (A)
                         } else if(length(predictionsTmpCutOff) > 1){
                             predictionProcessed <- predictionsTmpCutOff
