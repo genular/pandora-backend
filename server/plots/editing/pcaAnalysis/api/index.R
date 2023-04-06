@@ -343,8 +343,7 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         res.info$input_dataset_example <- convertToString(str(input_data))
 
         ## input_data <- castAllStringsToNA(input_data)
-
-        write.csv(input_data, file = "/tmp/input_data.csv", row.names = FALSE)
+        ## write.csv(input_data, file = "/tmp/input_data.csv", row.names = FALSE)
 
         if(settings$analysis_method == "PCA"){
             analysis_results <- PCA(input_data, scale.unit = scale.unit, ncp = 10, graph = FALSE)
