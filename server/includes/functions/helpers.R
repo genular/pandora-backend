@@ -506,22 +506,45 @@ processTimeout <- function(expr, envir = parent.frame(), timeout, onTimeout=c("e
 #' @return dataframe
 loadDataFromFileSystem <- function(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE, retype = TRUE){
 
-    nastrings <- c("NA","","BLANK","<<VALUE-SUPPRESSED>>",'N/A',"NULL","(Missing)","#VALUE!","#DIV/0!","#REF!","#NULL!","#N/A","#NUM!","missing","N A","N/A","N /A","N / A","na","n a","n/a","nana","n /a","n / a","a / a","null","\\?","\\*","\\.")
-
-    dataset <- data.table::fread(selectedFilePath, header = header, sep = sep, stringsAsFactors = stringsAsFactors, data.table = data.table, na.strings = nastrings)
+    dataset <- data.table::fread(selectedFilePath, header = header, sep = sep, stringsAsFactors = stringsAsFactors, 
+        data.table = data.table)
     
     # remove any extra spaces in character column values
     dataset <- dataset %>% dplyr::mutate(across(where(is.character), stringr::str_trim))
-
 
     # auto-detect column types
     if(retype == TRUE){
         print("Retyping columns (loadDataFromFileSystem)")
         dataset <- dataset %>% hablar::retype()
+        dataset <- convert_to_numeric(dataset)
     }
 
     return(dataset)
 }
+
+#' @title convert_to_numeric 
+#' @description It then calculates the percentage of numeric values (`num_perc`) by dividing `num_count` by the total length of the column. 
+## If `num_perc` is greater than 10%, the column is converted to numeric using `as.numeric()` and the original data frame is modified. 
+convert_to_numeric <- function(data) {
+  # loop over columns
+  for (col in names(data)) {
+    # only convert if column is not already numeric
+    if (!is.numeric(data[[col]])) {
+      # count number of numeric values
+      num_count <- sum(!is.na(as.numeric(data[[col]])))
+      # calculate percentage of numeric values
+      num_perc <- num_count / length(data[[col]])
+      # convert column to numeric if more than 0.10% is numeric
+      if (num_perc > 0.10) {
+        print(paste0("=====> INFO: Converting column to numeric: ", col, " Percentage of numeric values: ", num_perc))
+        print(unique(data[[col]]))
+        data[[col]] <- as.numeric(data[[col]])
+      }
+    }
+  }
+  return(data)
+}
+
 #' @title castAllStringsToNA   
 #' @description Removes all strings/words from specified columns in dataset
 #' @param dataset dataframe

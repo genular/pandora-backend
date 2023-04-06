@@ -323,7 +323,6 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
         if(!is.null(settings$groupingVariables)){
             input_data <- input_data[ , -which(names(input_data) %in% settings$groupingVariables)]
         }
-
         ## Data without grouping variables
         names(dataset_filtered) <- plyr::mapvalues(names(dataset_filtered), from=fileHeader$remapped, to=fileHeader$original)
         
@@ -335,13 +334,17 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         # FactoMineR
         scale.unit <- TRUE
-        if(settings$preProcessDataset == TRUE){
+        if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
             scale.unit <- FALSE
         }
         
         print(paste("==> Using METHOD: ", settings$analysis_method))
 
         res.info$input_dataset_example <- convertToString(str(input_data))
+
+        ## input_data <- castAllStringsToNA(input_data)
+
+        write.csv(input_data, file = "/tmp/input_data.csv", row.names = FALSE)
 
         if(settings$analysis_method == "PCA"){
             analysis_results <- PCA(input_data, scale.unit = scale.unit, ncp = 10, graph = FALSE)
