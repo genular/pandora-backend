@@ -522,9 +522,11 @@ for (dataset in datasets) {
                             tryCatch({
                                 predictionProcessed <- relevel(predictionsTmpCutOff, ref = positivePredictionValue$class_remapped)
                             }, error = function(e) {
-                                cat("===> ERROR: in predictionProcessed relevel function:", e$message, "\r\n")
-                                cat(print(predictionsTmpCutOff))
-                                cat(print(positivePredictionValue))
+                                cat("===> ERROR: predictionProcessed relevel function:", e$message, "\r\n")
+                                print(predictionObject$predictions)
+                                print(predictionsTmpCutOff)
+                                print(positivePredictionValue)
+
                                 predictionProcessed <- NULL
                             })
                         ## Only one unique class is predicted (A)

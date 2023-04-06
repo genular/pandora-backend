@@ -329,7 +329,17 @@ caretPredict <- function(trainingFit, dataTesting, outcomeColumn, model_details)
         if(results$status == TRUE){
             # Return probability predictions for only one of the classes as determined by
             # configured default response class level
-            results$predictions <- tryCatch( caret::predict.train(trainingFit, type = results$type, newdata = predictOnData) , error = function(e){ return(e) } )
+            results$predictions <- tryCatch( caret::predict.train(trainingFit, type = results$type, newdata = predictOnData) , error = function(e){ 
+                cat(paste0("===> ERROR: caretPredict:caret::predict.train\r\n"))
+                return(NULL) 
+            })
+            
+            # model's inability to predict certain classes returns NA
+            if(!is.null(results$predictions) && any(is.na(results$predictions))){
+                cat(paste0("===> INFO: Imputing bad predictions\r\n"))
+                preProcessMapping <- preProcessResample(results$predictions, c("medianImpute"), NULL, NULL)
+                results$predictions <- preProcessMapping$datasetData
+            }
         }
     }
 
