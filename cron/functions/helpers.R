@@ -70,7 +70,7 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
     processing_values <- data.frame(value, stringsAsFactors=FALSE)
     processing_values$order <- as.numeric(row.names(processing_values))
 
-    methods_sorted <- processing_values %>% filter(value %in% methods) %>% arrange(order) %>% select(value)
+    methods_sorted <- processing_values %>% filter(value %in% methods) %>% arrange(order) %>% dplyr::select(value)
     methods_sorted <- methods_sorted$value
 
     transformations <- paste(methods_sorted, sep=",", collapse = ",")
@@ -96,7 +96,9 @@ preProcessData <- function(data, outcome, excludeClasses, methods = c("center", 
         # summarize the transformed dataset
         processedMat[excludeClasses] <- data[excludeClasses]
     }
-
+    message <- paste0("===> INFO: Pre-processing done!\r\n")
+    cat(message)
+    
     return(list(processedMat = processedMat, preprocessParams = preprocessParams))
 }
 

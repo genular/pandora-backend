@@ -336,9 +336,12 @@ caretPredict <- function(trainingFit, dataTesting, outcomeColumn, model_details)
 
             # model's inability to predict certain classes returns NA
             if(!is.null(results$predictions) && any(is.na(results$predictions))){
-                cat(paste0("===> WARNING: Imputing NaN predictions\r\n"))
-                preProcessMapping <- preProcessResample(results$predictions, c("medianImpute"), NULL, NULL)
-                results$predictions <- preProcessMapping$datasetData
+                cat(paste0("===> WARNING: Imputing (mean) NaN predictions\r\n"))
+                results$predictions <- results$predictions %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x))
+
+                # For Median use:
+                # preProcessMapping <- preProcessResample(results$predictions, c("medianImpute"), NULL, NULL)
+                # results$predictions <- preProcessMapping$datasetData
             }
         }
     }
