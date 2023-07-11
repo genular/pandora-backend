@@ -55,10 +55,21 @@ pandora$handle$plots$editing$overview$getAvaliableColumns <- expression(
 
         col_check <- dataset[,sapply(dataset,is.numeric)]
         valid_numeric <- names(col_check)
+
         col_check <- col_check[,!apply(col_check, MARGIN = 2, function(x) max(x, na.rm = TRUE) == min(x, na.rm = TRUE))]
         valid_zv <- names(col_check)
 
-        col_check <- sapply(seq(1, ncol(dataset)), function(i) length(unique(dataset[,i])) < nrow(dataset)/10 )
+        col_check <- sapply(seq(1, ncol(dataset)), function(i) {
+            unique_values_count <- length(unique(dataset[,i]))
+            total_values_count <- nrow(dataset)
+
+            valid_value = unique_values_count < total_values_count/10 || 
+                          (total_values_count < 20 && unique_values_count == 2)
+
+            return(valid_value)
+        })
+
+        
         valid_10p <- names(dataset[, col_check, drop = FALSE])
 
         na_percentage <- purrr::map(dataset, ~mean(is.na(.)))

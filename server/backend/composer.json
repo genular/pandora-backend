@@ -26,7 +26,8 @@
         "paquettg/php-html-parser": "^1.7",
         "lasserafn/php-initial-avatar-generator": "^3.0",
         "lasserafn/php-initials": "^2.20",
-        "orhanerday/open-ai": "^4.7"
+        "orhanerday/open-ai": "^4.7",
+        "mongodb/mongodb": "^1.15"
     },
     "authors": [
         {

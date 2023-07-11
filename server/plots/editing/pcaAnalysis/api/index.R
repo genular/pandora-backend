@@ -266,7 +266,17 @@ pandora$handle$plots$editing$pcaAnalysis$renderPlot <- expression(
 
         ## TODO: add this information to fileHeader and make check when selectingColumns
         if(settings$remove_less_10p == TRUE) {
-            col_check <- sapply(seq(1, ncol(dataset_filtered)), function(i) length(unique(dataset_filtered[,i])) < nrow(dataset_filtered)/10 )
+
+            col_check <- sapply(seq(1, ncol(dataset_filtered)), function(i) {
+                unique_values_count <- length(unique(dataset_filtered[,i]))
+                total_values_count <- nrow(dataset_filtered)
+
+                valid_value = unique_values_count < total_values_count/10 || 
+                              (total_values_count < 20 && unique_values_count == 2)
+
+                return(valid_value)
+            })
+
             valid_10p <- names(dataset_filtered[, col_check, drop = FALSE])
 
             settings$selectedColumns <-  setdiff(settings$selectedColumns, valid_10p)
