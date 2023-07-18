@@ -50,7 +50,7 @@ pandora$handle$plots$editing$overview$getAvaliableColumns <- expression(
         valid_numeric <- NULL
         # exclude cols with zero variance
         valid_zv <- NULL
-        # Unique values are less than 10% the number of observations
+        # Unique values are less than 10% the number of observations or manual for small datasets
         valid_10p <- NULL
 
         col_check <- dataset[,sapply(dataset,is.numeric)]
@@ -64,7 +64,7 @@ pandora$handle$plots$editing$overview$getAvaliableColumns <- expression(
             total_values_count <- nrow(dataset)
 
             valid_value = unique_values_count < total_values_count/10 || 
-                          (total_values_count < 20 && unique_values_count == 2)
+                (unique_values_count >= 2 && unique_values_count <= 5 && total_values_count <= 25)
 
             return(valid_value)
         })
