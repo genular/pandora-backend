@@ -136,12 +136,17 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
             dataset_filtered <- preProcessMapping$datasetData
 
             print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
-        }else{
-            print(paste("==> Selected Columns 4.2: Dropping all non numeric columns"))
-            numeric_columns <- names(select_if(dataset, is.numeric))
-            dropped_columns <- setdiff(settings$selectedColumns, numeric_columns)
-            dataset_filtered <- dataset %>% select(all_of(numeric_columns))
         }
+
+        print(paste("==> Selected Columns 4.2: Dropping all non numeric columns"))
+        numeric_columns <- names(select_if(dataset_filtered, is.numeric))
+
+        dropped_columns <- setdiff(settings$selectedColumns, numeric_columns)
+        if(length(dropped_columns) > 0){
+            print(paste("==> Dropping non numeric columns: ", paste(dropped_columns, collapse = ", ")))
+            dataset_filtered <- dataset_filtered %>% select(all_of(numeric_columns))
+        }
+
         ### DEFINE ALL RETURN VARIABLES 
         data <- NULL
         p.mat <- NULL
@@ -157,7 +162,8 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
         }
 
         if(error_check == FALSE){
-            #save(dataset_filtered, file = "/tmp/dataset_filtered")
+
+            ## save(dataset_filtered, file = "/tmp/dataset_filtered")
             data <- cor(dataset_filtered, use = settings$na_action, method = settings$correlation_method)
             #save(data, file = "/tmp/data")
             if(settings$significance$enable == TRUE){
