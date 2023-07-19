@@ -224,11 +224,11 @@ if [ "${MODS[pandora_cron]}" == y ] ; then
     cd /usr/src/salmon
 
     sudo mkdir -p /usr/src/salmon/index/human
-    sudo mkdir -p /usr/src/salmon/index/mouse
+    ## sudo mkdir -p /usr/src/salmon/index/mouse
     sudo chmod -R 777 /usr/src/salmon/index
 
     sudo mkdir -p /usr/src/salmon/index_processed/human
-    sudo mkdir -p /usr/src/salmon/index_processed/mouse
+    ## sudo mkdir -p /usr/src/salmon/index_processed/mouse
     sudo chmod 777 -R /usr/src/salmon/index_processed
 
     cd /usr/src/salmon/index/human
@@ -239,14 +239,14 @@ if [ "${MODS[pandora_cron]}" == y ] ; then
     rm Homo_sapiens.GRCh38.cdna.all.fa.gz
 
 
-    cd /usr/src/salmon/index/mouse
-    wget https://ftp.ensembl.org/pub/current_fasta/mus_musculus/cdna/Mus_musculus.GRCm39.cdna.all.fa.gz
+    ## cd /usr/src/salmon/index/mouse
+    ## wget https://ftp.ensembl.org/pub/current_fasta/mus_musculus/cdna/Mus_musculus.GRCm39.cdna.all.fa.gz
 
     salmon index --threads 64 --transcripts /usr/src/salmon/index/human/Homo_sapiens.GRCh38.cdna.all.fa.gz --index /usr/src/salmon/index_processed/human
-    salmon index --threads 64 --transcripts /usr/src/salmon/index/mouse/Mus_musculus.GRCm39.cdna.all.fa.gz --index /usr/src/salmon/index_processed/mouse
+    ## salmon index --threads 64 --transcripts /usr/src/salmon/index/mouse/Mus_musculus.GRCm39.cdna.all.fa.gz --index /usr/src/salmon/index_processed/mouse
 
     sudo rm -Rf /usr/src/salmon/index/human
-    sudo rm -Rf /usr/src/salmon/index/mouse
+    ## sudo rm -Rf /usr/src/salmon/index/mouse
     
 fi
 
@@ -619,7 +619,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
             ## Install pandas requirements
             sudo apt-get install python3-pandas
 
-            sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+            sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
             # Optional dependencies for python-pandas
             #     python-pandas-datareader: pandas.io.data replacement (recommended)
             #     python-numexpr: needed for accelerating certain numerical operations (recommended)

@@ -125,14 +125,14 @@ cat > "$rootfsDir/etc/apt/sources.list" << '__EOS__'
 #                   OFFICIAL DEBIAN REPOS                    
 #------------------------------------------------------------------------------#
 
-deb http://deb.debian.org/debian bullseye main contrib non-free
-deb-src http://deb.debian.org/debian bullseye main contrib non-free
+deb http://deb.debian.org/debian stable main contrib non-free
+deb-src http://deb.debian.org/debian stable main contrib non-free
 
-deb http://deb.debian.org/debian-security  bullseye-security main contrib non-free
-deb-src http://deb.debian.org/debian-security  bullseye-security main contrib non-free
+deb http://deb.debian.org/debian-security  stable-security main contrib non-free
+deb-src http://deb.debian.org/debian-security  stable-security main contrib non-free
 
-deb http://deb.debian.org/debian bullseye-updates main contrib non-free
-deb-src http://deb.debian.org/debian bullseye-updates main contrib non-free
+deb http://deb.debian.org/debian stable-updates main contrib non-free
+deb-src http://deb.debian.org/debian stable-updates main contrib non-free
 
 ###### Debian Main Repos
 #deb https://deb.debian.org/debian/ stable main
@@ -163,8 +163,6 @@ __EOS__
 
 	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
 	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
-
-	apt-get install -y locales
 
 	echo "LC_ALL=en_US.UTF-8" | tee -a /etc/environment
 	sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen
