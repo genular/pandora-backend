@@ -190,7 +190,7 @@ __EOS__
 	# systemd require dbus
 	apt-get install dbus sudo curl wget
 
-	## Add support for installation of PHP - currently using 7.3
+	## Add support for installation of PHP - currently using 8.2
 	apt-get -y install apt-transport-https lsb-release ca-certificates
 	wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 	sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
@@ -379,41 +379,41 @@ echo "Installation of advanced dependencies START"
 	apt-get install cmake
 
 	echo "===========================================> INSTALLATION step: 6"
-	apt-get install php7.3-fpm php7.3-common php7.3-cli
-	echo "===========================================> php7.3-mysql"
-	apt-get install php7.3-mysql
-	echo "===========================================> php7.3-zip"
-	apt-get install php7.3-zip
-	echo "===========================================> php-xml php7.3-xml"
-	apt-get install php-xml php7.3-xml
-	echo "===========================================> php7.3-curl"
-	apt-get install php-curl php7.3-curl
-	echo "===========================================> php7.3-mbstring"
-	apt-get install php-mbstring php7.3-mbstring
-	echo "===========================================> php7.3-gmp"
-	apt-get install php7.3-gmp
-	echo "===========================================> php7.3-imagick"
-	apt-get install php7.3-imagick
-	echo "===========================================> php7.3-bcmath"
-	apt-get install php7.3-bcmath
-	echo "===========================================> php7.3-bz2"
-	apt-get install php7.3-bz2
-	echo "===========================================> php7.3-gd"
-	apt-get install php7.3-gd
-	echo "===========================================> php7.3-intl"
-	apt-get install php7.3-intl
-	echo "===========================================> php7.3-json"
-	apt-get install php7.3-json
-	echo "===========================================> php7.3-readline"
-	apt-get install php7.3-readline
-	echo "===========================================> php-dev7.3"
-	sudo apt-get install php7.3-dev
-	echo "===========================================> Enable PHP7.3 as Default"
-	sudo update-alternatives --set php /usr/bin/php7.3
-	sudo update-alternatives --set phar /usr/bin/phar7.3
-	sudo update-alternatives --set phar.phar /usr/bin/phar.phar7.3
-	sudo update-alternatives --set phpize /usr/bin/phpize7.3
-	sudo update-alternatives --set php-config /usr/bin/php-config7.3
+	apt-get install php8.2-fpm php8.2-common php8.2-cli
+	echo "===========================================> php8.2-mysql"
+	apt-get install php8.2-mysql
+	echo "===========================================> php8.2-zip"
+	apt-get install php8.2-zip
+	echo "===========================================> php-xml php8.2-xml"
+	apt-get install php-xml php8.2-xml
+	echo "===========================================> php8.2-curl"
+	apt-get install php-curl php8.2-curl
+	echo "===========================================> php8.2-mbstring"
+	apt-get install php-mbstring php8.2-mbstring
+	echo "===========================================> php8.2-gmp"
+	apt-get install php8.2-gmp
+	echo "===========================================> php8.2-imagick"
+	apt-get install php8.2-imagick
+	echo "===========================================> php8.2-bcmath"
+	apt-get install php8.2-bcmath
+	echo "===========================================> php8.2-bz2"
+	apt-get install php8.2-bz2
+	echo "===========================================> php8.2-gd"
+	apt-get install php8.2-gd
+	echo "===========================================> php8.2-intl"
+	apt-get install php8.2-intl
+	echo "===========================================> php8.2-json"
+	apt-get install php8.2-json
+	echo "===========================================> php8.2-readline"
+	apt-get install php8.2-readline
+	echo "===========================================> php-dev8.2"
+	sudo apt-get install php8.2-dev
+	echo "===========================================> Enable PHP8.2 as Default"
+	sudo update-alternatives --set php /usr/bin/php8.2
+	sudo update-alternatives --set phar /usr/bin/phar8.2
+	sudo update-alternatives --set phar.phar /usr/bin/phar.phar8.2
+	sudo update-alternatives --set phpize /usr/bin/phpize8.2
+	sudo update-alternatives --set php-config /usr/bin/php-config8.2
 
 	echo "===========================================> php-dev"
 	sudo apt-get install php-dev libmcrypt-dev php-pear
@@ -489,7 +489,7 @@ echo "Installation of advanced dependencies START"
 
 __EOS__
 )
-cp "$rootfsDir/../../configs/etc/php/7.3/fpm/php.ini" "$rootfsDir/etc/php/7.3/fpm/php.ini"
+cp "$rootfsDir/../../configs/etc/php/8.2/fpm/php.ini" "$rootfsDir/etc/php/8.2/fpm/php.ini"
 
 echo "Installation of advanced dependencies END"
 # prevent upstart scripts from running during install/update

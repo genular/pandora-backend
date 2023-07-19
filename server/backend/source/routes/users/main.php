@@ -6,8 +6,7 @@
  * @Last Modified by:   LogIN-
  * @Last Modified time: 2021-01-27 09:57:44
  */
-use LasseRafn\InitialAvatarGenerator\InitialAvatar;
-use LasseRafn\Initials\Initials;
+
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -44,48 +43,54 @@ $app->post('/backend/user/logout', function (Request $request, Response $respons
 });
 
 $app->get('/backend/user/avatar', function (Request $request, Response $response, array $args) {
-	$success = false;
-	$Users = $this->get('PANDORA\Users\Users');
+    $success = false;
+    $Users = $this->get('PANDORA\Users\Users');
 
-	$user_id = (int) $request->getQueryParam('id', 0);
+    $user_id = (int) $request->getQueryParam('id', 0);
 
-	$user_details = $Users->getUsersByUserId($user_id);
+    $user_details = $Users->getUsersByUserId($user_id);
 
-	$size = (int) $request->getQueryParam('size', 256);
-	if ($size > 512 || $size < 16) {
-		$size = 256;
-	}
-	$userID = (int) $request->getQueryParam('id', 0);
+    $size = (int) $request->getQueryParam('size', 256);
+    if ($size > 512 || $size < 16) {
+        $size = 256;
+    }
+    $userID = (int) $request->getQueryParam('id', 0);
 
-	if (!$user_details || $userID < 1) {
-		$user_details = ["first_name" => "unknown", "last_name" => ""];
-	}
+    if (!$user_details || $userID < 1) {
+        $user_details = ["first_name" => "unknown", "last_name" => ""];
+    }
 
-	$colors = [
-		["background" => "#8BC34A", "color" => "#FFFFFF"],
-	];
-	$color = $colors[array_rand($colors, 1)];
+    $colors = [
+        ["background" => "#8BC34A", "color" => "#FFFFFF"],
+    ];
+    $color = $colors[array_rand($colors, 1)];
 
-	$avatar = new InitialAvatar();
-	$initials = new Initials();
+    $initials = substr($user_details["first_name"], 0, 1) . substr($user_details["last_name"], 0, 1);
 
-	$initials = $initials->name($user_details["first_name"] . " " . $user_details["last_name"])->generate();
+    // Create a blank image
+    $image = imagecreatetruecolor($size, $size);
+    
+    // Allocate colors
+    list($r, $g, $b) = sscanf($color["background"], "#%02x%02x%02x");
+    $bgColor = imagecolorallocate($image, $r, $g, $b);
+    list($r, $g, $b) = sscanf($color["color"], "#%02x%02x%02x");
+    $textColor = imagecolorallocate($image, $r, $g, $b);
+    
+    // Fill the background
+    imagefilledrectangle($image, 0, 0, $size, $size, $bgColor);
+    
+    // Add the text
+    imagestring($image, 5, $size/2, $size/2, $initials, $textColor);
 
-	$image = $avatar->gd()
-		->autoFont()
-		->background($color["background"])
-		->color($color["color"])
-		->name($initials)
-		->size(256)
-		->rounded()
-		->smooth()
-		->generate()
-		->stream('png', 100);
+    ob_start();
+    imagepng($image);
+    $data = ob_get_contents();
+    ob_end_clean();
 
-	$response->write($image);
-	return $response->withHeader('Content-Type', FILEINFO_MIME_TYPE);
-
+    $response->write($data);
+    return $response->withHeader('Content-Type', 'image/png');
 });
+
 
 $app->get('/backend/user/details', function (Request $request, Response $response, array $args) {
 	$success = false;

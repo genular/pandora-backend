@@ -349,10 +349,31 @@ $app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $
 
 	// Remove item if current path is not the root item path
 	$selected_directory_prefix = "users/".$user_id."/".$selectedDirectory;
+
+	$directories = [];
+
 	foreach ($data as $item_id => $item){
+
 		$item_directory_prefix = pathinfo($item['file_path'], PATHINFO_DIRNAME);
 		if($selected_directory_prefix !== $item_directory_prefix){
 			unset($data[$item_id]);
+		}
+		if($item['item_type'] === "3"){
+			$directories[$item['id']] = $item;
+		}
+	}
+	// Loop directories and calculate size of all files inside
+	foreach ($directories as $directory_id => $directory){
+	 	$directory_data = $UsersFiles->getAllFilesByUserID($user_id, $directory["file_path"], false, $sort, $sort_by, $include_directories);
+
+	 	foreach($directory_data as $item){
+	 		$directories[$directory_id]["size"] += $item["size"];
+	 	}
+	}
+
+	foreach ($data as $item_id => $item){
+		if($item['item_type'] === "3"){
+			$data[$item_id]["size"] = $directories[$item['id']]["size"];
 		}
 	}
 

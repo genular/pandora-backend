@@ -101,3 +101,33 @@ $app->get('/reset/{secret:.*}', function (Request $request, Response $response, 
 	$response->getBody()->write(json_encode(["success" => $success]));
 	return $response->withStatus($status);
 });
+
+
+
+
+$app->post('/backend/system/describe_ai', function (Request $request, Response $response, array $args) {
+    $success = true;
+
+	$user_details = $request->getAttribute('user');
+	$user_id = $user_details['user_id'];
+
+	$Users = $this->get('PANDORA\Users\Users');
+	$user_details = $Users->getUsersByUserId($user_id);
+
+
+	$post = $request->getParsedBody();
+	
+    if (isset($post['submitData'])) {
+        $submitData = json_decode(base64_decode(urldecode($post['submitData'])), true);
+    }
+
+    $LLM_AI = $this->get('PANDORA\Helpers\LLM_AI');
+    $response = $LLM_AI->get($submitData, $user_details['openai_api']);
+
+    if($response === false){
+		$success = false;
+	}
+
+    return $response->withJson(["success" => $success, "message" => $response]);
+});
+

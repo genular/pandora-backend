@@ -223,6 +223,7 @@ class Users {
 			"users_details.last_name",
 			"users_details.email",
 			"users_details.phone",
+			"users_details.openai_api",
 			"users_details.account_type [Int]",
 			"users_organization.oid [Int]",
 		];

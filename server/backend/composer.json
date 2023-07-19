@@ -3,8 +3,6 @@
     "description": "PHP API Backend Service for PANDORA Backend Server",
     "type": "project",
     "require": {
-
-        "dilab/resumable.php": "^0.1.4",
         "phpmailer/phpmailer": "^6.0",
         "monolog/monolog": "^1.23",
         "slim/slim": "3.12.2",
@@ -19,15 +17,14 @@
         "league/flysystem-webdav": "^1.0",
         "league/flysystem-sftp": "^1.0",
         "aws/aws-sdk-php": "^3.61",
-        "guzzlehttp/guzzle": "^6.3",
         "league/csv": "9.7.3",
         "league/container": "^2.4",
         "matthiasmullie/scrapbook": "^1.4",
         "paquettg/php-html-parser": "^1.7",
-        "lasserafn/php-initial-avatar-generator": "^3.0",
-        "lasserafn/php-initials": "^2.20",
-        "orhanerday/open-ai": "^4.7",
-        "mongodb/mongodb": "^1.15"
+        "mongodb/mongodb": "^1.15",
+        "openai-php/client": "^0.6.4",
+        "guzzlehttp/guzzle": "^7.7",
+        "http-interop/http-factory-guzzle": "^1.2"
     },
     "authors": [
         {
@@ -37,7 +34,10 @@
     ],
     "config": {
         "process-timeout": 0,
-        "php": "7.3"
+        "php": "7.3",
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
 
     },
     "scripts": {

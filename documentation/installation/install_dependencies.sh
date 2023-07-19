@@ -785,7 +785,7 @@ if [ "${MODS[pandora_api]}" == y ] || [ "${MODS[pandora_cron]}" == y ] || [ "${M
                 cd server/backend/ || exit 1
                 echo "${red}Installing dependencies..${clear}"
                 echo ""
-                /usr/bin/php7.3 /usr/local/bin/composer install --ignore-platform-reqs
+                /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs
 
                 ## Create logs directory
                 mkdir "$GIT_BACKEND_LOCAL/server/backend/source/logs"
