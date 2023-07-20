@@ -234,19 +234,8 @@ __EOS__
 __EOS__
 )
 
-if [ "$FRESH_START" == y ] ; then
-
-	( rootfs_chroot /bin/sh << '__EOS__'
-		curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
-		sudo apt-get install -y nodejs
-
-		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-__EOS__
-	)
-
-fi
-echo "Installation of basic dependencies START"
+node_version=$(node --version)
+echo "==================================> Installation of basic dependencies START. Nodejs Version: ${node_version}"
 
 ( rootfs_chroot /bin/sh << '__EOS__'
 	apt-get update
@@ -489,6 +478,25 @@ echo "Installation of advanced dependencies START"
 
 __EOS__
 )
+
+if [ "$FRESH_START" == y ] ; then
+
+	( rootfs_chroot /bin/sh << '__EOS__'
+		curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+		sudo apt-get install -y nodejs
+
+		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+__EOS__
+	)
+
+fi
+
+node_version=$(node --version)
+echo "==================================> Nodejs Version: ${node_version}"
+exit 0
+
+
 cp "$rootfsDir/../../configs/etc/php/8.2/fpm/php.ini" "$rootfsDir/etc/php/8.2/fpm/php.ini"
 
 echo "Installation of advanced dependencies END"
