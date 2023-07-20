@@ -64,10 +64,13 @@ if [ -z "$GITHUB_PAT_TOKEN" ]; then
     GITHUB_PAT_TOKEN=n
 fi
 
+node_version=$(node --version)
+
 echo "${green}"
 printf "%*s\n" $(((${#title}+$COLUMNS)/2)) "$title"
 echo "This script will try to guide you via installation of pandora and all its dependencies."
 echo "Please make sure that all dependencies are successfully installed."
+echo "==> Nodejs Version: ${node_version}"
 echo "${clear}"
 echo ""
 
@@ -215,38 +218,38 @@ if [ "${MODS[pandora_cron]}" == y ] ; then
     fi
 
     ## Install salmon
-    cd /tmp
-    wget https://github.com/COMBINE-lab/salmon/releases/download/v1.9.0/salmon-1.9.0_linux_x86_64.tar.gz
-    sudo tar xvzf salmon-1.9.0_linux_x86_64.tar.gz -C /usr/src
-    sudo mv /usr/src/salmon-1.9.0_linux_x86_64 /usr/src/salmon
-    sudo ln -s /usr/src/salmon/bin/salmon /usr/bin/salmon
+    ## cd /tmp
+    ## wget https://github.com/COMBINE-lab/salmon/releases/download/v1.9.0/salmon-1.9.0_linux_x86_64.tar.gz
+    ## sudo tar xvzf salmon-1.9.0_linux_x86_64.tar.gz -C /usr/src
+    ## sudo mv /usr/src/salmon-1.9.0_linux_x86_64 /usr/src/salmon
+    ## sudo ln -s /usr/src/salmon/bin/salmon /usr/bin/salmon
 
-    cd /usr/src/salmon
+    ## cd /usr/src/salmon
 
-    sudo mkdir -p /usr/src/salmon/index/human
-    ## sudo mkdir -p /usr/src/salmon/index/mouse
-    sudo chmod -R 777 /usr/src/salmon/index
+    ## sudo mkdir -p /usr/src/salmon/index/human
+    ## ## sudo mkdir -p /usr/src/salmon/index/mouse
+    ## sudo chmod -R 777 /usr/src/salmon/index
 
-    sudo mkdir -p /usr/src/salmon/index_processed/human
-    ## sudo mkdir -p /usr/src/salmon/index_processed/mouse
-    sudo chmod 777 -R /usr/src/salmon/index_processed
+    ## sudo mkdir -p /usr/src/salmon/index_processed/human
+    ## ## sudo mkdir -p /usr/src/salmon/index_processed/mouse
+    ## sudo chmod 777 -R /usr/src/salmon/index_processed
 
-    cd /usr/src/salmon/index/human
-    wget ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
-    wget ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz
-    cat Homo_sapiens.GRCh38.cdna.all.fa.gz Homo_sapiens.GRCh38.ncrna.fa.gz > Homo_sapiens.GRCh38.rna.fa.gz
-    rm Homo_sapiens.GRCh38.ncrna.fa.gz
-    rm Homo_sapiens.GRCh38.cdna.all.fa.gz
+    ## cd /usr/src/salmon/index/human
+    ## wget ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
+    ## wget ftp://ftp.ensembl.org/pub/current_fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz
+    ## cat Homo_sapiens.GRCh38.cdna.all.fa.gz Homo_sapiens.GRCh38.ncrna.fa.gz > Homo_sapiens.GRCh38.rna.fa.gz
+    ## rm Homo_sapiens.GRCh38.ncrna.fa.gz
+    ## rm Homo_sapiens.GRCh38.cdna.all.fa.gz
 
 
-    ## cd /usr/src/salmon/index/mouse
-    ## wget https://ftp.ensembl.org/pub/current_fasta/mus_musculus/cdna/Mus_musculus.GRCm39.cdna.all.fa.gz
+    ## ## cd /usr/src/salmon/index/mouse
+    ## ## wget https://ftp.ensembl.org/pub/current_fasta/mus_musculus/cdna/Mus_musculus.GRCm39.cdna.all.fa.gz
 
-    salmon index --threads 64 --transcripts /usr/src/salmon/index/human/Homo_sapiens.GRCh38.cdna.all.fa.gz --index /usr/src/salmon/index_processed/human
-    ## salmon index --threads 64 --transcripts /usr/src/salmon/index/mouse/Mus_musculus.GRCm39.cdna.all.fa.gz --index /usr/src/salmon/index_processed/mouse
+    ## salmon index --threads 64 --transcripts /usr/src/salmon/index/human/Homo_sapiens.GRCh38.cdna.all.fa.gz --index /usr/src/salmon/index_processed/human
+    ## ## salmon index --threads 64 --transcripts /usr/src/salmon/index/mouse/Mus_musculus.GRCm39.cdna.all.fa.gz --index /usr/src/salmon/index_processed/mouse
 
-    sudo rm -Rf /usr/src/salmon/index/human
-    ## sudo rm -Rf /usr/src/salmon/index/mouse
+    ## sudo rm -Rf /usr/src/salmon/index/human
+    ## ## sudo rm -Rf /usr/src/salmon/index/mouse
     
 fi
 
@@ -360,6 +363,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
 
             # Adjust permissions
             sudo chmod o+w /usr/local/R/${R_VERSION}/lib64/R/library && sudo chmod o+w /usr/local/R/${R_VERSION}/lib64/R/doc -R
+            sudo chmod o+w /usr/local/R/${R_VERSION}/lib/R/library && sudo chmod o+w /usr/local/R/${R_VERSION}/lib/R/doc -R
 
             # Set as default system version
             install_r_default=y

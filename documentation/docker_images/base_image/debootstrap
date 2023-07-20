@@ -154,6 +154,7 @@ __EOS__
 	export DEBIAN_FRONTEND=noninteractive
 	export DEBIAN_PRIORITY=critical
 	export DEBCONF_NONINTERACTIVE_SEEN=true
+	export NODE_OPTIONS=--openssl-legacy-provider
 
 	# locale
 	echo "===> INSTALLATION preperation: installing locales START"
@@ -236,7 +237,9 @@ __EOS__
 if [ "$FRESH_START" == y ] ; then
 
 	( rootfs_chroot /bin/sh << '__EOS__'
-		curl -sL https://deb.nodesource.com/setup_14.x | bash -
+		curl -sL https://deb.nodesource.com/setup_15.x | sudo -E bash -
+		sudo apt-get install -y nodejs
+
 		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
 		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
 __EOS__
@@ -256,7 +259,6 @@ echo "Installation of basic dependencies START"
 	apt-get install supervisor
 
 	echo "===> INSTALLATION step: 3"
-	apt-get install -y nodejs
 	apt-get install yarn
 
 	## For SSH login function located in User Settings
@@ -540,9 +542,11 @@ if [ -d "$rootfsDir/etc/apt/apt.conf.d" ]; then
 			# creation that's essentially just "apt-get clean".
 			DPkg::Post-Invoke { ${aptGetClean} };
 			APT::Update::Post-Invoke { ${aptGetClean} };
+			APT::Get::Update::SourceListWarnings::NonFreeFirmware "false";
 
 			Dir::Cache::pkgcache "";
 			Dir::Cache::srcpkgcache "";
+
 
 			# Note that we do realize this isn't the ideal way to do this, and are always
 			# open to better suggestions (https://github.com/docker/docker/issues).
