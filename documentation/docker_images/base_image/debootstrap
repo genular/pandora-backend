@@ -234,8 +234,7 @@ __EOS__
 __EOS__
 )
 
-node_version=$(node --version)
-echo "==================================> Installation of basic dependencies START. Nodejs Version: ${node_version}"
+echo "Installation of basic dependencies START"
 
 ( rootfs_chroot /bin/sh << '__EOS__'
 	apt-get update
@@ -245,9 +244,17 @@ echo "==================================> Installation of basic dependencies STA
 	apt-get install nginx
 	
 	echo "===> INSTALLATION step: 2"
-	apt-get install supervisor
+	apt-get install supervisor gnupg2
 
 	echo "===> INSTALLATION step: 3"
+
+	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 23E7166788B63E1E
+
+	curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/yarnkey.gpg
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list > /dev/null
+
+	apt-get update -y
+
 	apt-get install yarn
 
 	## For SSH login function located in User Settings
@@ -480,21 +487,15 @@ __EOS__
 )
 
 if [ "$FRESH_START" == y ] ; then
-
 	( rootfs_chroot /bin/sh << '__EOS__'
-		curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-		sudo apt-get install -y nodejs
 
-		curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-		echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+		curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s 14.21.3
+
+		apt-get clean
+
 __EOS__
 	)
-
 fi
-
-node_version=$(node --version)
-echo "==================================> Nodejs Version: ${node_version}"
-exit 0
 
 
 cp "$rootfsDir/../../configs/etc/php/8.2/fpm/php.ini" "$rootfsDir/etc/php/8.2/fpm/php.ini"
@@ -507,9 +508,6 @@ echo "Installation of advanced dependencies END"
 	cp -a "$rootfsDir/usr/sbin/policy-rc.d" "$rootfsDir/sbin/initctl"
 	sed -i 's/^exit.*/exit 0/' "$rootfsDir/sbin/initctl"
 )
-
-# Remove downloaded packages from local repository, shrink a little, since apt makes us cache-fat (wheezy: ~157.5MB vs ~120MB)
-( set -x; rootfs_chroot apt-get clean )
 
 # this file is one APT creates to make sure we don't "autoremove" our currently
 # in-use kernel, which doesn't really apply to debootstraps/Docker images that
@@ -610,6 +608,7 @@ if [ -d "$rootfsDir/etc/apt/apt.conf.d" ]; then
 
 			# https://aptitude.alioth.debian.org/doc/en/ch02s05s05.html#configApt-AutoRemove-SuggestsImportant
 			Apt::AutoRemove::SuggestsImportant "false";
+
 		EOF
 	fi
 fi
@@ -618,7 +617,7 @@ fi
 	set -x
 
 	# make sure we're fully up-to-date
-	rootfs_chroot sh -xc 'apt-get update && apt-get dist-upgrade -y'
+	rootfs_chroot sh -xc 'apt-get update'
 
 	# Remove downloaded package lists.
 	# delete all the apt list files since they're big and get stale quickly
