@@ -30,6 +30,7 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 		sudo chmod --reference=/var/lib/mysql /mnt/usrdata/mysql
 
 		# Fix for Debian 12
+		sudo chown mysql:mysql /var/log/mysql
 		sudo chown mysql:mysql -hR /mnt/usrdata/mysql
 
 		## Change mysql configuration

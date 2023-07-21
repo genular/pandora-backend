@@ -505,12 +505,6 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
             ## Make sure we have Pandoc, prettydoc and seriation for vignettes
             sudo Rscript -e "install.packages('prettydoc', repos='http://cran.us.r-project.org')"
             sudo Rscript -e "install.packages('seriation', repos='http://cran.us.r-project.org')"
-
-            if [ "${R_VERSION}" == "3.6.3" ] ; then
-                sudo Rscript -e "devtools::install_github('taiyun/corrplot@bae0207d7560f1afc3e6ba640f7c6924dcba3c66')"
-            else
-                sudo Rscript -e "devtools::install_github('taiyun/corrplot')"
-            fi
             
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"
             sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer'), repos='http://cran.us.r-project.org')"
@@ -606,6 +600,12 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
 
             sudo Rscript -e "install.packages('Rcpp', repos='https://RcppCore.github.io/drat')"
             sudo Rscript -e "remotes::install_github('cran/FCNN4R')"
+
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                sudo Rscript -e "devtools::install_github('taiyun/corrplot@bae0207d7560f1afc3e6ba640f7c6924dcba3c66')"
+            else
+                sudo Rscript -e "devtools::install_github('taiyun/corrplot')"
+            fi
             
             echo "${yellow}}==========> Trying to install TensorFlow${clear}"
             echo ""
