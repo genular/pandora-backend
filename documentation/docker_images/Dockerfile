@@ -28,8 +28,8 @@ RUN su - genular -c 'cd /var/www/genular/pandora \
 	--server_homepage=http://localhost:3010 \
 	&& cd /var/www/genular/pandora-backend/server/backend/ \
 	&& git checkout . && git fetch && git checkout master && git pull origin master \
-	&& /usr/bin/php7.3 /usr/local/bin/composer install --ignore-platform-reqs \
-	&& /usr/bin/php7.3 /usr/local/bin/composer post-install /tmp/configuration.json'
+	&& /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
+	&& /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json'
 
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
