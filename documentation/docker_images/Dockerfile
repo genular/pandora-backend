@@ -31,6 +31,8 @@ RUN su - genular -c 'cd /var/www/genular/pandora \
 	&& /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
 	&& /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json'
 
+RUN sudo apt-get install php8.2-mongodb && sudo chown mysql:mysql /var/log/mysql && sudo chown mysql:mysql -hR /mnt/usrdata/mysql
+
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
 # Expose the ports!

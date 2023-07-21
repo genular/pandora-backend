@@ -404,6 +404,9 @@ echo "Installation of advanced dependencies START"
 	apt-get install php8.2-readline
 	echo "===========================================> php-dev8.2"
 	sudo apt-get install php8.2-dev
+
+	sudo apt-get install php8.2-mongodb
+
 	echo "===========================================> Enable PHP8.2 as Default"
 	sudo update-alternatives --set php /usr/bin/php8.2
 	sudo update-alternatives --set phar /usr/bin/phar8.2
@@ -435,6 +438,8 @@ echo "Installation of advanced dependencies START"
 
 	mkdir -p "$rootfsDir/var/log/nginx"
 	mkdir -p "$rootfsDir/var/log/mysql"
+
+	sudo chown mysql:mysql /var/log/mysql
 
 	## Disable AppArmor 
 	mkdir -p /etc/default/grub.d

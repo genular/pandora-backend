@@ -24,8 +24,13 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 		sudo cp -R -p /var/lib/mysql /mnt/usrdata
 		# Set ownership of new directory to match existing one
 		sudo chown --reference=/var/lib/mysql /mnt/usrdata/mysql
+
 		# Set permissions on new directory to match existing one
 		sudo chmod --reference=/var/lib/mysql /mnt/usrdata/mysql
+
+		# Fix for Debian 12
+		sudo chown mysql:mysql -hR /mnt/usrdata/mysql
+
 		## Change mysql configuration
 		sed -i '/datadir/c\datadir		= /mnt/usrdata/mysql' /etc/mysql/mariadb.conf.d/50-server.cnf
 
