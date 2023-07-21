@@ -22,6 +22,7 @@ if [ "$CUSTOM_MOUNT" == y ] ; then
 		echo "/mnt/usrdata/mysql doesn't exists creating new one!"
 		# Copy all files in default directory, to new one, retaining perms (-p)
 		sudo cp -R -p /var/lib/mysql /mnt/usrdata
+
 		# Set ownership of new directory to match existing one
 		sudo chown --reference=/var/lib/mysql /mnt/usrdata/mysql
 
