@@ -61,15 +61,10 @@ class Helpers {
 	 * @return boolean
 	 */
 	public static function is_connected() {
-		$connected = @fsockopen("www.google.com", 80);
-		if ($connected) {
-			$is_conn = true; //action when connected
-			fclose($connected);
-		} else {
-			$is_conn = false; //action in connection failure
-		}
-		return $is_conn;
+	    $output = shell_exec("ping -c 1 8.8.8.8");
+	    return !empty($output);
 	}
+
 
 	/**
 	 * @param string $csvFile Path to the CSV file
