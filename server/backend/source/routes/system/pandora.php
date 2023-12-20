@@ -451,15 +451,21 @@ $app->post('/backend/system/pandora/dataset-queue/delete', function (Request $re
                 $files[] = $model['ufid'];
             }
 
-            // 2. models_performance
-            $ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
-            $ModelsPerformance->deleteByModelIDs($modelsListIDs);
+            if(count($modelsListIDs) > 0){
+                // 2. models_performance
+                $ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
+                $ModelsPerformance->deleteByModelIDs($modelsListIDs);
+            }
 
-            // 3. models
-            $Models->deleteByResampleIDs($resamplesListIDs);
+            if(count($resamplesListIDs) > 0){
+                // 3. models
+                $Models->deleteByResampleIDs($resamplesListIDs);
+            }
 
-            $ModelsVariables = $this->get('PANDORA\Models\ModelsVariables');
-            $ModelsVariables->deleteByModelIDs($modelsListIDs);
+            if(count($modelsListIDs) > 0){
+                $ModelsVariables = $this->get('PANDORA\Models\ModelsVariables');
+                $ModelsVariables->deleteByModelIDs($modelsListIDs);
+            }
 
             // 3. dataset_resamples_mappings
             $DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
@@ -469,16 +475,21 @@ $app->post('/backend/system/pandora/dataset-queue/delete', function (Request $re
             $DatasetResamples->deleteByQueueIDs($queueID);
 
             // 3. dataset_proportions
-            $DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
-            $DatasetProportions->deleteByResampleIDs($resamplesListIDs);
+
+            if(count($resamplesListIDs) > 0){
+                $DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
+                $DatasetProportions->deleteByResampleIDs($resamplesListIDs);
+            }
 
             // 3. dataset_queue
             $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
             $DatasetQueue->deleteByQueueIDs($queueID);
 
-            $FileSystem = $this->get('PANDORA\System\FileSystem');
 
-            $FileSystem->deleteFilesByIDs(array_unique($files));
+            if(count($resamplesListIDs) > 0){
+                $FileSystem = $this->get('PANDORA\System\FileSystem');
+                $FileSystem->deleteFilesByIDs(array_unique($files));
+            }
         }
 
         $success = true;
