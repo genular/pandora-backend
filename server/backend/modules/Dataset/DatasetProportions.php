@@ -232,10 +232,16 @@ class DatasetProportions {
 	 * @param  [type] $classes     [description]
 	 * @return [type]              [description]
 	 */
-	public function getUniqueValuesCountForClasses($resampleIDs, $classes) {
-
-		$details = $this->database->select($this->table_name,
-			["class_name",
+	public function getUniqueValuesCountForClasses(array $resampleIDs, array $classes): array {
+		// Check if $resampleIDs or $classes array is empty and return early if true.
+		if (empty($resampleIDs) || empty($classes)) {
+			return [];
+		}
+	
+		$details = $this->database->select(
+			$this->table_name,
+			[
+				"class_name",
 				"result" => Medoo::raw('SUM(<result>)'),
 			],
 			[
@@ -246,25 +252,28 @@ class DatasetProportions {
 					'class_name',
 					'proportion_class_name',
 				],
-			]);
-
-		// Map sql sum values into classes array
-		foreach ($classes as $classesKey => $classesValue) {
+			]
+		);
+	
+		// Map SQL sum values into classes array
+		foreach ($classes as $classesKey => &$classesValue) {
 			$isClassMapped = false;
 			foreach ($details as $detailsItem) {
 				if ($detailsItem["class_name"] === $classesValue["remapped"]) {
-					$classes[$classesKey]["unique"] = intval($detailsItem["result"]);
+					$classesValue["unique"] = intval($detailsItem["result"]);
 					$isClassMapped = true;
 					break;
 				}
 			}
-			## In case we didn't make mapping since database value are missing add unique value manually
-			if ($isClassMapped === false) {
+	
+			// In case we didn't make a mapping since database values are missing, add unique value manually
+			if (!$isClassMapped) {
 				$this->logger->addError("==> ERROR: PANDORA\Dataset\DatasetProportions\getUniqueValuesCountForClasses cannot find mapping: " . $classesKey . " - " . implode(",", $resampleIDs));
-				$classes[$classesKey]["unique"] = 0;
+				$classesValue["unique"] = 0;
 			}
 		}
-
-		return ($classes);
-	}
+		unset($classesValue); // End reference to avoid unexpected behavior later
+	
+		return $classes;
+	}	
 }
