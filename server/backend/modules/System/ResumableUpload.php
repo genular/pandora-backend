@@ -61,7 +61,14 @@ class ResumableUpload {
 		
 		$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload move_uploaded_file: " . $tmp_file_path. " - " . $savePath);
 
-		$resp = move_uploaded_file($tmp_file_path, $savePath);
+	    // Use `is_uploaded_file` to check if the file was uploaded via HTTP POST
+	    if (is_uploaded_file($tmp_file_path)) {
+	        // If true, use `move_uploaded_file` to securely move the uploaded file
+	        $resp = move_uploaded_file($tmp_file_path, $savePath);
+	    } else {
+	        // For files not uploaded via HTTP POST, use `rename` to move the file
+	        $resp = rename($tmp_file_path, $savePath);
+	    }
 		if ($resp) {
 			$this->logger->addInfo("==> INFO: PANDORA\System\ResumableUpload file moved: " . $resp);
 			// Read data with file_get_contents then use mb_convert_encoding to convert to UTF-8

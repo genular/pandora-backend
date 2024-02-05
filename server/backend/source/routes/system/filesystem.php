@@ -243,6 +243,7 @@ $app->get('/backend/system/filesystem/directory-create/{submitData:.*}', functio
  */
 $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_file_name:.*}', function (Request $request, Response $response, array $args) {
 	$success = false;
+	$uploaded_path = false;
 	$message = array();
 	
 
@@ -262,16 +263,24 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 	$new_file_name = $request->getAttribute('new_file_name');
 	$new_file_name = base64_decode($new_file_name);
 
-	if(file_exists($local_file_path)){
-		$success = true;
-		$uploaded_path = $local_file_path;
-	}
+	// Use PHP's temporary directory as the destination
+	$destination_directory = sys_get_temp_dir();
+	// Full path to the new file in the temporary directory
+	$new_full_path = $destination_directory . DIRECTORY_SEPARATOR . basename($local_file_path);
 
+	if(file_exists($local_file_path)){
+		if (copy($local_file_path, $new_full_path)) {
+			$success = true;
+			// make a new copy of the file
+			$uploaded_path = $ResumableUpload->moveUploadedFile($new_full_path, $new_file_name);
+		}
+	}
 
 	// File upload is finished!
 	if ($success === true) {
 		// Validate File Header and rename it to standardize column names!
 		$details = $Helpers->validateCSVFileHeader($uploaded_path);
+
 
 		if (count($details["message"]) === 0) {
 			$renamed_path = $Helpers->renamePathToHash($details);
@@ -533,6 +542,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 			}
 		}
 
+
 		// 2nd Generate final download links
 		$downloadLinks = [];
 		foreach ($downloadIDs as $fileID) {
@@ -540,8 +550,6 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 
 			if (isset($fileDetails['file_path'])) {
 				$display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
-
-
 
 				// get remote link with a new name
 				// $download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
@@ -560,7 +568,6 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 				// Download and de-compress
 				$fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
 
-
 				if ($downloadType !== "models") {
 					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings); 
 				}
@@ -576,18 +583,17 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 				}
 			}
 		}
-		// TODO 3rd if model download is requested also download variable_importance and model overview sheet
-		// if ($downloadType === "models") {
-		// }
+
 
 		if (count($downloadLinks) > 0) {
 			$message = $downloadLinks;
 			$success = true;
+		}else{
+			$success = false;
+			$message = "No files found for download!";
 		}
 	}
-
 	return $response->withJson(["success" => $success, "message" => $message]);
-
 });
 
 

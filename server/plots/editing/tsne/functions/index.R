@@ -220,36 +220,55 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
     	plotClustered <- TRUE
     }
 
-    input_args <- c(list(data=input_data, 
-	                      fileHeader=NULL,
-	                      
-	                      selectedColumns=c("cluster"),
-	                      selectedRows=selectedRows,
-	                      
-	                      removeNA=TRUE,
-	                      
-	                      scale="column",
-	                      
-	                      displayNumbers=FALSE,
-	                      displayLegend=TRUE,
-	                      displayColnames=FALSE,
-	                      displayRownames=TRUE,
-	                      
-	                      plotWidth=settings$plot_size,
-	                      plotRatio=settings$aspect_ratio,
-	                      
-	                      clustDistance="euclidean",
-	                      clustLinkage=settings$datasetAnalysisClustLinkage, 
-	                      clustOrdering=settings$datasetAnalysisClustOrdering,
-	                      
-	                      fontSizeGeneral=settings$fontSize,
-	                      fontSizeRow=settings$fontSize,
-	                      fontSizeCol=9,
-	                      fontSizeNumbers=7,
-	                      settings=settings,
+	# Dynamic font size adjustment based on the number of rows and columns
+	num_rows <- nrow(input_data)
+	num_columns <- length(selectedRows)
 
-                          plotClustered = plotClustered,
-                          orederingColumn = settings$datasetAnalysisSortColumn))
+	base_font_size <- settings$fontSize
+	adjusted_font_size_row <- max(base_font_size - num_rows / 50, 1)
+	adjusted_font_size_col <- max(base_font_size - num_columns / 25, 1)
+
+	print(paste0("====> Adjusted font size row: ", base_font_size - num_rows / 50))
+	print(paste0("====> Adjusted font size row: ", adjusted_font_size_row))
+
+	print(paste0("====> Adjusted font size col: ", base_font_size - num_columns / 25))
+	print(paste0("====> Adjusted font size col: ", adjusted_font_size_col))
+
+	# Use the smaller of the two sizes for general text to ensure consistency
+	adjusted_font_size_general <- min(adjusted_font_size_row, adjusted_font_size_col)
+	print(paste0("====> Adjusted font size general: ", adjusted_font_size_general))
+
+    input_args <- c(list(data=input_data, 
+						fileHeader=NULL,
+
+						selectedColumns=c("cluster"),
+						selectedRows=selectedRows,
+
+						removeNA=TRUE,
+
+						scale="column",
+
+						displayNumbers=FALSE,
+						displayLegend=TRUE,
+						displayColnames=FALSE,
+						displayRownames=TRUE,
+
+						plotWidth=settings$plot_size,
+						plotRatio=settings$aspect_ratio,
+
+						clustDistance="euclidean",
+						clustLinkage=settings$datasetAnalysisClustLinkage, 
+						clustOrdering=settings$datasetAnalysisClustOrdering,
+
+						fontSizeGeneral = adjusted_font_size_general,
+						fontSizeRow = adjusted_font_size_row,
+						fontSizeCol = adjusted_font_size_col,
+						fontSizeNumbers = max(adjusted_font_size_general - 2, 3),  # Ensure numbers are slightly smaller for clarity
+
+						settings=settings,
+
+						plotClustered = plotClustered,
+						orederingColumn = settings$datasetAnalysisSortColumn))
 
 
     clustering_out <- FALSE

@@ -265,7 +265,7 @@ checkCachedList <- function(cachePath){
 #' @return boolean
 saveCachedList <- function(cachePath, data, type = "Rdata"){
     if (file.exists(cachePath)) {
-        #Delete file if it exists
+        # Delete file if it exists
         file.remove(cachePath)
     }
     
@@ -276,7 +276,11 @@ saveCachedList <- function(cachePath, data, type = "Rdata"){
     }else{
         save(data, file = cachePath)
     }
+    # Set global permissions 
+    Sys.chmod(tempdir(), mode = "777")
+    Sys.chmod(cachePath, mode = "777")
 }
+
 
 #' @title Check if All Elements in Character Vector are Numeric
 #' @description Tests, without issuing warnings, whether all elements of a character vector are legal numeric values
