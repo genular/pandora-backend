@@ -1,39 +1,43 @@
 #!/bin/bash
 
-# @Author: LogIN-
-# @Date:   2019-02-26 13:27:17
-# @Last Modified by:   LogIN-
-# @Last Modified time: 2020-04-06 17:33:21
+# Script to create a base Docker image for Genular
 
-FRESH_START=y
+# Whether to start fresh, set 'y' to clean and start over
+FRESH_START='y'
 
+# Define image name and working directory
 IMAGE_NAME="genular"
 WORKING_DIR=$(pwd)
-DATE_TAG=$(date +%Y_%m_%d)
+DATE_TAG=$(date +%Y_%m_%d) # Tag image with current date
 
-ROOT_FS=${WORKING_DIR}/images/${IMAGE_NAME}
+# Root filesystem directory for the Docker image
+ROOT_FS="${WORKING_DIR}/images/${IMAGE_NAME}"
+
+# GitHub Personal Access Token for private repositories access, passed as first script argument
 GITHUB_PAT=$1
 
-function finish {
-	sudo mount | grep -qs ${ROOT_FS}/dev 	  && sudo umount -lf ${ROOT_FS}/dev
-	sudo mount | grep -qs ${ROOT_FS}/dev/pts  && sudo umount -lf ${ROOT_FS}/dev/pts
-	sudo mount | grep -qs ${ROOT_FS}/proc     && sudo umount -lf ${ROOT_FS}/proc
-	sudo mount | grep -qs ${ROOT_FS}/sys      && sudo umount -lf ${ROOT_FS}/sys
-	echo "==> SCRIPT END: all mount points are now unmounted"
+# Function to clean up mount points on script exit
+function cleanup {
+    # Unmount all mounted points to avoid any lock
+    sudo mount | grep -qs "${ROOT_FS}/dev" && sudo umount -lf "${ROOT_FS}/dev"
+    sudo mount | grep -qs "${ROOT_FS}/dev/pts" && sudo umount -lf "${ROOT_FS}/dev/pts"
+    sudo mount | grep -qs "${ROOT_FS}/proc" && sudo umount -lf "${ROOT_FS}/proc"
+    sudo mount | grep -qs "${ROOT_FS}/sys" && sudo umount -lf "${ROOT_FS}/sys"
+    echo "Cleanup complete: all mount points unmounted."
 }
-trap finish EXIT
+# Trap EXIT signal to ensure cleanup is called on script exit
+trap cleanup EXIT
 
-if [ "$FRESH_START" == y ] ; then
-	# Clear any existing directories
-	if [ -d "./images/${IMAGE_NAME}" ]; then
-		sudo rm -Rf "./images/${IMAGE_NAME}" && mkdir "./images/${IMAGE_NAME}"
-	else
-		mkdir "./images/${IMAGE_NAME}"
-	fi
+# If starting fresh, clean up any existing image directories
+if [ "$FRESH_START" == "y" ]; then
+    echo "Starting fresh: Removing and recreating image directory."
+    sudo rm -rf "./images/${IMAGE_NAME}" && mkdir -p "./images/${IMAGE_NAME}"
 fi
 
+# Remove existing tarball of the same name, if present
 if [ -f "./images/${IMAGE_NAME}_$DATE_TAG.tar" ]; then
-	sudo rm "./images/${IMAGE_NAME}_$DATE_TAG.tar"
+    echo "Removing existing tarball."
+    sudo rm "./images/${IMAGE_NAME}_$DATE_TAG.tar"
 fi
 
 
@@ -45,7 +49,7 @@ eval $build_command
 
 
 echo "File-system size:"
-sudo du --human-readable --summarize $ROOT_FS
+sudo du -h --summarize $ROOT_FS
 
 if [ -d "./images/${IMAGE_NAME}" ]; then
 	## Create archive with Debian base system.
@@ -56,5 +60,5 @@ if [ -d "./images/${IMAGE_NAME}" ]; then
 	echo "Archive size:"
 	sudo du --human-readable ./images/$IMAGE_NAME_$DATE_TAG.tar
 fi
-### Import image to docker
-# cat "./images/$IMAGE_NAME.tar" | sudo docker import - ${IMAGE_NAME}
+# Note: Uncomment the line below to import the image directly into Docker (requires Docker CLI installed)
+# sudo cat "./images/${IMAGE_NAME}_$DATE_TAG.tar" | sudo docker import - ${IMAGE_NAME}:$DATE_TAG

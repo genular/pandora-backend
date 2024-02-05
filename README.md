@@ -1,23 +1,36 @@
 <p align="center">
-    <img width="200" src="https://github.com/genular/pandora/raw/master/.github/static/favicon.png">
+    <img width="200" src="https://github.com/genular/pandora/raw/master/.github/static/favicon.png" alt="PANDORA Logo">
 </p>
 
-> Back-end interface for PANDORA
+<h1 align="center">PANDORA - Back-end Interface</h1>
 
-<h1 align="center">Introduction</h1>
+<p align="center">
+    <strong>A powerful, flexible, and easy-to-use open-source knowledge discovery platform.</strong>
+</p>
 
-`PANDORA` is a powerful, flexible, open-source and easy to use knowledge discovery application.
+## Introduction
 
-Currently `PANDORA` implements automated machine learning and statistical data discovery features
-that will help you to easily illustrate dynamic relationships and provide you with a structural sense of your data.
+**PANDORA** is designed to democratize the process of knowledge discovery by providing automated machine learning and statistical data analysis capabilities. This platform enables users to uncover dynamic relationships in data, offering a structured insight into complex datasets.
 
-Goal of this project is to make unified user interface that will empower anyone to extract meaningful information from their data and enable them to rapidly use machine learning algorithms. `It gives you freedom and control over your own data.`
+The primary goal of PANDORA is to offer a unified user interface that empowers users to extract meaningful information from their data with ease. It facilitates the rapid application of machine learning algorithms, ensuring users have both freedom and control over their data.
 
-While `PANDORA` can be used in across many different fields,
-our focus here is scientific community so we can enable scientist and other researchers in the field to quickly prototype around their data and get meaningful results out of it.
+While PANDORA is versatile enough to be applied across various fields, we place a special emphasis on serving the scientific community. Our aim is to empower scientists and researchers to quickly prototype and derive significant insights from their data.
 
-## More info [HERE](https://github.com/genular/pandora) at main project repository
+## Key Features
+
+- **Automated Machine Learning:** Simplify the application of machine learning models to your data with automated processes.
+- **Statistical Data Discovery:** Explore your data with advanced statistical analysis tools.
+- **Dynamic Data Visualization:** Gain insights through interactive and dynamic visual representations of your data.
+- **Open-source Freedom:** Benefit from the continuous improvement by the community and contribute to the development.
+
+## Getting Started
+
+To begin using PANDORA for your data analysis and machine learning projects, please refer to the [main project repository](https://github.com/genular/pandora) for installation instructions, usage guides, and additional resources.
 
 ## License
 
-`PANDORA` is open-source software for more information please check `LICENCE` file.
+PANDORA is released under the open-source license. For more details, please review the [LICENSE](https://github.com/genular/pandora/blob/master/LICENSE) file in the project repository.
+
+---
+
+For more information and updates, visit the [PANDORA main project repository](https://github.com/genular/pandora).

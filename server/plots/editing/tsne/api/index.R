@@ -22,106 +22,109 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             settings <- jsonlite::fromJSON(args$settings)
         }
 
-        if(is_var_empty(settings$selectedColumns) == TRUE){
+        if(is_var_empty(settings$selectedColumns, "selectedColumns") == TRUE){
             settings$selectedColumns = NULL
         }
 
-        if(is_var_empty(settings$cutOffColumnSize) == TRUE){
+        if(is_var_empty(settings$cutOffColumnSize, "cutOffColumnSize") == TRUE){
             settings$cutOffColumnSize = 50000
         }
 
-        if(is_var_empty(settings$excludedColumns) == TRUE){
+        if(is_var_empty(settings$excludedColumns, "excludedColumns") == TRUE){
             settings$excludedColumns = NULL
         }
 
-        if(is_var_empty(settings$groupingVariables) == TRUE){
+        if(is_var_empty(settings$groupingVariables, "groupingVariables") == TRUE){
             settings$groupingVariables = NULL
         }
 
-        if(is_var_empty(settings$colorVariables) == TRUE){
+        if(is_var_empty(settings$colorVariables, "colorVariables") == TRUE){
             settings$colorVariables = NULL
         }
 
-        if(is_var_empty(settings$preProcessDataset) == TRUE){
+        if(is_var_empty(settings$preProcessDataset, "preProcessDataset") == TRUE){
             settings$preProcessDataset = NULL
         }
 
-        if(is_var_empty(settings$fontSize) == TRUE){
+
+
+
+        if(is_var_empty(settings$fontSize, "fontSize") == TRUE){
             settings$fontSize <- 12
         }
 
-        if(is_var_empty(settings$pointSize) == TRUE){
+        if(is_var_empty(settings$pointSize, "pointSize") == TRUE){
             settings$pointSize <- 1.5
         }
 
-        if(is_var_empty(settings$theme) == TRUE){
+        if(is_var_empty(settings$theme, "theme") == TRUE){
             settings$theme <- "theme_gray"
         }
 
-        if(is_var_empty(settings$colorPalette) == TRUE){
+        if(is_var_empty(settings$colorPalette, "colorPalette") == TRUE){
             settings$colorPalette <- "RdPu"
         }
 
-        if(is_var_empty(settings$aspect_ratio) == TRUE){
+        if(is_var_empty(settings$aspect_ratio, "aspect_ratio") == TRUE){
             settings$aspect_ratio <- 1
         }
 
-        if(is_var_empty(settings$clusterType) == TRUE){
+        if(is_var_empty(settings$clusterType, "clusterType") == TRUE){
             settings$clusterType <- "Louvain"
         }
 
-        if(is_var_empty(settings$removeNA) == TRUE){
+        if(is_var_empty(settings$removeNA, "removeNA") == TRUE){
             settings$removeNA = FALSE
         }
 
-        if(is_var_empty(settings$plot_size) == TRUE){
+        if(is_var_empty(settings$plot_size, "plot_size") == TRUE){
             settings$plot_size <- 12
         }
 
-        if(is_var_empty(settings$knn_clusters) == TRUE){
+        if(is_var_empty(settings$knn_clusters, "knn_clusters") == TRUE){
             settings$knn_clusters <- 250
         }
 
-        if(is_var_empty(settings$perplexity) == TRUE){
+        if(is_var_empty(settings$perplexity, "perplexity") == TRUE){
             settings$perplexity <- 30
         }
-        if(is_var_empty(settings$clustLinkage) == TRUE){
+        if(is_var_empty(settings$clustLinkage, "clustLinkage") == TRUE){
             settings$clustLinkage = "ward.D2"
         }
-        if(is_var_empty(settings$clustGroups) == TRUE){
+        if(is_var_empty(settings$clustGroups, "clustGroups") == TRUE){
             settings$clustGroups = 9
         }
         
-        if(is_var_empty(settings$reachabilityDistance) == TRUE){
+        if(is_var_empty(settings$reachabilityDistance, "reachabilityDistance") == TRUE){
             settings$reachabilityDistance = 2
         }
 
-        if(is_var_empty(settings$legendPosition) == TRUE){
+        if(is_var_empty(settings$legendPosition, "legendPosition") == TRUE){
             settings$legendPosition = "right"
         }
 
         ## dataset analysis settings
-        if(is_var_empty(settings$datasetAnalysisClustLinkage) == TRUE){
+        if(is_var_empty(settings$datasetAnalysisClustLinkage, "datasetAnalysisClustLinkage") == TRUE){
             settings$datasetAnalysisClustLinkage = "ward.D2"
         }
 
-        if(is_var_empty(settings$datasetAnalysisType) == TRUE){
+        if(is_var_empty(settings$datasetAnalysisType, "datasetAnalysisType") == TRUE){
             settings$datasetAnalysisType = "heatmap"
         }
 
-        if(is_var_empty(settings$datasetAnalysisSortColumn) == TRUE){
+        if(is_var_empty(settings$datasetAnalysisSortColumn, "datasetAnalysisSortColumn") == TRUE){
             settings$datasetAnalysisSortColumn = "cluster"
         }
 
-        if(is_var_empty(settings$datasetAnalysisClustOrdering) == TRUE){
+        if(is_var_empty(settings$datasetAnalysisClustOrdering, "datasetAnalysisClustOrdering") == TRUE){
             settings$datasetAnalysisClustOrdering = 1
         }
 
-        if(is_var_empty(settings$anyNAValues) == TRUE){
+        if(is_var_empty(settings$anyNAValues, "anyNAValues") == TRUE){
             settings$anyNAValues <- FALSE
         }
         
-        if(is_var_empty(settings$categoricalVariables) == TRUE){
+        if(is_var_empty(settings$categoricalVariables, "categoricalVariables") == TRUE){
             settings$categoricalVariables <- FALSE
         }
 

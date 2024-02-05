@@ -1,0 +1,46 @@
+{
+    "folders": [
+        {
+            "follow_symlinks": true,
+            "path": "./",
+            "name": "PANDORA Backend",
+            "folder_exclude_patterns": [
+                "node_modules",
+                ".git",
+                "documentation",
+                "logs",
+                "temp",
+                "bulk",
+                "SHARED_DATA",
+                "*.tbz2",
+                "*.gzip",
+                "*.jpg",
+                "*.jpeg",
+                "*.png",
+                "*.gif",
+                "*.ttf",
+                "*.tga",
+                "*.dds",
+                "*.ico",
+                "*.eot",
+                "*.pdf",
+                "*.swf",
+                "*.jar",
+                "*.zip"
+            ],
+            "file_exclude_patterns": [
+                "*.log",
+                "*.sql",
+                "*.bak"
+            ]
+        }
+    ],
+    "settings": {
+        "tab_size": 4,
+        "translate_tabs_to_spaces": true,
+        "ensure_newline_at_eof_on_save": true,
+        "trim_trailing_white_space_on_save": true,
+        "fallback_encoding": "UTF-8",
+        "default_line_ending": "unix"
+    }
+}

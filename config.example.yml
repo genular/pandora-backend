@@ -1,92 +1,89 @@
+# Configuration Template for Application
+# This file serves as a template for configuring the application environment. Replace the PLACEHOLDER texts with actual values as described.
+
 default:
-    details:
-        title: PLACEHOLDER # Example: "genular"
-        email: PLACEHOLDER # Example: "support@genular.com"
-    # Please generate 8 character random alphanumeric string, this is used for encryption purposes (database, files)
-    salt: PLACEHOLDER
-    # Please generate 64 character random alphanumeric string, this is used in some ajax/http communications
-    # Plase make sure to have same secret defined on front end in config/env_*.json
-    secret: PLACEHOLDER
-    # API of your sendgrid account, for sending emails
-    sendgrid_api: PLACEHOLDER # Example: "SG.jiozGM0FRrmyTddfgfgdzq6dqSNv7j33Y24yadg-INc1dgU"
-    sendgrid_templates:
-        register: PLACEHOLDER # Example: "23434-234-479d-978d-1623432475c0c"
-    # Your SSH Key to be deployed in AI analysis cloud servers
-    ssh_keys:
-        - PLACEHOLDER # Example: - "ssh-rsa /sE7xgkay/+5wderewr/QNnQ1+3Wtw== example@example.com"
-    ## If using could AI deployment mode please enter hetzner API credentials
-    cloud_providers:
-        hetzner:
-            token: PLACEHOLDER
-            analysis: PLACEHOLDER
-        chargebee:
-            site: PLACEHOLDER
-            api: PLACEHOLDER
-    storage:
-        s3:
-            key: PLACEHOLDER # Example: "OPERNifgfgdMYUQhVZo"
-            secret: PLACEHOLDER # Example: "IYTydVkuCrdfgfdggnEXMOlbibuxJdaAfowLTWQH"
-            region: "ams3" # Example: "ams3"
-            endpoint: "digitaloceanspaces.com" # Example: "https://ams3.digitaloceanspaces.com"
-            bucket: PLACEHOLDER # Example: "genular"
-        local:
-            ## Path to the storage directory (/mnt/data) without trailing slash
-            data_path: PLACEHOLDER
-    ## Database configuration
-    database:
-        ## Database host IP address
-        host: PLACEHOLDER
-        ## Database host port
-        port: PLACEHOLDER
-        ## Database username
-        user: PLACEHOLDER
-        ## Password
-        password: PLACEHOLDER
-        ## Table name
-        dbname: PLACEHOLDER
-    ## Federation server configuration ## NOT USED
-    federation:
-        ## should we use federation server features
-        enabled: true
-        ## server type: master/slave/both
-        server_type: both
-        ## send usage statistics to federation server
-        usage_statistics: true
-        ## federation server endpoint
-        endpoint: "https://backend.genular.org"
-    ## In this section we can configure specific details for each backend server module
-    analysis:
-        ## Current web server general configuration
-        server:
-            ## plumber api server debug option
-            debug: TRUE
-            ## Domain name
-            url: PLACEHOLDER_ANALYSIS_URL
-            ## IP address
-            proxy_host: "127.0.0.1"
-            ## Port
-            proxy_port: 8181
-    plots:
-        server:
-            ## plumber api server debug option
-            debug: TRUE
-            url: PLACEHOLDER_PLOTS_URL
-            proxy_host: "127.0.0.1"
-            proxy_port: 8184
-    backend:
-        server:
-            ## api server debug option
-            debug: TRUE
-            url: PLACEHOLDER_BACKEND_URL
-            proxy_host: "127.0.0.1"
-            proxy_port: 8186
-    analysis_python:
-        server:
-            debug: TRUE
-            url: PLACEHOLDER_PYTHON_URL
-            proxy_host: "127.0.0.1"
-            proxy_port: 8187
-    ## Front-end dashboard interface domain
-    frontend:
-        server:
-            url: PLACEHOLDER_FRONTEND_URL
+  details:
+    title: "PLACEHOLDER" # Example: "genular"
+    email: "PLACEHOLDER" # Example: "support@genular.com"
+  
+  # Security settings
+  salt: "PLACEHOLDER" # Generate an 8 character random alphanumeric string for encryption purposes (e.g., database, files)
+  secret: "PLACEHOLDER" # Generate a 64 character random alphanumeric string for secure communication. Ensure consistency across backend and frontend configurations.
+  
+  # Email service configuration
+  sendgrid_api: "PLACEHOLDER" # Your SendGrid API key for sending emails
+  sendgrid_templates:
+    register: "PLACEHOLDER" # Template ID for registration emails
+  
+  # SSH keys for AI analysis cloud servers deployment
+  ssh_keys:
+    - "PLACEHOLDER" # Your SSH key
+  
+  # Cloud provider credentials for deploying cloud resources
+  cloud_providers:
+    hetzner:
+      token: "PLACEHOLDER"
+      analysis: "PLACEHOLDER"
+    chargebee:
+      site: "PLACEHOLDER"
+      api: "PLACEHOLDER"
+  
+  # Storage configuration
+  storage:
+    s3:
+      key: "PLACEHOLDER" # Your S3 access key
+      secret: "PLACEHOLDER" # Your S3 secret key
+      region: "ams3" # S3 region
+      endpoint: "digitaloceanspaces.com" # S3 endpoint
+      bucket: "PLACEHOLDER" # S3 bucket name
+    local:
+      data_path: "PLACEHOLDER" # Path to local storage directory, e.g., "/mnt/data"
+  
+  # Database configuration
+  database:
+    host: "PLACEHOLDER" # Database host IP
+    port: "PLACEHOLDER" # Database port
+    user: "PLACEHOLDER" # Database user
+    password: "PLACEHOLDER" # Database password
+    dbname: "PLACEHOLDER" # Database name
+  
+  # Federation server configuration (if applicable)
+  federation:
+    enabled: true
+    server_type: "both" # Can be "master", "slave", or "both"
+    usage_statistics: true
+    endpoint: "https://backend.genular.org" # Federation server endpoint
+  
+  # Server module configurations
+  analysis:
+    server:
+      debug: TRUE # Enable debugging for analysis server
+      url: "PLACEHOLDER_ANALYSIS_URL"
+      proxy_host: "127.0.0.1"
+      proxy_port: 8181
+  
+  plots:
+    server:
+      debug: TRUE # Enable debugging for plots server
+      url: "PLACEHOLDER_PLOTS_URL"
+      proxy_host: "127.0.0.1"
+      proxy_port: 8184
+  
+  backend:
+    server:
+      debug: TRUE # Enable debugging for backend server
+      url: "PLACEHOLDER_BACKEND_URL"
+      proxy_host: "127.0.0.1"
+      proxy_port: 8186
+  
+  analysis_python:
+    server:
+      debug: TRUE # Enable debugging for Python analysis server
+      url: "PLACEHOLDER_PYTHON_URL"
+      proxy_host: "127.0.0.1"
+      proxy_port: 8187
+  
+  # Frontend dashboard configuration
+  frontend:
+    server:
+      url: "PLACEHOLDER_FRONTEND_URL" # URL for the frontend dashboard interface

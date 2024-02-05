@@ -181,32 +181,37 @@ plot.heatmap <- function(   data,
     pich = pichIn * 2.54 * dotsPerCm
 
 
+    # Start with the base list of input arguments for pheatmap
     input_args <- c(list(t_data,
-                       cluster_row =  hClustRows,
-                       cluster_cols = hClustCols,
+       cluster_row =  hClustRows,
+       cluster_cols = hClustCols,
 
-                       scale = scale,
-                       annotation_col = annotationColumn, 
-                       annotation_colors = legendColors, 
-                       
-                       annotation_legend = displayLegend,
-                       legend = displayLegend,
+       scale = scale,
+       annotation_col = annotationColumn, 
+       annotation_colors = legendColors, 
+       
+       annotation_legend = displayLegend,
+       legend = displayLegend,
 
-                       show_colnames = displayColnames,
-                       show_rownames = displayRownames,
-                       
-                       fontface="bold", 
-                       border_color="white", 
-                       fontsize = fontSizeGeneral,
-                       fontsize_row= fontSizeRow, 
-                       fontsize_col = fontSizeCol,
+       show_colnames = displayColnames,
+       show_rownames = displayRownames,
+       
+       fontface="bold", 
+       border_color="white", 
+       fontsize = fontSizeGeneral,
+       fontsize_row= fontSizeRow, 
+       fontsize_col = fontSizeCol,
 
-                       display_numbers = displayNumbers,
-                       number_format = paste0("%.2f"),
-                       fontsize_number = fontSizeNumbers,
-                       width = picwIn, 
-                       height = pichIn
-                    ))
+       display_numbers = displayNumbers,
+       number_format = paste0("%.2f"),
+       fontsize_number = fontSizeNumbers,
+       width = picwIn, 
+       height = pichIn
+    ))
+
+    if(getRversion() >= "3.6.0"){
+        input_args <- input_args[!names(input_args) %in% c("fontface", "border_color")]
+    }
 
     out <- do.call(pheatmap::pheatmap, input_args)
 

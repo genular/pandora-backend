@@ -206,28 +206,44 @@ class System {
 	 */
 	private function initModelsPacakges() {
 		$status = false;
-		$data = [];
-		$packages = [];
+	    $data = [];
+	    $packages = [];
 
-		$endpoint = $this->Config->get('default.analysis.server.url') . "/analysis/other/available-packages";
-		$this->logger->addInfo("==> INFO: PANDORA\System\initModelsPacakges fetching packages from: " . $endpoint);
+	    $endpoint = $this->Config->get('default.analysis.server.url') . "/analysis/other/available-packages";
+	    $this->logger->addInfo("==> INFO: PANDORA\System\initModelsPackages fetching packages from: " . $endpoint);
 
-		try {
-			$res = $this->HTTPClient->request('GET', $endpoint, ['verify' => false, 'allow_redirects' => true, 'connect_timeout' => 1200, 'timeout' => 1200, 'debug' => false]);
-			if ($res->getStatusCode() === 200) {
-				if ($res->getBody()) {
-					$data = $res->getBody()->getContents();
-					$data = json_decode($data, true);
-					if (is_array($data) && isset($data["data"])) {
-						$data = $data["data"];
-					}
-				}
-			}
-		} catch (\GuzzleHttp\Exception\ServerException $e) {
-			$httpError = $e->getResponse()->getBody()->getContents();
-			$this->logger->error("PANDORA\System initModelsPacakges ClientException " . $httpError);
-		}
+	    $startTime = time(); // Record the start time
+	    $timeout = 120; // Set the retry duration
 
+	    do {
+	        try {
+	            $res = $this->HTTPClient->request('GET', $endpoint, ['verify' => false, 'allow_redirects' => true, 'connect_timeout' => 1200, 'timeout' => 1200, 'debug' => false]);
+	            if ($res->getStatusCode() === 200) {
+	                if ($res->getBody()) {
+	                    $data = $res->getBody()->getContents();
+	                    $data = json_decode($data, true);
+	                    if (is_array($data) && isset($data["data"])) {
+	                        $status = true; // Successfully fetched the data
+	                        $data = $data["data"];
+	                        break; // Exit the loop on success
+	                    }
+	                }
+	            }
+	        } catch (\GuzzleHttp\Exception\ServerException $e) {
+	            $httpError = $e->getResponse()->getBody()->getContents();
+	            $this->logger->error("PANDORA\System initModelsPackages ServerException " . $httpError);
+	        } catch (\GuzzleHttp\Exception\ClientException $e) {
+	            $httpError = $e->getResponse()->getBody()->getContents();
+	            $this->logger->error("PANDORA\System initModelsPackages ClientException " . $httpError);
+	        }
+
+	        sleep(5); // Wait for 5 seconds before retrying
+	    } while (time() - $startTime < $timeout);
+
+	    if (!$status) {
+	        $this->logger->error("Failed to fetch packages after retrying for 1 minute.");
+	    }
+	    
 		if (count($data) > 0) {
 			$status = true;
 			foreach ($data as $package_key => $package_value) {

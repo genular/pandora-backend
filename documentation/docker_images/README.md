@@ -1,89 +1,102 @@
-## Explanation
+# Pandora Docker Images Documentation
 
-Directory `./base_image` contains scripts necessary to create parent docker image.
-Usage:
+This README provides instructions for building, publishing, and running Docker images for the PANDORA project.
+
+## Base Image Creation
+
+The `./base_image` directory contains scripts necessary to create the parent Docker image.
+
+### Usage
+
+To build the base image, execute the following command:
 
 ```bash
 LANG=en_US.UTF-8 sudo ./make_image.sh
 ```
 
-Command pre-installs basic genular dependencies from a Debian distribution and compile custom image out of it, that is than used latter on in Dockerfile.
+This command pre-installs basic Genular dependencies from a Debian distribution and compiles a custom image, which is then used in Dockerfiles.
 
-## Steps needed to publish PANDORA base image image
+## Publishing the PANDORA Base Image
 
-After build is finished using `./make_image.sh` image will be compressed inside `./base_image/images` directory.
+After the build is completed with `./make_image.sh`, the image will be compressed inside the `./base_image/images` directory.
 
-### 1. Import local tar image
+### Importing the Local TAR Image
 
-Command:
-Replace FILE_NAME with actual filename.
+First, replace `FILE_NAME` with the actual filename:
 
 ```bash
 sudo cat ./FILE_NAME.tar | sudo docker import - genular/base_image:master
 ```
 
-Check if image is properly imported
+Verify the image is properly imported:
 
 ```bash
-## List all images
+# List all Docker images
 docker image ls -a
 ```
 
-#### 1.1 Login to repository if not already logged-in
+#### Logging into the Docker Repository
+
+If not already logged in:
 
 ```bash
 cat ~/my_password.txt | docker login --username foo --password-stdin
 ```
 
-### 2. Push your image to on-line repository
+### Pushing Your Image to an Online Repository
+
+To push the image:
 
 ```bash
 docker push genular/base_image:master
 ```
 
-#### 2.1 or upload to CDN
+#### Alternatively, Upload to a CDN
+
+For uploading to a CDN:
 
 ```bash
 rclone copy ./genular.tar genular-spaces:genular/docker-parent-images
 ```
 
-## Steps needed to publish child genular PANDORA image
+## Publishing Child Genular PANDORA Image
 
-Auto-build is configure on [Docker Hub](https://hub.docker.com/?namespace=genular). Whenever new change is detected in repository container `genular/pandora:latest` will be build-ed _automatically_.
+Auto-build is configured on [Docker Hub](https://hub.docker.com/?namespace=genular). A new `genular/pandora:latest` container will be built automatically upon detecting changes in the repository.
 
-To do it _manually_ first build docker image from Dockerfile:
+To build manually:
 
-### 1. Check/Adjust configuration variables in Dockerfile
+### Adjusting Configuration Variables
 
-You can get example of configuration JSON by executing following command
-`cd pandora-backend/server/backend && composer generate-docker-config`
-This will create a new file: `documentation/docker_images/configuration.json` where you can add/remove custom configuration variables and place it in `./configuration.example.json`
-
-### 2. Build docker image
-
-Remove `--network=host` if needed.
-`docker build --no-cache --network=host --tag "genular/pandora:latest" --file ./Dockerfile .`
-
-#### 2.1. Publish new image
-
-`docker push genular/pandora:latest`
-
-## 3. Running PANDORA Container
-
-In order to run a test instance of `PANDORA` we first need to prepare the environment.
-If you finished installing docker please continue.
-
-Lets pull the [genular/pandora](https://cloud.docker.com/u/genular/repository/docker/genular/pandora) image from [Docker Hub](https://hub.docker.com/?namespace=genular).
-Then we will run a docker container with appropriately mounted volumes and port mapping. By default the container would run with a local file-system inside of it.
-
-After you installed docker and its running, please open your favorite Terminal and run the command below.
-If on Windows - open `Windows Power Shell`
-
-> If you wish to get correct time, replace TZ=<timzone> with your timezone. You can find list of supported timezones [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+Generate a configuration JSON template:
 
 ```bash
-# Important: if you are using Windows replace newline separators in the command: "\" with "`"
-# To use custom directory as file-system backend: --volume /mnt/genular/pandora-backend/SHARED_DATA:/mnt/usrdata \
+cd pandora-backend/server/backend && composer generate-docker-config
+```
+
+This creates a new file: `documentation/docker_images/configuration.json`. Modify this file as needed and save it as `./configuration.example.json`.
+
+### Building the Docker Image
+
+Build the image (remove `--network=host` if unnecessary):
+
+```bash
+docker build --no-cache --network=host --tag "genular/pandora:latest" --file ./Dockerfile .
+```
+
+#### Publishing the New Image
+
+Push the new image to Docker Hub:
+
+```bash
+docker push genular/pandora:latest
+```
+
+## Running the PANDORA Container
+
+Prepare the environment and pull the [genular/pandora](https://cloud.docker.com/u/genular/repository/docker/genular/pandora) image from Docker Hub. Run a container with mounted volumes and port mapping:
+
+```bash
+# Note for Windows users: replace "\" with "`" for newline separators
 docker run --rm --network=host \
     --detach \
     --name genular \
@@ -99,23 +112,19 @@ docker run --rm --network=host \
     genular/pandora:latest
 ```
 
-Once command is executed and the container is started you can open PANDORA on `http://localhost:3010` and create your account.
+After starting the container, access PANDORA at `http://localhost:3010` to create your account.
 
--   If you get asked please allow connections through your Windows Firewall.
+## Helper Commands
 
-To publish it on [Docker Hub](https://hub.docker.com/?namespace=genular) use same steps as above.
-
-## Helpers
-
--   SSH into a running container
-    `docker exec -it genular /bin/bash`
--   List all running ones
-    `docker ps`
--   Stop image
-    `docker stop genular`
--   To delete specific image
-    `docker rmi IMAGE_ID`
--   Prune all images:
-    `docker system prune -a`
--   Delete docker volume:
-    `docker volume rm genular_data`
+- SSH into a running container:
+  `docker exec -it genular /bin/bash`
+- List all running containers:
+  `docker ps`
+- Stop a container:
+  `docker stop genular`
+- Delete a specific image:
+  `docker rmi IMAGE_ID`
+- Prune all images:
+  `docker system prune -a`
+- Delete a Docker volume:
+  `docker volume rm genular_data`

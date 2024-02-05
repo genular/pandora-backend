@@ -13,18 +13,18 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 	tsne_data <- dataset %>% select(where(is.numeric))
 
     ## Check perplexity
-    perplexity <- settings$perplexity
-    if(nrow(tsne_data) < settings$perplexity){
-    	perplexity <- 1
-    	print(paste0("====> Quick-fix - Adjusting perplexity to: ", perplexity))
-    }
+	# Adjust perplexity based on the dataset size
+	perplexity <- min(settings$perplexity, nrow(dataset)/2)
+	if (perplexity != settings$perplexity) {
+		message("====> Adjusting perplexity to: ", perplexity)
+	}
+
 	header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
 
 	pca.scale <- TRUE
-	if(settings$preProcessDataset == TRUE){
+	if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
 		pca.scale <- FALSE
 	}
-        
 
 	tsne.norm  <- Rtsne::Rtsne(
 		as.matrix(tsne_data), 

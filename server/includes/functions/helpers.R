@@ -327,23 +327,31 @@ convertToString <- function(inputData){
 }
 
 #' @title Check if request variable is Empty
-#' @description 
-#' @param variable
-#' @return boolean
-is_var_empty <- function(variable){
+#' @description Checks if the given variable is empty and optionally logs the variable name.
+#' @param variable The variable to check.
+#' @param variable_name Optional; the name of the variable to log.
+#' @return boolean TRUE if the variable is considered empty, FALSE otherwise.
+is_var_empty <- function(variable, variable_name = NULL){
+    # Initialize is_empty as FALSE
     is_empty <- FALSE
-
-    if(length(variable) == 0){
+    
+    # Check for different conditions that qualify the variable as empty
+    if(length(variable) == 0 || rlang::is_null(variable)){
         is_empty <- TRUE
-    }else if(!is_null(variable) & rlang::is_empty(variable)){
+    } else if (is.character(variable) && length(variable) == 1 && variable == "") {
         is_empty <- TRUE
-    }else if(is_null(variable)){
-        is_empty <- TRUE
-    }else if(variable == ""){
+    } else if (rlang::is_empty(variable)) {
         is_empty <- TRUE
     }
+
+    # Optionally print variable name
+    if (!is.null(variable_name)) {
+        print(paste0("=====> INFO: Variable '", variable_name, "' is_empty: ", is_empty))
+    }
+    
     return(is_empty)
 }
+
 
 getPreviouslySavedResponse <- function(plot_unique_hash, response_data, check_count){
     tmp_dir <- tempdir(check = TRUE)
@@ -526,42 +534,72 @@ loadDataFromFileSystem <- function(selectedFilePath, header = T, sep = ',', stri
 #' @description It then calculates the percentage of numeric values (`num_perc`) by dividing `num_count` by the total length of the column. 
 ## If `num_perc` is greater than 10%, the column is converted to numeric using `as.numeric()` and the original data frame is modified. 
 convert_to_numeric <- function(data) {
-  # loop over columns
-  for (col in names(data)) {
-    # only convert if column is not already numeric
-    if (!is.numeric(data[[col]])) {
-      # count number of numeric values
-      num_count <- sum(!is.na(as.numeric(data[[col]])))
-      # calculate percentage of numeric values
-      num_perc <- num_count / length(data[[col]])
-      # convert column to numeric if more than 0.10% is numeric
-      if (num_perc > 0.10) {
-        print(paste0("=====> INFO: Converting column to numeric: ", col, " Percentage of numeric values: ", num_perc))
-        print(unique(data[[col]]))
-        data[[col]] <- as.numeric(data[[col]])
-      }
+  # Validate input
+    if (!is.data.frame(data)) {
+        print(paste0("=====> ERROR: The input 'data' must be a dataframe."))
+        return(dataset)
     }
-  }
-  return(data)
+
+    # Loop over columns
+    for (col in names(data)) {
+        # Only convert if column is not already numeric
+        if (!is.numeric(data[[col]])) {
+            # Attempt to convert to numeric and suppress warnings
+            numeric_attempt <- suppressWarnings(as.numeric(data[[col]]))
+
+            # Count number of successfully converted numeric values
+            num_count <- sum(!is.na(numeric_attempt))
+
+            # Calculate percentage of numeric values
+            num_perc <- num_count / length(data[[col]])
+
+            # Convert column to numeric if more than 10% is numeric
+            if (num_perc > 0.10) {
+                cat("=====> INFO: Converting column '", col, "' to numeric. Percentage of numeric values: ", num_perc * 100, "%\n", sep="")
+                # Use the already converted values to avoid re-conversion
+                data[[col]] <- numeric_attempt
+            }
+        }
+    }
+
+    return(data)
 }
+
 
 #' @title castAllStringsToNA   
 #' @description Removes all strings/words from specified columns in dataset
 #' @param dataset dataframe
 #' @param excludeColumns character
 #' @return dataframe
-castAllStringsToNA <- function(dataset, excludeColumns = c()){
+castAllStringsToNA <- function(dataset, excludeColumns = c()) {
+    # Validate inputs
+    if (!is.data.frame(dataset))  {
+        print(paste0("=====> ERROR: The 'dataset' must be a dataframe."))
+        return(dataset)
+    }
 
-    # 1. Check if there are any non-numeric values in dataset except in excludeColumns
-    includedColumns <- setdiff(colnames(dataset), excludeColumns)
+    if (!is.character(excludeColumns)) {
+        print(paste0("=====> ERROR: The 'excludeColumns' must be a character vector."))
+        return(dataset)
+    }
+    
+    # Identify columns to process
+    includedColumns <- setdiff(names(dataset), excludeColumns)
 
-    # 2. If there are any non-numeric values in dataset except in excludeColumns, cast them all to NA
-    suppressWarnings({
-        dataset[includedColumns] <- lapply(dataset[includedColumns], function(column) {
-            as.numeric(column) # Will convert non-numeric values to NA with a warning
-        })
+    # Process each included column
+    dataset[includedColumns] <- lapply(dataset[includedColumns], function(column) {
+        if (is.factor(column)) {
+            # Optionally handle factors differently, e.g., convert to character first
+            column <- as.character(column)
+        }
+        if (is.character(column)) {
+            # Convert all non-numeric strings to NA
+            as.numeric(column)
+        } else {
+            # Leave columns of other types unchanged
+            column
+        }
     })
-
-    # 5. Return the modified dataset
+    # Return the modified dataset
     return(dataset)
 }

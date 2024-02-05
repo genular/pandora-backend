@@ -29,10 +29,7 @@ $app->post('/backend/system/pandora/available-packages', function (Request $requ
         }
     }
 
-
-
     $preselectedPackages = []; // ["naive_bayes", "hdda", "pcaNNet", "LogitBoost", "svmLinear2"];
-
     $avaliablePackages = array_map(function ($package) use ($preselectedPackages) {
 
         if (in_array($package['internal_id'], $preselectedPackages)) {
@@ -40,20 +37,15 @@ $app->post('/backend/system/pandora/available-packages', function (Request $requ
         } else {
             $package['preselected'] = 0;
         }
-
-        // if ($package['classification'] === false) {
-        //  $package['disabled'] = true;
-        // } else {
         // Disable all packages and enable/disable them as needed from Javascript
         $package['disabled'] = true;
-        // }
+
         return $package;
     }, $avaliablePackages);
 
     foreach ($avaliablePackages as $packageKey => $packageValue) {
         array_push($packages, $packageValue);
     }
-
 
     return $response->withJson(["success" => $success, "message" => $packages]);
 });
