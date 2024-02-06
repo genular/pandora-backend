@@ -1,61 +1,71 @@
 <?php
 
-/**
- * @Author: LogIN-
- * @Date:   2018-06-08 15:11:00
- * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-02-04 14:58:28
- */
-
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-
-
 /**
- * Retrieves list of files for the user, uploaded in specific user directory
+ * Creates a nested directory structure within the user's space.
+ * 
+ * This route processes a request to create a hierarchical directory structure based on a given path.
+ * The path is specified relative to the user's root directory. Each segment of the path is validated 
+ * and created if it does not exist. The operation is performed recursively based on the supplied path segments.
  *
- * @param  {object} submitData Object containing one string variable: selectedDirectory that corresponds to upload_directory column in users_files table
- * @return {json} JSON encoded API response object
- */ 
+ * @param Request $request The request object, which includes user details and the submitted data.
+ * @param Response $response The response object used to return the operation's outcome.
+ * @param array $args Arguments passed in the route, including 'submitData' which contains the directory path.
+ * @return Response Returns a JSON response indicating the success or failure of the directory creation process.
+ */
 $app->get('/backend/system/filesystem/create/{submitData:.*}', function (Request $request, Response $response, array $args) {
-	$success = false;
-	$message = false;
+    // Initialize response variables
+    $success = true; // Assume success until a failure occurs
+    $data = []; // Prepare an empty data array to potentially hold any response data
 
-	$Config = $this->get('Noodlehaus\Config');
-	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    // Access configured services
+    $Config = $this->get('Noodlehaus\Config');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
 
-	$user_details = $request->getAttribute('user');
-	$user_id = $user_details['user_id'];
+    // Extract user details from the request
+    $user_details = $request->getAttribute('user');
+    $user_id = $user_details['user_id'];
 
-	$submitData = false;
-	if (isset($args['submitData'])) {
-		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
-	}
+    // Decode the submitted data to get the directory path
+    $submitData = false;
+    if (isset($args['submitData'])) {
+        $submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+    }
 
-	$directoryPath = null;
-	if ($submitData && isset($submitData['directoryPath'])) {
-		$directoryPath = $submitData['directoryPath'];
-	}
+    $directoryPath = null;
+    if ($submitData && isset($submitData['directoryPath'])) {
+        $directoryPath = $submitData['directoryPath'];
+    }
 
-	if($directoryPath){
-		// get all sub-directories separated by "/"
-		$directoryPath = explode("/", $directoryPath);
+    if ($directoryPath) {
+        // Split the path into segments to process each directory in the hierarchy
+        $directorySegments = explode("/", $directoryPath);
+        $fullPath = "";
 
-		$fullPath = "";
+        foreach ($directorySegments as $subdirectory) {
+            // Construct the full path incrementally to ensure each segment exists
+            $fullPath = trim($fullPath . "/" . $subdirectory, "/");
 
-		foreach ($directoryPath as $subdirectory) {
-			$fullPath .= $fullPath . "/" . $subdirectory;
-			// Check if directory exists and if not create one
-			if(!$UsersFiles->isDirectory($user_id, $fullPath)){
-				$UsersFiles->createDirectory($user_id, $fullPath);
-			}
+            // Check if the current segment directory exists, create if not
+            if (!$UsersFiles->isDirectory($user_id, $fullPath)) {
+                if (!$UsersFiles->createDirectory($user_id, $fullPath)) {
+                    // If creation failed, update success flag and break out of the loop
+                    $success = false;
+                    $data['error'] = "Failed to create directory at path: $fullPath";
+                    break;
+                }
+            }
+        }
+    } else {
+        // No directory path was provided in the request
+        $success = false;
+        $data['error'] = "No directory path provided.";
+    }
 
-		}
-	}
-
-	return $response->withJson(["success" => $success, "message" => $data]);
-
+    // Return the success status and any message or data
+    return $response->withJson(["success" => $success, "message" => $data]);
 });
 
 
@@ -187,53 +197,161 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 
 });
 
+/**
+ * Creates a new directory within the specified current directory for a user.
+ * 
+ * This route decodes the submitted data to determine the current directory and 
+ * the name of the subdirectory to be created. It then constructs the directory 
+ * details, including generating a unique basename via hashing, and attempts to 
+ * insert a reference to this new directory into the database.
+ *
+ * @param Request $request The request object, containing the decoded JWT user details.
+ * @param Response $response The response object used to return a JSON response.
+ * @param array $args Arguments passed in the route, including encoded 'submitData'.
+ *
+ * @return Response Returns a JSON response indicating the success or failure of the directory creation.
+ */
+$app->get('/backend/system/filesystem/directory-create/{submitData:.*}', function (Request $request, Response $response, array $args) {
+    // Initial success and message variables
+    $success = true;
+    $message = false;
+
+    // Retrieve configuration and UsersFiles service
+    $Config = $this->get('Noodlehaus\Config');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+
+    // Extract user details from the request attribute
+    $user_details = $request->getAttribute('user');
+    $user_id = $user_details['user_id'];
+
+    // Decode the submitted data
+    $submitData = false;
+    if (isset($args['submitData'])) {
+        $submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+    }
+
+    // Extract current and subdirectory names from the submitted data
+    $currentDirectory = $submitData['currentDirectory'] ?? false;
+    $subDirectory = $submitData['subDirectory'] ?? false;
+
+    // Prepare the directory details for database insertion
+    $details = [
+        'item_type' => 3, // Indicator of a directory type
+        'basename' => md5($subDirectory), // Unique identifier
+        'filename' => $subDirectory, // Directory name
+        'filesize' => null, // Not applicable for directories
+        'extension' => "directory", // Custom extension indicating a directory
+        'mime_type' => "text/plain", // Generic MIME type
+        'file_hash' => null, // Not applicable for directories
+        'details' => [] // Additional details, if any
+    ];
+
+    // Construct the remote path for the new directory
+    $remote_path = "users/" . $user_id . "/" . $currentDirectory . "/" . $subDirectory;
+
+    // Attempt to insert the directory reference into the database
+    $message = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+
+    // Return the operation result
+    return $response->withJson(["success" => $success, "message" => $message]);
+});
 
 
 /**
- * Create Directory
- */ 
-$app->get('/backend/system/filesystem/directory-create/{submitData:.*}', function (Request $request, Response $response, array $args) {
-	$success = true;
-	$message = false;
+ * Route to preview the first N lines of a CSV file.
+ * 
+ * This route fetches file details based on a provided file ID, downloads the file,
+ * and returns a preview of its contents. It supports pagination and remaps column
+ * headers from their stored representation to the original column names as defined
+ * in the file's metadata.
+ *
+ * @param Request $request The request object.
+ * @param Response $response The response object.
+ * @param array $args Arguments passed in the route, including encoded 'submitData'.
+ *
+ * @return Response Returns a JSON response containing the preview data or an error message.
+ */
+$app->get('/backend/system/filesystem/preview-file/{submitData:.*}', function (Request $request, Response $response, $args) use ($app) {
+    // Inject required services
+    $FileSystem = $this->get('PANDORA\System\FileSystem');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    $Helpers = $this->get('PANDORA\Helpers\Helpers');
 
-	$Config = $this->get('Noodlehaus\Config');
-	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    // Attempt to decode the submitted data
+    $submitData = false;
+    if (isset($args['submitData'])) {
+        $submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+    }
 
-	$user_details = $request->getAttribute('user');
-	$user_id = $user_details['user_id'];
+    // Validate the presence of the file ID in the request
+    $fileId = $submitData['selectedFile']['fileId'] ?? false;
+    if (!$fileId) {
+        // Respond with an error if file ID is missing
+        return $response->withJson(['success' => false, 'message' => 'File ID is missing.'], 400);
+    }
 
-	$submitData = false;
-	if (isset($args['submitData'])) {
-		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
-	}
+    // Retrieve file details using the provided file ID
+    $details = $UsersFiles->getFileDetails($fileId, ["file_path", "details"], true);
+    if (!$details || !isset($details["file_path"])) {
+        // Respond with an error if file details could not be retrieved
+        return $response->withJson(['success' => false, 'message' => 'File details not found.'], 404);
+    }
 
-	$currentDirectory = false;
-	if ($submitData && isset($submitData['currentDirectory'])) {
-		$currentDirectory = $submitData['currentDirectory'];
-	}
+    // Download the file for processing
+    $filePath = $FileSystem->downloadFile($details["file_path"]);
+    if (!$filePath) {
+        // Respond with an error if the file could not be downloaded
+        return $response->withJson(['success' => false, 'message' => 'Failed to download file.'], 500);
+    }
 
-	$subDirectory = false;
-	if ($submitData && isset($submitData['subDirectory'])) {
-		$subDirectory = $submitData['subDirectory'];
-	}
-	
-	$details = [];
-	$details['item_type'] = 3;
-	$details['basename'] = md5($subDirectory);
-	$details['filename'] = $subDirectory;
-	$details['filesize'] = null;
-	$details['extension'] = "directory";
-	$details['mime_type'] = "text/plain";
-	$details['file_hash'] = null;
-	$details['details'] = [];
+    // Set up pagination variables
+    $currentPage = $submitData['page'] ?? 1;
+    $linesPerPage = 10;
+    $offset = ($currentPage - 1) * $linesPerPage;
 
-	$remote_path = "users/".$user_id."/".$currentDirectory."/".$subDirectory;
+    // Obtain header mapping for original column names
+    $headerMapping = $Helpers->remapHeadersToOriginal($details["details"]["header"]["formatted"]);
 
-	// Save reference to Database
-	$message = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+    // Initialize data collection
+    $data = [];
+    $rowCount = 0;
 
-	return $response->withJson(["success" => $success, "message" =>  $message]);
+    // Open and process the CSV file
+    if (($handle = fopen($filePath, "r")) !== FALSE) {
+        // Read and remap headers to their original names
+        $headers = fgetcsv($handle);
+        if (!$headers) {
+            // Respond with an error if headers could not be read
+            return $response->withJson(['success' => false, 'message' => 'Failed to read headers from file.'], 500);
+        }
+        
+        // Apply header remapping
+        $headers = array_map(function($header) use ($headerMapping) {
+            return $headerMapping[$header] ?? $header;
+        }, array_slice($headers, 0, 50));
 
+        // Skip rows to reach the desired offset for pagination
+        while ($offset-- > 0 && fgetcsv($handle) !== FALSE) {}
+
+        // Collect the required number of lines of data
+        while (($row = fgetcsv($handle)) !== FALSE && $rowCount < $linesPerPage) {
+            $rowData = array_slice($row, 0, 50);
+            if (count($headers) == count($rowData)) {
+                $data[] = array_combine($headers, $rowData);
+            }
+            $rowCount++;
+        }
+        fclose($handle);
+
+        // Prepare the successful response body
+        $responseBody = ['success' => true, 'message' => $data];
+    } else {
+        // Respond with an error if the file could not be opened
+        $responseBody = ['success' => false, 'message' => 'Unable to open file for reading.'];
+    }
+
+    // Return the processed data or an error message in JSON format
+    return $response->withJson($responseBody, 200);
 });
 
 /**

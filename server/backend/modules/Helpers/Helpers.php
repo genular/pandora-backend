@@ -1,42 +1,61 @@
 <?php
-
-/**
- * @Author: LogIN-
- * @Date:   2018-04-03 12:22:33
- * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-02-03 15:27:08
- */
 namespace PANDORA\Helpers;
-use \Monolog\Logger;
+
+use Monolog\Logger;
 
 class Helpers {
 
-	protected $logger;
+    protected $logger;
 
-	public function __construct(
-		Logger $logger
-	) {
+    /**
+     * Constructor for the Helpers class.
+     * 
+     * Initializes the class with a logger instance for logging purposes.
+     * 
+     * @param Logger $logger A Monolog logger instance.
+     */
+    public function __construct(Logger $logger) {
+        $this->logger = $logger;
+        // Uncomment the following line to enable logging upon construction.
+        // $this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
+    }
 
-		$this->logger = $logger;
-		// Log anything.
-		//$this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
-	}
-	/**
-	 * [isJson description]
-	 * @param  [type] $string [description]
-	 * @return [type]        [description]
-	 */
-	public function isJson($string) {
-		json_decode($string);
-		return json_last_error() === JSON_ERROR_NONE;
-	}
+    /**
+     * Checks if a given string is a valid JSON.
+     * 
+     * @param string $string The string to be checked.
+     * @return bool Returns true if the string is a valid JSON, false otherwise.
+     */
+    public function isJson($string) {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
 
-	/**
-	 * [castArrayValues description]
-	 * @param  [type] $input [description]
-	 * @return [type]        [description]
-	 */
-	public function castArrayValues($input) {
+    /**
+     * Remaps the headers from their remapped names to their original names.
+     * 
+     * @param array $headerDetails An associative array where each key-value pair represents
+     *                             the remapped header name and its original name.
+     * @return array An associative array mapping remapped header names back to their original names.
+     */
+    public function remapHeadersToOriginal($headerDetails) {
+        $remapToOriginal = [];
+        foreach ($headerDetails as $key => $value) {
+            $remapToOriginal[$value["remapped"]] = $value["original"];
+        }
+        return $remapToOriginal;
+    }
+
+    /**
+     * Casts numeric values within an array to their appropriate data types.
+     * 
+     * Numeric strings are converted to integers or floats as appropriate, and strings
+     * that are valid JSON objects or arrays are decoded into their respective PHP arrays.
+     * 
+     * @param array $input The array containing the values to be cast.
+     * @return array The array with its numeric values cast to int or float, and JSON strings decoded.
+     */
+    public function castArrayValues($input) {
 		// Cast all numeric values to INT
 		foreach ($input as $rowKey => $rowItem) {
 			foreach ($rowItem as $rowItemKey => $rowItemValue) {
@@ -56,77 +75,128 @@ class Helpers {
 		}
 		return $input;
 	}
+
 	/**
-	 * Checks if device has Internet connection
-	 * @return boolean
+	 * Checks if the device has an Internet connection.
+	 *
+	 * This method attempts to ping a well-known DNS server (Google's public DNS at 8.8.8.8)
+	 * to determine if the device has an active Internet connection. It uses the `shell_exec`
+	 * function to execute the ping command, which is platform-dependent and may require
+	 * specific permissions or configurations on some systems.
+	 *
+	 * Note: This function may not work on all server configurations, especially on Windows servers
+	 * or environments where `shell_exec` is disabled for security reasons.
+	 *
+	 * @return bool Returns true if the ping command receives a response, indicating an Internet connection is present; false otherwise.
 	 */
 	public static function is_connected() {
 	    $output = shell_exec("ping -c 1 8.8.8.8");
 	    return !empty($output);
 	}
 
-
 	/**
-	 * @param string $csvFile Path to the CSV file
-	 * @return string Delimiter
+	 * Detects the delimiter used in a CSV file.
+	 *
+	 * This function reads the first line of a CSV file and attempts to determine the
+	 * delimiter by testing against a predefined set of possible delimiters. It counts
+	 * the occurrences of each delimiter in the first line and returns the one with the
+	 * highest count, assuming that is the delimiter used in the file.
+	 *
+	 * Supported delimiters are semicolon (;), comma (,), tab (\t), and pipe (|).
+	 *
+	 * Note: If multiple delimiters have the same highest count, the function will return
+	 * the one that appears first in the `$delimiters` array. This function only reads
+	 * the first line of the file to determine the delimiter, which may not be accurate
+	 * for files with inconsistent delimiting.
+	 *
+	 * @param string $csvFile Path to the CSV file to be analyzed for its delimiter.
+	 * @return string The detected delimiter character. If no delimiter could be detected,
+	 *                the function will return `false`.
 	 */
 	public function detectDelimiter($csvFile) {
-		$delimiters = array(
-			';' => 0,
-			',' => 0,
-			"\t" => 0,
-			"|" => 0,
-		);
+	    $delimiters = [
+	        ';' => 0,
+	        ',' => 0,
+	        "\t" => 0,
+	        "|" => 0,
+	    ];
 
-		$handle = fopen($csvFile, "r");
-		$firstLine = fgets($handle);
-		fclose($handle);
-		foreach ($delimiters as $delimiter => &$count) {
-			$count = count(str_getcsv($firstLine, $delimiter));
-		}
+	    $handle = fopen($csvFile, "r");
+	    if (!$handle) {
+	        return false; // Could not open file
+	    }
+	    $firstLine = fgets($handle);
+	    fclose($handle);
+	    
+	    foreach ($delimiters as $delimiter => &$count) {
+	        $count = count(str_getcsv($firstLine, $delimiter));
+	    }
 
-		return array_search(max($delimiters), $delimiters);
+	    return array_search(max($delimiters), $delimiters);
 	}
+
 	/**
-	 * [which_cmd description]
-	 * @param  [type] $bin_file [description]
-	 * @return [type]           [description]
+	 * Locates the full path of a binary file.
+	 *
+	 * This method attempts to find the full path of the specified binary file using the `which` command.
+	 * If the `exec` function is disabled or the binary is not found in the system's `$PATH`, it falls back
+	 * to checking predefined common binary directories. This approach provides an alternative way to locate
+	 * binary files when execution functions are restricted in the PHP environment.
+	 *
+	 * @param string $bin_file The name of the binary file to locate.
+	 * @return string|false The full path to the binary file if found, or `false` if not found.
 	 */
 	public function which_cmd($bin_file) {
-		$path = exec("which " . $bin_file);
-		$path = trim($path);
+	    // Attempt to use the `which` command to find the binary
+	    $path = exec("which " . escapeshellarg($bin_file)); // Escaping for security
+	    $path = trim($path);
 
-		if ($path === "") {
-			// Maybe exec function is disabled
-			$additional_paths = ["/bin/", "/usr/bin/"];
-			foreach ($additional_paths as $root_path) {
-				$tmp_path = $root_path . $bin_file;
-				if (file_exists($tmp_path) && $path === "") {
-					$path = $tmp_path;
-				}
-			}
-			if ($path === "") {
-				$path = false;
-			}
-		}
-		return ($path);
+	    // If the path is empty, try predefined directories
+	    if ($path === "") {
+	        $additional_paths = ["/bin/", "/usr/bin/"];
+	        foreach ($additional_paths as $root_path) {
+	            $tmp_path = $root_path . $bin_file;
+	            // Check if the file exists in the additional path
+	            if (file_exists($tmp_path)) {
+	                $path = $tmp_path;
+	                break; // Stop searching once found
+	            }
+	        }
+
+	        // If still not found, set $path to false
+	        if ($path === "") {
+	            $path = false;
+	        }
+	    }
+
+	    return $path;
 	}
 
+
 	/**
-	 * [renamePath]
-	 * @param  [type] $file_from
-	 * @param  [type] $file_to
-	 * @return [type]
+	 * Renames a file or directory to a new name based on the MD5 hash of its basename.
+	 *
+	 * This function takes an array of path components as its parameter, constructs the original
+	 * path from these components, and then renames the file or directory to a new name generated
+	 * by hashing its basename with MD5. The new name retains the original directory path but
+	 * replaces the basename with its MD5 hash.
+	 *
+	 * @param array $path_parts An associative array containing 'dirname' and 'basename'
+	 *                          keys, representing the directory path and the original basename
+	 *                          of the file or directory to be renamed.
+	 * @return string|false Returns the new path if the renaming was successful, or `false` if it failed.
 	 */
 	public function renamePathToHash($path_parts) {
-		$file_from = $path_parts['dirname'] . "/" . $path_parts['basename'];
-		$file_to = $path_parts['dirname'] . "/" . md5($path_parts['basename']);
+	    // Construct the original and new path using dirname and an MD5 hash of the basename
+	    $file_from = $path_parts['dirname'] . "/" . $path_parts['basename'];
+	    $file_to = $path_parts['dirname'] . "/" . md5($path_parts['basename']);
 
-		if (!rename($file_from, $file_to)) {
-			$file_to = false;
-		}
+	    // Attempt to rename the file or directory. If unsuccessful, return false.
+	    if (!rename($file_from, $file_to)) {
+	        $file_to = false;
+	    }
 
-		return $file_to;
+	    return $file_to;
 	}
 
 	/**
@@ -149,44 +219,76 @@ class Helpers {
 	}
 
 	/**
-	 * [normalizeDataNames description]
-	 * @param  [type] $string [description]
-	 * @return [type]         [description]
+	 * Normalizes a string to be used as data names or identifiers.
+	 *
+	 * This function takes a string and applies several normalization steps to make it suitable
+	 * for use as a data name or an identifier. It replaces certain symbols with textual
+	 * representations (e.g., "+" to " pos " and "-" to " neg "), converts spaces to underscores,
+	 * removes specific characters, and ensures the final string only contains alphanumeric
+	 * characters and underscores. Repeated underscores are reduced to a single underscore.
+	 *
+	 * @param string $string The input string to be normalized.
+	 * @return string The normalized string, modified to follow a consistent naming convention
+	 *                suitable for identifiers, variable names, or keys.
 	 */
 	public function normalizeDataNames($string) {
-		$string = trim($string);
-		$string = str_replace("+", " pos ", $string);
-		$string = str_replace("-", " neg ", $string);
-		$string = preg_replace('/\s+/', '_', $string);
-		$string = str_replace("__", "_", $string);
-		$string = str_replace("/", "_", $string);
-		$string = str_replace("(", "", $string);
-		$string = str_replace(")", "", $string);
-		$string = str_replace(":", "", $string);
-		$string = preg_replace("/[^A-Za-z0-9_]/", '', $string);
-		$string = str_replace("__", "_", $string);
-		$string = str_replace("__", "_", $string);
+	    $string = trim($string);
+	    // Replace "+" and "-" symbols with text representations
+	    $string = str_replace(["+", "-"], [" pos ", " neg "], $string);
+	    // Convert spaces and consecutive spaces to a single underscore
+	    $string = preg_replace('/\s+/', '_', $string);
+	    // Replace other special characters with underscores or remove them
+	    $string = str_replace(["/", "(", ")", ":"], ["_", "", "", ""], $string);
+	    // Remove any characters that are not alphanumeric or underscore
+	    $string = preg_replace("/[^A-Za-z0-9_]/", '', $string);
+	    // Ensure no consecutive underscores remain
+	    $string = preg_replace("/__+/", "_", $string);
 
-		return $string;
+	    return $string;
 	}
+
 	/**
-	 * Convert a multi-dimensional, associative array to CSV data
-	 * @param  array $data the array of data
-	 * @return string       CSV text
+	 * Converts a multi-dimensional, associative array to CSV data.
+	 *
+	 * This function takes a multi-dimensional associative array as input and generates
+	 * a CSV string representation of it. Each sub-array of the input is expected to represent
+	 * a row in the CSV output. The first sub-array is used to determine the header row,
+	 * and subsequent sub-arrays provide the data rows.
+	 *
+	 * Note: All sub-arrays should have the same keys in the same order for consistent CSV columns.
+	 *
+	 * @param array $data The multi-dimensional associative array of data to be converted into CSV format.
+	 * @return string The CSV text generated from the array.
 	 */
 	public function str_putcsv($data) {
-		# Generate CSV data from array
-		$fh = fopen('php://temp', 'rw'); # don't create a file, attempt
-		# to use memory instead
+	    // Open a memory stream for writing.
+	    $fh = fopen('php://temp', 'rw');
 
-		# write out the data
-		fputcsv($fh, $data);
-		rewind($fh);
-		$csv = stream_get_contents($fh);
-		fclose($fh);
+	    // Check if data is not empty and is an array
+	    if (!empty($data) && is_array($data)) {
+	        // Write the header row to the CSV, if data is associative
+	        if (array_keys($data) !== range(0, count($data) - 1)) {
+	            fputcsv($fh, array_keys(reset($data)));
+	        }
 
-		return $csv;
+	        // Write out the data rows.
+	        foreach ($data as $row) {
+	            if (is_array($row)) {
+	                fputcsv($fh, $row);
+	            }
+	        }
+	    }
+
+	    // Rewind the memory stream to read from the beginning.
+	    rewind($fh);
+	    // Read the generated CSV data from the memory stream.
+	    $csv = stream_get_contents($fh);
+	    // Close the memory stream.
+	    fclose($fh);
+
+	    return $csv;
 	}
+
 
 	/**
 	 * [validateCSVFileHeader description]
@@ -294,20 +396,34 @@ EOFC;
 		return ($data);
 	}
 
+
 	/**
-	 * Determine if the provided value contains only alpha characters with dashed and underscores.
-	 * @param  [type] $input [description]
-	 * @return [type]        [description]
+	 * Validates a header item against a predefined pattern.
+	 *
+	 * This function checks if the input string is not empty and matches a specific regex pattern.
+	 * The pattern allows lowercase and uppercase alphabetic characters, numbers, accented characters,
+	 * and specific symbols (underscore and hyphen). It's designed to ensure header items contain only
+	 * characters that are typically safe and expected in such contexts.
+	 *
+	 * @param string $input The header item string to validate.
+	 * @return bool Returns true if the input matches the pattern and is not empty, false otherwise.
 	 */
 	public function validateHeaderItem($input) {
-		if (empty($input)) {
-			return false;
-		}
-		$pattern = '/^([a-z0-9ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝàáâãäåçèéêëìíîïðòóôõöùúûüýÿ_-])+$/i';
-		if (!preg_match($pattern, $input) !== false) {
-			return false;
-		}
-		return true;
+	    // Return false if input is empty
+	    if (empty($input)) {
+	        return false;
+	    }
+
+	    // Define a pattern that includes alphanumeric characters, specific accented characters, underscore, and hyphen
+	    $pattern = '/^([a-z0-9ÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÒÓÔÕÖßÙÚÛÜÝàáâãäåçèéêëìíîïðòóôõöùúûüýÿ_-])+$/i';
+	    
+	    // Check if input matches the pattern
+	    if (preg_match($pattern, $input) === 0) { // preg_match returns 0 if no match is found
+	        return false;
+	    }
+
+	    // Input is valid
+	    return true;
 	}
 
 	/**
@@ -534,6 +650,9 @@ EOFC;
 
 		return strtolower($filename);
 	}
+	
+
+
 	/**
 	 * Copy remote file over HTTP one small chunk at a time.
 	 * https://stackoverflow.com/questions/4000483/how-download-big-file-using-php-low-memory-usage

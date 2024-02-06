@@ -263,7 +263,7 @@ class FileSystem {
 
 		return $contents;
 	}
-
+	
 	/**
 	 * Upload file on remote filesystem
 	 * @param string $user_id Database ID of the current user
