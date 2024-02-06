@@ -306,7 +306,7 @@ $app->get('/backend/system/filesystem/preview-file/{submitData:.*}', function (R
 
     // Set up pagination variables
     $currentPage = $submitData['page'] ?? 1;
-    $linesPerPage = 10;
+    $linesPerPage = $submitData['rows'] ?? 100;
     $offset = ($currentPage - 1) * $linesPerPage;
 
     // Obtain header mapping for original column names
