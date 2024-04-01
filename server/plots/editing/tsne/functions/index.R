@@ -2,6 +2,7 @@
 ## https://cran.r-project.org/web/packages/Rtsne/Rtsne.pdf
 calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 	info.norm <- dataset
+	# Remap column names
 	names(info.norm) <- plyr::mapvalues(names(info.norm), from=fileHeader$remapped, to=fileHeader$original)
 
     if(!is.null(settings$groupingVariables) && removeGroups == TRUE){
@@ -9,11 +10,19 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     	dataset <- dataset %>% select(-any_of(settings$groupingVariables)) 
     }
 
-    ## To be sure remove all other non numeric columns
+    # Remove non-numeric columns
 	tsne_data <- dataset %>% select(where(is.numeric))
+	num_samples <- nrow(tsne_data)
+	num_features <- ncol(tsne_data)
 
-    ## Check perplexity
-	# Adjust perplexity based on the dataset size
+    pca_result <- prcomp(dataset %>% select(where(is.numeric)), scale. = TRUE)
+    explained_variance <- cumsum(pca_result$sdev^2) / sum(pca_result$sdev^2)
+    initial_dims <- max(which(explained_variance <= 0.9)) # Adjust to keep 90% variance
+    initial_dims <- min(initial_dims, 100) # Set a reasonable upper limit to ensure computational efficiency
+
+    print(paste0("Using initial_dims: ", initial_dims))
+
+    # Adjust perplexity based on dataset size, not to exceed half the number of rows
 	perplexity <- min(settings$perplexity, nrow(dataset)/2)
 	if (perplexity != settings$perplexity) {
 		message("====> Adjusting perplexity to: ", perplexity)
@@ -26,15 +35,45 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 		pca.scale <- FALSE
 	}
 
-	tsne.norm  <- Rtsne::Rtsne(
-		as.matrix(tsne_data), 
-		perplexity = perplexity, 
-		pca = TRUE, ## Whether an initial PCA step should be performed
-		verbose = FALSE, 
-		max_iter = 2000, 
-		pca_scale = pca.scale,  
-		pca_center = pca.scale, 
-		check_duplicates = FALSE)
+    # Adjust max_iter based on dataset size and complexity
+    # Example heuristic: Increase max_iter for larger or more complex datasets
+    base_iter <- 1000
+    complexity_factor <- sqrt(num_samples * num_features) / 500 # Example heuristic
+    
+    max_iter <- base_iter + (500 * complexity_factor)
+    max_iter <- min(max_iter, 10000) # Setting an upper limit
+    max_iter <- round(max_iter, 0)
+
+    print(paste0("Using max_iter: ", max_iter))
+
+ 	eta <- 150
+    # Dynamically adjust theta based on dataset size
+    # Smaller datasets can use a more accurate (lower) theta
+    if (num_samples < 1000) {
+        theta <- 0  # More accurate, suitable for small datasets
+    } else if (num_samples >= 1000 && num_samples < 5000) {
+        theta <- 0.2  # Balance between accuracy and speed
+        eta <- 250
+    } else {
+        theta <- 0.5  # Faster, suitable for larger datasets
+        eta <- 250
+    }
+    print(paste0("Using theta: ", theta))
+
+    tsne.norm <- Rtsne::Rtsne(
+        as.matrix(tsne_data),
+        dims = 2,
+        perplexity = perplexity,
+        pca = TRUE,
+        pca_center = pca.scale,
+        pca_scale = pca.scale,
+        check_duplicates = FALSE,
+        initial_dims = initial_dims,
+        max_iter = max_iter,
+        theta = theta,
+        eta = eta,
+        verbose = FALSE
+    )
 
 	info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
 

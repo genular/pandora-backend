@@ -21,11 +21,6 @@ calculate_umap <- function(dataset, groupingVariable = NULL, settings, fileHeade
 
 	umap_data <- umap_data %>% select(where(is.numeric))
 
-	knn_clusters <- settings$knn_clusters
-    if(nrow(umap_data) < knn_clusters){
-    	knn_clusters <- round(nrow(umap_data) / 2)
-    	print(paste0("====> Quick-fix - Adjusting KNN k to: ", knn_clusters))
-    }
 
 	pca_clusters <- settings$pca_clusters
     if(min(nrow(umap_data), ncol(umap_data)) <= pca_clusters){
@@ -33,25 +28,40 @@ calculate_umap <- function(dataset, groupingVariable = NULL, settings, fileHeade
     	print(paste0("====> Quick-fix - Adjusting PCA clusters"))
     }
 
-	n_trees <- ceiling((nrow(umap_data) * 0.001)) * 10
-    print(paste0("====> Quick-fix - Adjusting n_trees: ", n_trees))
+	# Dynamically adjust parameters based on the input data
+	n_samples <- nrow(umap_data)
+	n_features <- ncol(umap_data)
 
-	if(!is_null(groupingVariable)){
+	# Adjust 'n_neighbors' based on a heuristic or dataset characteristics
+	n_neighbors <- max(15, min(50, sqrt(n_samples)/2))
 
-		dataset[[groupingVariable]] <- as.factor(dataset[[groupingVariable]])
-		#dataset[[groupingVariable]] <- as.factor(dataset[[groupingVariable]])
-		reduced_umap <- umap(umap_data, y = dataset[[groupingVariable]],
-	                           n_neighbors = knn_clusters, min_dist = 0.001, verbose = FALSE,
-	                           n_threads = 8, pca = pca_clusters, n_trees = n_trees,
-	                           a = 1.8956, b = 0.8006, approx_pow = TRUE, init = "spca",
-	                           target_weight = 0.5, ret_model = TRUE)
-	}else{
-		reduced_umap <- umap(umap_data,
-	                           n_neighbors = knn_clusters, min_dist = 0.001, verbose = FALSE,
-	                           n_threads = 8, pca = pca_clusters, n_trees = n_trees,
-	                           a = 1.8956, b = 0.8006, approx_pow = TRUE, init = "spca",
-	                           target_weight = 0.5, ret_model = TRUE)
+	# 'min_dist' can be kept static or adjusted based on data density or domain knowledge
+	min_dist <- 0.001
+
+	# Determine 'pca_clusters' dynamically, for instance, based on variance explained if needed
+	# This is a placeholder; actual calculation would require a PCA analysis
+	pca_clusters <- min(50, n_features)
+
+	# Adjust 'n_trees' based on dataset size
+	n_trees <- ceiling((n_samples * 0.001)) * 10
+
+	# Correct function to check for NULL
+	if(!is.null(groupingVariable)){
+	    dataset[[groupingVariable]] <- as.factor(dataset[[groupingVariable]])
+
+	    reduced_umap <- umap(umap_data, y = dataset[[groupingVariable]],
+	                         n_neighbors = n_neighbors, min_dist = min_dist, verbose = FALSE,
+	                         n_threads = 8, pca = pca_clusters, n_trees = n_trees,
+	                         approx_pow = TRUE, init = "spca",
+	                         target_weight = 0.5, ret_model = TRUE)
+	} else {
+	    reduced_umap <- umap(umap_data,
+	                         n_neighbors = n_neighbors, min_dist = min_dist, verbose = FALSE,
+	                         n_threads = 8, pca = pca_clusters, n_trees = n_trees,
+	                         approx_pow = TRUE, init = "spca",
+	                         target_weight = 0.5, ret_model = TRUE)
 	}
+
 
 	return(list(umap_data = reduced_umap, umap_dataset = umap_data, dataset = dataset))
 

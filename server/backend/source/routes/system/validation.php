@@ -10,6 +10,22 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
+/**
+ * Validates the availability of a specific value in a database table's field.
+ *
+ * This endpoint performs a validation check to determine if a specified value is available (i.e., does not
+ * exist) in a given field of a specified database table. It's designed to validate user input against existing
+ * database records, such as checking for unique usernames or email addresses before allowing a new user registration.
+ * The validation process involves decoding provided parameters and verifying them against a whitelist of allowed tables
+ * and fields to prevent unauthorized database queries. The result indicates whether the queried value is available for
+ * use (not found in the database).
+ *
+ * @param Request $request The request object, containing encoded parameters for table, field, and value to validate.
+ * @param Response $response The response object used to return the validation outcome.
+ * @param array $args Contains 'validationTable', 'validationField', and 'validationValue', all base64-encoded and URL-decoded strings specifying the database query parameters.
+ * 
+ * @return Response JSON response indicating the success of the validation check and whether the value is available.
+ */
 $app->get('/backend/system/validation/database/{validationTable:.*}/{validationField:.*}/{validationValue:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$recordAvaliable = false;

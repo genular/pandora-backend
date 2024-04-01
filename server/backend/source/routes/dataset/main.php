@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @Author: LogIN-
- * @Date:   2018-04-05 14:36:21
- * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-04-18 10:36:20
- */
-
 use Slim\Http\Request;
 use Slim\Http\Response;
 

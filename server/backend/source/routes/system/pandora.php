@@ -1,15 +1,22 @@
 <?php
 
-/**
- * @Author: LogIN-
- * @Date:   2018-06-08 15:11:00
- * @Last Modified by:   LogIN-
- * @Last Modified time: 2021-02-04 16:13:24
- */
-
 use Slim\Http\Request;
 use Slim\Http\Response;
 
+/**
+ * Retrieves a list of available modeling packages and indicates their preselection status.
+ *
+ * This endpoint fetches a list of available modeling packages from a data source, filtering out
+ * any packages without an internal identifier. It also marks certain packages as preselected based
+ * on a predefined list. Each package's availability for selection in the UI is initially disabled,
+ * intended to be controlled client-side.
+ *
+ * @param Request $request The request object, potentially containing a list of selected files in a base64-encoded format.
+ * @param Response $response The response object used to return the list of packages.
+ * @param array $args Unused in this function but required by the route definition.
+ * 
+ * @return Response JSON response with the success status and a list of packages, each annotated with its preselection and availability status.
+ */
 $app->post('/backend/system/pandora/available-packages', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = "";
@@ -49,7 +56,20 @@ $app->post('/backend/system/pandora/available-packages', function (Request $requ
 
     return $response->withJson(["success" => $success, "message" => $packages]);
 });
-
+/**
+ * Verifies and retrieves the formatted header of the selected file.
+ *
+ * This endpoint decodes a base64-encoded string representing selected files, extracts the file ID, and then retrieves
+ * the formatted header for the specified file from the database. It is designed to verify the header's format and content,
+ * returning up to the first 50 entries of the header for inspection. The response indicates whether the header could be
+ * successfully retrieved and, if so, returns the formatted header; otherwise, it returns an error message.
+ *
+ * @param Request $request The request object, containing the encoded 'selectedFiles' parameter.
+ * @param Response $response The response object used for sending back the verification result.
+ * @param array $args Contains 'selectedFiles', a base64-encoded JSON string specifying the files to verify.
+ * 
+ * @return Response JSON response with the verification success status and the formatted file header or error message.
+ */
 $app->get('/backend/system/pandora/header/{selectedFiles:.*}/verify', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = array();
@@ -92,6 +112,21 @@ $app->get('/backend/system/pandora/header/{selectedFiles:.*}/verify', function (
     return $response->withJson(["success" => $success, "message" => $message]);
 });
 
+/**
+ * Suggests file header fields based on user input.
+ *
+ * This endpoint processes user input to suggest relevant file header fields from a selected file's header information.
+ * It first decodes the 'selectedFiles' and 'userInput' parameters from the request, retrieves the file details from the
+ * database, and then sorts the header fields based on their similarity to the user input. The suggestions are limited to
+ * the top 50 matches to ensure the response remains manageable. This functionality aids users in quickly locating and
+ * selecting relevant header fields by typing a few characters, enhancing usability for data selection tasks.
+ *
+ * @param Request $request The request object, containing base64-encoded 'selectedFiles' and 'userInput'.
+ * @param Response $response The response object for sending back the list of suggested header fields.
+ * @param array $args Contains 'selectedFiles', a list of files, and 'userInput', the user's search query.
+ * 
+ * @return Response JSON response with the success status and a list of suggested header fields or an error message.
+ */
 $app->get('/backend/system/pandora/header/{selectedFiles:.*}/suggest/{userInput:.*}', function (Request $request, Response $response, array $args) {
     $success = true;
     $message = array();
@@ -146,6 +181,23 @@ $app->get('/backend/system/pandora/header/{selectedFiles:.*}/suggest/{userInput:
 
     return $response->withJson(["success" => $success, "message" => $message]);
 });
+/**
+ * Initiates pre-analysis processing for selected datasets.
+ *
+ * This endpoint triggers a series of operations to prepare datasets for analysis based on user-submitted
+ * configurations. It involves decoding and processing submission data, generating dataset intersections,
+ * validating sample sizes, creating and compressing resamples, and uploading them for further analysis.
+ * The process generates a queue of datasets, each associated with specific analysis parameters and outcomes.
+ * The response includes details about the operation's success, generated queue information, potential messages
+ * regarding the process, and execution time metrics.
+ *
+ * @param Request $request The request object, containing the 'submitData' with analysis configurations.
+ * @param Response $response The response object for sending back the pre-analysis operation details.
+ * @param array $args Unused in this function but required by the route definition.
+ * 
+ * @return Response JSON response with the operation's success status, queue details, messages, execution time,
+ *         and database connection metrics.
+ */
 
 $app->post('/backend/system/pandora/pre-analysis', function (Request $request, Response $response, array $args) {
     $success = true;
@@ -335,6 +387,21 @@ $app->post('/backend/system/pandora/pre-analysis', function (Request $request, R
         "initial_db_connect" => $initial_db_connect]);
 });
 
+/**
+ * Updates the status of dataset resamples and the associated dataset queue.
+ *
+ * This endpoint is responsible for updating the status of individual resamples within a dataset queue based on
+ * user-submitted data. It processes a list of resamples, updating their active or inactive status accordingly.
+ * Upon successful updates, it also modifies the status of the dataset queue to indicate it's ready for processing.
+ * This functionality is crucial for managing which datasets are queued for analysis and ensuring that the analysis
+ * pipeline operates on the correct set of data as specified by the user.
+ *
+ * @param Request $request The request object, containing 'submitData' with resample status updates and queue information.
+ * @param Response $response The response object for sending back the number of updates performed.
+ * @param array $args Unused in this function but required by the route definition.
+ * 
+ * @return Response JSON response indicating the operation's success and the total number of resample status updates.
+ */
 $app->post('/backend/system/pandora/dataset-queue', function (Request $request, Response $response, array $args) {
     $success = true;
     $updateCount = 0;
@@ -371,6 +438,20 @@ $app->post('/backend/system/pandora/dataset-queue', function (Request $request, 
     return $response->withJson(["success" => $success, "message" => $updateCount]);
 });
 
+/**
+ * Cancels a dataset queue by updating its processing status.
+ *
+ * This endpoint allows users to cancel the processing of a dataset queue by setting its status to cancelled
+ * in the database. It reads the queue ID from the submitted data, verifies user permissions, and updates the
+ * queue's status accordingly. This function is essential for managing the lifecycle of dataset processing, 
+ * allowing users to halt processing if needed.
+ *
+ * @param Request $request The request object, containing 'submitData' with the queue ID to be cancelled.
+ * @param Response $response The response object for confirming the cancellation action.
+ * @param array $args Unused in this function but required by the route definition.
+ * 
+ * @return Response JSON response indicating whether the cancellation was successful.
+ */
 $app->post('/backend/system/pandora/dataset-queue/cancel', function (Request $request, Response $response, array $args) {
     $success = true;
 
@@ -394,7 +475,19 @@ $app->post('/backend/system/pandora/dataset-queue/cancel', function (Request $re
 });
 
 /**
- * Deletes all queue related data from the database and filesystem
+ * Deletes dataset queue data and associated files from the database and filesystem.
+ *
+ * This endpoint facilitates the deletion of a dataset queue, including all related resamples, models, 
+ * and files from both the database and the filesystem. It processes an array of queue IDs submitted by 
+ * the user, iteratively removing associated resamples, models, performance metrics, and finally the queue itself.
+ * The deletion extends to the filesystem, where files associated with the resamples and models are also removed.
+ * This comprehensive cleanup helps maintain data integrity and frees up resources by removing no longer needed data.
+ *
+ * @param Request $request The request object, containing 'submitData' with one or more queue IDs to delete.
+ * @param Response $response The response object for confirming the deletion action.
+ * @param array $args Unused in this function but required by the route definition.
+ * 
+ * @return Response JSON response indicating whether the deletion was successful.
  */
 $app->post('/backend/system/pandora/dataset-queue/delete', function (Request $request, Response $response, array $args) {
     $success = false;
@@ -491,7 +584,19 @@ $app->post('/backend/system/pandora/dataset-queue/delete', function (Request $re
 });
 
 /**
- * Deletes all queue related data from the system
+ * Attempts to delete a specific dataset resample from the system.
+ *
+ * This endpoint is designed to facilitate the deletion of a single dataset resample based on the resample ID 
+ * provided by the user. The functionality aims to remove the specified resample's data from both the database 
+ * and filesystem, ensuring that all traces of the resample are eradicated from the system. However, as the 
+ * implementation details for the actual deletion process are not provided in the snippet, the success flag 
+ * remains false by default.
+ *
+ * @param Request $request The request object, containing 'submitData' with the resample ID to delete.
+ * @param Response $response The response object for confirming whether the deletion attempt was successful.
+ * @param array $args Contains 'submitData', a base64-encoded JSON string specifying the resample ID to be deleted.
+ * 
+ * @return Response JSON response indicating the success status of the deletion attempt.
  */
 $app->get('/backend/system/pandora/dataset-resample/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
     $success = false;
@@ -520,7 +625,18 @@ $app->get('/backend/system/pandora/dataset-resample/delete/{submitData:.*}', fun
 });
 
 /**
- * Generate system log file for the debugging purpose
+ * Compresses and generates download links for various system and application log files.
+ *
+ * This endpoint targets a set of predefined log file locations, including system logs, application logs, and server logs,
+ * compressing each into a tar.gz archive. It then generates download URLs for these compressed files, allowing users 
+ * to conveniently download the logs for troubleshooting or audit purposes. The operation iterates over a list of log file
+ * paths, compresses each, and collects the resulting download URLs to be returned to the client if successful.
+ *
+ * @param Request $request The request object, potentially containing 'submitData' with specifications for log file generation.
+ * @param Response $response The response object used to return the generated download links or an error message.
+ * @param array $args Contains 'submitData', a base64-encoded JSON string that may specify additional parameters for log file generation.
+ * 
+ * @return Response JSON response indicating the success of the log file generation and compression, along with download links or an error message.
  */
 $app->get('/backend/system/pandora/generate-log-file/{submitData:.*}', function (Request $request, Response $response, array $args) {
     $success = false;

@@ -422,6 +422,11 @@ executeSystemCommand <- function(cmd_string, time_out = 300){
         }
         cmd_out <- process.execution$message
     }
+
+    if(cmd_out != FALSE){
+        print(cmd_out)
+    }
+
     # Restore default warning reporting
     options(warn=0)
     return(cmd_out_status)
@@ -432,7 +437,8 @@ convertSVGtoPNG <- function(tmp_path){
     tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
     command <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
     
-    cmd_out <- executeSystemCommand(command, 300)
+    cmd_out <- executeSystemCommand(command, 1000)
+
     if(cmd_out == FALSE){
         png_data <- FALSE
     }else{

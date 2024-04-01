@@ -70,10 +70,18 @@ $app->get('/backend/system/filesystem/create/{submitData:.*}', function (Request
 
 
 /**
- * Multi part ajax file upload
+ * Processes file uploads, handling both single and chunked uploads.
  *
- * @param  {array} $_FILES
- * @return {json} JSON encoded API response object
+ * This endpoint supports uploading files directly or in chunks for large files. It processes uploaded files,
+ * validates CSV headers, renames files for standardization, compresses them, and uploads to a specified storage path.
+ * Successful uploads are recorded in the database with details accessible to the user. The function handles file
+ * validation, chunk assembly for resumable uploads, and cleanup of temporary files.
+ *
+ * @param Request $request The request object, including uploaded files and additional data like chunk identifiers.
+ * @param Response $response The response object for sending back the upload result.
+ * @param array $args Unused in this function but required by the route definition.
+ * 
+ * @return Response JSON response indicating the success of the upload and details of the uploaded file.
  */
 $app->post('/backend/system/filesystem/upload', function (Request $request, Response $response, array $args) {
 	$success = false;
@@ -355,9 +363,19 @@ $app->get('/backend/system/filesystem/preview-file/{submitData:.*}', function (R
 });
 
 /**
- * Local file upload - upload file that is already on the system
- * @param  {local_file_path} Path to the file in local PHP Back-end file-system
- * @return {json} JSON encoded API response object
+ * Handles the upload of a local file to a temporary server location and then processes it.
+ *
+ * This endpoint receives a local file path and a new file name, copies the file to a temporary directory,
+ * and processes it for upload. The process includes validation of the CSV file header, renaming the file
+ * for standardization, compressing it, and finally uploading the compressed file to a storage solution.
+ * Successful operations update the database with the new file's details. The response triggers a browser
+ * action to close the window, signaling the end of the upload process.
+ *
+ * @param Request $request The request object, containing `local_file_path` and `new_file_name`, both base64 encoded.
+ * @param Response $response The response object for signaling the upload's completion to the client.
+ * @param array $args Contains `local_file_path` and `new_file_name`, detailing the file to upload and its new name.
+ * 
+ * @return Response Triggers a browser action to close the window, indicating the end of the process.
  */
 $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_file_name:.*}', function (Request $request, Response $response, array $args) {
 	$success = false;
@@ -439,10 +457,19 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 });
 
 /**
- * Retrieves list of files for the user, uploaded in specific user directory
- * @param  {object} submitData Object containing one string variable: selectedDirectory that corresponds to upload_directory column in users_files table
- * @return {json} JSON encoded API response object
- */ 
+ * Lists files and directories for a user with optional sorting.
+ *
+ * Retrieves a list of files and directories for the authenticated user from a specified directory.
+ * The directory and sorting parameters are provided in the `submitData` argument. This argument is
+ * a base64 encoded JSON string that may specify the selected directory and sorting preferences.
+ * Directories in the response include a calculated size based on the total size of all contained items.
+ *
+ * @param Request $request The request object, containing user details and optional `submitData`.
+ * @param Response $response The response object for sending back the list of files/directories.
+ * @param array $args Contains the `submitData` parameter with details like `selectedDirectory` and sorting settings.
+ * 
+ * @return Response JSON response with `success` status and list of files/directories in `message`.
+ */
 $app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
@@ -514,10 +541,24 @@ $app->get('/backend/system/filesystem/list/{submitData:.*}', function (Request $
 });
 
 /**
- * Deletes file from database and from file system
- * @param  {int} fileID ID of the desired file to be deleted from users_files database table
- * @return {json} JSON encoded API response object
+ * Deletes files or directories specified by the client.
+ * 
+ * This endpoint allows clients to delete files or directories. The client must provide a list of items
+ * to be deleted, specified by their IDs and types (file or directory), as part of the `submitData` parameter.
+ * The actual deletion process is determined by the item type: individual files are deleted directly, while
+ * directories entail a deletion of all contained files. The operation is allowed only if the user initiating
+ * the request owns the items.
+ *
+ * @param Request $request The request object, containing the `submitData` parameter and user details.
+ * @param Response $response The response object used to return the operation's outcome.
+ * @param array $args Contains the `submitData` parameter, a base64 encoded JSON string representing an array
+ *                    with details about the selected files or directories to delete. The `submitData` array
+ *                    includes `selectedFiles`, each having a `fileId` and an `item_type` indicating whether
+ *                    it's a file (1) or a directory (3).
+ * 
+ * @return Response Returns a JSON response indicating the success or failure of the deletion operation.
  */
+
 $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = false;
@@ -584,13 +625,21 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
 });
 
 /**
- * Generates download ZIP files and return full URL to download file
- *
- * @param  {string} submitData Is base 64 and json encoded javascript object containing two variables
- * downloadType: (resample, queue)
- * recordID: main ID of the queue or resample
- *
- * @return {json} JSON encoded API response object
+ * Downloads files related to dataset processing in the PANDORA ML software.
+ * 
+ * This endpoint allows authenticated users to download files based on the provided submitData.
+ * The submitData must include a recordID and downloadType, which determines the source of the files
+ * (e.g., queue, resample, models). It fetches file details from the database, generates download links,
+ * remaps columns to their original names if necessary, and compresses the files for download.
+ * 
+ * @param Request $request The SLIM request object containing details of the HTTP request.
+ * @param Response $response The SLIM response object for sending back the HTTP response.
+ * @param array $args Associative array of route parameters; expects 'submitData' with encoded JSON data.
+ * 
+ * @return Response Returns a JSON response with success status and messages or download links.
+ * 
+ * @throws Exception If there's an error in processing, exceptions may be thrown internally but are caught
+ *                   and handled by generating an appropriate HTTP response.
  */
 $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Request $request, Response $response, array $args) {
 	$success = false;
@@ -714,7 +763,21 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	return $response->withJson(["success" => $success, "message" => $message]);
 });
 
-
+/**
+ * Retrieves file details for selected files in the PANDORA ML software filesystem.
+ * 
+ * This endpoint accepts a base64 encoded JSON string representing the IDs of selected files
+ * via the URL path. It decodes and processes this string to fetch details for each file,
+ * sorts the details based on a specified criteria, and returns them in the response.
+ * 
+ * @param Request $request The request object, providing access to the HTTP request method, headers, and body.
+ * @param Response $response The response object, used to build and return the HTTP response.
+ * @param array $args Arguments passed from the route, including 'selectedFiles' which is a base64 encoded JSON string.
+ * 
+ * @return Response Returns a JSON response containing a success status and message with file details.
+ * 
+ * @throws Exception Throws an exception if decoding the selectedFiles fails or if fetching file details encounters errors.
+ */
 $app->get('/backend/system/filesystem/file-details/{selectedFiles:.*}', function (Request $request, Response $response, array $args) {
 	$success = true;
 	$message = array();
