@@ -50,32 +50,36 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 	if ($success !== false) {
 
 		if($validationField === 'org_invite_code'){
-			$url = 'https://genular.atomic-lab.org/api/validate_key';
-			$api_key = $validationValue;
-			$url_with_api_key = $url . '?api_key=' . urlencode($api_key);
 
-			$options = array(
-			    'ssl' => array(
-			        'verify_peer'       => true, // Enable verification of the peer's SSL certificate
-			        'verify_peer_name'  => true, // Enable verification of the peer name in the SSL certificate
-			        'allow_self_signed' => false, // Do not allow self-signed certificates
-			    ),
-			    'http' => array(
-			        'method'  => 'GET',
-			        'timeout' => 15, // Set timeout
-			    ),
-			);
+			if($validationValue === "aTomicLab"){
+				$recordAvaliable = true;
+			}else{
+				$url = 'https://genular.atomic-lab.org/api/validate_key';
+				$api_key = $validationValue;
+				$url_with_api_key = $url . '?api_key=' . urlencode($api_key);
 
-			$context = stream_context_create($options);
-			$check_response = @file_get_contents($url_with_api_key, false, $context);
+				$options = array(
+				    'ssl' => array(
+				        'verify_peer'       => true, // Enable verification of the peer's SSL certificate
+				        'verify_peer_name'  => true, // Enable verification of the peer name in the SSL certificate
+				        'allow_self_signed' => false, // Do not allow self-signed certificates
+				    ),
+				    'http' => array(
+				        'method'  => 'GET',
+				        'timeout' => 15, // Set timeout
+				    ),
+				);
 
-			if ($check_response !== FALSE) {
-				$check_response_data = json_decode($check_response, true);			
-			    if (isset($check_response_data['valid']) && $check_response_data['valid'] === true) {
-			        $recordAvaliable = true;
-			    }
+				$context = stream_context_create($options);
+				$check_response = @file_get_contents($url_with_api_key, false, $context);
+
+				if ($check_response !== FALSE) {
+					$check_response_data = json_decode($check_response, true);			
+				    if (isset($check_response_data['valid']) && $check_response_data['valid'] === true) {
+				        $recordAvaliable = true;
+				    }
+				}
 			}
-
 		}else{
 			// Try to retrieve that row from database
 			$dbResults = $system->databaseAvailability($validationTable, $validationField, $validationValue);
