@@ -236,9 +236,13 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
 
         if(length(noise_indices) > 0){
             print(paste("====> Noise indices: ", length(noise_indices)))
-            info.norm$cluster <- factor(info.norm$cluster, levels = c(levels(info.norm$cluster), "100"))
-            info.norm$cluster[noise_indices] <- "100"
+            if(!"100" %in% levels(info.norm$cluster)) {
+                info.norm$cluster <- factor(info.norm$cluster, levels = c(levels(info.norm$cluster), "100"))
+                info.norm$cluster[noise_indices] <- "100"
+            }
         }
+
+        print(paste("====> Noise indices done"))
 
     } else {
         warning("Not enough data points for hierarchical clustering.")
