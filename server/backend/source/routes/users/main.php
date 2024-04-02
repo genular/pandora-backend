@@ -294,6 +294,11 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 		}
 
 		$options = array(
+		    'ssl' => array(
+		        'verify_peer'       => true,
+		        'verify_peer_name'  => true,
+		        'allow_self_signed' => false
+		    ),
 			'http' => array(
 				'timeout'=> 10, // timeout of 10 seconds
 				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
@@ -303,53 +308,48 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 		);
 
 		$context = stream_context_create($options);
-		$collect_result = @file_get_contents($url, false, $context);
-		if ($collect_result === FALSE) {
-			$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage FAILED");
+		try {
+		    $collect_result = @file_get_contents($url, false, $context);
+		    if ($collect_result === FALSE) {
+		        // Manually throw an exception if file_get_contents failed
+		        $error = error_get_last();
+		        $this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage FAILED: " . json_encode($error));
+		    }
+		} catch (Exception $e) {
+		    // Log the exception message
+		    $this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage FAILED: " . $e->getMessage());
 		}
 	}
 
 	// If user is successfully registered send verification email
-	if ($success !== false && $validation_hash !== null) {
-		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' verification email");
-
-		$sendgrid_configured = true;
-		if ($config->get('default.sendgrid_api') === null || strlen($config->get('default.sendgrid_api')) < 20) {
-			$sendgrid_configured = false;
-		}
-
-		// Don't use this function if sendgrid is not configured or Internet is unavailable
-		if ($this->get('settings')["is_connected"] === true && $sendgrid_configured === true) {
-			$from = new SendGrid\Email($config->get('default.details.title') . " Support", $config->get('default.details.email'));
-			$subject = "Welcome to " . $config->get('default.details.title') . "! Please confirm Your Email";
-
-			$to = new SendGrid\Email($username, $email);
-
-			$content = new SendGrid\Content("text/html", "Copyright (c) " . $config->get('default.details.title'));
-
-			$mail = new SendGrid\Mail($from, $subject, $to, $content);
-
-			$mail->personalization[0]->addSubstitution("{{username}}", $username);
-			$mail->personalization[0]->addSubstitution("{{email}}", $email);
-			$mail->personalization[0]->addSubstitution("{{firstName}}", $firstName);
-
-			$confirm_account_url = $config->get('default.backend.server.url');
-			$confirm_account_url = $confirm_account_url . "/backend/user/verify/" . $validation_hash;
-
-			$mail->personalization[0]->addSubstitution("{{confirm_account_url}}", $confirm_account_url);
-
-			$mail->setTemplateId($config->get('default.sendgrid_templates.register'));
-
-			$sg = new \SendGrid($config->get('default.sendgrid_api'));
-
-			try {
-				$res = $sg->client->mail()->send()->post($mail);
-			} catch (Exception $e) {
-				echo 'Caught exception: ', $e->getMessage(), "\n";
-			}
-		}
-
-	}
+	// if ($success !== false && $validation_hash !== null) {
+	// 	$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' verification email");
+	// 	$sendgrid_configured = true;
+	// 	if ($config->get('default.sendgrid_api') === null || strlen($config->get('default.sendgrid_api')) < 20) {
+	// 		$sendgrid_configured = false;
+	// 	}
+	// 	// Don't use this function if sendgrid is not configured or Internet is unavailable
+	// 	if ($this->get('settings')["is_connected"] === true && $sendgrid_configured === true) {
+	// 		$from = new SendGrid\Email($config->get('default.details.title') . " Support", $config->get('default.details.email'));
+	// 		$subject = "Welcome to " . $config->get('default.details.title') . "! Please confirm Your Email";
+	// 		$to = new SendGrid\Email($username, $email);
+	// 		$content = new SendGrid\Content("text/html", "Copyright (c) " . $config->get('default.details.title'));
+	// 		$mail = new SendGrid\Mail($from, $subject, $to, $content);
+	// 		$mail->personalization[0]->addSubstitution("{{username}}", $username);
+	// 		$mail->personalization[0]->addSubstitution("{{email}}", $email);
+	// 		$mail->personalization[0]->addSubstitution("{{firstName}}", $firstName);
+	// 		$confirm_account_url = $config->get('default.backend.server.url');
+	// 		$confirm_account_url = $confirm_account_url . "/backend/user/verify/" . $validation_hash;
+	// 		$mail->personalization[0]->addSubstitution("{{confirm_account_url}}", $confirm_account_url);
+	// 		$mail->setTemplateId($config->get('default.sendgrid_templates.register'));
+	// 		$sg = new \SendGrid($config->get('default.sendgrid_api'));
+	// 		try {
+	// 			$res = $sg->client->mail()->send()->post($mail);
+	// 		} catch (Exception $e) {
+	// 			echo 'Caught exception: ', $e->getMessage(), "\n";
+	// 		}
+	// 	}
+	// }
 
 	return $response->withJson(["success" => $success, "message" => $message]);
 });

@@ -88,12 +88,37 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         if(is_var_empty(settings$perplexity, "perplexity") == TRUE){
             settings$perplexity <- 30
         }
+
         if(is_var_empty(settings$clustLinkage, "clustLinkage") == TRUE){
             settings$clustLinkage = "ward.D2"
         }
+
         if(is_var_empty(settings$clustGroups, "clustGroups") == TRUE){
             settings$clustGroups = 9
         }
+
+        ## OUTLIER DETECTION START
+        if(is_var_empty(settings$distMethod, "distMethod") == TRUE){
+            settings$distMethod = "euclidean"
+        }
+
+        if(is_var_empty(settings$minPtsAdjustmentFactor, "minPtsAdjustmentFactor") == TRUE){
+            settings$minPtsAdjustmentFactor = 1
+        }
+
+        if(is_var_empty(settings$epsQuantile, "epsQuantile") == TRUE){
+            settings$epsQuantile = 0.9
+        }
+
+        if(is_var_empty(settings$assignOutliers, "assignOutliers") == TRUE){
+            settings$assignOutliers = TRUE
+        }
+        
+        if(is_var_empty(settings$excludeOutliers, "excludeOutliers") == TRUE){
+            settings$excludeOutliers = TRUE
+        }
+        ## OUTLIER DETECTION END
+
         
         if(is_var_empty(settings$reachabilityDistance, "reachabilityDistance") == TRUE){
             settings$reachabilityDistance = 2

@@ -176,35 +176,114 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 }
 
 # Hierarchical clustering
-cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings){
-	set.seed(1337)
-	hc.norm = stats::hclust(dist(tsne.norm$Y), method = settings$clustLinkage) 
-	
-	info.norm$cluster = factor(cutree(hc.norm, settings$clustGroups))
+cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
+    # Validate settings
+    if (!"clustLinkage" %in% names(settings) || !"clustGroups" %in% names(settings)) {
+        stop("Settings must include 'clustLinkage' and 'clustGroups'.")
+    }
 
-	lc.cent = info.norm %>% group_by(cluster) %>% 
-							select(tsne1, tsne2) %>% 
-							summarize_all(mean)
+    # Prepare data for DBSCAN
+    tsne_data <- tsne.norm$Y
 
+    # Calculate minPts and eps dynamically based on settings
+    minPts_baseline <- dim(tsne_data)[2] * 2
+    minPts <- max(2, settings$minPtsAdjustmentFactor * minPts_baseline)
+    k_dist <- dbscan::kNNdist(tsne_data, k = minPts - 1)
+    eps_quantile <- settings$epsQuantile
+    eps <- stats::quantile(k_dist, eps_quantile)
+    dbscan_result <- dbscan::dbscan(tsne_data, eps = eps, minPts = minPts)
 
-	return(list(info.norm = info.norm, cluster_data = lc.cent))
+    # Update info.norm with DBSCAN results (cluster assignments, including noise)
+    info.norm$cluster <- as.factor(dbscan_result$cluster)
+    non_noise_indices <- which(dbscan_result$cluster != 0)
+
+    # Decision to include or exclude outliers in the hierarchical clustering
+    data_for_clustering <- if (settings$excludeOutliers) tsne_data[non_noise_indices, ] else tsne_data
+    indices_for_clustering <- if (settings$excludeOutliers) non_noise_indices else seq_len(nrow(tsne_data))
+
+     if (settings$excludeOutliers){
+     	message("Excluding outliers from hierarchical clustering.")
+     }else{
+	 	message("Including outliers in hierarchical clustering.")
+	 }
+
+    if (length(indices_for_clustering) >= 2) {
+        dist_matrix <- dist(data_for_clustering, method = settings$distMethod)
+        hc.norm <- hclust(dist_matrix, method = settings$clustLinkage)
+        h_clusters <- cutree(hc.norm, settings$clustGroups)
+
+        # Apply cluster assignments back based on exclusion/inclusion decision
+        info.norm$cluster[indices_for_clustering] <- as.factor(h_clusters)
+    } else {
+        warning("Not enough data points for hierarchical clustering.")
+    }
+
+    # Reassign outliers to a unique cluster if enabled
+    if (settings$assignOutliers && any(dbscan_result$cluster == 0)) {
+        outlier_cluster <- max(as.integer(info.norm$cluster), na.rm = TRUE) + 1
+        info.norm$cluster[dbscan_result$cluster == 0] <- as.factor(outlier_cluster)
+    }
+
+    # Compute cluster centers based on final clustering results
+    lc.cent <- info.norm %>%
+        group_by(cluster) %>%
+        summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+
+    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 0, eps = eps, minPts = minPts))
 }
 
-# Mclust clustering
-cluster_tsne_mclust <- function(info.norm, tsne.norm, settings){
 
+# Mclust clustering
+cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     print(paste("==> cluster_tsne_mclust clustGroups: ", settings$clustGroups))
 
-	set.seed(1337)
-	mc.norm = mclust::Mclust(tsne.norm$Y, settings$clustGroups)
+    # Prepare data for DBSCAN
+    tsne_data <- tsne.norm$Y
 
-	info.norm$cluster = factor(mc.norm$classification)
+    # Calculate minPts and eps dynamically based on settings
+    minPts_baseline <- dim(tsne_data)[2] * 2
+    minPts <- max(2, settings$minPtsAdjustmentFactor * minPts_baseline)
+    k_dist <- dbscan::kNNdist(tsne_data, k = minPts - 1)
+    eps_quantile <- settings$epsQuantile
+    eps <- stats::quantile(k_dist, eps_quantile)
 
-	lc.cent = info.norm %>% group_by(cluster) %>% 
-							select(tsne1, tsne2) %>% 
-							summarize_all(mean)
+    dbscan_result <- dbscan::dbscan(tsne_data, eps = eps, minPts = minPts)
 
-	return(list(info.norm = info.norm, cluster_data = lc.cent))
+    # Update info.norm with DBSCAN results (cluster assignments, including noise)
+    info.norm$cluster <- as.factor(dbscan_result$cluster)
+    non_noise_indices <- which(dbscan_result$cluster != 0)
+
+    # Decision to include or exclude outliers in the hierarchical clustering
+    data_for_clustering <- if (settings$excludeOutliers) tsne_data[non_noise_indices, ] else tsne_data
+    indices_for_clustering <- if (settings$excludeOutliers) non_noise_indices else seq_len(nrow(tsne_data))
+
+     if (settings$excludeOutliers){
+        message("Excluding outliers from hierarchical clustering.")
+     }else{
+        message("Including outliers in hierarchical clustering.")
+     }
+
+    if (length(indices_for_clustering) >= 2) {
+        # Perform Mclust clustering on non-noise points
+        mc.norm <- mclust::Mclust(data_for_clustering, G = settings$clustGroups)
+        # Update Mclust cluster assignments back to the original dataset
+        info.norm$cluster[indices_for_clustering] <- factor(mc.norm$classification)
+    } else {
+        warning("Not enough data points for hierarchical clustering.")
+    }
+
+    # Reassign outliers to a unique cluster if enabled
+    if (settings$assignOutliers && any(dbscan_result$cluster == 0)) {
+        outlier_cluster <- max(as.integer(info.norm$cluster), na.rm = TRUE) + 1
+        info.norm$cluster[dbscan_result$cluster == 0] <- as.factor(outlier_cluster)
+    }
+
+    # Compute cluster centers for non-outlier clusters
+    lc.cent <- info.norm %>%
+        group_by(cluster) %>%
+        summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+
+    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 0, eps = eps, minPts = minPts))
 }
 
 #Density-based clustering
@@ -221,26 +300,44 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 
 
 plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
-
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-	plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2, colour = cluster)) + 
-						geom_point(size = settings$pointSize) + 
-						ggrepel::geom_label_repel(aes(label = cluster), data = cluster_data) + 
-						guides(colour = FALSE) +
-						labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
-	    				scale_color_brewer(palette=settings$colorPalette) + 
-        				theme(text=element_text(size=settings$fontSize), legend.position = settings$legendPosition)
+    # Convert 'cluster' to a factor with consistent levels in both data frames
+    unique_clusters <- sort(unique(c(info.norm$cluster, cluster_data$cluster)))
 
-    tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    info.norm$cluster <- factor(info.norm$cluster, levels = unique_clusters)
+    cluster_data$cluster <- factor(cluster_data$cluster, levels = unique_clusters)
+
+    # Create the plot with consistent color mapping
+    plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2)) + 
+                    geom_point(aes(color = cluster), size = settings$pointSize) +  # Color by cluster for points
+                    scale_color_brewer(palette = settings$colorPalette) +  # Use Brewer palette for consistent color scale
+                    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2", color = "Cluster") +  # Label axes and legend
+                    theme_classic(base_size = settings$fontSize) +  # Use a classic theme as base
+                    theme(legend.position = settings$legendPosition,  # Adjust legend position
+                          legend.background = element_rect(fill = "white", colour = "black"),  # Legend background
+                          legend.key.size = unit(0.5, "cm"),  # Size of legend keys
+                          legend.title = element_text(face = "bold"),  # Bold legend title
+                          plot.background = element_rect(fill = "white", colour = NA))  # White plot background
+
+    # Adding cluster center labels with the same color mapping
+    plotData <- plotData +
+                geom_label(data = cluster_data, aes(x = tsne1, y = tsne2, label = as.character(cluster), color = cluster),
+                           fill = "white",  # Background color of the label; adjust as needed
+                           size = settings$fontSize / 2,  # Adjust text size within labels as needed
+                           fontface = "bold",  # Make text bold
+                           show.legend = FALSE)  # Do not show these labels in the legend
+
+
+
+    # Specify the file path for the output plot
+    tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
     svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
         print(plotData)
-    dev.off()  
+    dev.off()
 
     return(tmp_path)
 }
-
-
 
 cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
@@ -252,6 +349,7 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "cluster", settings$groupingVariables)] 
 	input_data <- info.norm.num %>% select(any_of(all_columns[! all_columns %in% c("tsne1", "tsne2", settings$groupingVariables)]))
+
 
     if(settings$datasetAnalysisType == "heatmap"){
     	plotClustered <- FALSE

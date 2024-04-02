@@ -158,8 +158,17 @@ class Users {
 		$organization_id = false;
 		if ($user_id !== null) {
 			if (trim($org_invite_code) !== "") {
-				$organization_id = $this->database->get("organization", ['id'], ["invite_code" => $org_invite_code]);
-				$this->logger->addInfo("User organization code: " . $organization_id);
+
+				$this->database->insert("organization", [
+					"invite_code" => $org_invite_code,
+					"salt" => $this->Helpers->generateRandomString(16),
+					"status" => 1,
+					"created" => Medoo::raw("NOW()"),
+				]);
+
+				$organization_id_results = $this->database->get("organization", ['id'], ["invite_code" => $org_invite_code]);
+				$organization_id = $organization_id_results["id"];
+				$this->logger->addInfo("User organization code: " . json_encode($organization_id_results));
 			}
 
 			if ($organization_id) {
