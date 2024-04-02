@@ -71,149 +71,156 @@ calcOrdering = function(mat, distance, linkage, ordering){
     return(hc2)
 }
 
-
-plot.heatmap <- function(   data, 
-                            fileHeader,
-                            selectedColumns,
-                            selectedRows,
-                            removeNA,
-                            scale,
-                            displayNumbers,
-                            displayLegend,
-                            displayColnames,
-                            displayRownames,
-                            plotWidth,
-                            plotRatio,
-                            clustDistance,
-                            clustLinkage,
-                            clustOrdering,
-                            fontSizeGeneral,
-                            fontSizeRow,
-                            fontSizeCol,
-                            fontSizeNumbers,
-                            settings = NULL,
-                            pallets = c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds"),
-                            plotClustered = TRUE,
-                            orederingColumn = ""){
-
-
-    if(!is.null(removeNA) & removeNA == TRUE){
-        data <- data[complete.cases(data), ]
+plot.heatmap <- function(data,
+                         fileHeader,
+                         selectedColumns,
+                         selectedRows,
+                         removeNA,
+                         scale,
+                         displayNumbers,
+                         displayLegend,
+                         displayColnames,
+                         displayRownames,
+                         plotWidth,
+                         plotRatio,
+                         clustDistance,
+                         clustLinkage,
+                         clustOrdering,
+                         fontSizeGeneral,
+                         fontSizeRow,
+                         fontSizeCol,
+                         fontSizeNumbers,
+                         settings = NULL,
+                         pallets = c("Blues", "Greens", "Greys", "Oranges", "Purples", "Reds"),
+                         plotClustered = TRUE,
+                         orederingColumn = "") {
+    if (!is.null(removeNA) & removeNA == TRUE) {
+        data <- data[complete.cases(data),]
     }
-
-    if(plotClustered == FALSE & orederingColumn != ""){
-      data <- data[with(data, order(data[[orederingColumn]])), ]
+    
+    if (plotClustered == FALSE & orederingColumn != "") {
+        data <- data[with(data, order(data[[orederingColumn]])),]
     }
-
+    
     annotationColumn = NULL
     legendColors = list()
-
+    
     counter <- 0
-    for(column in selectedColumns){
-      counter <- counter + 1
+    for (column in selectedColumns) {
+        counter <- counter + 1
+        
+        # Ensure data[[column]] is a factor with the correct levels
+        unique_levels <- unique(data[[column]])
+        data[[column]] <- factor(data[[column]], levels = unique_levels)
 
-        data[[column]] <- as.factor(data[[column]])
-        data[[column]] <- factor(
-            data[[column]],levels = levels(data[[column]])
-        )
+
+        # Initialize annotationColumn if null, or append new column
         if(is.null(annotationColumn)){
-            annotationColumn = data.frame(
-                    column = data[[column]]
-                )
-            colnames(annotationColumn)[colnames(annotationColumn)=="column"] <- column
-
-        }else{
-             annotationColumn[[column]] <- NA
-             annotationColumn[[column]] <- data[[column]]
+            annotationColumn <- data.frame(column = data[[column]])
+            colnames(annotationColumn) <- column
+        } else {
+            annotationColumn[[column]] <- data[[column]]
         }
-
-        nb.cols <- length(unique(data[[column]]))
+        
+        # Determine the number of unique levels and set colors
+        nb.cols <- length(unique_levels)
         if(nb.cols > 8){
-          if(!is.null(settings)){
-              colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, settings$colorPalette))(nb.cols)
-            }else{
-              colorsTemp <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(nb.cols)
+            colorsTemp <- if(!is.null(settings)) {
+                grDevices::colorRampPalette(RColorBrewer::brewer.pal(min(8, nb.cols), settings$colorPalette))(nb.cols)
+            } else {
+                grDevices::colorRampPalette(RColorBrewer::brewer.pal(min(8, nb.cols), "Set2"))(nb.cols)
             }
-        }else{
-            colors.cutoff <- nb.cols
-            if(colors.cutoff < 3){
-                colors.cutoff <- 3
-            }
-          colorsTemp <- RColorBrewer::brewer.pal(colors.cutoff, pallets[counter])
+        } else {
+            colors.cutoff <- max(nb.cols, 3)
+            colorsTemp <- RColorBrewer::brewer.pal(colors.cutoff, pallets[counter %>% min(length(pallets))])
         }
-        colorsTemp <- head(colorsTemp,n=nb.cols)
-
-        legendColorTemp <- setNames(colorsTemp, levels(data[[column]]))
-        legendColorTemp <- legendColorTemp[!is.na(names(legendColorTemp))]
-        legendColors[[column]] <- legendColorTemp
-
-    }  
-
+        legendColors[[column]] <- setNames(colorsTemp, unique_levels)
+        
+    }
+    
     rownames(annotationColumn) = rownames(data)
-
-    if(!is.null(fileHeader)){
-      names(annotationColumn) <- plyr::mapvalues(names(annotationColumn), from=fileHeader$remapped, to=fileHeader$original)
-      names(legendColors) <- plyr::mapvalues(names(legendColors), from=fileHeader$remapped, to=fileHeader$original)
+    
+    if (!is.null(fileHeader)) {
+        names(annotationColumn) <-
+            plyr::mapvalues(
+                names(annotationColumn),
+                from = fileHeader$remapped,
+                to = fileHeader$original
+            )
+        names(legendColors) <-
+            plyr::mapvalues(names(legendColors),
+                            from = fileHeader$remapped,
+                            to = fileHeader$original)
     }
-
-
-    data <- subset(data, select = !(names(data) %in% selectedColumns) )
-    if(!is.null(fileHeader)){
-      names(data) <- plyr::mapvalues(names(data), from=fileHeader$remapped, to=fileHeader$original)
+    
+    
+    data <-
+        subset(data, select = !(names(data) %in% selectedColumns))
+    if (!is.null(fileHeader)) {
+        names(data) <-
+            plyr::mapvalues(names(data),
+                            from = fileHeader$remapped,
+                            to = fileHeader$original)
     }
-
+    
     ## Transform data and order it by rowMeans
-
+    
     t_data <- t(data)
-    if(plotClustered == TRUE){
-        hClustRows <- calcOrdering(t_data, clustDistance, clustLinkage, clustOrdering)
-        hClustCols <- calcOrdering(t(t_data), clustDistance, clustLinkage, clustOrdering)
-    }else{
+    if (plotClustered == TRUE) {
+        hClustRows <-
+            calcOrdering(t_data, clustDistance, clustLinkage, clustOrdering)
+        hClustCols <-
+            calcOrdering(t(t_data), clustDistance, clustLinkage, clustOrdering)
+    } else{
         hClustRows <- FALSE
         hClustCols <- FALSE
     }
-
+    
     #image dimensions:
     picwIn = plotWidth / 2.54
     pichIn = picwIn * plotRatio
     dotsPerCm = 96 / 2.54 #how many points per cm
     picw = picwIn * 2.54 * dotsPerCm
     pich = pichIn * 2.54 * dotsPerCm
-
-
+    
+    
     # Start with the base list of input arguments for pheatmap
-    input_args <- c(list(t_data,
-       cluster_row =  hClustRows,
-       cluster_cols = hClustCols,
-
-       scale = scale,
-       annotation_col = annotationColumn, 
-       annotation_colors = legendColors, 
-       
-       annotation_legend = displayLegend,
-       legend = displayLegend,
-
-       show_colnames = displayColnames,
-       show_rownames = displayRownames,
-       
-       fontface="bold", 
-       border_color="white", 
-       fontsize = fontSizeGeneral,
-       fontsize_row= fontSizeRow, 
-       fontsize_col = fontSizeCol,
-
-       display_numbers = displayNumbers,
-       number_format = paste0("%.2f"),
-       fontsize_number = fontSizeNumbers,
-       width = picwIn, 
-       height = pichIn
-    ))
-
-    if(getRversion() >= "3.6.0"){
-        input_args <- input_args[!names(input_args) %in% c("fontface", "border_color")]
+    input_args <- c(
+        list(
+            t_data,
+            cluster_row =  hClustRows,
+            cluster_cols = hClustCols,
+            
+            scale = scale,
+            annotation_col = annotationColumn,
+            annotation_colors = legendColors,
+            
+            annotation_legend = displayLegend,
+            legend = displayLegend,
+            
+            show_colnames = displayColnames,
+            show_rownames = displayRownames,
+            
+            fontface = "bold",
+            border_color = "white",
+            fontsize = fontSizeGeneral,
+            fontsize_row = fontSizeRow,
+            fontsize_col = fontSizeCol,
+            
+            display_numbers = displayNumbers,
+            number_format = paste0("%.2f"),
+            fontsize_number = fontSizeNumbers,
+            width = picwIn,
+            height = pichIn
+        )
+    )
+    
+    if (getRversion() >= "3.6.0") {
+        input_args <-
+            input_args[!names(input_args) %in% c("fontface", "border_color")]
     }
-
+    
     out <- do.call(pheatmap::pheatmap, input_args)
-
+    
     return(out)
 }

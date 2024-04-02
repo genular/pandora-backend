@@ -168,9 +168,22 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 
 	info.norm$cluster = as.factor(igraph::membership(lc.norm))
 
-	lc.cent = info.norm %>% group_by(cluster) %>% 
-							select(tsne1, tsne2) %>% 
-							summarize_all(mean)
+    # Compute cluster centers based on final clustering results
+    lc.cent <- info.norm %>%
+        group_by(cluster) %>%
+        summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+    # Compute cluster sizes (number of samples per cluster)
+    cluster_sizes <- info.norm %>%
+      group_by(cluster) %>%
+      summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
+    # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
+    lc.cent <- lc.cent %>%
+      left_join(cluster_sizes, by = "cluster")
+    # Create the 'label' column that combines cluster ID and number of samples
+    lc.cent <- lc.cent %>%
+      mutate(label = paste(cluster, "-", num_samples))
+    # Drop the 'num_samples' column if you no longer need it
+    lc.cent <- select(lc.cent, -num_samples)
 
 	return(list(info.norm = info.norm, cluster_data = lc.cent))
 }
@@ -193,44 +206,69 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
     eps <- stats::quantile(k_dist, eps_quantile)
     dbscan_result <- dbscan::dbscan(tsne_data, eps = eps, minPts = minPts)
 
-    # Update info.norm with DBSCAN results (cluster assignments, including noise)
+    # Mark outliers as cluster "100"
+    dbscan_result$cluster[dbscan_result$cluster == 0] <- 100
+    # Update info.norm with DBSCAN results (cluster assignments, including marked outliers)
     info.norm$cluster <- as.factor(dbscan_result$cluster)
-    non_noise_indices <- which(dbscan_result$cluster != 0)
+    non_noise_indices <- which(dbscan_result$cluster != 100) # Outliers are now marked as "100"
+    noise_indices <- which(dbscan_result$cluster == 100)
 
-    # Decision to include or exclude outliers in the hierarchical clustering
+    # Include or exclude outliers in the hierarchical clustering based on settings
     data_for_clustering <- if (settings$excludeOutliers) tsne_data[non_noise_indices, ] else tsne_data
     indices_for_clustering <- if (settings$excludeOutliers) non_noise_indices else seq_len(nrow(tsne_data))
 
-     if (settings$excludeOutliers){
-     	message("Excluding outliers from hierarchical clustering.")
-     }else{
-	 	message("Including outliers in hierarchical clustering.")
-	 }
-
+    if (settings$excludeOutliers) {
+        message("Excluding outliers from hierarchical clustering.")
+    } else {
+        message("Including outliers in hierarchical clustering.")
+    }
     if (length(indices_for_clustering) >= 2) {
         dist_matrix <- dist(data_for_clustering, method = settings$distMethod)
         hc.norm <- hclust(dist_matrix, method = settings$clustLinkage)
         h_clusters <- cutree(hc.norm, settings$clustGroups)
 
-        # Apply cluster assignments back based on exclusion/inclusion decision
-        info.norm$cluster[indices_for_clustering] <- as.factor(h_clusters)
+
+        if(length(indices_for_clustering) < nrow(tsne_data)){
+            info.norm$cluster[indices_for_clustering] <- as.factor(h_clusters)
+        }else{
+            info.norm$cluster <- as.factor(h_clusters)
+        }
+
+        if(length(noise_indices) > 0){
+            print(paste("====> Noise indices: ", length(noise_indices)))
+            info.norm$cluster <- factor(info.norm$cluster, levels = c(levels(info.norm$cluster), "100"))
+            info.norm$cluster[noise_indices] <- "100"
+        }
+
     } else {
         warning("Not enough data points for hierarchical clustering.")
     }
 
-    # Reassign outliers to a unique cluster if enabled
-    if (settings$assignOutliers && any(dbscan_result$cluster == 0)) {
-        outlier_cluster <- max(as.integer(info.norm$cluster), na.rm = TRUE) + 1
-        info.norm$cluster[dbscan_result$cluster == 0] <- as.factor(outlier_cluster)
-    }
+    # Ensure all cluster assignments, including outliers marked as "100", are recognized as valid levels
+    info.norm$cluster <- factor(info.norm$cluster, levels = unique(as.character(info.norm$cluster)))
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
-        group_by(cluster) %>%
-        summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+      group_by(cluster) %>%
+      summarise(tsne1 = if(unique(cluster) == "100") min(tsne1, na.rm = TRUE) + settings$pointSize/2 else median(tsne1, na.rm = TRUE),
+                tsne2 = if(unique(cluster) == "100") min(tsne2, na.rm = TRUE) + settings$pointSize/2 else median(tsne2, na.rm = TRUE),
+                .groups = 'drop')
+    # Compute cluster sizes (number of samples per cluster)
+    cluster_sizes <- info.norm %>%
+      group_by(cluster) %>%
+      summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
+    # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
+    lc.cent <- lc.cent %>%
+      left_join(cluster_sizes, by = "cluster")
+    # Create the 'label' column that combines cluster ID and number of samples
+    lc.cent <- lc.cent %>%
+      mutate(label = paste(cluster, "-", num_samples))
+    # Drop the 'num_samples' column if you no longer need it
+    lc.cent <- select(lc.cent, -num_samples)
 
-    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 0, eps = eps, minPts = minPts))
+    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 100, eps = eps, minPts = minPts))
 }
+
 
 
 # Mclust clustering
@@ -246,54 +284,94 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     k_dist <- dbscan::kNNdist(tsne_data, k = minPts - 1)
     eps_quantile <- settings$epsQuantile
     eps <- stats::quantile(k_dist, eps_quantile)
-
+    
     dbscan_result <- dbscan::dbscan(tsne_data, eps = eps, minPts = minPts)
 
-    # Update info.norm with DBSCAN results (cluster assignments, including noise)
-    info.norm$cluster <- as.factor(dbscan_result$cluster)
-    non_noise_indices <- which(dbscan_result$cluster != 0)
+    # Mark outliers as cluster "100"
+    dbscan_result$cluster[dbscan_result$cluster == 0] <- 100
 
-    # Decision to include or exclude outliers in the hierarchical clustering
+    # Update info.norm with DBSCAN results (cluster assignments, including marked outliers)
+    info.norm$cluster <- as.factor(dbscan_result$cluster)
+    non_noise_indices <- which(dbscan_result$cluster != 100) # Outliers are now marked as "100"
+    noise_indices <- which(dbscan_result$cluster == 100)
+
+    # Include or exclude outliers in the Mclust clustering based on settings
     data_for_clustering <- if (settings$excludeOutliers) tsne_data[non_noise_indices, ] else tsne_data
     indices_for_clustering <- if (settings$excludeOutliers) non_noise_indices else seq_len(nrow(tsne_data))
 
-     if (settings$excludeOutliers){
-        message("Excluding outliers from hierarchical clustering.")
-     }else{
-        message("Including outliers in hierarchical clustering.")
-     }
+    if (settings$excludeOutliers) {
+        message("Excluding outliers from Mclust clustering.")
+    } else {
+        message("Including outliers in Mclust clustering.")
+    }
+
 
     if (length(indices_for_clustering) >= 2) {
-        # Perform Mclust clustering on non-noise points
         mc.norm <- mclust::Mclust(data_for_clustering, G = settings$clustGroups)
-        # Update Mclust cluster assignments back to the original dataset
-        info.norm$cluster[indices_for_clustering] <- factor(mc.norm$classification)
+        if(length(indices_for_clustering) < nrow(tsne_data)){
+            info.norm$cluster[indices_for_clustering] <- as.factor(mc.norm$classification)
+        }else{
+            info.norm$cluster <- as.factor(mc.norm$classification)
+        }
+
+        if(length(noise_indices) > 0){
+            print(paste("====> Noise indices: ", length(noise_indices)))
+            info.norm$cluster <- factor(info.norm$cluster, levels = c(levels(info.norm$cluster), "100"))
+            info.norm$cluster[noise_indices] <- "100"
+        }
+
     } else {
         warning("Not enough data points for hierarchical clustering.")
     }
 
-    # Reassign outliers to a unique cluster if enabled
-    if (settings$assignOutliers && any(dbscan_result$cluster == 0)) {
-        outlier_cluster <- max(as.integer(info.norm$cluster), na.rm = TRUE) + 1
-        info.norm$cluster[dbscan_result$cluster == 0] <- as.factor(outlier_cluster)
-    }
+    # Ensure all cluster assignments, including outliers marked as "100", are recognized as valid levels
+    info.norm$cluster <- factor(info.norm$cluster, levels = unique(as.character(info.norm$cluster)))
 
-    # Compute cluster centers for non-outlier clusters
+    # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
-        group_by(cluster) %>%
-        summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+      group_by(cluster) %>%
+      summarise(tsne1 = if(unique(cluster) == "100") min(tsne1, na.rm = TRUE) + settings$pointSize/2 else median(tsne1, na.rm = TRUE),
+                tsne2 = if(unique(cluster) == "100") min(tsne2, na.rm = TRUE) + settings$pointSize/2 else median(tsne2, na.rm = TRUE),
+                .groups = 'drop')
+    # Compute cluster sizes (number of samples per cluster)
+    cluster_sizes <- info.norm %>%
+      group_by(cluster) %>%
+      summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
+    # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
+    lc.cent <- lc.cent %>%
+      left_join(cluster_sizes, by = "cluster")
+    # Create the 'label' column that combines cluster ID and number of samples
+    lc.cent <- lc.cent %>%
+      mutate(label = paste(cluster, "-", num_samples))
+    # Drop the 'num_samples' column if you no longer need it
+    lc.cent <- select(lc.cent, -num_samples)
 
-    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 0, eps = eps, minPts = minPts))
+    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 100, eps = eps, minPts = minPts))
 }
+
 
 #Density-based clustering
 cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 	set.seed(1337)
 	ds.norm = fpc::dbscan(tsne.norm$Y, settings$reachabilityDistance)
 	info.norm$cluster = factor(ds.norm$cluster)
-	lc.cent = info.norm %>% group_by(cluster) %>% 
-							select(tsne1, tsne2) %>% 
-							summarize_all(mean)
+
+    # Compute cluster centers based on final clustering results
+    lc.cent <- info.norm %>%
+        group_by(cluster) %>%
+        summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+    # Compute cluster sizes (number of samples per cluster)
+    cluster_sizes <- info.norm %>%
+      group_by(cluster) %>%
+      summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
+    # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
+    lc.cent <- lc.cent %>%
+      left_join(cluster_sizes, by = "cluster")
+    # Create the 'label' column that combines cluster ID and number of samples
+    lc.cent <- lc.cent %>%
+      mutate(label = paste(cluster, "-", num_samples))
+    # Drop the 'num_samples' column if you no longer need it
+    lc.cent <- select(lc.cent, -num_samples)
 
 	return(list(info.norm = info.norm, cluster_data = lc.cent))
 }
@@ -302,11 +380,19 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
+    info.norm$cluster <- as.character(info.norm$cluster)
+    info.norm$cluster <- as.numeric(info.norm$cluster)
+
+    cluster_data$cluster <- as.character(cluster_data$cluster)
+    cluster_data$cluster <- as.numeric(cluster_data$cluster)
+
+
     # Convert 'cluster' to a factor with consistent levels in both data frames
     unique_clusters <- sort(unique(c(info.norm$cluster, cluster_data$cluster)))
 
     info.norm$cluster <- factor(info.norm$cluster, levels = unique_clusters)
     cluster_data$cluster <- factor(cluster_data$cluster, levels = unique_clusters)
+
 
     # Create the plot with consistent color mapping
     plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2)) + 
@@ -322,7 +408,7 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 
     # Adding cluster center labels with the same color mapping
     plotData <- plotData +
-                geom_label(data = cluster_data, aes(x = tsne1, y = tsne2, label = as.character(cluster), color = cluster),
+                geom_label(data = cluster_data, aes(x = tsne1, y = tsne2, label = as.character(label), color = cluster),
                            fill = "white",  # Background color of the label; adjust as needed
                            size = settings$fontSize / 2,  # Adjust text size within labels as needed
                            fontface = "bold",  # Make text bold
@@ -342,7 +428,10 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 	## To be sure remove all other non numeric columns
-	clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster)
+
+    clust_plot_tsne$info.norm$cluster <- as.character(clust_plot_tsne$info.norm$cluster) # First, convert factors to characters to preserve the actual labels
+    clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster) # Now convert characters to numeric
+
 
 	info.norm.num <- clust_plot_tsne$info.norm %>% select(where(is.numeric))
 	all_columns <- colnames(info.norm.num)
@@ -374,6 +463,7 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 	# Use the smaller of the two sizes for general text to ensure consistency
 	adjusted_font_size_general <- min(adjusted_font_size_row, adjusted_font_size_col)
 	print(paste0("====> Adjusted font size general: ", adjusted_font_size_general))
+
 
     input_args <- c(list(data=input_data, 
 						fileHeader=NULL,
