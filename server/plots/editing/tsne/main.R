@@ -3,6 +3,7 @@ p_load("fpc")
 p_load("FNN")
 p_load("Rtsne")
 p_load("corrplot")
+p_load("dbscan")
 
 ## Load shared heatmap functions file
 source(paste0("server/",SERVER_NAME,"/functions/heatmap.R"))

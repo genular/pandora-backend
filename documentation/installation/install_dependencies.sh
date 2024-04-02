@@ -507,7 +507,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
             sudo Rscript -e "install.packages('seriation', repos='http://cran.us.r-project.org')"
             
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"
-            sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer'), repos='http://cran.us.r-project.org')"
+            sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer', 'dbscan'), repos='http://cran.us.r-project.org')"
             
             ## plotROC package & deps
             sudo Rscript -e "devtools::install_github('cran/XML')"
