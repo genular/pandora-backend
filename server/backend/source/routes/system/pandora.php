@@ -225,7 +225,15 @@ $app->post('/backend/system/pandora/pre-analysis', function (Request $request, R
         // URL Encode two times, since sometimes utf8 characters from column names are issue for JS btoa
         $submitData = json_decode(urldecode(base64_decode(urldecode($post['submitData']))), true);
         $submitData["selectedPartitionSplit"] = (int) $submitData["selectedPartitionSplit"];
+
+        // If selected we will select first resample and start SIMON analysis
+        if(isset($submitData["autoStartAnalasys"])){
+            $submitData["autoStartAnalasys"] = $submitData["autoStartAnalasys"];
+        }else{
+            $submitData["autoStartAnalasys"] = false;
+        }
     }
+
 
     $tempFilePath = $FileSystem->downloadFile($submitData["selectedFiles"][0]);
 
@@ -233,6 +241,8 @@ $app->post('/backend/system/pandora/pre-analysis', function (Request $request, R
     $queueID = 0;
     $sparsity = 0;
 
+
+        
     if ($tempFilePath !== false && file_exists($tempFilePath)) {
         $totalDatasetsGenerated = 0;
 
@@ -375,6 +385,22 @@ $app->post('/backend/system/pandora/pre-analysis', function (Request $request, R
         array_push($message, ["msg_info" => "source_not_found"]);
     }
     $time_elapsed_secs = microtime(true) - $start;
+
+
+
+    if(isset($submitData["autoStartAnalasys"]) && $submitData["autoStartAnalasys"] === true){
+        $updateCount = 0;
+        foreach ($queuesGenerated as $resamples) {
+            foreach ($resamples['data'] as $resample) {
+                if($updateCount === 0){
+                    $updateCount += $DatasetResamples->updateStatus($resample, $queueID);    
+                }
+            }
+        }
+        if ($updateCount > 0) {
+            $DatasetQueue->setProcessingStatus($queueID, 1);
+        }
+    }
 
     return $response->withJson(["success" => $success,
         "details" => array(

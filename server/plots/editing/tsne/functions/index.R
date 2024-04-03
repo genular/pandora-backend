@@ -84,10 +84,6 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
 plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-    print("============> plot_tsne")
-    print(groupingVariable)
-    print(names(info.norm))
-
     if(!is.null(groupingVariable)){
     	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
     	plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable))
@@ -112,11 +108,6 @@ plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){
 
 plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable, settings, tmp_hash){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
-
-
-    print("============> plot_tsne_color_by")
-    print(groupingVariable)
-    print(names(info.norm))
 
     if(!is.null(groupingVariable)){
     	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
@@ -166,22 +157,22 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 	nw.norm = igraph::simplify(nw.norm)
 	lc.norm = igraph::cluster_louvain(nw.norm)
 
-	info.norm$cluster = as.factor(igraph::membership(lc.norm))
+	info.norm$pandora_cluster = as.factor(igraph::membership(lc.norm))
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
-        group_by(cluster) %>%
+        group_by(pandora_cluster) %>%
         summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
     # Compute cluster sizes (number of samples per cluster)
     cluster_sizes <- info.norm %>%
-      group_by(cluster) %>%
+      group_by(pandora_cluster) %>%
       summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
     # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
     lc.cent <- lc.cent %>%
-      left_join(cluster_sizes, by = "cluster")
+      left_join(cluster_sizes, by = "pandora_cluster")
     # Create the 'label' column that combines cluster ID and number of samples
     lc.cent <- lc.cent %>%
-      mutate(label = paste(cluster, "-", num_samples))
+      mutate(label = paste(pandora_cluster, "-", num_samples))
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
@@ -209,7 +200,7 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
     # Mark outliers as cluster "100"
     dbscan_result$cluster[dbscan_result$cluster == 0] <- 100
     # Update info.norm with DBSCAN results (cluster assignments, including marked outliers)
-    info.norm$cluster <- as.factor(dbscan_result$cluster)
+    info.norm$pandora_cluster <- as.factor(dbscan_result$cluster)
     non_noise_indices <- which(dbscan_result$cluster != 100) # Outliers are now marked as "100"
     noise_indices <- which(dbscan_result$cluster == 100)
 
@@ -229,16 +220,16 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
 
 
         if(length(indices_for_clustering) < nrow(tsne_data)){
-            info.norm$cluster[indices_for_clustering] <- as.factor(h_clusters)
+            info.norm$pandora_cluster[indices_for_clustering] <- as.factor(h_clusters)
         }else{
-            info.norm$cluster <- as.factor(h_clusters)
+            info.norm$pandora_cluster <- as.factor(h_clusters)
         }
 
         if(length(noise_indices) > 0){
             print(paste("====> Noise indices: ", length(noise_indices)))
-            if(!"100" %in% levels(info.norm$cluster)) {
-                info.norm$cluster <- factor(info.norm$cluster, levels = c(levels(info.norm$cluster), "100"))
-                info.norm$cluster[noise_indices] <- "100"
+            if(!"100" %in% levels(info.norm$pandora_cluster)) {
+                info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = c(levels(info.norm$pandora_cluster), "100"))
+                info.norm$pandora_cluster[noise_indices] <- "100"
             }
         }
 
@@ -249,24 +240,24 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
     }
 
     # Ensure all cluster assignments, including outliers marked as "100", are recognized as valid levels
-    info.norm$cluster <- factor(info.norm$cluster, levels = unique(as.character(info.norm$cluster)))
+    info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = unique(as.character(info.norm$pandora_cluster)))
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
-      group_by(cluster) %>%
-      summarise(tsne1 = if(unique(cluster) == "100") min(tsne1, na.rm = TRUE) + settings$pointSize/2 else median(tsne1, na.rm = TRUE),
-                tsne2 = if(unique(cluster) == "100") min(tsne2, na.rm = TRUE) + settings$pointSize/2 else median(tsne2, na.rm = TRUE),
+      group_by(pandora_cluster) %>%
+      summarise(tsne1 = if(unique(pandora_cluster) == "100") min(tsne1, na.rm = TRUE) + settings$pointSize/2 else median(tsne1, na.rm = TRUE),
+                tsne2 = if(unique(pandora_cluster) == "100") min(tsne2, na.rm = TRUE) + settings$pointSize/2 else median(tsne2, na.rm = TRUE),
                 .groups = 'drop')
     # Compute cluster sizes (number of samples per cluster)
     cluster_sizes <- info.norm %>%
-      group_by(cluster) %>%
+      group_by(pandora_cluster) %>%
       summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
     # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
     lc.cent <- lc.cent %>%
-      left_join(cluster_sizes, by = "cluster")
+      left_join(cluster_sizes, by = "pandora_cluster")
     # Create the 'label' column that combines cluster ID and number of samples
     lc.cent <- lc.cent %>%
-      mutate(label = paste(cluster, "-", num_samples))
+      mutate(label = paste(pandora_cluster, "-", num_samples))
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
@@ -295,7 +286,7 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     dbscan_result$cluster[dbscan_result$cluster == 0] <- 100
 
     # Update info.norm with DBSCAN results (cluster assignments, including marked outliers)
-    info.norm$cluster <- as.factor(dbscan_result$cluster)
+    info.norm$pandora_cluster <- as.factor(dbscan_result$cluster)
     non_noise_indices <- which(dbscan_result$cluster != 100) # Outliers are now marked as "100"
     noise_indices <- which(dbscan_result$cluster == 100)
 
@@ -313,16 +304,16 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     if (length(indices_for_clustering) >= 2) {
         mc.norm <- mclust::Mclust(data_for_clustering, G = settings$clustGroups)
         if(length(indices_for_clustering) < nrow(tsne_data)){
-            info.norm$cluster[indices_for_clustering] <- as.factor(mc.norm$classification)
+            info.norm$pandora_cluster[indices_for_clustering] <- as.factor(mc.norm$classification)
         }else{
-            info.norm$cluster <- as.factor(mc.norm$classification)
+            info.norm$pandora_cluster <- as.factor(mc.norm$classification)
         }
 
         if(length(noise_indices) > 0){
             print(paste("====> Noise indices: ", length(noise_indices)))
-            if(!"100" %in% levels(info.norm$cluster)) {
-                info.norm$cluster <- factor(info.norm$cluster, levels = c(levels(info.norm$cluster), "100"))
-                info.norm$cluster[noise_indices] <- "100"
+            if(!"100" %in% levels(info.norm$pandora_cluster)) {
+                info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = c(levels(info.norm$pandora_cluster), "100"))
+                info.norm$pandora_cluster[noise_indices] <- "100"
             }
         }
 
@@ -331,24 +322,24 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     }
 
     # Ensure all cluster assignments, including outliers marked as "100", are recognized as valid levels
-    info.norm$cluster <- factor(info.norm$cluster, levels = unique(as.character(info.norm$cluster)))
+    info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = unique(as.character(info.norm$pandora_cluster)))
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
-      group_by(cluster) %>%
-      summarise(tsne1 = if(unique(cluster) == "100") min(tsne1, na.rm = TRUE) + settings$pointSize/2 else median(tsne1, na.rm = TRUE),
-                tsne2 = if(unique(cluster) == "100") min(tsne2, na.rm = TRUE) + settings$pointSize/2 else median(tsne2, na.rm = TRUE),
+      group_by(pandora_cluster) %>%
+      summarise(tsne1 = if(unique(pandora_cluster) == "100") min(tsne1, na.rm = TRUE) + settings$pointSize/2 else median(tsne1, na.rm = TRUE),
+                tsne2 = if(unique(pandora_cluster) == "100") min(tsne2, na.rm = TRUE) + settings$pointSize/2 else median(tsne2, na.rm = TRUE),
                 .groups = 'drop')
     # Compute cluster sizes (number of samples per cluster)
     cluster_sizes <- info.norm %>%
-      group_by(cluster) %>%
+      group_by(pandora_cluster) %>%
       summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
     # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
     lc.cent <- lc.cent %>%
-      left_join(cluster_sizes, by = "cluster")
+      left_join(cluster_sizes, by = "pandora_cluster")
     # Create the 'label' column that combines cluster ID and number of samples
     lc.cent <- lc.cent %>%
-      mutate(label = paste(cluster, "-", num_samples))
+      mutate(label = paste(pandora_cluster, "-", num_samples))
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
@@ -359,25 +350,40 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
 #Density-based clustering
 cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 	set.seed(1337)
-	ds.norm = fpc::dbscan(tsne.norm$Y, settings$reachabilityDistance)
-	info.norm$cluster = factor(ds.norm$cluster)
+
+    # Prepare data for DBSCAN
+    tsne_data <- tsne.norm$Y
+
+    # Calculate minPts and eps dynamically based on settings
+    minPts_baseline <- dim(tsne_data)[2] * 2
+    minPts <- max(2, settings$minPtsAdjustmentFactor * minPts_baseline)
+    k_dist <- dbscan::kNNdist(tsne_data, k = minPts - 1)
+
+    eps_quantile <- settings$epsQuantile
+    eps <- stats::quantile(k_dist, eps_quantile)
+
+	ds.norm = fpc::dbscan(tsne_data, eps = eps, MinPts = minPts)
+	info.norm$pandora_cluster = factor(ds.norm$cluster)
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
-        group_by(cluster) %>%
+        group_by(pandora_cluster) %>%
         summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+
+
     # Compute cluster sizes (number of samples per cluster)
     cluster_sizes <- info.norm %>%
-      group_by(cluster) %>%
+      group_by(pandora_cluster) %>%
       summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
     # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
     lc.cent <- lc.cent %>%
-      left_join(cluster_sizes, by = "cluster")
+      left_join(cluster_sizes, by = "pandora_cluster")
     # Create the 'label' column that combines cluster ID and number of samples
     lc.cent <- lc.cent %>%
-      mutate(label = paste(cluster, "-", num_samples))
+      mutate(label = paste(pandora_cluster, "-", num_samples))
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
+
 
 	return(list(info.norm = info.norm, cluster_data = lc.cent))
 }
@@ -386,35 +392,39 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
-    info.norm$cluster <- as.character(info.norm$cluster)
-    info.norm$cluster <- as.numeric(info.norm$cluster)
+    info.norm$pandora_cluster <- as.character(info.norm$pandora_cluster)
+    info.norm$pandora_cluster <- as.numeric(info.norm$pandora_cluster)
 
-    cluster_data$cluster <- as.character(cluster_data$cluster)
-    cluster_data$cluster <- as.numeric(cluster_data$cluster)
-
+    cluster_data$pandora_cluster <- as.character(cluster_data$pandora_cluster)
+    cluster_data$pandora_cluster <- as.numeric(cluster_data$pandora_cluster)
 
     # Convert 'cluster' to a factor with consistent levels in both data frames
-    unique_clusters <- sort(unique(c(info.norm$cluster, cluster_data$cluster)))
+    unique_clusters <- sort(unique(c(info.norm$pandora_cluster, cluster_data$pandora_cluster)))
 
-    info.norm$cluster <- factor(info.norm$cluster, levels = unique_clusters)
-    cluster_data$cluster <- factor(cluster_data$cluster, levels = unique_clusters)
+    info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = unique_clusters)
+    cluster_data$pandora_cluster <- factor(cluster_data$pandora_cluster, levels = unique_clusters)
 
+    colorsTemp <- grDevices::colorRampPalette(
+        RColorBrewer::brewer.pal(min(8, length(unique_clusters)), settings$colorPalette)
+    )(length(unique_clusters))
 
     # Create the plot with consistent color mapping
     plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2)) + 
-                    geom_point(aes(color = cluster), size = settings$pointSize) +  # Color by cluster for points
-                    scale_color_brewer(palette = settings$colorPalette) +  # Use Brewer palette for consistent color scale
+                    geom_point(aes(color = pandora_cluster), size = settings$pointSize) +  # Color by cluster for points
+                    scale_color_manual(values = colorsTemp) +  # Use Brewer palette for consistent color scale
                     labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2", color = "Cluster") +  # Label axes and legend
                     theme_classic(base_size = settings$fontSize) +  # Use a classic theme as base
                     theme(legend.position = settings$legendPosition,  # Adjust legend position
                           legend.background = element_rect(fill = "white", colour = "black"),  # Legend background
                           legend.key.size = unit(0.5, "cm"),  # Size of legend keys
                           legend.title = element_text(face = "bold"),  # Bold legend title
-                          plot.background = element_rect(fill = "white", colour = NA))  # White plot background
+                          plot.background = element_rect(fill = "white", colour = NA),  # White plot background
+                          axis.title.x = element_text(size = settings$fontSize * 1.2),  # Increase X axis label size
+                          axis.title.y = element_text(size = settings$fontSize * 1.2))  # Increase Y axis label size
 
     # Adding cluster center labels with the same color mapping
     plotData <- plotData +
-                geom_label(data = cluster_data, aes(x = tsne1, y = tsne2, label = as.character(label), color = cluster),
+                geom_label(data = cluster_data, aes(x = tsne1, y = tsne2, label = as.character(label), color = pandora_cluster),
                            fill = "white",  # Background color of the label; adjust as needed
                            size = settings$fontSize / 2,  # Adjust text size within labels as needed
                            fontface = "bold",  # Make text bold
@@ -435,14 +445,14 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 	## To be sure remove all other non numeric columns
 
-    clust_plot_tsne$info.norm$cluster <- as.character(clust_plot_tsne$info.norm$cluster) # First, convert factors to characters to preserve the actual labels
-    clust_plot_tsne$info.norm$cluster <- as.numeric(clust_plot_tsne$info.norm$cluster) # Now convert characters to numeric
+    clust_plot_tsne$info.norm$pandora_cluster <- as.character(clust_plot_tsne$info.norm$pandora_cluster) # First, convert factors to characters to preserve the actual labels
+    clust_plot_tsne$info.norm$pandora_cluster <- as.numeric(clust_plot_tsne$info.norm$pandora_cluster) # Now convert characters to numeric
 
 
 	info.norm.num <- clust_plot_tsne$info.norm %>% select(where(is.numeric))
 	all_columns <- colnames(info.norm.num)
 
-	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "cluster", settings$groupingVariables)] 
+	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "pandora_cluster", settings$groupingVariables)] 
 	input_data <- info.norm.num %>% select(any_of(all_columns[! all_columns %in% c("tsne1", "tsne2", settings$groupingVariables)]))
 
 
@@ -474,7 +484,7 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
     input_args <- c(list(data=input_data, 
 						fileHeader=NULL,
 
-						selectedColumns=c("cluster"),
+						selectedColumns=c("pandora_cluster"),
 						selectedRows=selectedRows,
 
 						removeNA=TRUE,

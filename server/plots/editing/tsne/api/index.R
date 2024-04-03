@@ -119,11 +119,6 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         }
         ## OUTLIER DETECTION END
 
-        
-        if(is_var_empty(settings$reachabilityDistance, "reachabilityDistance") == TRUE){
-            settings$reachabilityDistance = 2
-        }
-
         if(is_var_empty(settings$legendPosition, "legendPosition") == TRUE){
             settings$legendPosition = "right"
         }
@@ -362,7 +357,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         ## Get clusters from clust_plot_tsne$info.norm[["cluster"]] and add it to original dataset in "dataset" variable
         dastaset_with_clusters <- dataset
         if(nrow(dastaset_with_clusters) == nrow(clust_plot_tsne$info.norm)){
-            dastaset_with_clusters$cluster <- clust_plot_tsne$info.norm$cluster
+            dastaset_with_clusters$pandora_cluster <- clust_plot_tsne$info.norm$pandora_cluster
         }
         ## Rename column names to its originals
         names(dastaset_with_clusters) <- plyr::mapvalues(names(dastaset_with_clusters), from=fileHeader$remapped, to=fileHeader$original)

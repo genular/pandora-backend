@@ -436,6 +436,7 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 			}
 
 			$file_details = $UsersFiles->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
+
 			if ($file_details !== false) {
 				$message = array(
 					"id" => $file_details["id"],
@@ -452,8 +453,14 @@ $app->get('/backend/system/filesystem/local-upload/{local_file_path:.*}/{new_fil
 		}
 	}
 	
-    return $response->withHeader('Content-Type', 'text/html')->write('<script>window.close();</script>');
-
+    // check if HTTP_X_TOKEN is present specifically in request URL
+    $token = $request->getQueryParam('HTTP_X_TOKEN');
+    if ($token) {
+        return $response->withHeader('Content-Type', 'text/html')->write('<script>window.close();</script>');
+    }else{
+        $message["details"] = $details["details"];
+        return $response->withJson(["success" => $success, "message" => $message]);
+    }
 });
 
 /**
