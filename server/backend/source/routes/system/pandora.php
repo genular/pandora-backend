@@ -227,10 +227,10 @@ $app->post('/backend/system/pandora/pre-analysis', function (Request $request, R
         $submitData["selectedPartitionSplit"] = (int) $submitData["selectedPartitionSplit"];
 
         // If selected we will select first resample and start SIMON analysis
-        if(isset($submitData["autoStartAnalasys"])){
-            $submitData["autoStartAnalasys"] = $submitData["autoStartAnalasys"];
+        if(isset($submitData["autoStartAnalysis"])){
+            $submitData["autoStartAnalysis"] = $submitData["autoStartAnalysis"];
         }else{
-            $submitData["autoStartAnalasys"] = false;
+            $submitData["autoStartAnalysis"] = false;
         }
     }
 
@@ -388,7 +388,7 @@ $app->post('/backend/system/pandora/pre-analysis', function (Request $request, R
 
 
 
-    if(isset($submitData["autoStartAnalasys"]) && $submitData["autoStartAnalasys"] === true){
+    if(isset($submitData["autoStartAnalysis"]) && $submitData["autoStartAnalysis"] === true){
         $updateCount = 0;
         foreach ($queuesGenerated as $resamples) {
             foreach ($resamples['data'] as $resample) {
