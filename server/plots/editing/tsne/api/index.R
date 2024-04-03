@@ -46,9 +46,6 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             settings$preProcessDataset = NULL
         }
 
-
-
-
         if(is_var_empty(settings$fontSize, "fontSize") == TRUE){
             settings$fontSize <- 12
         }
@@ -75,6 +72,10 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
         if(is_var_empty(settings$removeNA, "removeNA") == TRUE){
             settings$removeNA = FALSE
+        }
+
+        if(is_var_empty(settings$datasetAnalysisGrouped, "datasetAnalysisGrouped") == TRUE){
+            settings$datasetAnalysisGrouped = FALSE
         }
 
         if(is_var_empty(settings$plot_size, "plot_size") == TRUE){
@@ -296,10 +297,6 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
                 coloringVariable <- fileHeader %>% filter(remapped %in% colorVariable)
                 coloringVariable <- coloringVariable$original
 
-                print("===> Processing 1:")
-                print(colorVariable)
-                print(coloringVariable)
-
                 plot_unique_hash$tsne_plot[[paste0("main_plot",colorVariable)]] <- digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_plot_main_",colorVariable), algo="md5", serialize=F)
                 tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings,  plot_unique_hash$tsne_plot[[paste0("main_plot",colorVariable)]])
 
@@ -327,10 +324,6 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
                         coloringVariable <- fileHeader %>% filter(remapped %in% colorVariable)
                         coloringVariable <- coloringVariable$original
 
-                        print("===> Processing 2:")
-                        print(colorVariable)
-                        print(coloringVariable)
-
                         tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings,  plot_unique_hash$tsne_plot[[paste0(groupVariable,colorVariable)]])
                         res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$name <- coloringVariable
                         res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
@@ -353,6 +346,8 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         }else{
            clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }
+
+        res.data$avg_silhouette_score <- round(clust_plot_tsne$avg_silhouette_score, 2)
 
         ## Get clusters from clust_plot_tsne$info.norm[["cluster"]] and add it to original dataset in "dataset" variable
         dastaset_with_clusters <- dataset
@@ -398,6 +393,8 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
         saveCachedList(tmp_path, dastaset_with_clusters, type = "csv")
         res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)
+
+
 
         return (list(success = TRUE, message = res.data))
     }

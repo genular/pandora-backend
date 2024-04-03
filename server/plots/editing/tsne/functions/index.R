@@ -159,6 +159,14 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 
 	info.norm$pandora_cluster = as.factor(igraph::membership(lc.norm))
 
+    distance_matrix <- dist(tsne.norm$Y)
+    silhouette_scores <- cluster::silhouette(as.integer(info.norm$pandora_cluster), distance_matrix)
+    if(is.matrix(silhouette_scores)) {
+        # Extract the silhouette widths from the scores
+        silhouette_widths <- silhouette_scores[, "sil_width"]
+        avg_silhouette_score <- mean(silhouette_widths, na.rm = TRUE)
+    }
+
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
         group_by(pandora_cluster) %>%
@@ -176,7 +184,7 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
-	return(list(info.norm = info.norm, cluster_data = lc.cent))
+	return(list(info.norm = info.norm, cluster_data = lc.cent, avg_silhouette_score = avg_silhouette_score))
 }
 
 # Hierarchical clustering
@@ -185,6 +193,8 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
     if (!"clustLinkage" %in% names(settings) || !"clustGroups" %in% names(settings)) {
         stop("Settings must include 'clustLinkage' and 'clustGroups'.")
     }
+
+    avg_silhouette_score <- 0
 
     # Prepare data for DBSCAN
     tsne_data <- tsne.norm$Y
@@ -225,6 +235,19 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
             info.norm$pandora_cluster <- as.factor(h_clusters)
         }
 
+        # Calculate distances based on the exact data used for clustering
+        distance_matrix <- dist(data_for_clustering)
+        # Ensure cluster labels are integers and align with the distance matrix
+        cluster_labels <- as.integer(factor(info.norm$pandora_cluster[indices_for_clustering]))
+        # Calculate silhouette scores using the aligned data
+        silhouette_scores <- cluster::silhouette(cluster_labels, distance_matrix)
+
+        if(is.matrix(silhouette_scores)) {
+            # Extract the silhouette widths from the scores
+            silhouette_widths <- silhouette_scores[, "sil_width"]
+            avg_silhouette_score <- mean(silhouette_widths, na.rm = TRUE)
+        }
+
         if(length(noise_indices) > 0){
             print(paste("====> Noise indices: ", length(noise_indices)))
             if(!"100" %in% levels(info.norm$pandora_cluster)) {
@@ -261,7 +284,7 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
-    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 100, eps = eps, minPts = minPts))
+    return(list(info.norm = info.norm, cluster_data = lc.cent, avg_silhouette_score = avg_silhouette_score))
 }
 
 
@@ -269,6 +292,8 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
 # Mclust clustering
 cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     print(paste("==> cluster_tsne_mclust clustGroups: ", settings$clustGroups))
+
+    avg_silhouette_score <- 0
 
     # Prepare data for DBSCAN
     tsne_data <- tsne.norm$Y
@@ -303,10 +328,23 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
 
     if (length(indices_for_clustering) >= 2) {
         mc.norm <- mclust::Mclust(data_for_clustering, G = settings$clustGroups)
+
         if(length(indices_for_clustering) < nrow(tsne_data)){
             info.norm$pandora_cluster[indices_for_clustering] <- as.factor(mc.norm$classification)
         }else{
             info.norm$pandora_cluster <- as.factor(mc.norm$classification)
+        }
+
+        # Calculate distances based on the exact data used for clustering
+        distance_matrix <- dist(data_for_clustering)
+        # Ensure cluster labels are integers and align with the distance matrix
+        cluster_labels <- as.integer(factor(info.norm$pandora_cluster[indices_for_clustering]))
+        # Calculate silhouette scores using the aligned data
+        silhouette_scores <- cluster::silhouette(cluster_labels, distance_matrix)
+        if(is.matrix(silhouette_scores)) {
+            # Extract the silhouette widths from the scores
+            silhouette_widths <- silhouette_scores[, "sil_width"]
+            avg_silhouette_score <- mean(silhouette_widths, na.rm = TRUE)
         }
 
         if(length(noise_indices) > 0){
@@ -323,6 +361,9 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
 
     # Ensure all cluster assignments, including outliers marked as "100", are recognized as valid levels
     info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = unique(as.character(info.norm$pandora_cluster)))
+
+
+
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
@@ -343,7 +384,7 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
-    return(list(info.norm = info.norm, cluster_data = lc.cent, is_outlier = dbscan_result$cluster == 100, eps = eps, minPts = minPts))
+    return(list(info.norm = info.norm, cluster_data = lc.cent, avg_silhouette_score = avg_silhouette_score))
 }
 
 
@@ -365,6 +406,17 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 	ds.norm = fpc::dbscan(tsne_data, eps = eps, MinPts = minPts)
 	info.norm$pandora_cluster = factor(ds.norm$cluster)
 
+    print(paste("====> Density-based clustering"))
+
+    # Compute the distance matrix based on t-SNE results
+    distance_matrix <- dist(tsne_data)
+    silhouette_scores <- cluster::silhouette(as.integer(info.norm$pandora_cluster), distance_matrix)
+    if(is.matrix(silhouette_scores)) {
+        # Extract the silhouette widths from the scores
+        silhouette_widths <- silhouette_scores[, "sil_width"]
+        avg_silhouette_score <- mean(silhouette_widths, na.rm = TRUE)
+    }
+
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
         group_by(pandora_cluster) %>%
@@ -385,7 +437,7 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
     lc.cent <- select(lc.cent, -num_samples)
 
 
-	return(list(info.norm = info.norm, cluster_data = lc.cent))
+	return(list(info.norm = info.norm, cluster_data = lc.cent, avg_silhouette_score = avg_silhouette_score))
 }
 
 
@@ -410,7 +462,7 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 
     # Create the plot with consistent color mapping
     plotData <- ggplot(info.norm, aes(x = tsne1, y = tsne2)) + 
-                    geom_point(aes(color = pandora_cluster), size = settings$pointSize) +  # Color by cluster for points
+                    geom_point(aes(color = pandora_cluster), size = settings$pointSize, alpha = 0.7) +  # Color by cluster for points
                     scale_color_manual(values = colorsTemp) +  # Use Brewer palette for consistent color scale
                     labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2", color = "Cluster") +  # Label axes and legend
                     theme_classic(base_size = settings$fontSize) +  # Use a classic theme as base
@@ -444,17 +496,26 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 	## To be sure remove all other non numeric columns
+    cluster_data <- clust_plot_tsne$info.norm
 
-    clust_plot_tsne$info.norm$pandora_cluster <- as.character(clust_plot_tsne$info.norm$pandora_cluster) # First, convert factors to characters to preserve the actual labels
-    clust_plot_tsne$info.norm$pandora_cluster <- as.numeric(clust_plot_tsne$info.norm$pandora_cluster) # Now convert characters to numeric
+    cluster_data$pandora_cluster <- as.character(cluster_data$pandora_cluster) # First, convert factors to characters to preserve the actual labels
+    cluster_data$pandora_cluster <- as.numeric(cluster_data$pandora_cluster) # Now convert characters to numeric
 
-
-	info.norm.num <- clust_plot_tsne$info.norm %>% select(where(is.numeric))
+	info.norm.num <- cluster_data %>% select(where(is.numeric))
 	all_columns <- colnames(info.norm.num)
 
 	selectedRows <- all_columns[! all_columns %in% c("tsne1", "tsne2", "pandora_cluster", settings$groupingVariables)] 
 	input_data <- info.norm.num %>% select(any_of(all_columns[! all_columns %in% c("tsne1", "tsne2", settings$groupingVariables)]))
 
+    heatmapScale = "column"
+    if(settings$datasetAnalysisGrouped == TRUE){
+        input_data <- input_data %>%
+          group_by(pandora_cluster) %>%
+          summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop')
+
+        input_data <- as.data.frame(input_data)
+        heatmapScale = "row"
+    }
 
     if(settings$datasetAnalysisType == "heatmap"){
     	plotClustered <- FALSE
@@ -489,7 +550,7 @@ cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
 
 						removeNA=TRUE,
 
-						scale="column",
+						scale=heatmapScale,
 
 						displayNumbers=FALSE,
 						displayLegend=TRUE,
