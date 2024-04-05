@@ -363,35 +363,15 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         ## Rename column names to its originals
         names(dastaset_with_clusters) <- plyr::mapvalues(names(dastaset_with_clusters), from=fileHeader$remapped, to=fileHeader$original)
         
-        if(settings$datasetAnalysisRemoveOutliersDownstream == TRUE){
-            print(paste0("===> Removing outliers from dataset"))
-            # Check if pandora_cluster column exists in dastaset_with_clusters
-            if("pandora_cluster" %in% names(dastaset_with_clusters)){
-                print("pandora_cluster column exists.")
-                
-                # Check if cluster 100 exists in pandora_cluster cluster
-                if(100 %in% dastaset_with_clusters$pandora_cluster){
-                    print("Cluster 100 exists in pandora_cluster.")
-                    
-                    # remove rows where pandora_cluster == 100
-                    dastaset_with_clusters <- dastaset_with_clusters[dastaset_with_clusters$pandora_cluster != 100, ]
-                    print("Rows with pandora_cluster == 100 have been removed.")
-                } else {
-                    print("Cluster 100 does not exist in pandora_cluster.")
-                }
-            } else {
-                print("pandora_cluster column does not exist.")
-            }
-        }
+        dataset_with_clusters <- remove_outliers(dastaset_with_clusters, settings)
+        data_for_heatmap <- remove_outliers(clust_plot_tsne$info.norm, settings)
 
 
         tmp_path <- plot_clustered_tsne(clust_plot_tsne$info.norm, clust_plot_tsne$cluster_data, settings, plot_unique_hash$tsne_cluster_plot)
         res.data$tsne_cluster_plot <- optimizeSVGFile(tmp_path)
         res.data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
 
-
-        print(paste0("===> Heatmap"))
-        tmp_path <- cluster_heatmap(dastaset_with_clusters, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
+        tmp_path <- cluster_heatmap(data_for_heatmap, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
 
         if(tmp_path != FALSE){
             res.data$tsne_cluster_heatmap_plot <- optimizeSVGFile(tmp_path)

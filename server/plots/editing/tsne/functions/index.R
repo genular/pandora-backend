@@ -521,23 +521,58 @@ cluster_heatmap <-function(cluster_data, settings, tmp_hash){
     }
 
 	# Dynamic font size adjustment based on the number of rows and columns
-	num_rows <- nrow(input_data)
-	num_columns <- length(selectedRows)
+	num_columns <- nrow(input_data)
+	num_rows <- length(selectedRows)
 
-	base_font_size <- settings$fontSize
-	adjusted_font_size_row <- max(base_font_size - num_rows / 50, 1)
-	adjusted_font_size_col <- max(base_font_size - num_columns / 25, 1)
+    # Settings from the user
+    min_font_size <- settings$fontSize # Minimum font size
+    max_font_size <- max(min_font_size + 10, 24) # Maximum font size, set a reasonable default or user-defined
+    plotWidth <- settings$plot_size # Plot width in cm as defined by the user
+    plotRatio <- settings$aspect_ratio # Plot aspect ratio as defined by the user
 
-	print(paste0("====> Adjusted font size row: ", base_font_size - num_rows / 50))
-	print(paste0("====> Adjusted font size row: ", adjusted_font_size_row))
+    # Calculate image dimensions in inches and then in dots (pixels)
+    picwIn <- plotWidth / 2.54 # Width in inches
+    pichIn <- picwIn * plotRatio # Height in inches, calculated using aspect ratio
+    dotsPerCm <- 96 / 2.54 # Dots per cm (assuming standard 96 DPI)
+    picw <- picwIn * 2.54 * dotsPerCm # Width in dots (pixels)
+    pich <- pichIn * 2.54 * dotsPerCm # Height in dots (pixels)
 
-	print(paste0("====> Adjusted font size col: ", base_font_size - num_columns / 25))
-	print(paste0("====> Adjusted font size col: ", adjusted_font_size_col))
+    aspect_ratio_factor <- sqrt(picw / pich)
+    data_density_factor <- sqrt(num_rows * num_columns) / 100
 
-	# Use the smaller of the two sizes for general text to ensure consistency
-	adjusted_font_size_general <- min(adjusted_font_size_row, adjusted_font_size_col)
-	print(paste0("====> Adjusted font size general: ", adjusted_font_size_general))
+    # Base font size could initially be set as the user-defined minimum font size
+    base_font_size <- min_font_size
 
+    scaling_factor_col_base <- 25 # Remains the same for column adjustments
+
+    if (num_rows > 100) {
+        # Increase the aggressiveness of the scaling for datasets with more than 100 rows
+        scaling_factor_row_base <- 5; # More aggressive scaling for rows
+    } else {
+        scaling_factor_row_base <- 30; # Less aggressive scaling for smaller datasets
+    }
+
+
+    adjusted_scaling_factor_col <- base_font_size / (num_columns / scaling_factor_col_base)
+
+
+    # Use the non-linearly adjusted scaling factors to determine font sizes
+    if (num_rows > 200) {
+        # For large numbers of rows, adjust the formula to reduce the font size more significantly
+        adjusted_font_size_row <- 4
+    }else if (num_rows > 100) {
+        # For large numbers of rows, adjust the formula to reduce the font size more significantly
+        adjusted_font_size_row <- max(min_font_size, (base_font_size - sqrt(num_rows) / scaling_factor_row_base) / 2)
+    } else {
+        # For smaller datasets, use a less aggressive adjustment
+        adjusted_font_size_row <- max(min_font_size, base_font_size - sqrt(num_rows) / scaling_factor_row_base)
+    }
+    adjusted_font_size_col <- max(min_font_size, base_font_size - num_columns / adjusted_scaling_factor_col)
+    adjusted_font_size_general <- min(adjusted_font_size_row, adjusted_font_size_col)
+
+    # Ensure the adjusted font size is within the user-defined limits
+    adjusted_font_size_general = max(adjusted_font_size_general, min_font_size)
+    adjusted_font_size_general = min(adjusted_font_size_general, max_font_size)
 
     input_args <- c(list(data=input_data, 
 						fileHeader=NULL,
@@ -597,4 +632,24 @@ cluster_heatmap <-function(cluster_data, settings, tmp_hash){
     	print(clustering_out)
     	return(FALSE)
     }
+}
+
+
+remove_outliers <- function(dataset, settings) {
+    if(settings$datasetAnalysisRemoveOutliersDownstream == TRUE) {
+        print("===> Removing outliers from dataset")
+        if("pandora_cluster" %in% names(dataset)) {
+            print("pandora_cluster column exists.")
+            if(100 %in% dataset$pandora_cluster) {
+                print("Cluster 100 exists in pandora_cluster.")
+                dataset <- dataset[dataset$pandora_cluster != 100, ]
+                print("Rows with pandora_cluster == 100 have been removed.")
+            } else {
+                print("Cluster 100 does not exist in pandora_cluster.")
+            }
+        } else {
+            print("pandora_cluster column does not exist.")
+        }
+    }
+    return(dataset)
 }
