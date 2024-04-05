@@ -504,9 +504,15 @@ plot_cluster_features_means <- function(data, settings, tmp_hash){
 
     cluster_feature_means <- tidyr::pivot_longer(cluster_means, -pandora_cluster, names_to = "feature", values_to = "mean_value")
 
+    unique_features <- unique(cluster_feature_means$feature) 
+    colorsTemp <- grDevices::colorRampPalette(
+        RColorBrewer::brewer.pal(min(8, length(unique_features)), settings$colorPalette)
+    )(length(unique_features))
+
     # Plot the means of the top features for each cluster
     plotData <- ggplot(cluster_feature_means, aes(x = factor(pandora_cluster), y = mean_value, fill = feature)) +
         geom_bar(stat = "identity", position = "dodge") +
+        scale_color_manual(values = colorsTemp) +
         theme_minimal() +
         labs(x = "Cluster", y = "Mean Feature Value", fill = "Feature") +
         theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -547,9 +553,15 @@ plot_cluster_features_means_separated <- function(data, settings, tmp_hash){
         arrange(pandora_cluster, desc(abs(fold_change))) %>%
         select(pandora_cluster, feature, fold_change)
 
+    unique_features <- unique(cluster_feature_means_separated$feature) 
+    colorsTemp <- grDevices::colorRampPalette(
+        RColorBrewer::brewer.pal(min(8, length(unique_features)), settings$colorPalette)
+    )(length(unique_features))
+    
     plotData <- ggplot(cluster_feature_means_separated, aes(x = factor(pandora_cluster), y = fold_change, fill = feature)) +
         geom_col() +
         coord_flip() +
+        scale_color_manual(values = colorsTemp) +
         theme_minimal() +
         labs(x = "Cluster", y = "Fold Change", fill = "Feature") +
         ggtitle("Fold Change of Features Across Clusters")
