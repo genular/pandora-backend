@@ -674,6 +674,8 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 	}
 
 	if ($submitData && isset($submitData['recordID'])) {
+        $downloadIDs = [];
+
 		// This is array for models or integer for queue and resample
 		$recordID = $submitData['recordID'];
 		$downloadType = $submitData['downloadType'];
@@ -690,10 +692,18 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		} else if ($downloadType === "models") {
 			$Models = $this->get('PANDORA\Models\Models');
 			$recordDetails = $Models->getDetailsByID($recordID, $user_id);
-		}
 
-		// 1st fetch all necessarily file IDs from database
-		$downloadIDs = [];
+		} else if ($downloadType === "userFile") {
+            if(isset($submitData['recordID'])){
+                if(is_array($submitData['recordID'])){
+                    $downloadIDs = (int) $submitData['recordID'];
+                }else{
+                    $downloadIDs = [$submitData['recordID']];    
+                }
+            }
+        }
+
+
 		if ($recordDetails) {
 			// Loop all values and search for fileIDs
 			foreach ($recordDetails as $recordDetailsKey => $recordDetailsValue) {
@@ -720,7 +730,7 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 		// 2nd Generate final download links
 		$downloadLinks = [];
 		foreach ($downloadIDs as $fileID) {
-			$fileDetails = $UsersFiles->getFileDetails($fileID, ["file_path", "display_filename", "extension"], false);
+			$fileDetails = $UsersFiles->getFileDetails($fileID, ["file_path", "display_filename", "extension", "details"], false);
 
 			if (isset($fileDetails['file_path'])) {
 				$display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
@@ -733,18 +743,28 @@ $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Reque
 					$download_filename =  $recordDetails["resampleID"]."_".$download_filename;
 					$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
 					$columnMappings = $DatasetResamplesMappings->getMappingsForResample($recordDetails["resampleID"]);
+
 				}else if ($downloadType === "queue") {
 					$download_filename =  $queueID."_".$download_filename;
 					$queueDetails = $recordDetails;
 					$columnMappings = false;
-				}
+
+				}else if ($downloadType === "userFile") {
+       
+                    if(isset($fileDetails["details"])){
+                        $queueDetails = $fileDetails["details"];        
+                    }
+
+                }
 
 				// Download and de-compress
 				$fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
 
-				if ($downloadType !== "models") {
+				if ($downloadType === "queue" || $downloadType  === "models") {
 					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings); 
-				}
+                }else if($downloadType === "userFile"){
+                    $fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails, false); 
+                }
 
 				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/download' compressing file for download: " . $fileInput);
 				$download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);

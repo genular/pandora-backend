@@ -219,9 +219,16 @@ class UsersFiles {
 
 	public function remapColumsToOriginal($fileInput, $selectedOptions, $columnMappings){
 
-		$selectedOptions = json_decode($selectedOptions, true);
-		$allMappings = array_merge($selectedOptions["features"], $selectedOptions["outcome"], $selectedOptions["classes"]);
+		if(!is_array($selectedOptions)){
+			$selectedOptions = json_decode($selectedOptions, true);
+		}
+		
 
+		if(isset($selectedOptions["features"]) || isset($selectedOptions["outcome"]) || isset($selectedOptions["classes"])){
+			$allMappings = array_merge($selectedOptions["features"], $selectedOptions["outcome"], $selectedOptions["classes"]);
+		} else if(isset($selectedOptions["header"])){
+			$allMappings = $selectedOptions["header"]["formatted"];
+		}
 
 		$file_contents = file_get_contents($fileInput);
 

@@ -493,10 +493,7 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
     return(tmp_path)
 }
 
-cluster_heatmap <-function(clust_plot_tsne, settings, tmp_hash){
-
-	## To be sure remove all other non numeric columns
-    cluster_data <- clust_plot_tsne$info.norm
+cluster_heatmap <-function(cluster_data, settings, tmp_hash){
 
     cluster_data$pandora_cluster <- as.character(cluster_data$pandora_cluster) # First, convert factors to characters to preserve the actual labels
     cluster_data$pandora_cluster <- as.numeric(cluster_data$pandora_cluster) # Now convert characters to numeric

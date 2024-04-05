@@ -344,7 +344,7 @@ for (dataset in datasets) {
         ## Set timeout from database (user selected in Start Analysis) - used for model training
         if(is.null(dataset[["modelProcessingTimeLimit"]])){
             print(dataset)
-            model_details$process_timeout <- 300
+            model_details$process_timeout <- 500
         }else{
             model_details$process_timeout <- as.numeric(dataset$modelProcessingTimeLimit)
         }
