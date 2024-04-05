@@ -482,8 +482,6 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
                            fontface = "bold",  # Make text bold
                            show.legend = FALSE)  # Do not show these labels in the legend
 
-
-
     # Specify the file path for the output plot
     tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
     svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
@@ -516,7 +514,7 @@ plot_cluster_features_means <- function(data, settings, tmp_hash){
         theme_minimal() +
         labs(x = "Cluster", y = "Mean Feature Value", fill = "Feature") +
         theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-        ggtitle("Mean Values of Top Features by Cluster")
+        ggtitle("Mean Values of Features by Cluster")
 
     # Specify the file path for the output plot
     tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
@@ -557,7 +555,7 @@ plot_cluster_features_means_separated <- function(data, settings, tmp_hash){
     colorsTemp <- grDevices::colorRampPalette(
         RColorBrewer::brewer.pal(min(8, length(unique_features)), settings$colorPalette)
     )(length(unique_features))
-    
+
     plotData <- ggplot(cluster_feature_means_separated, aes(x = factor(pandora_cluster), y = fold_change, fill = feature)) +
         geom_col() +
         coord_flip() +
