@@ -1,3 +1,5 @@
+p_load("ggplot2")
+p_load("dplyr")
 p_load("mclust")
 p_load("fpc")
 p_load("FNN")

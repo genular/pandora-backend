@@ -10,7 +10,10 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
                 main_plot = NULL
             ), 
             tsne_cluster_plot = NULL, tsne_cluster_plot_png = NULL, 
-            tsne_cluster_heatmap_plot = NULL, tsne_cluster_heatmap_plot_png = NULL
+            tsne_cluster_heatmap_plot = NULL, tsne_cluster_heatmap_plot_png = NULL, 
+
+            cluster_features_means = NULL, cluster_features_means_png = NULL, 
+            cluster_features_means_separated = NULL, cluster_features_means_separated_png = NULL
         )
 
         selectedFileID <- 0
@@ -163,6 +166,8 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
             tsne_cluster_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_plot"), algo="md5", serialize=F),
             tsne_cluster_heatmap_plot = digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_cluster_heatmap_plot"), algo="md5", serialize=F),
+            cluster_features_means = digest::digest(paste0(selectedFileID, "_",args$settings,"_cluster_features_means"), algo="md5", serialize=F),
+            cluster_features_means_separated = digest::digest(paste0(selectedFileID, "_",args$settings,"_cluster_features_means_separated"), algo="md5", serialize=F),
             saveObjectHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_render_plot"), algo="md5", serialize=F),
             saveDatasetHash = digest::digest(paste0(selectedFileID, "_",args$settings,"_editing_tsne_dataset_export"), algo="md5", serialize=F)
         )
@@ -372,10 +377,21 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         res.data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
 
         tmp_path <- cluster_heatmap(data_for_heatmap, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
-
         if(tmp_path != FALSE){
             res.data$tsne_cluster_heatmap_plot <- optimizeSVGFile(tmp_path)
             res.data$tsne_cluster_heatmap_plot_png <- convertSVGtoPNG(tmp_path)
+        }
+
+        tmp_path <- plot_cluster_features_means(data_for_heatmap, settings, plot_unique_hash$cluster_features_means)
+        if(tmp_path != FALSE){
+            res.data$cluster_features_means <- optimizeSVGFile(tmp_path)
+            res.data$cluster_features_means_png <- convertSVGtoPNG(tmp_path)
+        }
+
+        tmp_path <- plot_cluster_features_means_separated(data_for_heatmap, settings, plot_unique_hash$cluster_features_means_separated)
+        if(tmp_path != FALSE){
+            res.data$cluster_features_means_separated <- optimizeSVGFile(tmp_path)
+            res.data$cluster_features_means_separated_png <- convertSVGtoPNG(tmp_path)
         }
 
         # save(dataset_filtered, file="/tmp/dataset_filtered")

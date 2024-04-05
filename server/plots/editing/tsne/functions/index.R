@@ -493,6 +493,78 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
     return(tmp_path)
 }
 
+
+plot_cluster_features_means <- function(data, settings, tmp_hash){
+    # Calculate cluster means for each feature
+    cluster_means <- data %>%
+        select(-c(tsne1, tsne2)) %>%
+        group_by(pandora_cluster) %>%
+        summarise(across(everything(), mean)) %>%
+        ungroup()
+
+    cluster_feature_means <- tidyr::pivot_longer(cluster_means, -pandora_cluster, names_to = "feature", values_to = "mean_value")
+
+    # Plot the means of the top features for each cluster
+    plotData <- ggplot(cluster_feature_means, aes(x = factor(pandora_cluster), y = mean_value, fill = feature)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        theme_minimal() +
+        labs(x = "Cluster", y = "Mean Feature Value", fill = "Feature") +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        ggtitle("Mean Values of Top Features by Cluster")
+
+    # Specify the file path for the output plot
+    tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        print(plotData)
+    dev.off()
+
+    return(tmp_path)
+}
+
+plot_cluster_features_means_separated <- function(data, settings, tmp_hash){
+    # Calculate cluster means for each feature
+    cluster_means <- data %>%
+        select(-c(tsne1, tsne2)) %>%
+        group_by(pandora_cluster) %>%
+        summarise(across(everything(), mean)) %>%
+        ungroup()
+
+    overall_means <- colMeans(data %>% select(-c(tsne1, tsne2, pandora_cluster)))
+
+    # Calculate overall means for each feature
+    cluster_feature_means_separated <- cluster_means %>%
+        tidyr::pivot_longer(-pandora_cluster, names_to = "feature", values_to = "cluster_mean") %>%
+        mutate(overall_mean = purrr::map_dbl(feature, ~overall_means[.]),
+               fold_change = case_when(
+                   cluster_mean > overall_mean ~ cluster_mean / overall_mean,
+                   cluster_mean < overall_mean ~ -1 * overall_mean / cluster_mean,
+                   TRUE ~ 1.0
+               ))
+
+
+    # View the calculated fold changes
+    cluster_feature_means_separated %>%
+        arrange(pandora_cluster, desc(abs(fold_change))) %>%
+        select(pandora_cluster, feature, fold_change)
+
+    plotData <- ggplot(cluster_feature_means_separated, aes(x = factor(pandora_cluster), y = fold_change, fill = feature)) +
+        geom_col() +
+        coord_flip() +
+        theme_minimal() +
+        labs(x = "Cluster", y = "Fold Change", fill = "Feature") +
+        ggtitle("Fold Change of Features Across Clusters")
+
+    # Specify the file path for the output plot
+    tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+        print(plotData)
+    dev.off()
+
+    return(tmp_path)
+}
+
+
+
 cluster_heatmap <-function(cluster_data, settings, tmp_hash){
 
     cluster_data$pandora_cluster <- as.character(cluster_data$pandora_cluster) # First, convert factors to characters to preserve the actual labels
