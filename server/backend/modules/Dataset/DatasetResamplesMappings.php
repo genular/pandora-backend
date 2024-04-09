@@ -67,4 +67,24 @@ class DatasetResamplesMappings {
 		return ($details);
 
 	}
+
+	public function getMappingsForQueue($queueID){
+
+		$columns = [
+			"id [Int]",
+			"drid [Int]",
+			"class_column",
+			"class_type [Int]",
+			"class_original",
+			"class_remapped"
+		];
+		$conditions = [
+			"dqid" => $queueID,
+			"ORDER" => ["id" => "ASC"],
+		];
+		$details = $this->database->select($this->table_name, $columns, $conditions);
+
+		return ($details);
+
+	}
 }

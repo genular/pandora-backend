@@ -9,7 +9,7 @@ loadGlobalDataset <- function(remotePathMain, resampleID){
         message <- paste0("===> ERROR: Cannot download remote dataset data: ",remotePathMain," \r\n")
         cat(message)
 
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
         return(success)
     }
@@ -27,7 +27,7 @@ checkSelectedOutcomeColumns <- function(selectedOutcomeColumns, resampleID){
         message <- paste0("===> ERROR: Invalid number (",length(selectedOutcomeColumns),") of outcome columns detected. Currently only one is supported.")
         cat(message)
 
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
     }
 

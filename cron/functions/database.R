@@ -89,7 +89,7 @@ getDatasetResamplesMappings <- function(queueID, resampleID, class_column){
     return(results)
 }
 
-#' @title updateDatabaseFiled
+#' @title updateDatabaseField
 #' @description 
 #' @param table 
 #' @param column
@@ -97,7 +97,7 @@ getDatasetResamplesMappings <- function(queueID, resampleID, class_column){
 #' @param whereColumn
 #' @param whereValue
 #' @return 
-updateDatabaseFiled <- function(table, column, value, whereColumn, whereValue){
+updateDatabaseField <- function(table, column, value, whereColumn, whereValue){
     update_sql <- paste0("UPDATE ",table," SET ",column," = ?value WHERE ",whereColumn," = ?whereValue;")
     update_query <- sqlInterpolate(databasePool, update_sql, value=value, whereValue=whereValue)
     dbExecute(databasePool, update_query)
@@ -465,23 +465,26 @@ db.apps.pandora.saveFeatureSetsInfo <- function(data, samples, total_features, p
 #' @description Save Model data into database with all performance measurements
 #' @param resampleID ID of current processing re-sample
 #' @param trainModel Complete model produces by caret::train
-#' @param predConfusionMatrix
+#' @param predictionConfusionMatrix
 #' @param model_details Data-frame with current model details
-#' @param predAUC List containing pROC measures
-#' @param prAUC Precision/Recall AUC on Predict Test Set
-#' @param predPostResample
+#' @param prAUC PRROC::pr.curve for each class on model training data
+#' @param AUROC Precision/Recall AUC for each class on model testing data
+#' @param predPostResample Model performance metrics
+#' @param outcome_mapping Data-frame with outcome mapping
 #' @param status Boolean, true or false
 #' @param errors Character vector with listed errors that occurred during training
 #' @param model_time_start Sys.time() object with model starting time
 #' @return list
-db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predConfusionMatrix, 
-    model_details, performanceVariables, predAUC, prAUC, predPostResample, errors, model_time_start){
+db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, 
+    predictionConfusionMatrix, model_details, 
+    performanceVariables, prAUC, AUROC, predPostResample, outcome_mapping,
+    errors, model_time_start){
     model_status <- 1
     training_time <- NULL
 
     ## Get total amount of time needed for model to process - time in DB should always be in milliseconds
     processing_time <- calculateTimeDifference(model_time_start, unit = "ms")
-    if(is.null(processing_time)){
+    if(is.null(processing_time) || length(processing_time) == 0) {
         processing_time <- 0
         cat(paste0("===> WARNING: Cannot calculate processing time. Time start: ",model_time_start," \r\n"))
     }else{
@@ -532,15 +535,13 @@ db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predC
                 )   ON DUPLICATE KEY UPDATE
                 drid=?drid, mpid=?mpid, status=?status, error=?error, training_time=?training_time, processing_time=?processing_time, updated=NOW();"
 
-
-
     query <- sqlInterpolate(databasePool, sql, 
         drid=resampleID, 
         mpid=model_details$id, 
         status=model_status, 
         error=toString(errors), 
         training_time=toString(training_time), 
-        processing_time=processing_time)
+        processing_time=toString(processing_time))
 
     results <- dbExecute(databasePool, query)
 
@@ -554,74 +555,152 @@ db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predC
     ## Insert other model Variables:
     if(!is.null(modelID)){
         ## MySQL query placeholder
-        prefQuery <- NULL
+        prefQuery <- NULL                   
 
         ## Insert Model Training parameters
+        print(paste0("===> INFO: Inserting model performance variables for modelID: ", modelID))
+
         if (trainModel$status == TRUE) {
             preferencies <- caret::getTrainPerf(trainModel$data)
             preferencies <- preferencies[, !(names(preferencies) %in% c("method"))]
+                    
             query <- NULL
             for(pref in names(preferencies)){
                 for(value in preferencies[[pref]]){
                     ## value <- round(as.numeric(value), 4)
                     performanceVariables <- getPerformanceVariable(pref, performanceVariables)
                     pvDetails <- performanceVariables %>% filter(value == pref)
-
-                    query <- c(query, sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, pvDetails$id, value))
+            
+                    outcome_class_id <- 0 ## Overall means "all classes"
+                    query <- c(query, sprintf("(NULL, '%s', '%s', '%s', '%s', NOW())", modelID, outcome_class_id, pvDetails$id, value))
                 }
             }
             prefQuery <- paste(query, collapse = ",")
         }
 
         ## Insert Model Testing parameters
-        if(!is.null(predConfusionMatrix)){
-            confmatrix_data <- c(predConfusionMatrix$overall, predConfusionMatrix$byClass)
-            confmatrix_data <- data.frame(prefName=names(confmatrix_data), prefValue=confmatrix_data, row.names=NULL)
+        if(!is.null(predictionConfusionMatrix)) {
+            print(paste0("===> INFO: Inserting model predictionConfusionMatrix variables"))
 
-      
-            performanceVariables <- getPerformanceVariable(confmatrix_data$prefName, performanceVariables)  
-            merged_values <- base::merge(confmatrix_data, performanceVariables, by.x = "prefName", by.y = "value", all.x = TRUE)
+            overall_metrics <- data.frame(
+                className = 0, # 0 marks "overall" ID
+                prefName = names(predictionConfusionMatrix$overall),
+                prefValue = unlist(predictionConfusionMatrix$overall),
+                row.names = NULL
+            )
 
-            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, merged_values$id, merged_values$prefValue), collapse = ",")
+            # Handling Class-specific Metrics (byClass)
+            df <- as.data.frame(predictionConfusionMatrix$byClass)
+            df$Class <- rownames(df)
+
+            # Melt the dataframe while preserving class labels
+            class_metrics <- reshape2::melt(df, id.vars = "Class", variable.name = "metric", value.name = "prefValue")
+
+            # Construct prefName using Class and metric
+            class_metrics$prefName <- class_metrics$metric
+            class_metrics$className <- with(class_metrics, paste(gsub("Class: ", "", Class), sep = ""))
+
+            # Drop columns: Class & metric
+            class_metrics <- class_metrics[, !(names(class_metrics) %in% c("Class", "metric"))]
+
+            # Combine overall and class-specific metrics
+            combined_metrics <- base::rbind(overall_metrics, class_metrics[, c("className", "prefName", "prefValue")])
+            combined_metrics$prefName <- gsub(" ", "", combined_metrics$prefName)
+
+
+            performanceVariables <- getPerformanceVariable(combined_metrics$prefName, performanceVariables)
+
+            # Correct merge call using base::merge to avoid any potential namespace issues
+            merged_values <- base::merge(combined_metrics, performanceVariables, by.x = "prefName", by.y = "value", all.x = TRUE)
+
+            # Use the match function to find the indices of matches and then replace
+            indices <- match(merged_values$className, outcome_mapping$class_remapped)
+
+            # Replace className with the matched class_remapped values
+            merged_values$classNameID <- outcome_mapping$id[indices]
+            merged_values$classNameID[is.na(merged_values$classNameID)] <- 0
+            merged_values$prefValue <- ifelse(is.nan(merged_values$prefValue), "NULL", sprintf("%.10f", merged_values$prefValue))
+
+            # Constructing the query
+            query <- paste(sprintf("(NULL, '%s', '%s', '%s', '%s', NOW())", modelID, merged_values$classNameID, merged_values$id, merged_values$prefValue), collapse = ",")
             prefQuery <- paste(c(prefQuery, query), collapse = ",")
-
-            ## Insert Positive control
-            performanceVariables <- getPerformanceVariable("PositiveControl", performanceVariables)
-            pvDetails <- performanceVariables %>% filter(value == "PositiveControl")
-
-            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predConfusionMatrix$positive,"', NOW())")), collapse = ",")
         }
 
-        ## Insert Testing pAUC
-        if(!is.null(predAUC) & !is.null(predAUC$auc)){
+
+        ## Insert Testing (missing))
+        if(!is.null(AUROC) & !is.null(AUROC$auc)){
+            print(paste0("===> INFO: Inserting model AUROC variables"))
+
+
             performanceVariables <- getPerformanceVariable("PredictAUC", performanceVariables)
             pvDetails <- performanceVariables %>% filter(value == "PredictAUC")
 
-            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",predAUC$auc,"', NOW())")), collapse = ",")
+            for (class_name in names(AUROC)) {
+                if (!is.null(AUROC[[class_name]]$AUC)) {
+                    if (class_name == "Multiclass") {
+                        class_id <- 0  # Set class_id to 0 for Multiclass
+                    } else {
+                        # Attempt to find the class ID from outcome_mapping for the current class
+                        class_id <- outcome_mapping %>%
+                                    filter(class_remapped == class_name) %>%
+                                    pull(id)
+                    }
+                    
+                    if (!is.null(class_id) && length(class_id) == 1) {
+                        auc_value <- AUROC[[class_name]]$AUC
+                        
+                        auc_value <- ifelse(is.nan(auc_value), "NULL", sprintf("%.10f", auc_value))
+                        prefQuery <- paste(c(prefQuery, paste0("(NULL, ", modelID, ", ", class_id, ", ",pvDetails$id,", '",auc_value,"', NOW())")), collapse = ",")
+                        
+                    } else if (class_name != "Multiclass") {  # Only show warning if not handling Multiclass
+                        warning(paste("ID for class", class_name, "not found in outcome_mapping."))
+                    }
+                }
+            }
         }
 
         ## Insert Testing prAUC
-        if(!is.null(prAUC) & !is.null(prAUC$auc.integral)){
+        if(!is.null(prAUC)){
+            print(paste0("===> INFO: Inserting model prAUC variables"))
             performanceVariables <- getPerformanceVariable("prAUC", performanceVariables)
             pvDetails <- performanceVariables %>% filter(value == "prAUC")
 
-            prefQuery <- paste(c(prefQuery, paste0("(NULL, ",modelID,", ",pvDetails$id,", '",prAUC$auc.integral,"', NOW())")), collapse = ",")
+            for (class_name in names(prAUC)) {
+                if(!is.null(prAUC[[class_name]]$auc.integral)){
+                    auc_integral_value <- prAUC[[class_name]]$auc.integral
+                    if (!is.null(auc_integral_value)) {
+                        class_id <- outcome_mapping %>%
+                                    filter(class_remapped == class_name) %>%
+                                    pull(id) %>%
+                                    ifelse(is.na(.), 0, .) # Fallback to 0 if class_id not found
+                        auc_integral_value <- ifelse(is.nan(auc_integral_value), "NULL", sprintf("%.10f", auc_integral_value))
+                        prefQuery <- paste(c(prefQuery, paste0("(NULL, ", modelID, ", ", class_id, ", ",pvDetails$id,", '",auc_integral_value,"', NOW())")), collapse = ",")
+                    } else {
+                        warning(paste("prAUC value missing for class", class_name))
+                    }
+                }
+            }
         }
 
         ## Insert Testing Accuracy/Kappa or RMSE, Rsquared, MAE
         if(!is.null(predPostResample) & length(predPostResample) >= 2){
+            print(paste0("===> INFO: Inserting model predPostResample variables"))
             postResampleData <- data.frame(prefName=names(predPostResample), prefValue=predPostResample, row.names=NULL)
 
+            postResampleData$prefName <- gsub(" ", "", postResampleData$prefName)
             performanceVariables <- getPerformanceVariable(postResampleData$prefName, performanceVariables)
             merged_values <- base::merge(postResampleData, performanceVariables, by.x = "prefName", by.y = "value", all.x = TRUE)
 
+            class_id <- 0
 
-            query <- paste(sprintf("(NULL, '%s', '%s', '%s', NOW())", modelID, merged_values$id, merged_values$prefValue), collapse = ",")
+            merged_values$prefValue <- ifelse(is.nan(merged_values$prefValue), "NULL", sprintf("%.10f", merged_values$prefValue))
+            query <- paste(sprintf("(NULL, '%s', '%s', '%s', '%s', NOW())", modelID, class_id, merged_values$id, merged_values$prefValue), collapse = ",")
             prefQuery <- paste(c(prefQuery, query), collapse = ",")
         }
+
         ## When everything is ready insert data
         if(!is.null(prefQuery)){
-            query <- paste0("INSERT IGNORE INTO models_performance (id, mid, mpvid, prefValue, created) VALUES ",prefQuery,";")
+            query <- paste0("INSERT IGNORE INTO models_performance (id, mid, drm_id, mpvid, prefValue, created) VALUES ",prefQuery,";")
             dbExecute(databasePool, query)
         }
     }
@@ -636,25 +715,34 @@ db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel, predC
 #' @return 
 db.apps.pandora.saveVariableImportance <- function(varImportance, modelID){
     modelID <-as.numeric(modelID)
-    ## Order dataframe for consistency, mostly because of md5 hash function
-    varImportanceOrdered <- varImportance[order(varImportance$features, decreasing=F),]$features
+    # Correctly escape feature names without converting to a list
+    # No alteration to varImportance dataframe structure here
+    escaped_feature_names <- sapply(varImportance$feature_name, function(x) {
+        SQL <- dbQuoteString(databasePool, x)
+        substr(SQL, 2, nchar(SQL) - 1) # Remove leading and trailing quotes for inclusion in query
+    }, USE.NAMES = FALSE)
 
+    # Construct the query part for each row
+    query_values <- vapply(seq_len(nrow(varImportance)), function(i) {
+        sprintf("(NULL, %d, '%s', %d, %f, %f, %d, NOW())", 
+                modelID, 
+                escaped_feature_names[i], 
+                varImportance$drm_id[i],
+                varImportance$score_perc[i], 
+                varImportance$score_no[i], 
+                varImportance$rank[i])
+    }, character(1))
 
-    varImportance$features = lapply(varImportance$features, function(features) {
-        dbQuoteString(databasePool, features)
-    })
+    # Complete query construction
+    query <- paste("INSERT IGNORE INTO `models_variables` (`id`, `mid`, `feature_name`, `drm_id`, `score_perc`, `score_no`, `rank`, `created`) VALUES", 
+                   paste(query_values, collapse = ", "))
 
-    # Begin the query
-    query <- "INSERT IGNORE INTO `models_variables` 
-    (`id`, `mid`, `feature_name`, `score_perc`, `score_no`, `rank`, `created`) VALUES"
-    # Finish it with
-    query <- paste0(query, paste(sprintf("(NULL, '%s', %s, '%s', '%s', '%s', NOW() )", modelID, varImportance$features, varImportance$score_perc, varImportance$score_no, varImportance$rank), collapse = ","))
+    # Execute the query
     results <- dbExecute(databasePool, query)
 
-    
-
-    mv_hash <- digest::digest(paste(varImportanceOrdered, collapse = ','), algo="md5", serialize=F)
-    updateDatabaseFiled("models", "mv_hash", mv_hash, "id", modelID)
+    varImportanceOrdered <- varImportance[order(varImportance$feature_name, decreasing = FALSE), ]
+    mv_hash <- digest::digest(paste(varImportanceOrdered$feature_name, collapse = ','), algo = "md5", serialize = FALSE)
+    updateDatabaseField("models", "mv_hash", mv_hash, "id", modelID)
 
     return(results)
 }
@@ -746,7 +834,7 @@ db.apps.pandora.saveRecursiveFeatureElimination <- function(modelData, modelPred
 }
 
 #' @title copyResampleMappings
-#' @description  Copy values from exsisting resample to a new one (duplicate)
+#' @description  Copy values from existing resample to a new one (duplicate)
 #' @param queueID
 #' @param resampleFromID
 #' @param resampleToID

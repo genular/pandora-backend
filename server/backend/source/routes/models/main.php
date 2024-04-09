@@ -110,15 +110,23 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 
 	$queueID = $request->getQueryParam('queueID', 0);
 	$measurements = $request->getQueryParam('measurements', []);
+	
+	// Outcome class to get measurements for?!
+	$outcome_class_id = $request->getQueryParam('outcome_class_id', 0);
 
 	if (is_numeric($queueID)) {
 		$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 		$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
 
 		if ($queueDetails !== false) {
+			$DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
+			$queueDetails["outcomeMappings"] =  $DatasetResamplesMappings->getMappingsForQueue($queueID);
+
+
 			$ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
 
-			list($queuePerformace, $queuePerformaceVariables) = $ModelsPerformance->getPerformaceVariables([$queueID], "queueID", "MAX", $measurements);
+			// Get Average performance for the queue
+			list($queuePerformace, $queuePerformaceVariables) = $ModelsPerformance->getPerformaceVariables([$queueID], "queueID", "MAX", $measurements, $outcome_class_id);
 
 			if (isset($queuePerformace[$queueID])) {
 				$queueDetails["performance"] = $queuePerformace[$queueID]["performance"];
@@ -131,7 +139,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
 			$resamplesListIDs = array_column($resamplesList, 'resampleID');
 
-			list($resamplesPerformace, $resamplesPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($resamplesListIDs, "resampleID", "MAX", $measurements);
+			list($resamplesPerformace, $resamplesPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($resamplesListIDs, "resampleID", "MAX", $measurements, $outcome_class_id);
 
 			$DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
 			$resamplesProportions = $DatasetProportions->getDatasetResamplesProportions($resamplesListIDs);
@@ -162,7 +170,8 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
 
 			$modelsListIDs = array_column($modelsList, 'modelID');
-			list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements);
+			list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements, $outcome_class_id);
+
 			$modelsList = $Models->assignMesurmentsToModels($modelsList, $modelsPerformace, $modelsPerformaceVariables);
 
 			$modelsListNameIDs = array_column($modelsList, 'modelName');
@@ -172,11 +181,14 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 
 			$modelsList = $Models->assignPackageDetailsToModels($modelsList, $modelPackagesDetails);
 
+			// merge queuePerformaceVariables with resamplesPerformaceVariables and $modelsPerformaceVariables
+			// $performaceVariables = array_merge($queuePerformaceVariables, $resamplesPerformaceVariables, $modelsPerformaceVariables);
+
 			$message = Array(
 				'resamplesList' => $resamplesList,
 				'modelsList' => $modelsList,
 				'queueDetails' => $queueDetails,
-				'performaceVariables' => $modelsPerformaceVariables,
+				'performaceVariables' => $resamplesPerformaceVariables,
 			);
 		} else {
 			$success = false;

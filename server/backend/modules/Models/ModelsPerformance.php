@@ -45,19 +45,26 @@ class ModelsPerformance {
 	}
 
 	/**
-	 * [getPerformaceVariables description]
-	 * @param  [type] $ids           [description]
-	 * @param  string $groupColumn   [description]
-	 * @param  string $aggregateFunc [description]
-	 * @param  [type] $measurements  [description]
-	 * @return [type]                [description]
+	 * Retrieves aggregated performance variables from the database for a given set of IDs, grouped by a specified column.
+	 *
+	 * This function queries the database to fetch and aggregate specified performance measurements (e.g., Accuracy, Precision)
+	 * for a set of provided IDs. These IDs can represent queues, resamples, or models, depending on the grouping column specified.
+	 * The function supports customization of the aggregate function (e.g., MAX, AVG) and automatically handles missing measurements
+	 * by defaulting to a predefined list of performance variables.
+	 *
+	 * @param array $ids Array of integers representing the IDs for which performance variables are fetched.
+	 * @param string $groupColumn The database column used to group results. Defaults to "queueID". Supported values are "queueID", "resampleID", and "modelID".
+	 * @param string $aggregateFunc The SQL aggregate function to apply to the performance variables. Defaults to "MAX".
+	 * @param array $measurements Array of strings representing the performance measurements to retrieve. If empty or not an array, defaults to a predefined list of common performance metrics.
+	 * 
+	 * @return array Returns an array consisting of two elements:
+	 *               - The first element is an associative array mapping each ID (based on $groupColumn) to its aggregated performance variables.
+	 *               - The second element is an array of unique performance variable names that were retrieved.
 	 */
-	public function getPerformaceVariables($ids, $groupColumn = "queueID", $aggregateFunc = "MAX", $measurements) {
+	public function getPerformaceVariables($ids, $groupColumn = "queueID", $aggregateFunc = "MAX", $measurements, $selected_class = 0) {
 
 		$ids = join(',', array_map('intval', $ids));
-		if (!is_array($measurements) || count($measurements) < 1) {
-			$measurements = ['Accuracy', 'F1', 'Kappa', 'Precision', 'PredictAUC', 'prAUC', 'Recall', 'Sensitivity', 'Specificity', 'TrainAccuracy', 'TrainAUC', 'TrainF1', 'TrainprAUC', 'TrainPrecision', 'TrainRecall', 'TrainSensitivity', 'TrainSpecificity'];
-		}
+
 		$grouppings = Array("queueID" => "dataset_queue.id", "resampleID" => "dataset_resamples.id", "modelID" => "models.id");
 
 		$sql = "SELECT
@@ -76,8 +83,13 @@ class ModelsPerformance {
 				    	ON models.id = models_performance.mid
 				    INNER JOIN models_performance_variables
 				    	ON models_performance.mpvid = models_performance_variables.id
-				WHERE " . $grouppings[$groupColumn] . " IN (" . $ids . ")
-				AND models_performance_variables.value IN ('" . join("','", $measurements) . "')
+				WHERE " . $grouppings[$groupColumn] . " IN (" . $ids . ")";
+
+			if(is_array($measurements) && count($measurements) > 1) {
+				$sql = $sql . " AND models_performance_variables.value IN ('" . join("','", $measurements) . "')";
+			}
+
+			$sql = $sql." AND models_performance.drm_id = '" . $selected_class . "'
 				GROUP BY
 					" . $grouppings[$groupColumn] . ", models_performance_variables.value;";
 

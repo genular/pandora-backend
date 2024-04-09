@@ -528,12 +528,18 @@ plot_cluster_features_means <- function(data, settings, tmp_hash){
 plot_cluster_features_means_separated <- function(data, settings, tmp_hash){
     # Calculate cluster means for each feature
     cluster_means <- data %>%
-        select(-c(tsne1, tsne2)) %>%
-        group_by(pandora_cluster) %>%
-        summarise(across(everything(), mean)) %>%
-        ungroup()
+        dplyr::select(-c(tsne1, tsne2)) %>%
+        dplyr::group_by(pandora_cluster) %>%
+        dplyr::summarise(across(everything(), mean)) %>%
+        dplyr::ungroup()
 
-    overall_means <- colMeans(data %>% select(-c(tsne1, tsne2, pandora_cluster)))
+
+    data_filtered <- select(data, -c(tsne1, tsne2, pandora_cluster))
+    if (!all(sapply(data_filtered, is.numeric))) {
+        return(FALSE)
+    }
+
+    overall_means <- base::colMeans(data_filtered, na.rm = TRUE)
 
     # Calculate overall means for each feature
     cluster_feature_means_separated <- cluster_means %>%
