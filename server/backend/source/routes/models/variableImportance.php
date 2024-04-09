@@ -23,6 +23,9 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 
 	$resampleID = $request->getQueryParam('resampleID', 0);
 	$modelsID = $request->getQueryParam('modelsID', [0]);
+
+	$outcome_class_ids = $request->getQueryParam('outcome_class_ids', [0]);
+
 	$page = $request->getQueryParam('page', 1);
 	$page_size = $request->getQueryParam('page_size', 20);
 	$sort = $request->getQueryParam('sort', false);
@@ -32,7 +35,7 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 	$sort_by = $request->getQueryParam('sort_by', 'feature_name');
 
 	$ModelsVariables = $this->get('PANDORA\Models\ModelsVariables');
-	$variableImportanceData = $ModelsVariables->getVariableImportance($modelsID, intval($page), intval($page_size), $sort, $sort_by);
+	$variableImportanceData = $ModelsVariables->getVariableImportance($modelsID, intval($page), intval($page_size), $sort, $sort_by, $outcome_class_ids);
 
 	$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 	$queueDetails = $DatasetQueue->getDetailsByID($pqid, $user_id);
@@ -42,6 +45,10 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 
 	$DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
 	$variableImportanceData = $DatasetProportions->mapRenamedToOriginal("feature_name", $variableImportanceData, $queueDetails["selectedOptions"]);
+
+	// $DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
+	// $outcomeMappings =  $DatasetResamplesMappings->getMappingsForResample($resampleID);
+
 
 	$totalItems = $ModelsVariables->countTotalVariables($modelsID);
 
