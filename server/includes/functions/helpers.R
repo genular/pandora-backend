@@ -613,3 +613,15 @@ castAllStringsToNA <- function(dataset, excludeColumns = c()) {
     # Return the modified dataset
     return(dataset)
 }
+
+safe_access <- function(data, ...) {
+  elements <- list(...)
+  for(element in elements) {
+    if(is.null(data[[element]])) {
+      return(FALSE) # Returns FALSE immediately if any element does not exist
+    } else {
+      data <- data[[element]]
+    }
+  }
+  return(TRUE) # Returns TRUE if all elements exist
+}

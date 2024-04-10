@@ -69,7 +69,7 @@ class ModelsVariables {
 	 * @param  [type] $sort_by    [description]
 	 * @return [type]             [description]
 	 */
-	public function getVariableImportance($modelsID, $page, $page_size, $sort, $sort_by, $outcome_class_ids = []) {
+	public function getVariableImportance($modelsID, $page, $page_size, $sort, $sort_by, $selectedOutcomeOptionsIDs = []) {
 
 		$start_limit = (($page - 1) * $page_size);
 		$end_limit = $page_size;
@@ -93,9 +93,9 @@ class ModelsVariables {
 		        LEFT JOIN dataset_resamples_mappings ON models_variables.drm_id = dataset_resamples_mappings.id
 		        WHERE  models_variables.mid IN (" . $mids . ")";
 
-	    // Conditionally adding WHERE clause for outcome_class_ids
-	    if (!empty($outcome_class_ids)) {
-	        $outcomeClassIds = join(',', array_map('intval', $outcome_class_ids));
+	    // Conditionally adding WHERE clause for selectedOutcomeOptionsIDs
+	    if (!empty($selectedOutcomeOptionsIDs)) {
+	        $outcomeClassIds = join(',', array_map('intval', $selectedOutcomeOptionsIDs));
 	        $sql .= " AND models_variables.drm_id IN (" . $outcomeClassIds . ")";
 	    }
 

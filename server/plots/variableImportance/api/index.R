@@ -22,6 +22,13 @@ pandora$handle$plots$variableImportance$renderPlot <- expression(
             modelsID <- jsonlite::fromJSON(args$modelsID)
             plotUniqueHash <- paste0(plotUniqueHash, args$modelsID)
         }
+
+        selectedOutcomeOptionsIDs <- NULL
+        if("selectedOutcomeOptionsIDs" %in% names(args)){
+            selectedOutcomeOptionsIDs <- jsonlite::fromJSON(args$selectedOutcomeOptionsIDs)
+            plotUniqueHash <- paste0(plotUniqueHash, args$selectedOutcomeOptionsIDs)
+        }
+
         settings <- NULL
         if("settings" %in% names(args)){
             settings <- jsonlite::fromJSON(args$settings)
@@ -78,6 +85,7 @@ pandora$handle$plots$variableImportance$renderPlot <- expression(
         data[[resampleDetails[[1]]$outcome$remapped]] <- as.factor(data[[resampleDetails[[1]]$outcome$remapped]])
 
         data <- reshape2::melt(data, id=c(resampleDetails[[1]]$outcome$remapped))
+
 
         # Modify the default image size.
         tmp_path <- tempfile(pattern = plotUniqueHash, tmpdir = tempdir(), fileext = ".svg")

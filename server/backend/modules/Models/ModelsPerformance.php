@@ -61,7 +61,7 @@ class ModelsPerformance {
 	 *               - The first element is an associative array mapping each ID (based on $groupColumn) to its aggregated performance variables.
 	 *               - The second element is an array of unique performance variable names that were retrieved.
 	 */
-	public function getPerformaceVariables($ids, $groupColumn = "queueID", $aggregateFunc = "MAX", $measurements, $selected_class = 0) {
+	public function getPerformaceVariables($ids, $groupColumn = "queueID", $aggregateFunc = "MAX", $measurements, $selectedOutcomeOptionsIDs = 0) {
 
 		$ids = join(',', array_map('intval', $ids));
 
@@ -85,12 +85,17 @@ class ModelsPerformance {
 				    	ON models_performance.mpvid = models_performance_variables.id
 				WHERE " . $grouppings[$groupColumn] . " IN (" . $ids . ")";
 
-			if(is_array($measurements) && count($measurements) > 1) {
+			if(is_array($measurements) && count($measurements) > 0) {
 				$sql = $sql . " AND models_performance_variables.value IN ('" . join("','", $measurements) . "')";
 			}
 
-			$sql = $sql." AND models_performance.drm_id = '" . $selected_class . "'
-				GROUP BY
+			
+			if(is_array($selectedOutcomeOptionsIDs) && count($selectedOutcomeOptionsIDs) > 0) {
+				$outcomeClassIds = join(',', array_map('intval', $selectedOutcomeOptionsIDs));
+				$sql = $sql . " AND models_performance.drm_id IN (" . $outcomeClassIds . ")";
+			}
+
+			$sql = $sql." GROUP BY
 					" . $grouppings[$groupColumn] . ", models_performance_variables.value;";
 
 		$details = $this->database->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

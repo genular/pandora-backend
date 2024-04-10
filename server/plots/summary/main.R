@@ -11,4 +11,6 @@ source(paste0("server/",SERVER_NAME,"/summary/functions/plots.R"))
 ## POST & GET Declarations
 pandora$handle$plots$summary = list()
 source(paste0("server/",SERVER_NAME,"/summary/api/index.R"))
-source(paste0("server/",SERVER_NAME,"/summary/api/model-summary.R"))
+
+source(paste0("server/",SERVER_NAME,"/summary/api/two-class.R"))
+source(paste0("server/",SERVER_NAME,"/summary/api/multi-class.R"))

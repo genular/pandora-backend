@@ -1,12 +1,11 @@
 #* Plot out data from the iris dataset
 #* @serializer contentType list(type='image/png')
 #' @GET /plots/modelsummary/render-plot
-pandora$handle$plots$modelsummary$renderPlot <- expression(
+pandora$handle$plots$modelsummary$renderPlot$twoClass <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
         res.data <- list(training = list(), testing = list())
-
 
         resampleID <- 0
         if("resampleID" %in% names(args)){
@@ -52,12 +51,10 @@ pandora$handle$plots$modelsummary$renderPlot <- expression(
 
         plot_unique_hash <- list(
             training = list(
-                auc_roc = digest::digest(paste0(resampleID, "_",args$settings,"_training_auc"), algo="md5", serialize=F),
-                partial_dependence =  digest::digest(paste0(resampleID, "_",args$settings,"_training_partial_dependence"), algo="md5", serialize=F)
+                auc_roc = digest::digest(paste0(resampleID, "_",args$settings,"_training_auc"), algo="md5", serialize=F)
             ),
             testing = list(
-                auc_roc = digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc"), algo="md5", serialize=F),
-                auc_roc_full =  digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc_roc_full"), algo="md5", serialize=F)
+                auc_roc = digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc"), algo="md5", serialize=F)
             ),
             saveObjectHash = digest::digest(paste0(resampleID, "_",args$settings,"_exploration_modelsummary"), algo="md5", serialize=F)
         )
@@ -100,11 +97,13 @@ pandora$handle$plots$modelsummary$renderPlot <- expression(
         }
 
 
-        if(!is.null(trainingPredictions)){ 
-            tmp_path <- plot_auc_roc_training(trainingPredictions, settings, plot_unique_hash[["training"]][["auc_roc"]])
+        if(!is.null(trainingPredictions)){
 
-            res.data$training$auc_roc = optimizeSVGFile(tmp_path)
-            res.data$training$auc_roc_png = convertSVGtoPNG(tmp_path)
+            plot_unique_hash[["training"]]$auc_roc[["overall"]] <- digest::digest(paste0(resampleID, "_",args$settings,"_training_auc_overall"), algo="md5", serialize=F)
+            tmp_path <- plot_auc_roc_training(trainingPredictions, settings,  plot_unique_hash[["training"]]$auc_roc[["overall"]])
+
+            res.data$training$auc_roc[["overall"]] = optimizeSVGFile(tmp_path)
+            res.data$training$auc_roc_png[["overall"]] = convertSVGtoPNG(tmp_path)
         }
         
         # Plot AUC Testing
@@ -112,32 +111,14 @@ pandora$handle$plots$modelsummary$renderPlot <- expression(
 
             testingPredictions$predictionObject <- as.numeric(testingPredictions$predictionObject)
             testingPredictions$referenceData <- as.numeric(testingPredictions$referenceData)
-                        
-            tmp_path <- plot_auc_roc_testing(testingPredictions, settings, plot_unique_hash[["testing"]][["auc_roc"]])
             
-            res.data$testing$auc_roc = optimizeSVGFile(tmp_path)
-            res.data$testing$auc_roc_png = convertSVGtoPNG(tmp_path)
+            plot_unique_hash[["testing"]]$auc_roc[["overall"]] <- digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc_overall"), algo="md5", serialize=F)        
+            tmp_path <- plot_auc_roc_testing(testingPredictions, settings, plot_unique_hash[["testing"]]$auc_roc[["overall"]])
+            
+            res.data$testing$auc_roc[["overall"]] = optimizeSVGFile(tmp_path)
+            res.data$testing$auc_roc_png[["overall"]] = convertSVGtoPNG(tmp_path)
         }
-        
-        # Plot AUC Testing FULL
-        #tmp_path <- plot_auc_roc_testing_full(modelData, settings, plot_unique_hash[["testing"]][["auc_roc_full"]])
-        #res.data$testing$auc_roc_full = optimizeSVGFile(tmp_path)
-        #res.data$testing$auc_roc_full_png = convertSVGtoPNG(tmp_path)
-        
-        # Plot partial dependence
-        #tmp_path <- plot_partial_dependence(modelData, settings, plot_unique_hash[["training"]][["partial_dependence"]])
-        #res.data$training$partial_dependence = optimizeSVGFile(tmp_path)
-        #res.data$training$partial_dependence_png = convertSVGtoPNG(tmp_path)
-
-        ## Plot feature interaction
-
-
-        #tmp_path <- plot_feature_interaction(modelData, settings, plot_unique_hash[["training"]][["feature_interaction"]])
-        #res.data$training$feature_interaction = optimizeSVGFile(tmp_path)
-        #res.data$training$feature_interaction_png = convertSVGtoPNG(tmp_path)
-
-        ## https://stackoverflow.com/questions/30997876/how-to-obtain-coefficient-for-matthews-correlation-after-running-these-two-lines
-
+    
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(
             res.data = res.data, 

@@ -157,6 +157,7 @@ compute_multiclass_auc <- function(true_labels, class_probs, timeout_seconds = 3
         
         # Timeout wrapper
         multiclass_roc_obj <- R.utils::withTimeout({
+            # one-vs-rest ROC curves for each class
             pROC::multiclass.roc(response = true_labels, predictor = class_probs)
         }, timeout = timeout_seconds, onTimeout = "error")
         
