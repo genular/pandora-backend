@@ -493,8 +493,20 @@ plot_clustered_tsne <- function(info.norm, cluster_data, settings, tmp_hash){
 
 
 plot_cluster_features_means <- function(data, settings, tmp_hash){
+
+    if(!is.null(settings$groupingVariables)){
+        data <- data %>% select(-any_of(settings$groupingVariables))
+    }
+
+    # Define the specific columns to always retain
+    specific_cols <- c("tsne1", "tsne2", "pandora_cluster")
+    # Construct a logical vector to identify columns to keep
+    cols_to_keep <- sapply(data, is.numeric) | names(data) %in% specific_cols
+    # Use the vector to select columns from the dataframe
+    data_filtered <- select(data, which(cols_to_keep))
+
     # Calculate cluster means for each feature
-    cluster_means <- data %>%
+    cluster_means <- data_filtered %>%
         select(-c(tsne1, tsne2)) %>%
         group_by(pandora_cluster) %>%
         summarise(across(everything(), mean)) %>%
@@ -526,14 +538,27 @@ plot_cluster_features_means <- function(data, settings, tmp_hash){
 }
 
 plot_cluster_features_means_separated <- function(data, settings, tmp_hash){
-    # Calculate cluster means for each feature
-    cluster_means <- data %>%
-        select(-c(tsne1, tsne2)) %>%
-        group_by(pandora_cluster) %>%
-        summarise(across(everything(), mean)) %>%
-        ungroup()
 
-    overall_means <- colMeans(data %>% select(-c(tsne1, tsne2, pandora_cluster)))
+    if(!is.null(settings$groupingVariables)){
+        data <- data %>% select(-any_of(settings$groupingVariables))
+    }
+
+    # Define the specific columns to always retain
+    specific_cols <- c("tsne1", "tsne2", "pandora_cluster")
+    # Construct a logical vector to identify columns to keep
+    cols_to_keep <- sapply(data, is.numeric) | names(data) %in% specific_cols
+    # Use the vector to select columns from the dataframe
+    data_filtered <- select(data, which(cols_to_keep))
+
+    # Calculate cluster means for each feature
+    cluster_means <- data_filtered %>%
+        dplyr::select(-c(tsne1, tsne2)) %>%
+        dplyr::group_by(pandora_cluster) %>%
+        dplyr::summarise(across(everything(), mean)) %>%
+        dplyr::ungroup()
+
+
+    overall_means <- base::colMeans(data_filtered %>% select(-c(tsne1, tsne2, pandora_cluster)))
 
     # Calculate overall means for each feature
     cluster_feature_means_separated <- cluster_means %>%
