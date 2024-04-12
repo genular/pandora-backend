@@ -1,8 +1,10 @@
-plot_auc_roc_multiclass_testing <- function(roc_data, auc_value, settings, tmp_hash){ 
+plot_auc_roc_multiclass_testing <- function(roc_data, settings, tmp_hash){ 
+
+	save(roc_data, file = "/tmp/roc_data_testing")
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
    
-	plotData <- ggplot(roc_data, aes(x = FPR, y = TPR, color = Class, group = Class)) +
+	plotData <- ggplot(roc_data, aes(x = FPR, y = TPR, color = Label, group = Class)) +
 			    geom_line() +
 			    coord_equal() +
 			    style_roc(major.breaks = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1),
@@ -15,8 +17,8 @@ plot_auc_roc_multiclass_testing <- function(roc_data, auc_value, settings, tmp_h
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
 			    labs(title = "Multi-class ROC Curves",
-			         subtitle = paste("Comparison of model performance across different classes | AUC:", round(auc_value, 2)),
-			         color = "Class Comparison") 
+			         subtitle = paste("Comparison of model performance across different classes"),
+			         color = "Class Comparison (AUC)") 
 
 
     tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
@@ -26,6 +28,8 @@ plot_auc_roc_multiclass_testing <- function(roc_data, auc_value, settings, tmp_h
 
     return(tmp_path) 
 }
+
+
 plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, settings, tmp_hash){ 
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
@@ -56,7 +60,10 @@ plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, setting
     return(tmp_path) 
 }
 
-plot_auc_roc_multiclass_training <- function(roc_data, auc_value, settings, tmp_hash){ 
+plot_auc_roc_multiclass_training <- function(roc_data, settings, tmp_hash){ 
+
+	save(roc_data, file = "/tmp/roc_data_training")
+
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
    

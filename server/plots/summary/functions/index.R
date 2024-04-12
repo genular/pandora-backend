@@ -1,13 +1,13 @@
-# Function to update combined class labels
-update_class_labels <- function(combined_label, mapping) {
-  # Split the combined label by "/"
-  class_parts <- strsplit(combined_label, "/")[[1]]
-  
-  # Map each part to its original class name using the provided mapping
-  original_classes <- sapply(class_parts, function(part) mapping[part])
-  
-  # Combine the original class names back with "/"
-  combined_original <- paste(original_classes, collapse = "/")
-  
-  return(combined_original)
+update_class_labels_with_auc <- function(combined_label, mapping, auc_values) {
+    class_parts <- strsplit(combined_label, "/")[[1]]
+    original_classes <- sapply(class_parts, function(part) {
+        if (part %in% names(mapping)) {
+            return(mapping[part])
+        } else {
+            return(part)  # Return the part as is if not found in the mapping
+        }
+    })
+    label_with_auc <- paste(original_classes, collapse = " vs ")
+    final_label <- sprintf("%s - (%.2f)", label_with_auc, auc_values[[combined_label]])
+    return(final_label)
 }

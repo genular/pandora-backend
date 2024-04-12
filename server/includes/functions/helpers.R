@@ -435,7 +435,7 @@ executeSystemCommand <- function(cmd_string, time_out = 300){
 convertSVGtoPNG <- function(tmp_path){
     ## Optimize SVG using svgo package
     tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-    command <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
+    command <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png --dpi-x 300 --dpi-y 300 -o ",tmp_path_png)
     
     cmd_out <- executeSystemCommand(command, 1000)
 
