@@ -58,7 +58,6 @@ deployAPI <- function(pandora, options = list(host = "127.0.0.1", port = 8181)) 
     router$handle("GET", "/plots/summary/render-plot", pandora$handle$plots$summary$renderPlot, serializer = serializer_unboxed_json())
 
     ## Model Summary TAB
-    router$handle("GET", "/plots/model-summary/render-plot/two-class", pandora$handle$plots$modelsummary$renderPlot$twoClass, serializer = serializer_unboxed_json())
     router$handle("GET", "/plots/model-summary/render-plot/multi-class", pandora$handle$plots$modelsummary$renderPlot$multiClass, serializer = serializer_unboxed_json())
 
     router$handle("GET", "/plots/distribution/render-plot", pandora$handle$plots$distribution$renderPlot, serializer = serializer_unboxed_json())

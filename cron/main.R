@@ -500,6 +500,9 @@ for (dataset in datasets) {
                     outcomes <- colnames(predictionObject$predictions)
                     if(!all(outcome_mapping$class_remapped %in% outcomes)){
                         cat("===> ERROR: Not all outcomes found in predictions.\r\n")
+
+                        error_models <- c(error_models, paste0("===> ERROR: Not all outcomes found in predictions: ", paste(outcomes, sep = ",")))
+
                         valuesProcessedCheck <- FALSE
                     }
 
@@ -523,52 +526,46 @@ for (dataset in datasets) {
                         predictionConfusionMatrix <- predConfusionMatrix$data
                     }else{
                         cat(paste0("===> ERROR: Cannot calculate confusion matrix: ",predConfusionMatrix$data," \r\n"))
-                        error_models <- c(error_models, "Cannot calculate confusion matrix")
+                        error_models <- c(error_models, paste0("===> ERROR: Cannot calculate confusion matrix: ",predConfusionMatrix$data," \r\n"))
                     }
                     
-                    cat(paste0("===> INFO: Trying to calculate pROC/pAUC, postResample \r\n"))
                     if(predictionObject$type == "prob" && !is.null(predictionObject$predictions)){
-                        cat(paste0("===> INFO: Calculating pROC, pAUC \r\n"))
+                        cat(paste0("===> INFO: Calculating AUROC \r\n"))
                         # Initialize an empty list to store results
                         AUROC <- list()
 
                         # Determine if it's a binary or multi-class classification
                         num_classes <- nlevels(modelData$testing[[dataset$outcome]])
-                        if(num_classes < 3) {
-                            # Binary classification scenario
-                            class <- levels(modelData$testing[[dataset$outcome]])[1]
-                            
-                            result <- compute_auc_for_class(class, predictionObject$predictions, modelData$testing[[dataset$outcome]])
-                            if (result$status) {
-                                AUROC[[class]] <- result$data
-                            } else {
-                                cat("Error computing AUC for class", class, ": ", result$message, "\n")
-                            }
-                        } else {
-                            # Multi-class scenario
-                            # First, calculate individual class AUCs
-                            for(class in levels(modelData$testing[[dataset$outcome]])) {
-                                if(class %in% colnames(predictionObject$predictions)) {
-                                    result <- compute_auc_for_class(class, predictionObject$predictions, modelData$testing[[dataset$outcome]])
-                                    if (result$status) {
-                                        AUROC[[class]] <- result$data
-                                    } else {
-                                        cat("Error computing AUC for class", class, ": ", result$message, "\n")
-                                    }
+                        cat(paste0("===> INFO: Number of classes: ", num_classes, "\r\n"))
+
+                        # Calculate individual class AUCs
+                        for(class in levels(modelData$testing[[dataset$outcome]])) {
+                            if(class %in% colnames(predictionObject$predictions)) {
+
+                                cat(paste0("===> INFO: Compute AUC for: ",class, "\r\n"))
+
+                                result <- compute_auc_for_class(class, predictionObject$predictions, modelData$testing[[dataset$outcome]])
+                                if (result$status) {
+                                    AUROC[[class]] <- result$data
                                 } else {
-                                    cat(paste0("===> WARNING: Class ", class, " not found in predictions.\n"))
+                                    cat(paste0("===> ERROR computing AUC for class", class, ": ", result$message, "\r\n"))
+                                    error_models <- c(error_models, paste0("===> ERROR computing AUC for class", class, ": ", result$message, "\n"))
                                 }
+                            } else {
+                                cat(paste0("===> WARNING: Class ", class, " not found in predictions.\r\n"))
                             }
-                            
-                            # Then, calculate the multiclass ROC and AUC
-                            # Assuming predictionObject$predictions is a dataframe or matrix where columns are class scores
+                        }
+                        
+                        if (num_classes > 2) {
+                            cat(paste0("===> INFO: Compute Multi-class  AUC\r\n"))
                             multiclass_result <- compute_multiclass_auc(modelData$testing[[dataset$outcome]], predictionObject$predictions)
                             if (multiclass_result$status) {
                                 AUROC$Multiclass <- multiclass_result$data
                             } else {
-                                cat("Error computing multiclass AUC: ", multiclass_result$message, "\n")
+                                cat(paste0("===> ERROR computing multi-class AUC: ", multiclass_result$message, "\r\n"))
+                                error_models <- c(error_models, paste0("===> ERROR computing multi-class AUC: ", multiclass_result$message, "\n"))
                             }
-                        }
+                         }
 
                         # Calculate PrAUC for probability-based predictions
                         predPrAUC <- getPrAUC(predictionObject$predictions, modelData$testing[[dataset$outcome]], dataset, outcome_mapping, model_details)
@@ -593,10 +590,8 @@ for (dataset in datasets) {
                             error_models <- c(error_models, "Cannot calculate getPostResample")
                         }
                     }else{
-                        error_models <- c(error_models, "Not calculating pROC or pAUC")
+                        error_models <- c(error_models, paste0("Skipping AUC and potResample calculations. Type: ", predictionObject$type))
                     }
-
-
                 }else{
                     error_models <- c(error_models, "Cannot calculate prediction probabilities")
                 }

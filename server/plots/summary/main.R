@@ -18,5 +18,4 @@ source(paste0("server/",SERVER_NAME,"/summary/functions/roc-training.R"))
 pandora$handle$plots$summary = list()
 source(paste0("server/",SERVER_NAME,"/summary/api/training-summary-index.R"))
 
-source(paste0("server/",SERVER_NAME,"/summary/api/model-summary-two-class.R"))
 source(paste0("server/",SERVER_NAME,"/summary/api/model-summary-multi-class.R"))

@@ -18,6 +18,18 @@ roc_training_single <- function(modelData, settings, resampleID, outcome_mapping
         if (class %in% defined_classes) {
             print(paste0("===> INFO: Calculating ROC TRAINING for class: ", class))
             binary_observed <- ifelse(observed == class, 1, 0)
+
+            if (length(unique(binary_observed)) == 1) {
+                print(paste("Skipping ROC for class due to insufficient data:", class))
+                next  # Skip this iteration if binary conversion failed to produce two classes
+            }
+
+            if (is.null(modelData$training$raw$data$pred[[class]])) {
+                print(paste("Skipping ROC for class due to missing column in pred data:", class))
+                next
+            }
+
+
             # Compute ROC curve using pROC
             roc_obj <- pROC::roc(binary_observed, modelData$training$raw$data$pred[[class]])
             # Store ROC object for later use
@@ -40,6 +52,10 @@ roc_training_single <- function(modelData, settings, resampleID, outcome_mapping
         # Bind this temporary data frame to the main ROC data frame
         roc_data <- rbind(roc_data, tmp_data)
     }
+    if(nrow(roc_data) < 1){
+        return(list(roc_data = NULL, auc_labels = NULL))
+    }
+
     # Apply the class mapping
     roc_data$Class <- factor(roc_data$Class, levels = names(class_mapping), labels = class_mapping[names(class_mapping)])
     
@@ -75,6 +91,17 @@ roc_training_multi <- function(modelData, settings, resampleID, outcome_mappings
             for (comparison_class in classes) {
                 if (primary_class != comparison_class) {
                     binary_observed <- ifelse(observed == primary_class, 1, 0)
+
+                    if (length(unique(binary_observed)) == 1) {
+                        print(paste("Skipping ROC for class due to insufficient data:", primary_class))
+                        next  # Skip this iteration if binary conversion failed to produce two classes
+                    }
+
+                    if (is.null(modelData$training$raw$data$pred[[comparison_class]])) {
+                        print(paste("Skipping ROC for class due to missing column in pred data:", comparison_class))
+                        next
+                    }
+
                     binary_predicted <- modelData$training$raw$data$pred[[comparison_class]]
                     
                     # Compute ROC curve using pROC
@@ -97,6 +124,10 @@ roc_training_multi <- function(modelData, settings, resampleID, outcome_mappings
                 }
             }
         }
+    }
+
+    if(nrow(roc_data) < 1){
+        return(list(roc_data = NULL))
     }
 
     # Assuming 'Class' and 'Comparison' are already in the desired format but need pairing

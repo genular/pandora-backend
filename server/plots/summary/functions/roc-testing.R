@@ -35,7 +35,9 @@ roc_testing_single <- function(modelData, settings, resampleID, outcome_mappings
             }
         }
     }
-
+    if(nrow(roc_data) < 1){
+        return(list(roc_data = NULL, auc_labels = NULL))
+    }
     # Map internal class names to external readable names
     roc_data$Class <- factor(roc_data$Class, levels = names(class_mapping), labels = class_mapping[names(class_mapping)])
 
@@ -90,6 +92,9 @@ roc_testing_multi <- function(modelData, settings, resampleID, outcome_mappings)
             # Append data to the main ROC data frame
             roc_data_df <- rbind(roc_data_df, tmp_data)
         }
+    }
+    if(nrow(roc_data_df) < 1){
+        return(list(roc_data = NULL))
     }
 
     # Update the Class column in roc_data_df to include AUC values
