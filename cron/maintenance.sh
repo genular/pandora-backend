@@ -13,8 +13,18 @@ if [ -f "$LOG_FILE" ]; then
     fi
 fi
 
+# Set default directories and check existence, set to alternate if they don't exist
 APP_DIR_BACKEND="/var/www/genular/pandora-backend"
+if [ ! -d "$APP_DIR_BACKEND" ]; then
+    APP_DIR_BACKEND="/mnt/genular/pandora-backend"
+    echo "===> MAINTENANCE $(date) - Default backend directory not found. Using $APP_DIR_BACKEND instead." >> "$LOG_FILE"
+fi
+
 APP_DIR_FRONTEND="/var/www/genular/pandora"
+if [ ! -d "$APP_DIR_FRONTEND" ]; then
+    APP_DIR_FRONTEND="/mnt/genular/pandora"
+    echo "===> MAINTENANCE $(date) - Default frontend directory not found. Using $APP_DIR_FRONTEND instead." >> "$LOG_FILE"
+fi
 
 # Remove hs_err files from backend directory if it exists
 if [ -d "$APP_DIR_BACKEND" ]; then
@@ -32,7 +42,8 @@ if [ -f "$UPDATE_FILE" ]; then
 
     # Update Frontend repository
     if cd "$APP_DIR_FRONTEND"; then
-        git checkout . && git fetch && git checkout master && git pull origin master && \
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+        git checkout . && git fetch && git checkout "$current_branch" && git pull origin "$current_branch" && \
         yarn install --check-files && \
         yarn run webpack:web:prod --isDemoServer=false --server_frontend=$FRONTEND_URL --server_backend=$BACKEND_URL --server_homepage=$FRONTEND_URL
         echo "===> MAINTENANCE $(date) - Updated Frontend repository successfully." >> "$LOG_FILE"
@@ -42,7 +53,8 @@ if [ -f "$UPDATE_FILE" ]; then
 
     # Update Backend repository
     if cd "$APP_DIR_BACKEND/server/backend"; then
-        git checkout . && git fetch && git checkout master && git pull origin master && \
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+        git checkout . && git fetch && git checkout "$current_branch" && git pull origin "$current_branch" && \
         /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs && \
         /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
         echo "===> MAINTENANCE $(date) - Updated Backend repository successfully." >> "$LOG_FILE"
