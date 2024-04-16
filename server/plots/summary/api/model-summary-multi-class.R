@@ -72,8 +72,6 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
         ## 1st - Get all saved models for selected IDs
         modelsDetails <- db.apps.getModelsDetailsData(modelsIDs)
 
-        save(settings, file = paste0("/tmp/settings"))
-
         ## Only used for "single" when more than one model is selected
         trainingPredictions <- NULL
         testingPredictions <- NULL
@@ -88,16 +86,10 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
             } 
             modelData <- loadRObject(modelPath)
 
-            save(modelData, file = "/tmp/modelData")
-
             if (modelData$training$raw$status == TRUE) {
                 method <- modelData$training$raw$data$method
 
-                save(modelData, file = paste0("/tmp/modelData_",method))
-
                 outcome_mappings <- db.apps.getDatasetResamplesMappings(resampleID)
-
-                save(outcome_mappings, file = paste0("/tmp/outcome_mappings"))
 
                 selected_ids <- settings$selectedOutcomeOptionsIDs
                 # Remove any occurrences of 0 from selected_ids
@@ -253,7 +245,8 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
 
         print(paste0("===> INFO: Plotting model comparisons"))
 
-        if(!is.null(trainingPredictions)){
+        if(!is.null(trainingPredictions) && nrow(outcome_mappings) < 3){
+            
             print(paste0("===> INFO: Plotting ROC Training"))
             plot_unique_hash[["training"]]$comparison[["comparison"]] <- digest::digest(paste0(resampleID, "_",args$settings,"_training_comparison_comparison"), algo="md5", serialize=F)
             
@@ -272,7 +265,7 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
             res.data$training$comparison_png[["comparison"]] <- FALSE
         }
 
-        if(!is.null(testingPredictions)){
+        if(!is.null(testingPredictions) && nrow(outcome_mappings) < 3){
             print(paste0("===> INFO: Plotting ROC Testing"))
             plot_unique_hash[["testing"]]$comparison[["comparison"]] <- digest::digest(paste0(resampleID, "_",args$settings,"_testing_comparison_comparison"), algo="md5", serialize=F)        
             
