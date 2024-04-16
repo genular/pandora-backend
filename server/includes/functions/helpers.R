@@ -182,12 +182,31 @@ get_working_mode <- function(global_configuration){
 #' Create a new environment, load the .rda file into that environment, and retrieve object
 #' @param file_path
 #' @return object
-loadRObject <- function(file_path)
+loadRObject <- function(file_path, verbose = FALSE)
 {
-    env <- new.env()
-    nm <- load(file_path, env)[1]
-    return(env[[nm]])
+    # Create a new environment to load the object into
+    env <- new.env(parent = emptyenv())
+    
+    # Attempt to load the object and capture the name of the first object loaded
+    nm <- tryCatch({
+        load(file_path, envir = env, verbose = verbose)
+    }, error = function(e) {
+        if (verbose) cat("Error loading the file:", e$message, "\n")
+        return(NULL)  # Return NULL if there's an error
+    })
+
+    # Check if load was successful
+    if (is.null(nm) || length(nm) == 0) {
+        if (verbose) cat("No objects loaded.\n")
+        return(NULL)  # Return NULL if no objects were loaded
+    }
+
+    # Return the first object loaded
+    first_obj_name <- nm[1]
+    if (verbose) cat("Loaded object:", first_obj_name, "\n")
+    return(env[[first_obj_name]])
 }
+
 #' @title detach_package
 #' @description Detaches package from R session
 #' @param pkg
