@@ -262,7 +262,7 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                      # Optionally return NULL or some other indication of failure
                     NULL
                 })
-
+ 
                 if (!is.null(explanation)) {
                     # Correctly map remapped names to original names in the explanation dataframe
                     explanation$feature <- feature_mapping$original[match(explanation$feature, feature_mapping$remapped)]
