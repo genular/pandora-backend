@@ -37,9 +37,6 @@ fi
 if [ -d "$APP_DIR_BACKEND" ]; then
     find "$APP_DIR_BACKEND" -maxdepth 1 -name 'hs_err_pid*.log' -exec rm {} \;
     echo "===> MAINTENANCE $(date) - Removed Java error logs from backend directory"
-
-    ## Check if needed
-    chmod 777 "$APP_DIR_BACKEND/server/backend/public"
 fi
 
 # Update git repositories if update.txt exists
