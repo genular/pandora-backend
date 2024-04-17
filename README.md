@@ -29,7 +29,7 @@ To begin using PANDORA for your data analysis and machine learning projects, ple
 
 ## License
 
-PANDORA is released under the open-source license. For more details, please review the [LICENSE](https://github.com/genular/pandora/blob/master/LICENSE) file in the project repository.
+For more details, please review the [LICENSE](https://github.com/genular/pandora/blob/master/LICENSE) file in the project repository.
 
 ---
 
