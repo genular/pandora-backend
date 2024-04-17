@@ -309,84 +309,31 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     $config = $this->get('Noodlehaus\Config');
     
     // Extract URLs from the config
-    $frontendUrl = $config->get('frontend.server.url');
-    $backendUrl = $config->get('backend.server.url');
-    $homepageUrl = $frontendUrl; // Assuming homepage URL is the same as frontend URL
+    $frontendUrl = $config->get('default.frontend.server.url');
+    $backendUrl = $config->get('default.backend.server.url');
+
 
     // Check if running in a Docker container
     $isDocker = $this->get('settings')["is_docker"];
-	$userToExecuteAs = $isDocker ? 'genular' : 'login';
+    $userToExecuteAs = $isDocker ? 'genular' : 'login';
 
-    // Assuming this script is within the pandora-backend directory structure
-    $currentDir = __DIR__; // Gets the directory of the current script
+    $assetsPath = __DIR__ . '/../../../public/assets'; // Adjust path as needed to point to your public/assets directory
+    $filePath = $assetsPath . '/update.txt';
 
-    // Dynamically determine backend and frontend paths
-    $backendPath = preg_replace('/pandora-backend.*/', 'pandora-backend', $currentDir);
-    $frontendPath = str_replace('pandora-backend', 'pandora', $backendPath);
-
-    // Check if /usr/bin/php8.2 exists and is executable
-    $phpBinary = ($isDocker && is_executable('/usr/bin/php8.2')) ? '/usr/bin/php8.2' : 'php';
-
-    // Execute git pull for both paths
-    $pullFrontendCommand = "cd $frontendPath && git pull origin master 2>&1";
-    $pullFrontend = shell_exec("sudo -u $userToExecuteAs -- sh -c '$pullFrontendCommand'");
-
-    $this->get('Monolog\Logger')->info("PANDORA '/system/update' route: sudo -u $userToExecuteAs -- sh -c '$pullFrontendCommand'");
-
-    $pullBackendCommand = "cd $backendPath && git pull origin master 2>&1";
-    $pullBackend = shell_exec("sudo -u $userToExecuteAs -- sh -c '$pullBackendCommand'");
-
-    $this->get('Monolog\Logger')->info("PANDORA '/system/update' route: sudo -u $userToExecuteAs -- sh -c '$pullBackendCommand'");
-
-	// Composer commands need to be run as the web server's user or the specific application user
-	// Ensure $phpBinary path is correct and accessible for the user executing the script
-	$composerInstallCommand = "$phpBinary /usr/local/bin/composer install --ignore-platform-reqs -d $backendPath";
-	$composerInstall = shell_exec("sudo -u $userToExecuteAs -- sh -c '$composerInstallCommand'");
-
-	$composerPostInstallCommand = "$phpBinary /usr/local/bin/composer run-script post-install -d $backendPath -- /tmp/configuration.json";
-	$composerPostInstall = shell_exec("sudo -u $userToExecuteAs -- sh -c '$composerPostInstallCommand'");
-
-    $yarnEnv = $isDocker ? 'prod' : 'dev';
-	// For frontend, execute yarn build
-	$yarnBuildCommand = "cd $frontendPath && yarn install --check-files && yarn run webpack:web:$yarnEnv --isDemoServer=false --server_frontend=$frontendUrl --server_backend=$backendUrl --server_homepage=$homepageUrl";
-	$yarnBuild = shell_exec("sudo -u $userToExecuteAs -- sh -c '$yarnBuildCommand'");
-
-	$this->get('Monolog\Logger')->info("PANDORA '/system/update' route: sudo -u $userToExecuteAs -- sh -c '$yarnBuildCommand'");
-
-    // Check for errors or success
-    if (strpos($pullFrontend, 'Already up to date.') !== false && strpos($pullBackend, 'Already up to date.') !== false && strpos($yarnBuild, 'error') === false) {
-        $success = true;
-        $message = "Both repositories are already up to date, and frontend was built successfully.";
-    } else {
-        $success = strpos($yarnBuild, 'error') === false;
-		$message = "";
-
-		if (!empty($pullFrontend)) {
-		    $message .= "\nFrontend git pull: $pullFrontend";
-		}
-		if (!empty($pullBackend)) {
-		    $message .= "\nBackend git pull: $pullBackend";
-		}
-		if (!empty($composerInstall)) {
-		    $message .= "\nComposer install: $composerInstall";
-		}
-		if (!empty($composerPostInstall)) {
-		    $message .= "\nComposer post-install: $composerPostInstall";
-		}
-		if (!empty($yarnBuild)) {
-		    $message .= "\nYarn build: $yarnBuild";
-		}
-
-		if($message === ""){
-			$success = false;
-			$message = "There were errors during the update process. Please check the logs for more details.";
-		}else{
-			$message = "Repositories updated and frontend built with the following responses: ".$message;
-		}
+    // Ensure the directory exists and is writable
+    if (!file_exists($assetsPath)) {
+        if (!mkdir($assetsPath, 0777, true)) {
+            $message = 'Failed to create assets directory.';
+            return $response->withJson(["success" => false, "message" => $message]);
+        }
     }
 
-    $this->get('Monolog\Logger')->info("PANDORA '/system/update' route: Repositories updated and frontend built with the following responses:\nFrontend git pull: $pullFrontend\nBackend git pull: $pullBackend\nComposer install: $composerInstall\nComposer post-install: $composerPostInstall\nYarn build: $yarnBuild");
+    // Write/update URLs in the file
+    $fileContent = "FRONTEND_URL=$frontendUrl\nBACKEND_URL=$backendUrl\n";
 
-    return $response->withJson(["success" => $success, "message" => $message]);
+    if (file_put_contents($filePath, $fileContent) === false) {
+        return $response->withJson(["success" => false, "message" => 'Failed to write to the file.']);
+    }
+
+    return $response->withJson(["success" => true, "message" => 'Update process initiated.']);
 });
-

@@ -89,39 +89,18 @@ class System {
 			$cpuload = round(($cpuload / $cpu_count) * 100, 2);
 		}
 
-		// Linux MEM
-		// $free = shell_exec('free');
-		// $free = (string)trim($free);
-		// $free_arr = explode("\n", $free);
-		// $mem = explode(" ", $free_arr[1]);
-		// $mem = array_filter($mem, function($value) { return ($value !== null && $value !== false && $value !== ''); }); // removes nulls from array
-		// $mem = array_merge($mem); // puts arrays back to [0],[1],[2] after 
-		// $memtotal = round($mem[1] / 1000000,2);
-		// $memused = round($mem[2] / 1000000,2);
-		// $memusage = round(($memused/$memtotal)*100);		
-		// $phpload = round(memory_get_usage() / 1000000,2);
-		// $diskfree = round(disk_free_space(".") / 1000000000);
-		// $disktotal = round(disk_total_space(".") / 1000000000);
-		// $diskused = round($disktotal - $diskfree);
-		// $diskusage = round($diskused/$disktotal*100);
-		// if ($memusage > 85 || $cpuload > 85 || $diskusage > 85) {
-		// 	$general_status = 'red';
-		// } elseif ($memusage > 50 || $cpuload > 50 || $diskusage > 50) {
-		// 	$general_status = 'orange';
-		// } else {
-		// 	$general_status = '#2F2';
-		// }
+		$isSystemUpdate = false;
+
+	    $assetsPath = __DIR__ . '/../../../public/assets';
+	    $filePath = $assetsPath . '/update.txt';
+	    
+	    if (file_exists($filePath)) {
+	        $isSystemUpdate = true;
+	    }
 
 		return [
-			// "ram" => $memusage, 
 			"cpu" => $cpuload, 
-			// "load" => $load, 
-			// "phpload" => $phpload, 
-			// "operating_system" => $operating_system, 
-			// "diskfree" => $diskfree, 
-			// "disktotal" => $disktotal, 
-			// "diskusage" => $diskusage, 
-			// "general_status" => $general_status
+			"system_update" => $isSystemUpdate, 
 		];
 	}
 
@@ -168,35 +147,49 @@ class System {
 			["value" => "AccuracyPValue"],
 			["value" => "AccuracyUpper"],
 			["value" => "Balanced Accuracy"],
+			["value" => "BalancedAccuracy"],
 			["value" => "Detection Prevalence"],
 			["value" => "Detection Rate"],
+			["value" => "DetectionPrevalence"],
+			["value" => "DetectionRate"],
 			["value" => "F1"],
 			["value" => "Kappa"],
 			["value" => "McnemarPValue"],
 			["value" => "Neg Pred Value"],
+			["value" => "NegPredValue"],
 			["value" => "Pos Pred Value"],
+			["value" => "PosPredValue"],
 			["value" => "PositiveControl"],
 			["value" => "Precision"],
 			["value" => "PredictAUC"],
-			["value" => "prAUC"],
 			["value" => "Prevalence"],
 			["value" => "Recall"],
 			["value" => "Sensitivity"],
 			["value" => "Specificity"],
-			["value" => "TrainAccuracy"],
 			["value" => "TrainAUC"],
+			["value" => "TrainAccuracy"],
 			["value" => "TrainBalanced_Accuracy"],
 			["value" => "TrainDetection_Rate"],
 			["value" => "TrainF1"],
 			["value" => "TrainKappa"],
-			["value" => "TrainlogLoss"],
+			["value" => "TrainMean_Balanced_Accuracy"],
+			["value" => "TrainMean_Detection_Rate"],
+			["value" => "TrainMean_F1"],
+			["value" => "TrainMean_Neg_Pred_Value"],
+			["value" => "TrainMean_Pos_Pred_Value"],
+			["value" => "TrainMean_Precision"],
+			["value" => "TrainMean_Recall"],
+			["value" => "TrainMean_Sensitivity"],
+			["value" => "TrainMean_Specificity"],
 			["value" => "TrainNeg_Pred_Value"],
 			["value" => "TrainPos_Pred_Value"],
-			["value" => "TrainprAUC"],
 			["value" => "TrainPrecision"],
 			["value" => "TrainRecall"],
 			["value" => "TrainSensitivity"],
 			["value" => "TrainSpecificity"],
+			["value" => "TrainlogLoss"],
+			["value" => "TrainprAUC"],
+			["value" => "prAUC"]
 		]);
 	}
 

@@ -110,15 +110,23 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 
 	$queueID = $request->getQueryParam('queueID', 0);
 	$measurements = $request->getQueryParam('measurements', []);
+	
+	// Outcome class to get measurements for?!
+	$selectedOutcomeOptionsIDs = $request->getQueryParam('selectedOutcomeOptionsIDs', [0]);
 
 	if (is_numeric($queueID)) {
 		$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
 		$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
 
 		if ($queueDetails !== false) {
+			$DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
+			$queueDetails["outcomeMappings"] =  $DatasetResamplesMappings->getMappingsForQueue($queueID);
+
+
 			$ModelsPerformance = $this->get('PANDORA\Models\ModelsPerformance');
 
-			list($queuePerformace, $queuePerformaceVariables) = $ModelsPerformance->getPerformaceVariables([$queueID], "queueID", "MAX", $measurements);
+			// Get Average performance for the queue
+			list($queuePerformace, $queuePerformaceVariables) = $ModelsPerformance->getPerformaceVariables([$queueID], "queueID", "MAX", $measurements, $selectedOutcomeOptionsIDs);
 
 			if (isset($queuePerformace[$queueID])) {
 				$queueDetails["performance"] = $queuePerformace[$queueID]["performance"];
@@ -131,7 +139,7 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$resamplesList = $DatasetResamples->getDatasetResamples($queueID, $user_id);
 			$resamplesListIDs = array_column($resamplesList, 'resampleID');
 
-			list($resamplesPerformace, $resamplesPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($resamplesListIDs, "resampleID", "MAX", $measurements);
+			list($resamplesPerformace, $resamplesPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($resamplesListIDs, "resampleID", "MAX", $measurements, $selectedOutcomeOptionsIDs);
 
 			$DatasetProportions = $this->get('PANDORA\Dataset\DatasetProportions');
 			$resamplesProportions = $DatasetProportions->getDatasetResamplesProportions($resamplesListIDs);
@@ -162,7 +170,8 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
 
 			$modelsListIDs = array_column($modelsList, 'modelID');
-			list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements);
+			list($modelsPerformace, $modelsPerformaceVariables) = $ModelsPerformance->getPerformaceVariables($modelsListIDs, "modelID", "MAX", $measurements, $selectedOutcomeOptionsIDs);
+
 			$modelsList = $Models->assignMesurmentsToModels($modelsList, $modelsPerformace, $modelsPerformaceVariables);
 
 			$modelsListNameIDs = array_column($modelsList, 'modelName');
@@ -171,12 +180,64 @@ $app->get('/backend/queue/exploration/list', function (Request $request, Respons
 			$modelPackagesDetails = $ModelsPackages->getPackages(1, null, $modelsListNameIDs);
 
 			$modelsList = $Models->assignPackageDetailsToModels($modelsList, $modelPackagesDetails);
+			// Custom sorting function using usort
+			usort($modelsList, function ($a, $b) {
+			    // Updated prioritized list of metrics based on the given criteria for a broad overview
+			    $metrics = [
+			        'Accuracy', 
+			        'BalancedAccuracy', // Assuming 'Balanced Accuracy' and 'BalancedAccuracy' are used interchangeably
+			        'PredictAUC',
+			        'TrainAUC',
+			        'F1',
+			        'Precision',
+			        'Recall',
+			        'Specificity',
+			        'prAUC',
+			        'Kappa',
+			        'NegPredValue',
+			        'PosPredValue',
+			        'DetectionRate',
+			        'TrainAccuracy',
+			        'TrainBalanced_Accuracy',
+			        'TrainF1',
+			        'TrainPrecision',
+			        'TrainRecall',
+			        'TrainSpecificity',
+			        'TrainMean_Balanced_Accuracy',
+			        'TrainMean_F1',
+			        'TrainMean_Precision',
+			        'TrainMean_Recall',
+			        'TrainMean_Sensitivity',
+			        'TrainMean_Specificity',
+			        'TrainNeg_Pred_Value',
+			        'TrainPos_Pred_Value',
+			        'TrainlogLoss',
+			        'TrainprAUC'
+			    ];
+			    
+			    foreach ($metrics as $metric) {
+			        // Assign -INF if metric is missing to ensure models with missing metrics are ranked lower
+			        $aMetric = isset($a['performance'][$metric]) ? $a['performance'][$metric] : -INF;
+			        $bMetric = isset($b['performance'][$metric]) ? $b['performance'][$metric] : -INF;
+
+			        // Compare the current metric, prioritizing higher values
+			        if ($aMetric != $bMetric) {
+			            return $aMetric < $bMetric ? 1 : -1;
+			        }
+			    }
+
+			    // If all compared metrics are equal or missing, sort by modelID as a last resort
+			    // This ensures a consistent order even if performance metrics are the same
+			    return $a['modelID'] - $b['modelID'];
+			});
+
+
 
 			$message = Array(
 				'resamplesList' => $resamplesList,
 				'modelsList' => $modelsList,
 				'queueDetails' => $queueDetails,
-				'performaceVariables' => $modelsPerformaceVariables,
+				'performaceVariables' => $resamplesPerformaceVariables,
 			);
 		} else {
 			$success = false;

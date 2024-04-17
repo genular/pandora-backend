@@ -43,7 +43,7 @@ preProcessDataset <- function(dataset) {
 
     status <- checkSelectedOutcomeValues(datasetData, dataset$outcome)
     if(status == FALSE){
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values"), "id", dataset$resampleID)
         return(status)
     }
@@ -79,8 +79,8 @@ preProcessDataset <- function(dataset) {
     data$training <- data$training[order(data$training[[dataset$outcome]]), ]
     data$testing <- data$testing[order(data$testing[[dataset$outcome]]), ]
 
-    updateDatabaseFiled("dataset_resamples", "samples_training",nrow(data$training), "id", dataset$resampleID)
-    updateDatabaseFiled("dataset_resamples", "samples_testing", nrow(data$testing), "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "samples_training",nrow(data$training), "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "samples_testing", nrow(data$testing), "id", dataset$resampleID)
 
 
     ## Calculate dataset proportions
@@ -92,21 +92,21 @@ preProcessDataset <- function(dataset) {
         "csv", FALSE)
     savedFileIDTrain <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
-    updateDatabaseFiled("dataset_resamples", "ufid_train", savedFileIDTrain, "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "ufid_train", savedFileIDTrain, "id", dataset$resampleID)
 
     saveDataPaths <- saveAndUploadObject(data$testing, dataset$userID, 
         paste0(JOB_DIR,"/data/",dataset$queueID,"_",dataset$resampleID,"_testing_partition.csv"), 
         paste0("analysis/",dataset$queueID,"/",dataset$resampleID,"/partitions"),
         "csv", FALSE)
     savedFileIDTest <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
-    updateDatabaseFiled("dataset_resamples", "ufid_test", savedFileIDTest, "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "ufid_test", savedFileIDTest, "id", dataset$resampleID)
 
     if(is.null(savedFileIDTest) || is.null(savedFileIDTrain)){
         success <- FALSE
         message <- paste0("===> ERROR: Cannot save partitioned data into database, detected file ids: ",savedFileIDTrain," - ", savedFileIDTest)
         cat(message)
 
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message)
         return(success)
     }
@@ -114,19 +114,19 @@ preProcessDataset <- function(dataset) {
     ## Check number of unique outcomes in our partitions
     status <- checkSelectedOutcomeValues(data$training, dataset$outcome)
     if(status == FALSE){
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Training partition"), "id", dataset$resampleID)
         return(status)
     }
 
     status <- checkSelectedOutcomeValues(data$testing, dataset$outcome)
     if(status == FALSE){
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Testing partition"), "id", dataset$resampleID)
         return(status)
     }
 
-    updateDatabaseFiled("dataset_resamples", "status", 3, "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "status", 3, "id", dataset$resampleID)
 
     ## If we successfully generated and preprocessed current resample check if we need to do RFE
     if(dataset$resampleDataSource == 0 & dataset$backwardSelection == 1){
@@ -182,21 +182,21 @@ preProcessDataset <- function(dataset) {
                 "csv", FALSE)
             savedFileIDTrain <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
-            updateDatabaseFiled("dataset_resamples", "ufid_train", savedFileIDTrain, "id", rfeResampleID)
+            updateDatabaseField("dataset_resamples", "ufid_train", savedFileIDTrain, "id", rfeResampleID)
 
             saveDataPaths <- saveAndUploadObject(rfeData$testing, dataset$userID, 
                 paste0(JOB_DIR,"/data/",dataset$queueID,"_",rfeResampleID,"_testing_partition.csv"), 
                 paste0("analysis/",dataset$queueID,"/",rfeResampleID,"/partitions"),
                 "csv", FALSE)
             savedFileIDTest <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
-            updateDatabaseFiled("dataset_resamples", "ufid_test", savedFileIDTest, "id", rfeResampleID)
+            updateDatabaseField("dataset_resamples", "ufid_test", savedFileIDTest, "id", rfeResampleID)
 
             if(is.null(savedFileIDTest) || is.null(savedFileIDTrain)){
                 success <- FALSE
                 message <- paste0("===> ERROR: RFE - Cannot save partitioned data into database, detected file ids: ",savedFileIDTrain," - ", savedFileIDTest)
                 cat(message)
 
-                updateDatabaseFiled("dataset_resamples", "status", 6, "id", rfeResampleID)
+                updateDatabaseField("dataset_resamples", "status", 6, "id", rfeResampleID)
                 appendDatabaseFiled("dataset_resamples", "error", message)
                 return(success)
             }
@@ -204,19 +204,19 @@ preProcessDataset <- function(dataset) {
             ## Check number of unique outcomes in our partitions
             status <- checkSelectedOutcomeValues(rfeData$training, dataset$outcome)
             if(status == FALSE){
-                updateDatabaseFiled("dataset_resamples", "status", 6, "id", rfeResampleID)
+                updateDatabaseField("dataset_resamples", "status", 6, "id", rfeResampleID)
                 appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Training partition"), "id", rfeResampleID)
                 return(status)
             }
 
             status <- checkSelectedOutcomeValues(rfeData$testing, dataset$outcome)
             if(status == FALSE){
-                updateDatabaseFiled("dataset_resamples", "status", 6, "id", rfeResampleID)
+                updateDatabaseField("dataset_resamples", "status", 6, "id", rfeResampleID)
                 appendDatabaseFiled("dataset_resamples", "error", paste0("Not enough number of unique outcome class levels/values in Testing partition"), "id", rfeResampleID)
                 return(status)
             }
 
-            updateDatabaseFiled("dataset_resamples", "status", 3, "id", rfeResampleID)
+            updateDatabaseField("dataset_resamples", "status", 3, "id", rfeResampleID)
 
         }else{
             message <- paste0("===> ERROR: Could not process RFE, not creating any resamples in database.\r\n")
@@ -224,8 +224,8 @@ preProcessDataset <- function(dataset) {
             str(rfeResults)
         }
         ## Mark resample as RFF processed
-        updateDatabaseFiled("dataset_resamples", "data_source", 2, "id", dataset$resampleID)
-        updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "data_source", 2, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 5, "id", dataset$resampleID)
     }
 
 

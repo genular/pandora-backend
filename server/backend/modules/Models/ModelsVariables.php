@@ -69,26 +69,35 @@ class ModelsVariables {
 	 * @param  [type] $sort_by    [description]
 	 * @return [type]             [description]
 	 */
-	public function getVariableImportance($modelsID, $page, $page_size, $sort, $sort_by) {
+	public function getVariableImportance($modelsID, $page, $page_size, $sort, $sort_by, $selectedOutcomeOptionsIDs = []) {
 
 		$start_limit = (($page - 1) * $page_size);
 		$end_limit = $page_size;
 
 		$mids = join(',', array_map('intval', $modelsID));
 
+	    // Start building the SQL query
 		$sql = "SELECT models_variables.id                     AS id,
-				       models.id           					   AS model_id,
-				       models_packages.internal_id             AS model_internal_id,
-				       models_variables.feature_name           AS feature_name,
-				       Round(Avg(models_variables.score_perc)) AS score_perc,
-				       Round(Avg(models_variables.score_no))   AS score_no,
-				       Round(Avg(models_variables.rank))       AS rank
-				FROM   models_variables
+		               models.id                                AS model_id,
+		               models_packages.internal_id             AS model_internal_id,
+		               models_variables.feature_name           AS feature_name,
+		               models_variables.drm_id           		AS drm_id,
+		               dataset_resamples_mappings.class_original AS class_original,
+		               dataset_resamples_mappings.class_remapped AS class_remapped,
+		               ROUND(AVG(models_variables.score_perc)) AS score_perc,
+		               ROUND(AVG(models_variables.score_no))   AS score_no,
+		               ROUND(AVG(models_variables.rank))       AS rank
+		        FROM   models_variables
+		        LEFT JOIN models ON models_variables.mid = models.id
+		        LEFT JOIN models_packages ON models.mpid = models_packages.id
+		        LEFT JOIN dataset_resamples_mappings ON models_variables.drm_id = dataset_resamples_mappings.id
+		        WHERE  models_variables.mid IN (" . $mids . ")";
 
-				LEFT JOIN models ON models_variables.mid = models.id
-				LEFT JOIN models_packages ON models.mpid = models_packages.id
-
-				WHERE  models_variables.mid IN (" . $mids . ")";
+	    // Conditionally adding WHERE clause for selectedOutcomeOptionsIDs
+	    if (!empty($selectedOutcomeOptionsIDs)) {
+	        $outcomeClassIds = join(',', array_map('intval', $selectedOutcomeOptionsIDs));
+	        $sql .= " AND models_variables.drm_id IN (" . $outcomeClassIds . ")";
+	    }
 
 		if ($sort === true) {
 			$sort = "ASC";

@@ -5,7 +5,7 @@ pandora$handle$plots$summary$renderPlot <- expression(
     function(req, res, ...){
         args <- as.list(match.call())
 
-        data <- list(boxplot = NULL, rocplot = NULL, boxplot_png = NULL, rocplot_png = NULL, info = list(summary = NULL, differences = NULL))
+        data <- list(boxplot = NULL,  boxplot_png = NULL, info = list(summary = NULL, differences = NULL))
 
 
         plotUniqueHash <- ""
@@ -22,6 +22,8 @@ pandora$handle$plots$summary$renderPlot <- expression(
         }
 
         plotUniqueHash <-  digest::digest(plotUniqueHash, algo="md5", serialize=F)
+
+        print(paste0("==> INFO: Training Summery - modelIDs: ", paste(modelsIDs, collapse = ", ")))
 
         ## 1st - Get all saved models for selected IDs
         modelsDetails <- db.apps.getModelsDetailsData(modelsIDs)
@@ -46,10 +48,11 @@ pandora$handle$plots$summary$renderPlot <- expression(
             }
         }
 
+        print("===> modelsResampleData")
+
         if(length(modelsResampleData) > 1){
             resamps <- caret::resamples(modelsResampleData)
-
-
+            
             ## 1. BOX PLOT
             plotData <- reshape2::melt(resamps$values, id.vars = "Resample")
             tmp <- strsplit(as.character(plotData$variable), "~", fixed = TRUE)
@@ -90,44 +93,18 @@ pandora$handle$plots$summary$renderPlot <- expression(
             data$info$summary <- paste(data$info$summary, collapse="\n")
             data$info$summary <- toString(RCurl::base64Encode(data$info$summary, "txt"))
 
-            data$info$differences <- R.utils::captureOutput(summary(diff(resamps)))
-            data$info$differences <- paste(data$info$differences, collapse="\n")
-            data$info$differences <- toString(RCurl::base64Encode(data$info$differences, "txt"))
-
-
 
             unique_pred_levels <- unique(c(levels(modelPredictionData$pred), levels(modelPredictionData$obs)))
+
+            if(length(unique_pred_levels) <= 2){
+                data$info$differences <- R.utils::captureOutput(summary(diff(resamps)))
+                data$info$differences <- paste(data$info$differences, collapse="\n")
+                data$info$differences <- toString(RCurl::base64Encode(data$info$differences, "txt"))
+            }else{
+                data$info$differences <- FALSE
+            }
            
-            ## 4. ROC_AUC_PLOT
-            tmp_path <- tempfile(pattern = "file", tmpdir = tempdir(), fileext = ".svg")
-            tempdir(check = TRUE)
-            svg(tmp_path, width = 8, height = 8, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
 
-                plot <- ggplot(modelPredictionData, aes(m=B, d=factor(obs, levels = unique_pred_levels), fill = method, color = method)) + 
-                    geom_roc(hjust = -0.4, vjust = 1.5, linealpha = 1, increasing = TRUE) + 
-                    coord_equal() +
-                    style_roc(major.breaks = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1),
-                            minor.breaks = c(seq(0, 0.1, by = 0.01), seq(0.9, 1, by = 0.01)),
-                            guide = TRUE, 
-                            xlab = "False positive fraction (1-specificity)",
-                            ylab = "True positive fraction (sensitivity)", 
-                            theme = theme_bw) + 
-                    geom_abline(slope = 1, intercept = 0, color = "#D3D3D3", aplha = 0.85, linetype="longdash") +
-                    scale_fill_brewer(palette="Set1")
-
-                print(plot)
-
-            dev.off() 
-
-
-            ## Optimize SVG using svgo package
-            tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-            png_cmd <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png -o ",tmp_path_png)
-            convert_cmd <- paste0(which_cmd("svgo")," ",tmp_path," -o ",tmp_path, " && ", png_cmd)
-            system(convert_cmd, intern = TRUE, ignore.stdout = TRUE, ignore.stderr = TRUE, wait = TRUE)
-
-            data$rocplot <- toString(RCurl::base64Encode(readBin(tmp_path, "raw", n = file.info(tmp_path)$size), "txt"))
-            data$rocplot_png <- toString(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
         }
 
         return (list(success = TRUE, message = data))

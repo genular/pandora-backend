@@ -96,7 +96,6 @@ if(!file.exists(sourceFile)){
 if(isStandAlone == FALSE){
     cat(paste0("===> INFO: CRON mode: server \r\n"))
 
-
     ## Check if some other R CRON process is already running and KILL it
     process_list <- is_process_running("cron_analysis")
     kill_process_pids(process_list)
@@ -163,7 +162,7 @@ if(length(serverData) < 1){
 ## Dataset queue status: 3 Marked for processing 
 queue_status <- 3
 ## At this stage status og the queue should be changed to 3 - Marked for processing
-updateDatabaseFiled("dataset_queue", "status", queue_status, "id", serverData$queueID)
+updateDatabaseField("dataset_queue", "status", queue_status, "id", serverData$queueID)
 
 ## If more than 1 server is started for specific dataset one must wait while 
 ## 1st one makes train and test partitions and save them into database, 
@@ -224,7 +223,7 @@ skipped_datasets <- 0
 if(total_datasets > 0){
     ## At this stage status of the queue should be changed to 4 - Processing
     queue_status <- 4
-    updateDatabaseFiled("dataset_queue", "status", queue_status, "id", serverData$queueID)
+    updateDatabaseField("dataset_queue", "status", queue_status, "id", serverData$queueID)
 }
 
 ## Lets sort resample datasets by number of samples so we process one with more samples first
@@ -247,7 +246,7 @@ for (dataset in datasets) {
     cat(paste0("+++> INFO: Started resampleID: ",dataset$resampleID," outcome: ",dataset$outcome," at: ", resample_time_start," Local-path: ",JOB_DIR," <+++\r\n"))
 
     ## Mark re-sample in database that is currently processing
-    updateDatabaseFiled("dataset_resamples", "status", 4, "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "status", 4, "id", dataset$resampleID)
 
     data = list(training = "",testing = "")
     outcome_and_classes <- c(dataset$outcome, dataset$classes)
@@ -260,7 +259,7 @@ for (dataset in datasets) {
         message <- paste0("===> ERROR: SKIPPING INFO: remotePathTrain: ",dataset$remotePathTrain," filePathTraining: ",filePathTraining,"\r\n")
         message <- paste0("===> ERROR: SKIPPING INFO: remotePathTest: ",dataset$remotePathTest," filePathTraining: ",filePathTesting,"\r\n")
         cat(message)
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message, "id", dataset$resampleID)
 
         next()
@@ -270,7 +269,7 @@ for (dataset in datasets) {
     if (is.null(dataset$samples_testing) || as.numeric(dataset$samples_testing) <= 10) {
         message <- paste0("===> ERROR: SKIPPING Cannot make predictions on the model, not enough samples in test set (>=10) samples_testing: ",dataset$samples_testing," \r\n")
         cat(message)
-        updateDatabaseFiled("dataset_resamples", "status", 6, "id", dataset$resampleID)
+        updateDatabaseField("dataset_resamples", "status", 6, "id", dataset$resampleID)
         appendDatabaseFiled("dataset_resamples", "error", message, "id", dataset$resampleID)
         next()
     }
@@ -329,7 +328,7 @@ for (dataset in datasets) {
                 cat(paste0("======> INFO: Stopping current running task UPTIME_PID file \r\n"))
                 ## At this stage status of the queue should be changed to 7 - User paused
                 queue_status <- 7
-                updateDatabaseFiled("dataset_queue", "status", queue_status, "id", serverData$queueID)
+                updateDatabaseField("dataset_queue", "status", queue_status, "id", serverData$queueID)
 
                 cat(paste0("======> INFO: Deleting UPTIME_PID file \r\n"))
                 invisible(file.remove(UPTIME_PID))
@@ -469,14 +468,15 @@ for (dataset in datasets) {
         trainingVariableImportance <- NULL
         predictionObject <- NULL
         predictionProcessed <- NULL
-        predictionAUC <- NULL
+        AUROC <- NULL
         prAUC <- NULL
+
         predictionPostResample <- NULL
         predictionConfusionMatrix <- NULL
 
         if(trainModel$status == TRUE){
             cat(paste0("===> INFO: Calculating variable importance for model: ",model," \r\n"))
-            trainingVariableImportance <- prepareVariableImportance(trainModel$data)
+            trainingVariableImportance <- prepareVariableImportance(trainModel$data, outcome_mapping)
             if (is.null(trainingVariableImportance)) { 
                 error_models <- c(error_models, "Cannot calculate variable importance")
             }
@@ -488,101 +488,98 @@ for (dataset in datasets) {
             ## Test prediction with prediction dataset on our newly training model
             predictionObject <- caretPredict(trainModel$data, modelData$testing, dataset$outcome, model_details)
 
-            cat(paste0("===> INFO: Predictions of ",model," finished. Prediction type: ",predictionObject$type," Interface: ",model_details$interface," \r\n"))
+            cat(paste0("===> INFO: Predictions of ",model," finished. Prediction TYPE: ",predictionObject$type," Interface: ",model_details$interface," \r\n"))
 
             ## Go to following step only if predictions are successful
             if (predictionObject$status == TRUE) {
-                ## RAW predictions
                 predictionProcessed <- NULL
-
-                ## TODO: adjust for multiple outcomes!
-                ## Calculate for each outcome separately via one-vs-all approach and get median values with multiclass.roc
-
-                positivePredictionValue <- outcome_mapping[1, ]
-                negativePredictionValue <- outcome_mapping[2, ]
-
-                ## Make a cutoff and re-level the data
+                valuesProcessedCheck <- TRUE
+                
+                ## Handling predictions based on the type
                 if(predictionObject$type == "prob"){
-                    valuesProcessedCheck <- TRUE
-                    if(outcome_mapping[1, ]$class_remapped %in% colnames(predictionObject$predictions)){
-                        positivePredictionValue <- outcome_mapping[1, ]
-                        negativePredictionValue <- outcome_mapping[2, ]
-                    }else{
-                        if(outcome_mapping[2, ]$class_remapped %in% colnames(predictionObject$predictions)){
-                            cat(paste0("===> ERROR: Could not find any predictions for ",outcome_mapping[1, ]$class_remapped," inverting classes and using ",positivePredictionValue$class_remapped," for positive value. TODO: fix roc plot \r\n"))
-                            positivePredictionValue <- outcome_mapping[2, ]
-                            negativePredictionValue <- outcome_mapping[1, ]
-                        }else{
-                            valuesProcessedCheck <- FALSE
-                        }
+                    outcomes <- colnames(predictionObject$predictions)
+                    if(!all(outcome_mapping$class_remapped %in% outcomes)){
+                        cat("===> ERROR: Not all outcomes found in predictions.\r\n")
+
+                        error_models <- c(error_models, paste0("===> ERROR: Not all outcomes found in predictions: ", paste(outcomes, sep = ",")))
+
+                        valuesProcessedCheck <- FALSE
                     }
 
-                    if(valuesProcessedCheck == TRUE){
-                        ## Class prediction is based on a 50% probability cutoff. 
-                        threshold <- 0.5
-                        predictionsTmpCutOff <- base::factor( ifelse(predictionObject$predictions[, positivePredictionValue$class_remapped] > threshold, positivePredictionValue$class_remapped, negativePredictionValue$class_remapped) )
-                        ## More than one class is successfully predicted (A & B)
-                        if(length(unique(predictionsTmpCutOff)) > 1){
-                            tryCatch({
-                                predictionProcessed <- relevel(predictionsTmpCutOff, ref = positivePredictionValue$class_remapped)
-                            }, error = function(e) {
-                                cat("===> ERROR: predictionProcessed relevel function:", e$message, "\r\n")
-                                print(predictionObject$predictions)
-                                print(predictionsTmpCutOff)
-                                print(positivePredictionValue)
-
-                                predictionProcessed <- NULL
-                            })
-                        ## Only one unique class is predicted (A)
-                        } else if(length(predictionsTmpCutOff) > 1){
-                            predictionProcessed <- predictionsTmpCutOff
-                        ## Nothing is predicted
-                        }else{
-                            predictionProcessed <- NULL
-                        }
+                    if(valuesProcessedCheck){
+                        ## Multi-class handling with highest probability
+                        predictionsTmpCutOff <- apply(predictionObject$predictions, 1, function(x) names(x)[which.max(x)])
+                        predictionProcessed <- factor(predictionsTmpCutOff, levels = outcome_mapping$class_remapped)
                     }
-
-                }else if(predictionObject$type == "raw"){
+                } else if(predictionObject$type == "raw"){
                     predictionProcessed <- predictionObject$predictions
                 }
+
 
                 if(!is.null(predictionProcessed)){
 
                     cat(paste0("===> INFO: Trying to calculate confusionMatrix \r\n"))
                     ## Calculate confusion matrix
                     predConfusionMatrix <- getConfusionMatrix(predictionProcessed, modelData$testing[[dataset$outcome]], model_details)
+                    
                     if(predConfusionMatrix$status == TRUE){
                         predictionConfusionMatrix <- predConfusionMatrix$data
                     }else{
                         cat(paste0("===> ERROR: Cannot calculate confusion matrix: ",predConfusionMatrix$data," \r\n"))
-                        error_models <- c(error_models, "Cannot calculate confusion matrix")
+                        error_models <- c(error_models, paste0("===> ERROR: Cannot calculate confusion matrix: ",predConfusionMatrix$data," \r\n"))
                     }
                     
-                    cat(paste0("===> INFO: Trying to calculate pROC/pAUC, postResample \r\n"))
                     if(predictionObject$type == "prob" && !is.null(predictionObject$predictions)){
-                        cat(paste0("===> INFO: Calculating pROC, pAUC \r\n"))
+                        cat(paste0("===> INFO: Calculating AUROC \r\n"))
+                        # Initialize an empty list to store results
+                        AUROC <- list()
 
-                        predROC <- getPredictROC(modelData$testing[[dataset$outcome]], predictionObject$predictions[, positivePredictionValue$class_remapped], model_details)
+                        # Determine if it's a binary or multi-class classification
+                        num_classes <- nlevels(modelData$testing[[dataset$outcome]])
+                        cat(paste0("===> INFO: Number of classes: ", num_classes, "\r\n"))
 
-                        if(predROC$status == TRUE){
-                            predictionAUC <- list(roc = predROC$data, auc = pROC::auc(predROC$data))
-                            ## 
-                        }else{
-                            cat(paste0("===> ERROR: Cannot calculate getPredictROC \r\n"))
-                            error_models <- c(error_models, paste0("Cannot calculate getPredictROC", predROC$data))
+                        # Calculate individual class AUCs
+                        for(class in levels(modelData$testing[[dataset$outcome]])) {
+                            if(class %in% colnames(predictionObject$predictions)) {
+
+                                cat(paste0("===> INFO: Compute AUC for: ",class, "\r\n"))
+
+                                result <- compute_auc_for_class(class, predictionObject$predictions, modelData$testing[[dataset$outcome]])
+                                if (result$status) {
+                                    AUROC[[class]] <- result$data
+                                } else {
+                                    cat(paste0("===> ERROR computing AUC for class", class, ": ", result$message, "\r\n"))
+                                    error_models <- c(error_models, paste0("===> ERROR computing AUC for class", class, ": ", result$message, "\n"))
+                                }
+                            } else {
+                                cat(paste0("===> WARNING: Class ", class, " not found in predictions.\r\n"))
+                            }
                         }
-                        cat(paste0("===> INFO: Calculating prAUC START\r\n"))
-                        predPrAUC <- getPrAUC(predictionProcessed, modelData$testing[[dataset$outcome]], dataset, outcome_mapping)
-                        if(predPrAUC$status == TRUE){
+                        
+                        if (num_classes > 2) {
+                            cat(paste0("===> INFO: Compute Multi-class  AUC\r\n"))
+                            multiclass_result <- compute_multiclass_auc(modelData$testing[[dataset$outcome]], predictionObject$predictions)
+                            if (multiclass_result$status) {
+                                AUROC$Multiclass <- multiclass_result$data
+                            } else {
+                                cat(paste0("===> ERROR computing multi-class AUC: ", multiclass_result$message, "\r\n"))
+                                error_models <- c(error_models, paste0("===> ERROR computing multi-class AUC: ", multiclass_result$message, "\n"))
+                            }
+                         }
+
+                        # Calculate PrAUC for probability-based predictions
+                        predPrAUC <- getPrAUC(predictionObject$predictions, modelData$testing[[dataset$outcome]], dataset, outcome_mapping, model_details)
+                        
+                        if(predPrAUC$status == TRUE) {
+                            cat("===> PrAUC calculated successfully.\r\n")
                             prAUC <- predPrAUC$data
-                        }else{
-                            cat(paste0("===> ERROR: Cannot calculate prAUC: ",predPrAUC$data," \r\n"))
-                            ## TODO: Show this as warning and not as error, since if there are any errors in model we cannot make Exploration analysis
-                            ## error_models <- c(error_models, "Cannot calculate prAUC")
+                        } else {
+                            cat(paste0("===> ERROR: Cannot calculate PrAUC: ", predPrAUC$data, "\r\n"))
+                            error_models <- c(error_models, "Cannot calculate PrAUC")
                         }
 
                     }else if(predictionObject$type == "raw" && !is.null(predictionObject$predictions)){
-                        cat(paste0("===> INFO: Calculating getPostResample \r\n"))
+                        cat(paste0("===> INFO: Calculating raw predictions - getPostResample \r\n"))
                         ## Calculates performance across resamples
                         ## Given two numeric vectors of data, the mean squared error and R-squared are calculated. For two factors, the overall agreement rate and Kappa are determined.
                         predPostResample <- getPostResample(predictionObject$predictions, modelData$testing[,dataset$outcome], model_details)
@@ -593,7 +590,7 @@ for (dataset in datasets) {
                             error_models <- c(error_models, "Cannot calculate getPostResample")
                         }
                     }else{
-                        error_models <- c(error_models, "Not calculating pROC or pAUC")
+                        error_models <- c(error_models, paste0("Skipping AUC and potResample calculations. Type: ", predictionObject$type))
                     }
                 }else{
                     error_models <- c(error_models, "Cannot calculate prediction probabilities")
@@ -619,9 +616,10 @@ for (dataset in datasets) {
                                                                 predictionConfusionMatrix,
                                                                 model_details,
                                                                 performanceVariables,
-                                                                predictionAUC,
                                                                 prAUC,
+                                                                AUROC,
                                                                 predictionPostResample,
+                                                                outcome_mapping,
                                                                 error_models,
                                                                 model_time_start
                                                             )
@@ -660,8 +658,8 @@ for (dataset in datasets) {
                 predictions = list(
                     raw = predictionObject,
                     processed = predictionProcessed,
-                    AUROC = predictionAUC, 
                     prAUC = prAUC, 
+                    AUROC = AUROC, 
                     postResample = predictionPostResample,
                     confusionMatrix = predictionConfusionMatrix
                 )
@@ -680,9 +678,9 @@ for (dataset in datasets) {
             file_id <- db.apps.pandora.saveFileInfo(dataset$userID, saveDataPaths)
 
             if(!is.null(file_id)){
-                updateDatabaseFiled("models", "ufid", file_id, "id", methodDetails$modelID)    
+                updateDatabaseField("models", "ufid", file_id, "id", methodDetails$modelID)    
             }else{
-                updateDatabaseFiled("models", "status", 0, "id", methodDetails$modelID)
+                updateDatabaseField("models", "status", 0, "id", methodDetails$modelID)
                 message <- paste0("Error saving model information file")
                 appendDatabaseFiled("models", "error", message, "id", methodDetails$modelID)
 
@@ -709,7 +707,7 @@ for (dataset in datasets) {
     resample_total_time <- calculateTimeDifference(resample_time_start, unit = "ms")
     incrementDatabaseFiled("dataset_resamples", "processing_time", resample_total_time, "id", dataset$resampleID)
     ## 5 - Finished Success
-    updateDatabaseFiled("dataset_resamples", "status", 5, "id", dataset$resampleID)
+    updateDatabaseField("dataset_resamples", "status", 5, "id", dataset$resampleID)
 
 } ## MAIN RESAMPLE DATASET LOOP END
 
@@ -723,7 +721,7 @@ if(skipped_datasets >= total_datasets){
     queue_status <- 5 # Finished - Success
 }
 
-updateDatabaseFiled("dataset_queue", "status", queue_status, "id", serverData$queueID)
+updateDatabaseField("dataset_queue", "status", queue_status, "id", serverData$queueID)
 
 cat(paste0("======> INFO: PROCESSING END (",queue_total_time," ms)  \r\n"))
 
