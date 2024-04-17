@@ -61,7 +61,7 @@ rclone copy ./genular.tar genular-spaces:genular/docker-parent-images
 
 ## Publishing Child Genular PANDORA Image
 
-Auto-build is configured on [Docker Hub](https://hub.docker.com/?namespace=genular). A new `genular/pandora:latest` container will be built automatically upon detecting changes in the repository.
+Auto-build is configured on [Docker Hub](https://hub.docker.com/?namespace=genular). A new `genular/pandora:latest` container will be built automatically upon detecting changes in the pandora-backend github repository.
 
 To build manually:
 
