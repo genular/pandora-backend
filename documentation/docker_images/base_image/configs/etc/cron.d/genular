@@ -2,3 +2,5 @@
 # Look for new analysis and try to process them
 
 * * * * * root /usr/bin/flock -n /tmp/pandora_cron.lock /usr/bin/Rscript /var/www/genular/pandora-backend/cron/main.R cron_analysis >>/var/log/pandora-cron.log 2>&1
+
+* * * * * genular /usr/bin/bash /var/www/genular/pandora-backend/cron/maintenance.sh >>/var/log/pandora-cron.log 2>&1
