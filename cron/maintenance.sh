@@ -37,6 +37,9 @@ fi
 if [ -d "$APP_DIR_BACKEND" ]; then
     find "$APP_DIR_BACKEND" -maxdepth 1 -name 'hs_err_pid*.log' -exec rm {} \;
     echo "===> MAINTENANCE $(date) - Removed Java error logs from backend directory"
+
+    ## Check if needed
+    chmod 777 "$APP_DIR_BACKEND/server/backend/public"
 fi
 
 # Update git repositories if update.txt exists
@@ -50,9 +53,10 @@ if [ -f "$UPDATE_FILE" ]; then
         # Update Frontend repository
         if cd "$APP_DIR_FRONTEND"; then
             current_branch=$(git rev-parse --abbrev-ref HEAD)
-            git checkout . && git fetch && git checkout "$current_branch" && git pull origin "$current_branch" && \
-            yarn install --check-files && \
-            yarn run webpack:web:prod --isDemoServer=false --server_frontend=$FRONTEND_URL --server_backend=$BACKEND_URL --server_homepage=$FRONTEND_URL
+            sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
+            sudo -u genular yarn install --check-files && \
+            sudo -u genular yarn run webpack:web:prod --isDemoServer=false --server_frontend=$FRONTEND_URL --server_backend=$BACKEND_URL --server_homepage=$FRONTEND_URL
+
             echo "===> MAINTENANCE $(date) - Updated Frontend repository successfully."
         else
             echo "===> MAINTENANCE $(date) - Failed to change directory to $APP_DIR_FRONTEND"
@@ -61,9 +65,9 @@ if [ -f "$UPDATE_FILE" ]; then
         # Update Backend repository
         if cd "$APP_DIR_BACKEND/server/backend"; then
             current_branch=$(git rev-parse --abbrev-ref HEAD)
-            git checkout . && git fetch && git checkout "$current_branch" && git pull origin "$current_branch" && \
-            /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs && \
-            /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
+            sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
+            sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs && \
+            sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
             echo "===> MAINTENANCE $(date) - Updated Backend repository successfully."
         else
             echo "===> MAINTENANCE $(date) - Failed to change directory to $APP_DIR_BACKEND/server/backend"

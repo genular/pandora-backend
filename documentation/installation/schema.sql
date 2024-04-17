@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 24, 2023 at 05:52 PM
--- Server version: 10.10.3-MariaDB-log
--- PHP Version: 8.2.2
+-- Generation Time: Apr 17, 2024 at 07:56 PM
+-- Server version: 11.3.2-MariaDB-log
+-- PHP Version: 8.3.3
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -56,7 +56,7 @@ CREATE TABLE `dataset_queue` (
   `extraction` tinyint(4) DEFAULT 0 COMMENT 'Should we do array intersection',
   `backwardSelection` tinyint(4) DEFAULT 0 COMMENT 'Are we doing recursive feature elimination.\n0 - No\n1 - Yes',
   `sparsity` float DEFAULT NULL,
-  `packages` longtext DEFAULT NULL COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n packageID: \n serverGroup:\n}',
+  `packages` longtext DEFAULT NULL COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n	packageID: \n	serverGroup:\n}',
   `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors\n7 User Paused\n8 User resumed',
   `processing_time` int(11) DEFAULT 0 COMMENT 'Total processing time - miliseconds',
   `servers_total` int(11) DEFAULT 0 COMMENT 'Total number of created cloud servers that needs to do processing',
@@ -183,9 +183,10 @@ CREATE TABLE `models_packages` (
 CREATE TABLE `models_performance` (
   `id` int(11) NOT NULL,
   `mid` int(11) DEFAULT NULL COMMENT 'Model Details ID',
+  `drm_id` int(11) DEFAULT NULL,
   `mpvid` int(11) DEFAULT NULL COMMENT 'Model Performance Variables ID',
   `prefValue` varchar(255) DEFAULT NULL COMMENT 'Value',
-  `created` datetime DEFAULT NULL
+  `created` datetime DEFAULT NULL COMMENT 'dataset resample mapping ID - outcome class id'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='Processed Model Variables for specific Model - AUC, Accuracy etc..';
 
 -- --------------------------------------------------------
@@ -210,6 +211,7 @@ CREATE TABLE `models_variables` (
   `id` int(11) NOT NULL,
   `mid` int(11) DEFAULT NULL COMMENT 'Model Details ID',
   `feature_name` varchar(255) DEFAULT NULL COMMENT 'Name of analized Feature as in CSV',
+  `drm_id` int(11) DEFAULT NULL,
   `score_perc` tinyint(6) DEFAULT NULL COMMENT 'Inpact Score of feature on this model in percentage',
   `score_no` float DEFAULT NULL COMMENT 'Inpact Score of feature on this model in internal model metrix',
   `rank` tinyint(6) DEFAULT NULL COMMENT 'Inpact Score of feature on this model in numbers',
@@ -433,7 +435,7 @@ CREATE TABLE `users_files` (
   `size` int(11) DEFAULT 0 COMMENT 'Filesize in bytes ot the original file not gzipped one',
   `extension` varchar(25) DEFAULT NULL COMMENT 'file extension',
   `mime_type` varchar(75) DEFAULT NULL,
-  `details` longtext DEFAULT NULL COMMENT 'File details currently in following format:\n{\n "header": {\n   "original": "",\n   "formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n  }\n}',
+  `details` longtext DEFAULT NULL COMMENT 'File details currently in following format:\n{\n	"header": {\n		"original": "",\n		"formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n	}\n}',
   `file_hash` char(64) DEFAULT NULL COMMENT 'SHA256 hash of original file not gzipped one',
   `created` datetime DEFAULT NULL COMMENT 'timestamp',
   `updated` datetime DEFAULT NULL COMMENT 'timestamp'
@@ -543,7 +545,7 @@ ALTER TABLE `models_packages`
 --
 ALTER TABLE `models_performance`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `model_performance_uqdx` (`mid`,`mpvid`),
+  ADD UNIQUE KEY `model_performance_uqdx` (`mid`,`drm_id`,`mpvid`) USING BTREE,
   ADD KEY `model_performance_idx` (`mpvid`),
   ADD KEY `model_performance_valuex` (`prefValue`);
 
@@ -559,7 +561,7 @@ ALTER TABLE `models_performance_variables`
 --
 ALTER TABLE `models_variables`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `variables_unique_idx` (`mid`,`feature_name`),
+  ADD UNIQUE KEY `variables_unique_idx` (`mid`,`feature_name`,`drm_id`),
   ADD KEY `feature_name_idx` (`feature_name`);
 
 --
