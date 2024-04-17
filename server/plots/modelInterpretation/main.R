@@ -4,6 +4,7 @@ p_load(pdp)
 p_load(lime)
 p_load(import)
 p_load(iml)
+p_load(yaImpute)
 
 
 source(paste0("server/",SERVER_NAME,"/modelInterpretation/functions/index.R"))
