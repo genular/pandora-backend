@@ -509,9 +509,6 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
             sudo Rscript -e "devtools::install_github('raivokolde/pheatmap')"
             sudo Rscript -e "install.packages(c('ggplot2', 'lattice', 'RColorBrewer', 'dbscan'), repos='http://cran.us.r-project.org')"
             
-            ## plotROC package & deps
-            sudo Rscript -e "devtools::install_github('cran/XML')"
-
             if [ "${R_VERSION}" == "3.6.3" ] ; then
                 ## New XML package is only available for R > 4
                 sudo Rscript -e "remotes::install_github('cran/XML@7ab4aa451639a5b2fc73eb370b6d339d4f4c4979')"
@@ -530,11 +527,18 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
 
             sudo Rscript -e "install.packages(c('psych'), repo = 'https://cloud.r-project.org/')"
 
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                ## New XML package is only available for R > 4
+                sudo Rscript -e "remotes::install_github('cran/FNN@341686cc1bfcff529c6192b4145b6e6fcbf98f70')"
+            else
+                sudo Rscript -e "install.packages(c('FNN'), repo = 'https://cloud.r-project.org/')"
+            fi
+
             sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
 
             sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
 
-            sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'FNN', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
+            sudo Rscript -e "install.packages(c('mclust', 'fpc', 'Rtsne', 'igraph', 'summarytools'), repo = 'https://cloud.r-project.org/')" 
             
             ## Install ffbase tabplot dep
             sudo Rscript -e "devtools::install_github('edwindj/ffbase', subdir='pkg')"
