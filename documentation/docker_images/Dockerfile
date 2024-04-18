@@ -26,7 +26,6 @@ RUN su - genular -c 'cd /var/www/genular/pandora \
 	--server_frontend=http://localhost:3010 \
 	--server_backend=http://localhost:3011 \
 	--server_homepage=http://localhost:3010 \
-	&& chmod 777 /var/www/genular/pandora-backend/server/backend/public \
 	&& cd /var/www/genular/pandora-backend/server/backend/ \
 	&& git checkout . && git fetch && git checkout master && git pull origin master \
 	&& /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \

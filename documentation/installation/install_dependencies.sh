@@ -786,7 +786,11 @@ if [ "${MODS[pandora_api]}" == y ] || [ "${MODS[pandora_cron]}" == y ] || [ "${M
                 sed -i 's|url: PLACEHOLDER_BACKEND_URL|url: '"\"${B_CONF[backend_url]}\""'|g' "config.yml"
                 sed -i 's|url: PLACEHOLDER_FRONTEND_URL|url: '"\"${B_CONF[frontend_url]}\""'|g' "config.yml"
 
+
                 cd server/backend/ || exit 1
+
+                chmod 777 public
+
                 echo "${red}Installing dependencies..${clear}"
                 echo ""
                 /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs

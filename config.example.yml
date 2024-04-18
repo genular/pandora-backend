@@ -6,7 +6,7 @@ default:
     salt: PLACEHOLDER
     # Please generate 64 character random alphanumeric string, this is used in some ajax/http communications
     # Plase make sure to have same secret defined on front end in config/env_*.json
-    secret: PLACEHOLDER
+    secret: SECRET_PLACEHOLDER
     # API of your sendgrid account, for sending emails
     sendgrid_api: PLACEHOLDER # Example: "SG.jiozGM0FRrmyTddfgfgdzq6dqSNv7j33Y24yadg-INc1dgU"
     sendgrid_templates:
