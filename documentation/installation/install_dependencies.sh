@@ -553,7 +553,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
         fi
 
         if [ "${MODS[pandora_cron]}" == y ] ; then
-            echo "${green}==========> Installing CRON server dependencies{clear}"
+            echo "${green}==========> Installing CRON server dependencies${clear}"
             ## Shared cron deps
             sudo Rscript -e "install.packages(c('doMC'), repos='http://cran.us.r-project.org')"
             ## For R version 3.5.1
