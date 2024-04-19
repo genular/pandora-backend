@@ -42,8 +42,10 @@ if [ -f "$UPDATE_FILE" ]; then
     source $UPDATE_FILE
 
     if [ "$IS_DOCKER" = "true" ]; then
+        echo "===> MAINTENANCE $(date) - Update Docker image START"
         # Update Frontend repository
         if cd "$APP_DIR_FRONTEND"; then
+            echo "===> MAINTENANCE $(date) - Update frontend start"
             current_branch=$(git rev-parse --abbrev-ref HEAD)
             sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
             sudo -u genular yarn install --check-files && \
@@ -56,6 +58,7 @@ if [ -f "$UPDATE_FILE" ]; then
 
         # Update Backend repository
         if cd "$APP_DIR_BACKEND/server/backend"; then
+            echo "===> MAINTENANCE $(date) - Update backend start"
             current_branch=$(git rev-parse --abbrev-ref HEAD)
             sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
             sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs && \
