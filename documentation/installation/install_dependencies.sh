@@ -798,7 +798,8 @@ if [ "${MODS[pandora_api]}" == y ] || [ "${MODS[pandora_cron]}" == y ] || [ "${M
 
                 cd server/backend/ || exit 1
 
-                chmod 777 public
+                chmod 777 "$GIT_BACKEND_LOCAL/server/backend/public"
+                chmod 777 "$GIT_BACKEND_LOCAL/server/backend/public/assets"
 
                 echo "${red}Installing dependencies..${clear}"
                 echo ""

@@ -1,11 +1,6 @@
 #!/bin/bash
 
-if [ "$IS_DOCKER" = "true" ]; then
-    DOCKER_CHECK=true
-else
-    DOCKER_CHECK=false
-fi
-echo "===> MAINTENANCE $(date) - Docker Check: $DOCKER_CHECK"
+echo "===> MAINTENANCE $(date) - Docker Check: $IS_DOCKER"
 
 LOG_FILE="/var/log/pandora-cron.log"
 MAX_SIZE=$((100 * 1024 * 1024))  # 100 MB in bytes
@@ -46,7 +41,7 @@ if [ -f "$UPDATE_FILE" ]; then
 
     source $UPDATE_FILE
 
-    if [ "$DOCKER_CHECK" = "true" ]; then
+    if [ "$IS_DOCKER" = "true" ]; then
         # Update Frontend repository
         if cd "$APP_DIR_FRONTEND"; then
             current_branch=$(git rev-parse --abbrev-ref HEAD)
