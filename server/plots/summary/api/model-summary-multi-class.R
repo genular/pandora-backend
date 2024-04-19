@@ -149,6 +149,10 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                     }
                 }
                 
+                if (!"auc_roc" %in% names(res.data$training)) {
+                    res.data$training$auc_roc <- list()
+                    res.data$training$auc_roc_png <- list()
+                }
 
                 objExists <- safe_access(modelData, "training")
                 if(objExists){
@@ -174,6 +178,12 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                     res.data$training$auc_roc_png[[method]] <- FALSE
                 }
 
+
+                if (!"auc_roc_multiclass" %in% names(res.data$training)) {
+                    res.data$training$auc_roc_multiclass <- list()
+                    res.data$training$auc_roc_multiclass_png <- list()
+                }
+
                 objExists <- safe_access(modelData, "training")
                 if(objExists){
                     ## (PLOT 2) TRAINIG ROC - MULTI:
@@ -194,6 +204,12 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                     print(paste0("===> INFO: Skipping: roc_training_multi"))
                     res.data$training$auc_roc_multiclass[[method]] <- FALSE
                     res.data$training$auc_roc_multiclass_png[[method]] <- FALSE
+                }
+
+
+                if (!"auc_roc" %in% names(res.data$testing)) {
+                    res.data$testing$auc_roc <- list()
+                    res.data$testing$auc_roc_png <- list()
                 }
 
                 objExists <- safe_access(modelData, "predictions", "AUROC")
@@ -217,6 +233,11 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                     print(paste0("===> INFO: Skipping: roc_testing_single"))
                     res.data$testing$auc_roc[[method]] <- FALSE
                     res.data$testing$auc_roc_png[[method]] <- FALSE
+                }
+
+                if (!"auc_roc_multiclass" %in% names(res.data$testing)) {
+                    res.data$testing$auc_roc_multiclass <- list()
+                    res.data$testing$auc_roc_multiclass_png <- list()
                 }
 
                 objExists <- safe_access(modelData, "predictions", "AUROC", "Multiclass", "ROC", "rocs")
@@ -245,6 +266,11 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
 
         print(paste0("===> INFO: Plotting model comparisons"))
 
+        if (!"comparison" %in% names(res.data$training)) {
+            res.data$training$comparison <- list()
+            res.data$training$comparison_png <- list()
+        }
+
         if(!is.null(trainingPredictions) && nrow(outcome_mappings) < 3){
             
             print(paste0("===> INFO: Plotting ROC Training"))
@@ -263,6 +289,11 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
             print(paste0("===> INFO: Skipping: plot_auc_roc_training"))
             res.data$training$comparison[["comparison"]] <- FALSE
             res.data$training$comparison_png[["comparison"]] <- FALSE
+        }
+
+        if (!"comparison" %in% names(res.data$testing)) {
+            res.data$testing$comparison <- list()
+            res.data$testing$comparison_png <- list()
         }
 
         if(!is.null(testingPredictions) && nrow(outcome_mappings) < 3){
@@ -286,8 +317,6 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
             res.data$testing$comparison[["comparison"]] <- FALSE
             res.data$testing$comparison_png[["comparison"]] <- FALSE
         }
-        
-        
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
         processingData <- list(

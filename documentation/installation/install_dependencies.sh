@@ -534,7 +534,12 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
                 sudo Rscript -e "install.packages(c('FNN'), repo = 'https://cloud.r-project.org/')"
             fi
 
-            sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
+            if [ "${R_VERSION}" == "3.6.3" ] ; then
+                ## New XML package is only available for R > 4
+                sudo Rscript -e "remotes::install_github('jlmelville/uwot@172a55ac7ae3e4ab01cc3d2fc8c52e87dc5d07dd')"
+            else
+                sudo Rscript -e "devtools::install_github('jlmelville/uwot')"
+            fi
 
             sudo Rscript -e "devtools::install_github('kassambara/factoextra')"
 

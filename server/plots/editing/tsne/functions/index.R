@@ -159,6 +159,10 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 
 	info.norm$pandora_cluster = as.factor(igraph::membership(lc.norm))
 
+    # Replace NA values with 100 specifically
+    na_indices <- is.na(info.norm$pandora_cluster)
+    info.norm$pandora_cluster[na_indices] <- 100
+
     distance_matrix <- dist(tsne.norm$Y)
     silhouette_scores <- cluster::silhouette(as.integer(info.norm$pandora_cluster), distance_matrix)
     if(is.matrix(silhouette_scores)) {
@@ -228,12 +232,15 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
         hc.norm <- hclust(dist_matrix, method = settings$clustLinkage)
         h_clusters <- cutree(hc.norm, settings$clustGroups)
 
-
         if(length(indices_for_clustering) < nrow(tsne_data)){
             info.norm$pandora_cluster[indices_for_clustering] <- as.factor(h_clusters)
         }else{
             info.norm$pandora_cluster <- as.factor(h_clusters)
         }
+
+        # Replace NA values with 100 specifically
+        na_indices <- is.na(info.norm$pandora_cluster)
+        info.norm$pandora_cluster[na_indices] <- 100
 
         # Calculate distances based on the exact data used for clustering
         distance_matrix <- dist(data_for_clustering)
@@ -335,6 +342,10 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
             info.norm$pandora_cluster <- as.factor(mc.norm$classification)
         }
 
+        # Replace NA values with 100 specifically
+        na_indices <- is.na(info.norm$pandora_cluster)
+        info.norm$pandora_cluster[na_indices] <- "100"
+
         # Calculate distances based on the exact data used for clustering
         distance_matrix <- dist(data_for_clustering)
         # Ensure cluster labels are integers and align with the distance matrix
@@ -407,6 +418,10 @@ cluster_tsne_density <- function(info.norm, tsne.norm, settings){
 	info.norm$pandora_cluster = factor(ds.norm$cluster)
 
     print(paste("====> Density-based clustering"))
+
+    # Replace NA values with 100 specifically
+    na_indices <- is.na(info.norm$pandora_cluster)
+    info.norm$pandora_cluster[na_indices] <- 100
 
     # Compute the distance matrix based on t-SNE results
     distance_matrix <- dist(tsne_data)
@@ -744,18 +759,16 @@ cluster_heatmap <-function(cluster_data, settings, tmp_hash){
 
 remove_outliers <- function(dataset, settings) {
     if(settings$datasetAnalysisRemoveOutliersDownstream == TRUE) {
-        print("===> Removing outliers from dataset")
+        print("===> INFO: Trying to remove outliers from dataset")
         if("pandora_cluster" %in% names(dataset)) {
-            print("pandora_cluster column exists.")
             if(100 %in% dataset$pandora_cluster) {
-                print("Cluster 100 exists in pandora_cluster.")
                 dataset <- dataset[dataset$pandora_cluster != 100, ]
-                print("Rows with pandora_cluster == 100 have been removed.")
+                print("===> INFO: Rows with pandora_cluster == 100 have been removed.")
             } else {
-                print("Cluster 100 does not exist in pandora_cluster.")
+                print("===> INFO: Cluster 100 does not exist in pandora_cluster.")
             }
         } else {
-            print("pandora_cluster column does not exist.")
+            print("===> INFO: No outliers detected")
         }
     }
     return(dataset)
