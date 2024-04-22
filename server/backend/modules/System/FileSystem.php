@@ -346,10 +346,22 @@ class FileSystem {
 		}
 
 		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem downloadFile save to file-path: " . $file_path);
-		// Retrieve a read-stream
-		$stream = $this->filesystem->readStream($remotePath);
+
+
+		if ($this->filesystem->has($remotePath)) {
+			// Retrieve a read-stream
+			$stream = $this->filesystem->readStream($remotePath);
+			if($stream === false){
+				return false;
+			}
+		}else{
+			return false;
+		}
 
 		$contents = stream_get_contents($stream);
+	    if ($contents === false) {
+	        return false;
+	    }
 		if (is_resource($contents)) {
 			fclose($contents);
 		}

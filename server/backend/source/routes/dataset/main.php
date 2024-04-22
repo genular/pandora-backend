@@ -103,7 +103,8 @@ $app->get('/backend/dataset/import/public/import/{submitData:.*}', function (Req
 				"datasetID" => $datasetID,
 				"status" => true,
 			];
-			// Check if user can import specific file
+
+			
 
 			// Download file from the storage && Extract file from GZ format
 			$initial_path = $PublicDatabases->downloadInternalDataset($datasetID);

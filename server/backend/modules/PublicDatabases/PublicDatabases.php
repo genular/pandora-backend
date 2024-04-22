@@ -115,6 +115,7 @@ class PublicDatabases {
 		$datasetDetails = $this->getDatasetByID($datasetID, false);
 
 		$datasetPathRemote = "/datasets/" . $datasetDetails["hash"] . ".csv.tar.gz";
+
 		$datasetPathLocal = $this->FileSystem->downloadFile($datasetPathRemote, $this->Helpers->sanitizeFileName($datasetDetails["title"]) . ".csv");
 
 		return $datasetPathLocal;
