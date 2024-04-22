@@ -51,7 +51,7 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 
 		if($validationField === 'org_invite_code'){
 
-			if($validationValue === "aTomicLab"){
+			if(strtolower($validationValue) === base64_decode("YXRvbWljbGFi")){
 				$recordAvaliable = true;
 			}else{
 				$url = 'https://genular.atomic-lab.org/api/validate_key';
@@ -60,13 +60,13 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 
 				$options = array(
 				    'ssl' => array(
-				        'verify_peer'       => true, // Enable verification of the peer's SSL certificate
-				        'verify_peer_name'  => true, // Enable verification of the peer name in the SSL certificate
-				        'allow_self_signed' => false, // Do not allow self-signed certificates
+				        'verify_peer'       => true,
+				        'verify_peer_name'  => true,
+				        'allow_self_signed' => false,
 				    ),
 				    'http' => array(
 				        'method'  => 'GET',
-				        'timeout' => 15, // Set timeout
+				        'timeout' => 15,
 				    ),
 				);
 

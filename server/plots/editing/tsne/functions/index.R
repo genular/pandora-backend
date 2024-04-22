@@ -620,6 +620,11 @@ cluster_heatmap <-function(cluster_data, settings, tmp_hash){
     cluster_data$pandora_cluster <- as.character(cluster_data$pandora_cluster) # First, convert factors to characters to preserve the actual labels
     cluster_data$pandora_cluster <- as.numeric(cluster_data$pandora_cluster) # Now convert characters to numeric
 
+    if(length(unique(cluster_data$pandora_cluster)) <= 1){
+        print(paste0("===> WARNING: Skipping heatmap generation. Not enough clusters in pandora_cluster: ", length(cluster_data$pandora_cluster)))
+        return(FALSE)
+    }
+
 	info.norm.num <- cluster_data %>% select(where(is.numeric))
 	all_columns <- colnames(info.norm.num)
 
