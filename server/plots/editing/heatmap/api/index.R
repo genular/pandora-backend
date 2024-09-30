@@ -157,11 +157,26 @@ pandora$handle$plots$editing$heatmap$renderPlot <- expression(
         }
 
         if(settings$removeNA == TRUE){
-            #print("===============> DATASET na.omit")
             dataset_filtered <- na.omit(dataset_filtered)
         }
 
-        #save(dataset_filtered, file = "/tmp/dataset_filtered")
+        if (settings$datasetAnalysisGrouped == TRUE) {
+
+            group_column <- settings$datasetAnalysisGroupedColumn
+            # Ensure the grouping column exists in the dataset
+            if (!(group_column %in% colnames(dataset_filtered))) {
+                print(paste0("Error: Column '", group_column, "' does not exist in dataset_filtered."))
+            }else{
+                print(paste0("Grouping dataset by column '", group_column, "'"))
+                dataset_filtered <- dataset_filtered %>%
+                    group_by(across(all_of(group_column))) %>%  # Correctly refer to the column name stored as a string
+                    summarise(across(everything(), \(x) mean(x, na.rm = TRUE)), .groups = 'drop')  # Use the new syntax for `across()`
+                
+                dataset_filtered <- as.data.frame(dataset_filtered)
+                settings$scale <- "row"
+            }
+        }
+
 
         input_args <- c(list(data=dataset_filtered, 
                             fileHeader=fileHeader,

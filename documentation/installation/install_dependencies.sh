@@ -443,6 +443,9 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
         echo "${green}}==========> Installing shared dependencies${clear}"
         
         sudo Rscript -e "utils::setRepositories(ind = 0, addURLs = c(CRAN = 'https://cloud.r-project.org/'))"
+        if [ "${R_VERSION}" == "4.4.1" ] ; then
+            sudo Rscript -e "install.packages('stringi', configure.args='--disable-pkg-config')"
+        fi
 
         sudo Rscript -e "install.packages('remotes', repo = 'https://cloud.r-project.org/')"
         sudo Rscript -e "remotes::install_github('r-lib/usethis')"
