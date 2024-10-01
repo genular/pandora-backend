@@ -649,146 +649,191 @@ $app->get('/backend/system/filesystem/delete/{submitData:.*}', function (Request
  *                   and handled by generating an appropriate HTTP response.
  */
 $app->get('/backend/system/filesystem/download/{submitData:.*}', function (Request $request, Response $response, array $args) {
-	$success = false;
-	$message = false;
+    $success = false;
+    $message = false;
 
-	$config = $this->get('Noodlehaus\Config');
-	$backend_server_url = $config->get('default.backend.server.url');
+    // Retrieve services and configurations
+    $config = $this->get('Noodlehaus\Config');
+    $backend_server_url = $config->get('default.backend.server.url');
 
-	$FileSystem = $this->get('PANDORA\System\FileSystem');
-	$UsersFiles = $this->get('PANDORA\Users\UsersFiles');
-	$Helpers = $this->get('PANDORA\Helpers\Helpers');
+    $FileSystem = $this->get('PANDORA\System\FileSystem');
+    $UsersFiles = $this->get('PANDORA\Users\UsersFiles');
+    $Helpers = $this->get('PANDORA\Helpers\Helpers');
 
-	$DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
-	$DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
-	$DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
+    $DatasetResamples = $this->get('PANDORA\Dataset\DatasetResamples');
+    $DatasetResamplesMappings = $this->get('PANDORA\Dataset\DatasetResamplesMappings');
+    $DatasetQueue = $this->get('PANDORA\Dataset\DatasetQueue');
+    $Models = $this->get('PANDORA\Models\Models');
 
-	$user_details = $request->getAttribute('user');
-	$user_id = $user_details['user_id'];
+    // Get user details
+    $user_details = $request->getAttribute('user');
+    $user_id = $user_details['user_id'];
 
-	$queueID = false;
+    $queueID = false;
 
-	$submitData = false;
-	if (isset($args['submitData'])) {
-		$submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
-	}
+    // Decode submitData from URL parameters
+    $submitData = false;
+    if (isset($args['submitData'])) {
+        $submitData = json_decode(base64_decode(urldecode($args['submitData'])), true);
+    }
 
-	if ($submitData && isset($submitData['recordID'])) {
+    if ($submitData && isset($submitData['recordID'])) {
         $downloadIDs = [];
+        $recordDetails = [];
+        $recordDetailsCopy = [];
 
-		// This is array for models or integer for queue and resample
-		$recordID = $submitData['recordID'];
-		$downloadType = $submitData['downloadType'];
+        // Retrieve the record ID and download type
+        $recordID = $submitData['recordID'];
+        $downloadType = $submitData['downloadType'];
 
-		$recordDetails = false;
-		if ($downloadType === "queue") {
-			$recordDetails = $DatasetQueue->getDetailsByID($recordID, $user_id);
-			$queueID = $recordDetails["id"];
+        // Fetch record details based on download type
+        switch ($downloadType) {
+            case 'queue':
+                $recordDetails = $DatasetQueue->getDetailsByID($recordID, $user_id);
+                $queueID = $recordDetails["id"];
+                break;
 
-		} else if ($downloadType === "resample") {
-			$recordDetails = $DatasetResamples->getDetailsByID($recordID, $user_id);
-			$queueID = $recordDetails["queueID"];
+            case 'resample':
+                $recordDetails = $DatasetResamples->getDetailsByID($recordID, $user_id);
+                $queueID = $recordDetails["queueID"];
+                break;
 
-		} else if ($downloadType === "models") {
-			$Models = $this->get('PANDORA\Models\Models');
-			$recordDetails = $Models->getDetailsByID($recordID, $user_id);
+            case 'models':
+                $recordDetails = $Models->getDetailsByID($recordID, $user_id);
+                break;
 
-		} else if ($downloadType === "userFile") {
-            if(isset($submitData['recordID'])){
-                if(is_array($submitData['recordID'])){
-                    $downloadIDs = (int) $submitData['recordID'];
-                }else{
-                    $downloadIDs = [$submitData['recordID']];    
+            case 'userFile':
+                // For user files, recordID might be an array or a single ID
+                if (is_array($recordID)) {
+                    $downloadIDs = $recordID;
+                } else {
+                    $downloadIDs = [$recordID];
+                }
+                break;
+
+            default:
+                $success = false;
+                $message = "Invalid download type specified.";
+                return $response->withJson(["success" => $success, "message" => $message]);
+        }
+
+        // If not 'userFile', extract 'ufid's from record details
+        if ($downloadType !== 'userFile') {
+            // Helper function to extract ufid values
+            $extractUfids = function ($details) use (&$downloadIDs, &$recordDetailsCopy, $Helpers) {
+                foreach ($details as $key => $value) {
+                    if (!is_array($value)) {
+                        if ($Helpers->startsWith($key, 'ufid')) {
+                            if (!isset($downloadIDs[$value])) {
+                                $downloadIDs[$value] = $value;
+                                $recordDetailsCopy[$value] = $details;
+                            }
+                        }
+                    } else {
+                        foreach ($value as $subKey => $subValue) {
+                            if ($Helpers->startsWith($subKey, 'ufid')) {
+                                if (!isset($downloadIDs[$subValue])) {
+                                    $downloadIDs[$subValue] = $subValue;
+                                    $recordDetailsCopy[$subValue] = $details;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            $extractUfids($recordDetails);
+        } else {
+            // For 'userFile', populate recordDetailsCopy with file details
+            foreach ($downloadIDs as $fileID) {
+                $fileDetails = $UsersFiles->getFileDetails($fileID, ["file_path", "display_filename", "extension", "details"], false);
+                if ($fileDetails) {
+                    $recordDetailsCopy[$fileID] = $fileDetails;
                 }
             }
         }
 
+        // Generate download links
+        $downloadLinks = [];
+        foreach ($downloadIDs as $fileID) {
+            $fileDetails = $UsersFiles->getFileDetails($fileID, ["file_path", "display_filename", "extension", "details"], false);
 
-		if ($recordDetails) {
-			// Loop all values and search for fileIDs
-			foreach ($recordDetails as $recordDetailsKey => $recordDetailsValue) {
-				if (!is_array($recordDetailsValue)) {
-					// Process only keys that start with ufid: ex. ufid_train
-					if ($Helpers->startsWith($recordDetailsKey, 'ufid')) {
-						if (!isset($downloadIDs[$recordDetailsValue])) {
-							$downloadIDs[$recordDetailsValue] = $recordDetailsValue;
-						}
-					}
-				} else {
-					foreach ($recordDetailsValue as $recordDetailsValueKey => $recordValue) {
-						if ($Helpers->startsWith($recordDetailsValueKey, 'ufid')) {
-							if (!isset($downloadIDs[$recordValue])) {
-								$downloadIDs[$recordValue] = $recordValue;
-							}
-						}
-					}
-				}
-			}
-		}
+            if (isset($fileDetails['file_path'])) {
+                $display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
+                $download_filename = str_replace(".tar.gz", "", $display_filename);
 
+                $queueDetails = null;
+                $columnMappings = null;
 
-		// 2nd Generate final download links
-		$downloadLinks = [];
-		foreach ($downloadIDs as $fileID) {
-			$fileDetails = $UsersFiles->getFileDetails($fileID, ["file_path", "display_filename", "extension", "details"], false);
+                switch ($downloadType) {
+                    case 'resample':
+                        $resampleID = $recordDetails['resampleID'] ?? $recordDetailsCopy[$fileID]['resampleID'] ?? null;
+                        $download_filename = $resampleID . "_" . $download_filename;
+                        $queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
+                        $columnMappings = $DatasetResamplesMappings->getMappingsForResample($resampleID);
+                        break;
 
-			if (isset($fileDetails['file_path'])) {
-				$display_filename = $UsersFiles->getDisplayFilename($fileDetails['display_filename'], $fileDetails['extension']);
+                    case 'queue':
+                        $download_filename = $queueID . "_" . $download_filename;
+                        $queueDetails = $recordDetailsCopy[$fileID];
+                        $columnMappings = false;
+                        break;
 
-				// get remote link with a new name
-				// $download_url = $FileSystem->getDownloadLink($fileDetails['file_path'], $display_filename);
-				$download_filename = str_replace(".tar.gz","", $display_filename);
+                    case 'userFile':
+                        $queueDetails = $fileDetails["details"] ?? [];
+                        break;
 
-				if ($downloadType === "resample") {
-					$download_filename =  $recordDetails["resampleID"]."_".$download_filename;
-					$queueDetails = $DatasetQueue->getDetailsByID($queueID, $user_id);
-					$columnMappings = $DatasetResamplesMappings->getMappingsForResample($recordDetails["resampleID"]);
+                    case 'models':
+                        $queueIDFromModel = $recordDetails['queueID'] ?? $recordDetailsCopy[$fileID]['queueID'] ?? null;
+                        $resampleIDFromModel = $recordDetails['resampleID'] ?? $recordDetailsCopy[$fileID]['resampleID'] ?? null;
+                        $queueDetails = $DatasetQueue->getDetailsByID($queueIDFromModel, $user_id);
+                        $columnMappings = $DatasetResamplesMappings->getMappingsForResample($resampleIDFromModel);
+                        break;
+                }
 
-				}else if ($downloadType === "queue") {
-					$download_filename =  $queueID."_".$download_filename;
-					$queueDetails = $recordDetails;
-					$columnMappings = false;
+                // Download and decompress the file
+                $fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
 
-				}else if ($downloadType === "userFile") {
-       
-                    if(isset($fileDetails["details"])){
-                        $queueDetails = $fileDetails["details"];        
+                // Remap columns if the file is a CSV and not an RData file
+                if (pathinfo($download_filename, PATHINFO_EXTENSION) === "csv") {
+                    if (in_array($downloadType, ["queue", "models"])) {
+                        $fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"] ?? [], $columnMappings);
+                    } elseif ($downloadType === "userFile") {
+                        $fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails ?? [], false);
                     }
-
                 }
 
-				// Download and de-compress
-				$fileInput = $FileSystem->downloadFile($fileDetails['file_path'], $download_filename, false);
+                // Compress the file for download
+                $this->get('Monolog\Logger')->info("Compressing file for download: " . $fileInput);
+                $download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);
 
-				if ($downloadType === "queue" || $downloadType  === "models") {
-					$fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails["selectedOptions"], $columnMappings); 
-                }else if($downloadType === "userFile"){
-                    $fileInput = $UsersFiles->remapColumsToOriginal($fileInput, $queueDetails, false); 
+                if ($download_url !== false) {
+                    $local_download_url = $backend_server_url . "/backend/system/filesystem/local-upload/" . urlencode(base64_encode($fileInput)) . "/" . urlencode(base64_encode($download_filename)) . "?HTTP_X_TOKEN=" . urlencode($user_details['session_id']);
+
+                    $downloadLinks[] = [
+                        "filename" => $display_filename,
+                        "download_url" => $download_url,
+                        "local_download_url" => $local_download_url
+                    ];
                 }
+            }
+        }
 
-				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/download' compressing file for download: " . $fileInput);
-				$download_url = $FileSystem->compressFileOrDirectory($fileInput, $display_filename);
+        if (count($downloadLinks) > 0) {
+            $message = $downloadLinks;
+            $success = true;
+        } else {
+            $success = false;
+            $message = "No files found for download!";
+        }
+    } else {
+        $success = false;
+        $message = "No submit data provided.";
+    }
 
-				if ($download_url !== false) {
-					$downloadLinks[] = ["filename" => $display_filename, 
-					"download_url" => $download_url, 
-					"local_download_url" => $backend_server_url."/backend/system/filesystem/local-upload/".urlencode(base64_encode($fileInput))."/".urlencode(base64_encode($download_filename))."?HTTP_X_TOKEN=".urlencode($user_details['session_id'])
-					];
-				}
-			}
-		}
-
-
-		if (count($downloadLinks) > 0) {
-			$message = $downloadLinks;
-			$success = true;
-		}else{
-			$success = false;
-			$message = "No files found for download!";
-		}
-	}
-	return $response->withJson(["success" => $success, "message" => $message]);
+    return $response->withJson(["success" => $success, "message" => $message]);
 });
+
 
 /**
  * Retrieves file details for selected files in the PANDORA ML software filesystem.

@@ -628,7 +628,7 @@ db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel,
 
 
         ## Insert Testing (missing))
-        if(!is.null(AUROC) & !is.null(AUROC$auc)){
+        if(!is.null(AUROC)){
             print(paste0("===> INFO: Inserting model AUROC variables"))
 
 

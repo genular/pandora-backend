@@ -478,7 +478,7 @@ for (dataset in datasets) {
             cat(paste0("===> INFO: Calculating variable importance for model: ",model," \r\n"))
             trainingVariableImportance <- prepareVariableImportance(trainModel$data, outcome_mapping)
             if (is.null(trainingVariableImportance)) { 
-                error_models <- c(error_models, "Cannot calculate variable importance")
+                error_models <- c(error_models, paste0("Cannot calculate variable importance for model: ", model))
             }
         }else{
             error_models <- c(error_models, trainModel$data)

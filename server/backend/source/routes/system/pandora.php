@@ -555,8 +555,14 @@ $app->post('/backend/system/pandora/dataset-queue/delete', function (Request $re
             }
 
             $Models = $this->get('PANDORA\Models\Models');
-            $modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
-            $modelsListIDs = array_column($modelsList, 'modelID');
+
+            if(count($resamplesListIDs) > 0){
+                $modelsList = $Models->getDatasetResamplesModels($resamplesListIDs, $user_id);
+                $modelsListIDs = array_column($modelsList, 'modelID');
+            }else{
+                $modelsList = [];
+                $modelsListIDs = [];
+            }
 
             foreach ($modelsList as $model) {
                 $files[] = $model['ufid'];

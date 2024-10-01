@@ -232,6 +232,8 @@ class UsersFiles {
 
 		$file_contents = file_get_contents($fileInput);
 
+
+
 		// Load CSV file to associative array
 		$lines = explode( "\n", $file_contents );
 		$headers = str_getcsv( array_shift( $lines ) );

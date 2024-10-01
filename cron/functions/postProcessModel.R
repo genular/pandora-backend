@@ -267,42 +267,124 @@ getVariableImportance <- function(model, scale = TRUE) {
 prepareVariableImportance <- function(model, outcome_mapping) {
     importance <- NULL
 
-    # Ensure that variable importance data is present
-    imp_perc <- getVariableImportance(model, TRUE) # Importance in percentage
-    imp_no <- getVariableImportance(model, FALSE) # Raw importance numbers
+    # Get variable importance
+    imp_perc <- getVariableImportance(model, TRUE)  # Scaled importance
+    imp_no <- getVariableImportance(model, FALSE)   # Raw importance
 
-    if (!is.null(imp_perc) && !is.null(imp_no)) { 
-        ## Remove columns that are not in outcome_mapping$class_remapped here:
-        imp_perc$importance <- imp_perc$importance[, colnames(imp_perc$importance) %in% outcome_mapping$class_remapped]
-        imp_no$importance <- imp_no$importance[, colnames(imp_no$importance) %in% outcome_mapping$class_remapped]
+    if (!is.null(imp_perc) && !is.null(imp_no)) {
+        importance <- tryCatch({
+            # Extract importance data
+            imp_perc_data <- imp_perc$importance
+            imp_no_data <- imp_no$importance
+        
+            imp_perc_data <- as.data.frame(imp_perc_data)
+            imp_no_data <- as.data.frame(imp_no_data)
+            
+            # Get column names
+            perc_cols <- colnames(imp_perc_data)
+            no_cols <- colnames(imp_no_data)
+            
+            # Check for 'Overall' column
+            has_overall <- 'Overall' %in% perc_cols
+            
+            # Get per-class columns (excluding 'Overall')
+            class_cols <- setdiff(perc_cols, 'Overall')
+            
+            # Identify matching class columns
+            matching_class_cols <- intersect(class_cols, outcome_mapping$class_remapped)
+            
+            # Initialize importance data frames
+            importance_perc <- NULL
+            importance_no <- NULL
+            
+            # Process per-class importance if matching classes are present
+            if (length(matching_class_cols) > 0) {
+                # Use per-class importance for matching classes
+                imp_perc_class <- imp_perc_data[, matching_class_cols, drop = FALSE]
+                imp_no_class <- imp_no_data[, matching_class_cols, drop = FALSE]
 
-        imp_no$importance$overall <-  rowMeans(imp_perc$importance, na.rm = TRUE)
-        imp_perc$importance$overall <- rowMeans(imp_no$importance, na.rm = TRUE)
+                imp_perc_class <- as.data.frame(imp_perc_class)
+                imp_no_class <- as.data.frame(imp_no_class)
+            
+                # Reshape per-class importance data to long format
+                importance_perc_class <- imp_perc_class %>%
+                    tibble::rownames_to_column('feature_name') %>%
+                    tidyr::pivot_longer(cols = -feature_name, names_to = "outcome_class", values_to = "score_perc")
+                
+                importance_no_class <- imp_no_class %>%
+                    tibble::rownames_to_column('feature_name') %>%
+                    tidyr::pivot_longer(cols = -feature_name, names_to = "outcome_class", values_to = "score_no")
+                
+                # Combine per-class importance data
+                importance_perc <- importance_perc_class
+                importance_no <- importance_no_class
+            }
+            
+            # Process 'Overall' importance if present
+            if (has_overall) {
+                # Extract 'Overall' importance
+                importance_perc_overall <- imp_perc_data %>%
+                    tibble::rownames_to_column('feature_name') %>%
+                    dplyr::select(feature_name, score_perc = Overall) %>%
+                    dplyr::mutate(outcome_class = 'Overall')
+                
+                importance_no_overall <- imp_no_data %>%
+                    tibble::rownames_to_column('feature_name') %>%
+                    dplyr::select(feature_name, score_no = Overall) %>%
+                    dplyr::mutate(outcome_class = 'Overall')
+                
+                # Combine with per-class importance if applicable
+                if (!is.null(importance_perc)) {
+                    importance_perc <- dplyr::bind_rows(importance_perc, importance_perc_overall)
+                    importance_no <- dplyr::bind_rows(importance_no, importance_no_overall)
+                } else {
+                    importance_perc <- importance_perc_overall
+                    importance_no <- importance_no_overall
+                }
+            }
+            
+            # If neither matching per-class columns nor 'Overall' is present
+            if (is.null(importance_perc)) {
+                # Compute 'Overall' importance by taking rowMeans of all columns
+                imp_perc_data$Overall <- rowMeans(imp_perc_data, na.rm = TRUE)
+                imp_no_data$Overall <- rowMeans(imp_no_data, na.rm = TRUE)
+                
+                importance_perc <- imp_perc_data %>%
+                    tibble::rownames_to_column('feature_name') %>%
+                    dplyr::select(feature_name, score_perc = Overall) %>%
+                    dplyr::mutate(outcome_class = 'Overall')
+                
+                importance_no <- imp_no_data %>%
+                    tibble::rownames_to_column('feature_name') %>%
+                    dplyr::select(feature_name, score_no = Overall) %>%
+                    dplyr::mutate(outcome_class = 'Overall')
+            }
+            
+            # Merge the importance data
+            importance <- dplyr::full_join(importance_perc, importance_no, by = c("feature_name", "outcome_class"))
+            
+            # Clean data: Convert to numeric and handle NAs, NaNs, and Inf
+            importance <- cleanImportanceData(importance)
+            
+            # Compute ranks
+            importance <- importance %>%
+                dplyr::group_by(outcome_class) %>%
+                dplyr::mutate(rank = rank(-score_perc, ties.method = "first")) %>%
+                dplyr::ungroup()
+            
+            # Join with outcome mapping
+            importance <- importance %>%
+                dplyr::left_join(outcome_mapping, by = c("outcome_class" = "class_remapped")) %>%
+                dplyr::mutate(drm_id = if_else(is.na(id), 0L, id)) %>%
+                dplyr::select(-outcome_class, -id)
+            
+                importance <- as.data.frame(importance)
 
-        imp_no$importance$overall_sum <-  rowSums(imp_perc$importance, na.rm = TRUE)
-        imp_perc$importance$overall_sum <- rowSums(imp_no$importance, na.rm = TRUE)
-
-        # Process importance data
-        importance_perc <- processImportanceData(imp_perc, "score_perc")
-        importance_no <- processImportanceData(imp_no, "score_no")
-
-        importance <- dplyr::full_join(importance_perc, importance_no, by = c("feature_name", "outcome_class"))
-        # Clean data: Convert to numeric and handle NAs, NaNs, and Inf
-        importance <- cleanImportanceData(importance)
-
-        importance <- importance %>%
-            dplyr::group_by(outcome_class) %>%
-            dplyr::mutate(rank =  rank(-score_perc, ties.method = "first")) %>%
-            dplyr::ungroup()
-
-
-        importance <- importance %>%
-          dplyr::left_join(outcome_mapping, by = c("outcome_class" = "class_remapped")) %>%
-          dplyr::mutate(id = if_else(is.na(id), 0L, id)) %>%
-          dplyr::select(-outcome_class) %>%
-          dplyr::rename(drm_id = id)
-
-        importance <- as.data.frame(importance)
+                importance  # Return the computed importance
+        }, error = function(e) {
+            cat(paste0("===> ERROR in prepareVariableImportance: ", e$message, "\n"))
+            NULL  # Return NULL in case of error
+        })
     }
 
     return(importance)
