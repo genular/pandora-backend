@@ -2,33 +2,35 @@
 ## One-vs-All Strategy | SINGLE
 roc_training_single <- function(modelData, settings, resampleID, outcome_mappings){
 
-    # Map original classes to remapped classes
+    # Map internal class names to external class names
     class_mapping <- setNames(modelData$info$outcome_mapping$class_original, modelData$info$outcome_mapping$class_remapped)
+
     # Extract observed class labels from the model data
     observed <- modelData$training$raw$data$pred$obs
+
+    # Get the internal class names in desired order
     classes <- sort(unique(observed), decreasing = TRUE)
 
     # Classes defined in outcome_mappings
     defined_classes <- unique(outcome_mappings$class_remapped)
-    
+
     roc_list <- list()
 
     # Compute ROC object for each class
     for (class in classes) {
         if (class %in% defined_classes) {
-            print(paste0("===> INFO: Calculating ROC TRAINING for class: ", class))
+            cat(paste0("===> INFO: Calculating ROC TRAINING for class: ", class, "\n"))
             binary_observed <- ifelse(observed == class, 1, 0)
 
             if (length(unique(binary_observed)) == 1) {
-                print(paste("Skipping ROC for class due to insufficient data:", class))
+                cat(paste("Skipping ROC for class due to insufficient data:", class, "\n"))
                 next  # Skip this iteration if binary conversion failed to produce two classes
             }
 
             if (is.null(modelData$training$raw$data$pred[[class]])) {
-                print(paste("Skipping ROC for class due to missing column in pred data:", class))
+                cat(paste("Skipping ROC for class due to missing column in pred data:", class, "\n"))
                 next
             }
-
 
             # Compute ROC curve using pROC
             roc_obj <- pROC::roc(binary_observed, modelData$training$raw$data$pred[[class]])
@@ -36,8 +38,9 @@ roc_training_single <- function(modelData, settings, resampleID, outcome_mapping
             roc_list[[class]] <- roc_obj
         }
     }
+
     # Initialize an empty data frame for ROC data
-    roc_data <- data.frame(FPR = numeric(), TPR = numeric(), Class = factor(), Thresholds = numeric())
+    roc_data <- data.frame(FPR = numeric(), TPR = numeric(), Thresholds = numeric(), Class = factor())
 
     # Extract and bind data for each class
     for (class in names(roc_list)) {
@@ -47,27 +50,47 @@ roc_training_single <- function(modelData, settings, resampleID, outcome_mapping
             FPR = 1 - roc_item$specificities,
             TPR = roc_item$sensitivities,
             Thresholds = roc_item$thresholds,
-            Class = class  # Use the class comparison label directly
+            Class = class  # Use the internal class name directly
         )
         # Bind this temporary data frame to the main ROC data frame
         roc_data <- rbind(roc_data, tmp_data)
     }
-    if(nrow(roc_data) < 1){
+
+    if (nrow(roc_data) < 1) {
         return(list(roc_data = NULL, auc_labels = NULL))
     }
 
-    # Apply the class mapping
-    roc_data$Class <- factor(roc_data$Class, levels = names(class_mapping), labels = class_mapping[names(class_mapping)])
-    
-    # Calculating AUC for each class and storing it in a named vector for easy access
-    auc_values <- setNames(sapply(roc_list, function(roc_obj) as.numeric(pROC::auc(roc_obj))), names(roc_list))
-    
-    # Update names with mapped names
-    names(auc_values) <- class_mapping[names(auc_values)]
-    
-    # Generate AUC labels
-    auc_labels <- sprintf("%s - (%.2f)", names(auc_values), auc_values)
-    
+    # Map internal class names to external readable names and set factor levels
+    class_levels <- class_mapping[classes]
+    # Remove NA values in case some classes don't have mappings
+    class_levels <- class_levels[!is.na(class_levels)]
+    classes <- classes[classes %in% names(class_levels)]
+
+    # Set the Class factor with levels in desired order
+    roc_data$Class <- factor(roc_data$Class, levels = classes, labels = class_levels)
+
+    # Order roc_data by Class
+    roc_data <- roc_data[order(roc_data$Class), ]
+
+    # Calculate AUC values and map names to external class names
+    auc_values <- sapply(roc_list, function(roc_obj) as.numeric(pROC::auc(roc_obj)))
+    auc_class_names <- class_mapping[names(auc_values)]
+    names(auc_values) <- auc_class_names
+
+    # Ensure auc_values are ordered according to class_levels
+    auc_values_ordered <- auc_values[class_levels]
+
+    # Remove any NA values in auc_values_ordered
+    valid_indices <- !is.na(auc_values_ordered)
+    auc_values_ordered <- auc_values_ordered[valid_indices]
+    class_levels_ordered <- class_levels[valid_indices]
+
+    # Generate AUC labels in the format "Class - (AUC)"
+    auc_labels <- sprintf("%s - (%.2f)", class_levels_ordered, auc_values_ordered)
+
+    # Optionally, name the labels by their class for easier referencing in plots
+    names(auc_labels) <- class_levels_ordered
+
     return(list(roc_data = roc_data, auc_labels = auc_labels))
 }
 

@@ -15,7 +15,7 @@ plot_auc_roc_multiclass_testing <- function(roc_data, settings, tmp_hash){
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
 			    labs(title = "Multi-class ROC Curves",
-			         subtitle = paste("Comparison of model performance across different classes"),
+			         subtitle = paste("Comparison of model performance across different classes (testing-m)"),
 			         color = "Class Comparison (AUC)") 
 
 
@@ -46,7 +46,7 @@ plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, setting
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
 			    labs(title = "Multi-class ROC Curves (One-vs-All)",
-			         subtitle = paste("Comparison of model performance across different classes"),
+			         subtitle = paste("Comparison of model performance across different classes (testing-s)"),
 			         color = "Class Comparison") 
 
 
@@ -75,7 +75,7 @@ plot_auc_roc_multiclass_training <- function(roc_data, settings, tmp_hash){
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
 			    labs(title = "Multi-class ROC Curves",
-			         subtitle = paste("Comparison of model performance across different classes"),
+			         subtitle = paste("Comparison of model performance across different classes (training-m)"),
 			         color = "Class Comparison (AUC)") 
 
 
@@ -104,7 +104,7 @@ plot_auc_roc_multiclass_training_single <- function(roc_data, auc_labels, settin
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
 			    labs(title = "Multi-class ROC Curves (One-vs-All)",
-			         subtitle = paste("Comparison of model performance across different classes"),
+			         subtitle = paste("Comparison of model performance across different classes (training-s)"),
 			         color = "Class Comparison") 
 
     tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")

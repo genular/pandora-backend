@@ -188,8 +188,8 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                 if(objExists){
                     ## (PLOT 2) TRAINIG ROC - MULTI:
                     print(paste0("===> INFO: Calculating ROC TRAINING (PLOT 2)"))
-                    results <- roc_training_multi(modelData, settings, resampleID, outcome_mappings_filtered)
-
+                    # results <- roc_training_multi(modelData, settings, resampleID, outcome_mappings_filtered)
+                    results <- list(roc_data = NULL)
                     if (!is.null(results$roc_data) && length(results$roc_data) > 0) {
                         plot_unique_hash[["training"]]$auc_roc_multiclass[[method]] <- digest::digest(paste0(resampleID, "_",args$settings,"_training_auc_roc_multiclass_", method), algo="md5", serialize=F)
                         tmp_path <- plot_auc_roc_multiclass_training(results$roc_data, settings, plot_unique_hash[["training"]]$auc_roc_multiclass[[method]])
@@ -244,7 +244,8 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                 if(objExists){
                     ## (PLOT 2) TESTING ROC - MULTI:
                     print(paste0("===> INFO: Calculating ROC TESTING (PLOT 2)"))
-                    results <- roc_testing_multi(modelData, settings, resampleID, outcome_mappings_filtered)
+                    ## results <- roc_testing_multi(modelData, settings, resampleID, outcome_mappings_filtered)
+                    results <- list(roc_data = NULL)
 
                     if (!is.null(results$roc_data) && length(results$roc_data) > 0) {
                         plot_unique_hash[["testing"]]$auc_roc_multiclass[[method]] <- digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc_roc_multiclass_", method), algo="md5", serialize=F)

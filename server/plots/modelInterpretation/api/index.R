@@ -301,7 +301,7 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                             
                             print(paste0("===> INFO (lime): Plotting: ", features_in_title))
                             
-                            tmp_path <- plot_interpretation_lime(explanation[i, ], i, settings, plot_unique_hash[["ice"]][[method]])
+                            tmp_path <- plot_interpretation_lime(explanation[i, ], i, settings, plot_unique_hash[["lime"]][[method]])
 
                             if(!is.null(tmp_path)){
                                 res.data$lime[[method]][[features_in_title]] <- optimizeSVGFile(tmp_path)

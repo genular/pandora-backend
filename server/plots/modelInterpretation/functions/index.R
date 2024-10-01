@@ -59,6 +59,8 @@ plot_interpretation_ice <- function(ice_data, original_feature_name, settings, t
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
     
+    original_feature_name <- paste0("`", original_feature_name, "`")
+    
     plotData <- ggplot(ice_data, aes_string(x = original_feature_name, y = "yhat")) +
                 geom_line(alpha = 0.3) +  # Use transparency to manage overplotting
                 labs(title = paste("ICE Plot for", original_feature_name),
