@@ -169,9 +169,9 @@ pandora$handle$plots$editing$heatmap$renderPlot <- expression(
             }else{
                 print(paste0("Grouping dataset by column '", group_column, "'"))
                 dataset_filtered <- dataset_filtered %>%
-                    group_by(across(all_of(group_column))) %>%  # Correctly refer to the column name stored as a string
-                    summarise(across(everything(), \(x) mean(x, na.rm = TRUE)), .groups = 'drop')  # Use the new syntax for `across()`
-                
+                    group_by(across(all_of(group_column))) %>%
+                    summarise(across(everything(), ~ mean(.x, na.rm = TRUE)), .groups = 'drop')
+    
                 dataset_filtered <- as.data.frame(dataset_filtered)
                 settings$scale <- "row"
             }
