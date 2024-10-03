@@ -63,7 +63,7 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
         }
 
         if(is_var_empty(settings$selectedPlots, "selectedPlots") == TRUE){
-            settings$selectedPlots = c("scatter", "heatmap", "ice", "lime", "iml_featureimp", "iml_interaction", "iml_featureeffect_ale", "iml_featureeffect_pdp_ice")
+            settings$selectedPlots = c("iml_featureimp")
         }
 
         print(paste0("===> INFO: Processing plots: ", settings$selectedPlots))
@@ -109,6 +109,8 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
         save(modelsResampleData, file = "/tmp/modelsResampleData")
 
+        outcome_mapping <- NULL
+
         for (method in names(modelsResampleData)) {
             
             modelData <- modelsResampleData[[method]]
@@ -119,7 +121,17 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
             feature_mapping <- modelData[["info"]][["dataset_queue_options"]][["features"]]
             feature_mapping$original <- sanitize_filename(feature_mapping$original)
 
-            outcome_mapping <- modelData[["info"]][["dataset_queue_options"]][["outcome"]]
+
+            if(is.null(outcome_mapping)){
+                outcome_mapping <- modelData[["info"]][["dataset_queue_options"]][["outcome"]]
+                print(paste0("===> INFO: Outcome mapping: ", outcome_mapping$original))
+
+                if(is.null(outcome_mapping$original) || outcome_mapping$original == "") {
+                    warning(paste0("===> ERROR Model ", method, " does not have a valid outcome_mapping$original"))
+                    next
+                }
+            }
+
             
             ## Original Training Data
             data_training <- modelData$info$data$training
@@ -329,7 +341,9 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
             if (!is.null(mod)) {
 
                 if("iml_featureimp" %in% settings$selectedPlots){
-                    print(paste0("===> INFO (iml_featureimp): Plotting"))
+                    print(paste0("===> INFO (iml_featureimp): Plotting for: ", outcome_mapping$original))
+                    
+
                     plot_unique_hash[["iml_featureimp"]][[outcome_mapping$original]] <- digest::digest(paste0(resampleID, "_",args$settings,"_iml_featureimp_",outcome_mapping$original,"_", method), algo="md5", serialize=F)
                     
                     tmp_path <- plot_interpretation_iml_featureimp(mod, 
@@ -338,10 +352,17 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                         plot_unique_hash[["iml_featureimp"]][[outcome_mapping$original]])
 
                     if(!is.null(tmp_path)){
+
+                        print(paste0("===> INFO (iml_featureimp): optimizeSVGFile: ",method," - ", tmp_path))
+
                         res.data$iml_featureimp[[method]][[outcome_mapping$original]] <- optimizeSVGFile(tmp_path)
+
                         if (!"iml_featureimp_png" %in% names(res.data)) {
+                            print(paste0("===> INFO (iml_featureimp): resetting"))
                             res.data$iml_featureimp_png <- list()
                         }
+
+                        print(paste0("===> INFO (iml_featureimp): convertSVGtoPNG"))
                         res.data$iml_featureimp_png[[method]][[outcome_mapping$original]] <- convertSVGtoPNG(tmp_path)
                     }
                 }
@@ -435,6 +456,7 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
+
         processingData <- list(
             res.data = res.data, 
             modelData = modelData
