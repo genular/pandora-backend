@@ -24,7 +24,6 @@ source(paste0("server/", SERVER_NAME, "/distribution/main.R"))
 source(paste0("server/", SERVER_NAME, "/editing/main.R"))
 source(paste0("server/", SERVER_NAME, "/general/main.R"))
 
-
 # Define a function to deploy the API with specified options, defaulting to localhost and port 8181.
 # This function checks for the plumber library and sets up the API routes and hooks.
 deployAPI <- function(pandora, options = list(host = "127.0.0.1", port = 8181)) {

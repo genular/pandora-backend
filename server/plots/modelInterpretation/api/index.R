@@ -185,11 +185,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                     print(paste0("===> INFO (scatter): Plotting"))
                     tmp_path <- plot_interpretation_scatter(pdp_data, original_feature_name, original_outcome_name, settings, plot_unique_hash[["scatter"]][[method]])
 
-                    res.data$scatter[[method]][[paste0(original_feature_name,"_",original_outcome_name)]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                    res.data$scatter[[method]][[paste0(original_feature_name,"_",original_outcome_name)]] <- optimizeSVGFile(tmp_path)
                     if (!"scatter_png" %in% names(res.data)) {
                         res.data$scatter_png <- list()
                     }
-                    res.data$scatter_png[[method]][[paste0(original_feature_name,"_",original_outcome_name)]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                    res.data$scatter_png[[method]][[paste0(original_feature_name,"_",original_outcome_name)]] <- convertSVGtoPNG(tmp_path)
                     
                 }
             } ## PLOT 1 - scatter
@@ -232,11 +232,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                             print(paste0("===> INFO (heatmap): Plotting"))
                             tmp_path <- plot_interpretation_heatmap(pd_interaction, original_name1, original_name2, settings, plot_unique_hash[["heatmap"]][[method]])
 
-                            res.data$heatmap[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                            res.data$heatmap[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- optimizeSVGFile(tmp_path)
                             if (!"heatmap_png" %in% names(res.data)) {
                                 res.data$heatmap_png <- list()
                             }
-                            res.data$heatmap_png[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                            res.data$heatmap_png[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- convertSVGtoPNG(tmp_path)
                         }
                     }
                 }
@@ -267,11 +267,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                     print(paste0("===> INFO (ice): Plotting"))
                     tmp_path <- plot_interpretation_ice(ice_data, original_feature_name, settings, plot_unique_hash[["ice"]][[method]])
 
-                    res.data$ice[[method]][[original_feature_name]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                    res.data$ice[[method]][[original_feature_name]] <- optimizeSVGFile(tmp_path)
                     if (!"ice_png" %in% names(res.data)) {
                         res.data$ice_png <- list()
                     }
-                    res.data$ice_png[[method]][[original_feature_name]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                    res.data$ice_png[[method]][[original_feature_name]] <- convertSVGtoPNG(tmp_path)
                 }
             }
             
@@ -314,11 +314,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                             tmp_path <- plot_interpretation_lime(explanation[i, ], i, settings, plot_unique_hash[["lime"]][[method]])
 
                             if(!is.null(tmp_path)){
-                                res.data$lime[[method]][[features_in_title]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                                res.data$lime[[method]][[features_in_title]] <- optimizeSVGFile(tmp_path)
                                 if (!"lime_png" %in% names(res.data)) {
                                     res.data$lime_png <- list()
                                 }
-                                res.data$lime_png[[method]][[features_in_title]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                                res.data$lime_png[[method]][[features_in_title]] <- convertSVGtoPNG(tmp_path)
                             }
                         }
                     }
@@ -353,25 +353,17 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
                         print(paste0("===> INFO (iml_featureimp): optimizeSVGFile: ",method," - ", tmp_path))
 
-                        if (!is.list(res.data$iml_featureimp[[method]])) {
-                            res.data$iml_featureimp[[method]] <- list()
-                        }
 
-                        res.data$iml_featureimp[[method]][[outcome_mapping$original]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                        res.data$iml_featureimp[[method]][[outcome_mapping$original]] <- optimizeSVGFile(tmp_path)
+
 
                         if (!"iml_featureimp_png" %in% names(res.data)) {
                             print(paste0("===> INFO (iml_featureimp): resetting"))
                             res.data$iml_featureimp_png <- list()
                         }
 
-                        if (!(outcome_mapping$original %in% names(res.data$iml_featureimp[[method]]))) {
-                            print("Warning: 'outcome' key is missing in res.data$iml_featureimp[[method]]")
-                        } else {
-                            print("Success: 'outcome' key is present")
-                        }
-
                         print(paste0("===> INFO (iml_featureimp): convertSVGtoPNG"))
-                        res.data$iml_featureimp_png[[method]][[outcome_mapping$original]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                        res.data$iml_featureimp_png[[method]][[outcome_mapping$original]] <- convertSVGtoPNG(tmp_path)
                     }
                 }
                 
@@ -384,11 +376,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                         settings, 
                         plot_unique_hash[["iml_interaction"]][[outcome_mapping$original]])
                     if(!is.null(tmp_path)){
-                        res.data$iml_interaction[[method]][[outcome_mapping$original]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                        res.data$iml_interaction[[method]][[outcome_mapping$original]] <- optimizeSVGFile(tmp_path)
                         if (!"iml_interaction_png" %in% names(res.data)) {
                             res.data$iml_interaction_png <- list()
                         }
-                        res.data$iml_interaction_png[[method]][[outcome_mapping$original]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                        res.data$iml_interaction_png[[method]][[outcome_mapping$original]] <- convertSVGtoPNG(tmp_path)
                     }
                 }
 
@@ -421,11 +413,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                                     plot_unique_hash[["iml_featureeffect_ale"]][[paste0(original_name1,"_vs_",original_name2)]])
                                 
                                 if(!is.null(tmp_path)){
-                                    res.data$iml_featureeffect_ale[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                                    res.data$iml_featureeffect_ale[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- optimizeSVGFile(tmp_path)
                                     if (!"iml_featureeffect_ale_png" %in% names(res.data)) {
                                         res.data$iml_featureeffect_ale_png <- list()
                                     }
-                                    res.data$iml_featureeffect_ale_png[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                                    res.data$iml_featureeffect_ale_png[[method]][[paste0(original_name1,"_vs_",original_name2)]] <- convertSVGtoPNG(tmp_path)
                                 }
                             }
                         }
@@ -447,11 +439,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
                             plot_unique_hash[["iml_featureeffect_pdp_ice"]][[outcome_mapping$original]])
                         
                         if(!is.null(tmp_path)){
-                            res.data$iml_featureeffect_pdp_ice[[method]][[process_feature$original]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
+                            res.data$iml_featureeffect_pdp_ice[[method]][[process_feature$original]] <- optimizeSVGFile(tmp_path)
                             if (!"iml_featureeffect_pdp_ice_png" %in% names(res.data)) {
                                 res.data$iml_featureeffect_pdp_ice_png <- list()
                             }
-                            res.data$iml_featureeffect_pdp_ice_png[[method]][[process_feature$original]] <- unbox_nested_scalars(convertSVGtoPNG(tmp_path))
+                            res.data$iml_featureeffect_pdp_ice_png[[method]][[process_feature$original]] <- convertSVGtoPNG(tmp_path)
                         }
                     }
                 }
@@ -465,13 +457,19 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
 
+
+        res.data.unboxed <- unbox_nested_scalars(res.data)
+
         processingData <- list(
             res.data = res.data, 
+            res.data.unboxed = res.data.unboxed, 
             modelData = modelData
         )
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
-        return (list(success =  unbox_nested_scalars(TRUE), message = res.data))
+
+
+        return (list(success = jsonlite::unbox(TRUE), message = res.data.unboxed))
     }
 )
