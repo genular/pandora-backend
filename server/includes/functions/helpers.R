@@ -28,23 +28,26 @@ kill_process_pids <- function(process_list){
 
 custom_json_serializer <- function() {
     serializer_json(
-        auto_unbox = TRUE,   # Unbox scalar values
-        null = "null",       # Handle NULLs as null in JSON
-        digits = NA,
-        simplifyVector = FALSE,  # Do not simplify vectors
-        force = TRUE         # Force the serializer to respect unboxing
+        auto_unbox = TRUE,
+        flatten = FALSE, 
+        simplifyVector = FALSE, 
+        simplifyDataFrame = FALSE, 
+        simplifyMatrix = FALSE,
+        force = TRUE
     )
 }
 
 unbox_nested_scalars <- function(x) {
-    if (is.list(x)) {
-        lapply(x, unbox_nested_scalars)
-    } else if (is.atomic(x) && length(x) == 1) {
-        jsonlite::unbox(x)
-    } else {
-        x
-    }
+  if (is.list(x)) {
+    lapply(x, unbox_nested_scalars)
+  } else if (is.atomic(x) && length(x) == 1) {
+    attributes(x) <- NULL  # Remove any attributes from the scalar
+    jsonlite::unbox(x)
+  } else {
+    x
+  }
 }
+
 
 #' @title  which_cmd
 #' @description Get path to system bin file
@@ -494,13 +497,21 @@ optimizeSVGFile <- function(tmp_path){
     size_bytes <- file.info(tmp_path)$size
     size_mb <- ceiling(size_bytes / 1000000)
 
-    svg_data <- as.character(RCurl::base64Encode(readBin(tmp_path, "raw", n = size_bytes), "txt")) 
+    # Read the raw data from the file
+    svg_raw <- readBin(tmp_path, "raw", n = size_bytes)
+
+    # Base64 encode the raw data
+    svg_encoded <- RCurl::base64Encode(svg_raw, "txt")
+
+    # Convert to character string and remove any attributes
+    svg_data <- as.character(svg_encoded)
+    attributes(svg_data) <- NULL  # Remove all attributes
 
     if(size_mb < 100){
         return(svg_data)
-    }else{
+    } else {
         # TODO:
-        # Image is to big serve it as a file for download
+        # Image is too big; serve it as a file for download
         return(FALSE)
     }
 

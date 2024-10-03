@@ -458,18 +458,18 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
 
 
-        res.data.unboxed <- unbox_nested_scalars(res.data)
+        res.data <- unbox_nested_scalars(res.data)
 
         processingData <- list(
-            res.data = res.data, 
-            res.data.unboxed = res.data.unboxed, 
+            res.data = res.data,
             modelData = modelData
         )
+        
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
 
 
-        return (list(success = jsonlite::unbox(TRUE), message = res.data.unboxed))
+        return (list(success = jsonlite::unbox(TRUE), message = res.data))
     }
 )
