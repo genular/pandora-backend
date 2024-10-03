@@ -53,6 +53,8 @@ options(scipen=999)  # turn-off scientific notation like 1e+48
 # options(error = quote(dump.frames(paste0(TEMP_DIR,"/error_dump_", SERVER_NAME), TRUE)))
 options(ggrepel.max.overlaps = Inf)
 
+Sys.setlocale("LC_ALL", "C")
+
 source("server/includes/functions/helpers.R")
 source("server/includes/functions/database.R")
 

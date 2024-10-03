@@ -24,6 +24,7 @@ source(paste0("server/", SERVER_NAME, "/distribution/main.R"))
 source(paste0("server/", SERVER_NAME, "/editing/main.R"))
 source(paste0("server/", SERVER_NAME, "/general/main.R"))
 
+
 # Define a function to deploy the API with specified options, defaulting to localhost and port 8181.
 # This function checks for the plumber library and sets up the API routes and hooks.
 deployAPI <- function(pandora, options = list(host = "127.0.0.1", port = 8181)) {
@@ -62,7 +63,7 @@ deployAPI <- function(pandora, options = list(host = "127.0.0.1", port = 8181)) 
     router$handle("GET", "/plots/model-summary/render-plot/multi-class", pandora$handle$plots$modelsummary$renderPlot$multiClass, serializer = serializer_unboxed_json())
 
     ## Model Interpretation TAB
-    router$handle("GET", "/plots/model-interpretation/render-plot", pandora$handle$plots$modelInterpretation$renderPlot, serializer = serializer_unboxed_json())
+    router$handle("GET", "/plots/model-interpretation/render-plot", pandora$handle$plots$modelInterpretation$renderPlot, serializer = custom_json_serializer())
 
     router$handle("GET", "/plots/distribution/render-plot", pandora$handle$plots$distribution$renderPlot, serializer = serializer_unboxed_json())
     

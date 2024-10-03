@@ -26,6 +26,26 @@ kill_process_pids <- function(process_list){
     }
 }
 
+custom_json_serializer <- function() {
+    serializer_json(
+        auto_unbox = TRUE,   # Unbox scalar values
+        null = "null",       # Handle NULLs as null in JSON
+        digits = NA,
+        simplifyVector = FALSE,  # Do not simplify vectors
+        force = TRUE         # Force the serializer to respect unboxing
+    )
+}
+
+unbox_nested_scalars <- function(x) {
+    if (is.list(x)) {
+        lapply(x, unbox_nested_scalars)
+    } else if (is.atomic(x) && length(x) == 1) {
+        jsonlite::unbox(x)
+    } else {
+        x
+    }
+}
+
 #' @title  which_cmd
 #' @description Get path to system bin file
 #' @param bin_file exec name ex. tar
