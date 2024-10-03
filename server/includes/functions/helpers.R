@@ -29,24 +29,21 @@ kill_process_pids <- function(process_list){
 custom_json_serializer <- function() {
     serializer_json(
         auto_unbox = TRUE,
-        flatten = FALSE, 
-        simplifyVector = FALSE, 
-        simplifyDataFrame = FALSE, 
-        simplifyMatrix = FALSE,
-        force = TRUE
+        null = "null",
+        digits = NA,
+        force = TRUE,
+        POSIXt = "ISO8601"
     )
 }
 
 unbox_nested_scalars <- function(x) {
     if (is.atomic(x) && length(x) == 1) {
-        attributes(x) <- NULL  # Remove any attributes from the scalar
+        attributes(x) <- NULL
         jsonlite::unbox(x)
     } else if (is.list(x)) {
-        # Process each element of the list recursively, but do not unbox the list itself
-        lapply(x, unbox_nested_scalars)
-    } else {
-        x
+        x <- lapply(x, unbox_nested_scalars)
     }
+    x
 }
 
 

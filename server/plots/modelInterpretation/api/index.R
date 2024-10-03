@@ -105,7 +105,7 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
         print(paste0("===> INFO: Found ", length(modelsResampleData), " valid models"))
 
-        save(modelsResampleData, file = "/tmp/modelsResampleData")
+        ## save(modelsResampleData, file = "/tmp/modelsResampleData")
 
         outcome_mapping <- NULL
 
@@ -462,9 +462,11 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
         processingData <- list(
             res.data = res.data,
-            modelData = modelData
+            modelData = modelData,
+            modelsResampleData = modelsResampleData,
+            mod = mod
         )
-        
+
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
