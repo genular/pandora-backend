@@ -353,11 +353,21 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
                         print(paste0("===> INFO (iml_featureimp): optimizeSVGFile: ",method," - ", tmp_path))
 
+                        if (!is.list(res.data$iml_featureimp[[method]])) {
+                            res.data$iml_featureimp[[method]] <- list()
+                        }
+
                         res.data$iml_featureimp[[method]][[outcome_mapping$original]] <- unbox_nested_scalars(optimizeSVGFile(tmp_path))
 
                         if (!"iml_featureimp_png" %in% names(res.data)) {
                             print(paste0("===> INFO (iml_featureimp): resetting"))
                             res.data$iml_featureimp_png <- list()
+                        }
+
+                        if (!(outcome_mapping$original %in% names(res.data$iml_featureimp[[method]]))) {
+                            print("Warning: 'outcome' key is missing in res.data$iml_featureimp[[method]]")
+                        } else {
+                            print("Success: 'outcome' key is present")
                         }
 
                         print(paste0("===> INFO (iml_featureimp): convertSVGtoPNG"))
@@ -462,10 +472,6 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
-
-        json_output <- jsonlite::toJSON(list(success = jsonlite::unbox(TRUE), message = res.data), auto_unbox = TRUE, force = TRUE)
-        cat(json_output)
-        
         return (list(success =  unbox_nested_scalars(TRUE), message = res.data))
     }
 )
