@@ -38,14 +38,15 @@ custom_json_serializer <- function() {
 }
 
 unbox_nested_scalars <- function(x) {
-  if (is.list(x)) {
-    lapply(x, unbox_nested_scalars)
-  } else if (is.atomic(x) && length(x) == 1) {
-    attributes(x) <- NULL  # Remove any attributes from the scalar
-    jsonlite::unbox(x)
-  } else {
-    x
-  }
+    if (is.atomic(x) && length(x) == 1) {
+        attributes(x) <- NULL  # Remove any attributes from the scalar
+        jsonlite::unbox(x)
+    } else if (is.list(x)) {
+        # Process each element of the list recursively, but do not unbox the list itself
+        lapply(x, unbox_nested_scalars)
+    } else {
+        x
+    }
 }
 
 
