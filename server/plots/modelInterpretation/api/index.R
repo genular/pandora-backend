@@ -463,6 +463,9 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
 
+        json_output <- jsonlite::toJSON(list(success = jsonlite::unbox(TRUE), message = res.data), auto_unbox = TRUE, force = TRUE)
+        cat(json_output)
+        
         return (list(success =  unbox_nested_scalars(TRUE), message = res.data))
     }
 )
