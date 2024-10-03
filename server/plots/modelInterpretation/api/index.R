@@ -462,15 +462,17 @@ pandora$handle$plots$modelInterpretation$renderPlot <- expression(
 
         processingData <- list(
             res.data = res.data,
-            modelData = modelData,
-            modelsResampleData = modelsResampleData,
-            mod = mod
+            modelData = modelData
         )
+        if (exists("modelsResampleData") && !is.null(modelsResampleData)) {
+            processingData$modelsResampleData <- modelsResampleData
+        }
+        if (exists("mod") && !is.null(mod)) {
+            processingData$mod <- mod
+        }
 
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
-
-
 
         return (list(success = jsonlite::unbox(TRUE), message = res.data))
     }
