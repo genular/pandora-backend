@@ -83,10 +83,14 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     }
 
 
+    print(settings$max_iter)
+    print(settings$theta)
+    print(settings$eta)
+
     # Set t-SNE parameters
     # Check if settings are provided and not zero
-    if (!is.null(settings$max_iter) && settings$max_iter != 0 &&
-        !is.null(settings$theta) && settings$theta != 0 &&
+    if (!is.null(settings$max_iter) && settings$max_iter != 0 ||
+        !is.null(settings$theta) && settings$theta != 0 ||
         !is.null(settings$eta) && settings$eta != 0) {
         # Use the provided settings
         max_iter <- settings$max_iter
