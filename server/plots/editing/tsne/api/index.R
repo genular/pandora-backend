@@ -90,7 +90,10 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         }
 
         if(is_var_empty(settings$perplexity, "perplexity") == TRUE){
-            settings$perplexity <- 30
+            settings$perplexity <- NULL
+        }
+        if(is_var_empty(settings$exaggeration_factor, "exaggeration_factor") == TRUE){
+            settings$exaggeration_factor <- NULL
         }
         if(is_var_empty(settings$max_iter, "max_iter") == TRUE){
             settings$max_iter <- NULL
@@ -314,7 +317,11 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
 
-        # save(tsne_calc, file = "/tmp/tsne_calc.Rdata")
+        res.data$tsne_perplexity <- tsne_calc$perplexity
+        res.data$tsne_exaggeration_factor <- tsne_calc$exaggeration_factor
+        res.data$tsne_max_iter <- tsne_calc$max_iter
+        res.data$tsne_theta <- tsne_calc$theta
+        res.data$tsne_eta <- tsne_calc$eta
 
         ## Main t-SNE plot 
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])

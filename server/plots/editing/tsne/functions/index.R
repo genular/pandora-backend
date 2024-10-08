@@ -66,14 +66,25 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     print(paste0("Using initial_dims: ", initial_dims))
 
     # Adjust perplexity based on dataset size
-    max_perplexity <- floor((num_samples - 1) / 3)
-    if(max_perplexity < 1){
-        stop("Not enough data to compute perplexity.")
+
+    if (!is.null(settings$perplexity) && settings$perplexity > 0){
+        print("Using provided perplexity")
+
+        perplexity <- settings$perplexity
+    }else{
+        print("Using dynamic perplexity")
+
+        settings$perplexity <- 30
+        max_perplexity <- floor((num_samples - 1) / 3)
+        if(max_perplexity < 1){
+            stop("Not enough data to compute perplexity.")
+        }
+        perplexity <- min(settings$perplexity, max_perplexity)
+        if (perplexity != settings$perplexity) {
+            message("====> Adjusting perplexity to: ", perplexity)
+        }
     }
-    perplexity <- min(settings$perplexity, max_perplexity)
-    if (perplexity != settings$perplexity) {
-        message("====> Adjusting perplexity to: ", perplexity)
-    }
+
 
     header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
 
@@ -83,19 +94,15 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     }
 
 
-    print(settings$max_iter)
-    print(settings$theta)
-    print(settings$eta)
-
     # Set t-SNE parameters
     # Check if settings are provided and not zero
     if (!is.null(settings$max_iter) && settings$max_iter != 0 ||
-        !is.null(settings$theta) && settings$theta != 0 ||
         !is.null(settings$eta) && settings$eta != 0) {
         # Use the provided settings
         max_iter <- settings$max_iter
-        theta <- settings$theta
         eta <- settings$eta
+
+        theta <- settings$theta
     } else {
         # Adjust max_iter and other parameters based on dataset size
         if (num_samples < 500) {
@@ -123,7 +130,19 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     }
 
 
-    exaggeration_factor <- 12
+    # Set exaggeration_factor
+    if (!is.null(settings$exaggeration_factor) && settings$exaggeration_factor != 0) {
+        exaggeration_factor <- settings$exaggeration_factor
+    } else {
+        # Adjust exaggeration_factor based on dataset size
+        if (num_samples < 500) {
+            exaggeration_factor <- 4
+        } else if (num_samples < 2000) {
+            exaggeration_factor <- 8
+        } else {
+            exaggeration_factor <- 12
+        }
+    }
 
     print(paste0("Using max_iter: ", max_iter))
     print(paste0("Using theta: ", theta))
@@ -153,8 +172,9 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
         info.norm = info.norm,
         tsne.norm = tsne.norm, 
         tsne_columns = header_mapped$original, 
-        perplexity = perplexity, 
         initial_dims = initial_dims, 
+        perplexity = perplexity, 
+        exaggeration_factor = exaggeration_factor,
         max_iter = max_iter, 
         theta = theta, 
         eta = eta
