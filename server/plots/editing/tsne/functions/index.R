@@ -263,7 +263,10 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 	nw.norm = igraph::graph_from_data_frame(knn.norm, directed = FALSE)
 	nw.norm = igraph::simplify(nw.norm)
 
-    lc.norm <- igraph::cluster_louvain(nw.norm)
+
+    resolution <- find_optimal_resolution(nw.norm, start_resolution = 0.1, end_resolution = 10,  min_modularity = 0.1)
+
+    lc.norm <- igraph::cluster_louvain(nw.norm, resolution = resolution$optimal_resolution)
 
     # Debugging: Print number of clusters found
     num_clusters <- length(unique(igraph::membership(lc.norm)))
@@ -916,4 +919,66 @@ remove_outliers <- function(dataset, settings) {
         }
     }
     return(dataset)
+}
+
+
+#' Find Optimal Resolution for Louvain Clustering
+#'
+#' This function finds the optimal resolution for Louvain clustering by iterating over a 
+#' range of resolution values, balancing modularity and the number of clusters. The function 
+#' aims to find a resolution that produces a reasonable number of clusters while maintaining 
+#' high modularity.
+#'
+#' @param graph An igraph object representing the graph to be clustered.
+#' @param start_resolution Numeric. The starting resolution for the Louvain algorithm. Default is 0.1.
+#' @param end_resolution Numeric. The maximum resolution to test. Default is 10.
+#' @param min_modularity Numeric. The minimum acceptable modularity for valid clusterings. Default is 0.3.
+#' @param target_clusters_range Numeric vector of length 2. The range of acceptable cluster numbers (inclusive). Default is c(3, 6).
+#'
+#' @return A list containing:
+#'   \item{optimal_resolution}{The resolution that balances modularity and number of clusters.}
+#'   \item{best_modularity}{The modularity at the optimal resolution.}
+#'   \item{best_clusters}{The number of clusters at the optimal resolution.}
+#'
+#' @details
+#' The function iterates through different resolutions, performing Louvain clustering at each step, 
+#' and records the number of clusters and modularity. It then selects the resolution that provides 
+#' a good balance between a reasonable number of clusters and high modularity. 
+#' The user can set the desired range for the number of clusters.
+#'
+#' @examples
+#' # Example usage:
+#' g <- make_ring(10)  # Sample graph
+#' result <- find_optimal_resolution(g, start_resolution = 0.1, end_resolution = 2, min_modularity = 0.4)
+#' print(result)
+#'
+#' @export
+find_optimal_resolution <- function(graph, start_resolution = 0.1, end_resolution = 10, min_modularity = 0.3, target_clusters_range = c(3, 6)) {
+    optimal_resolution <- NA
+    best_modularity <- -1  # Initialize best modularity to a very low value
+    best_clusters <- NA  # Track the best number of clusters
+    res <- start_resolution
+    
+    # Iterate over resolutions from start_resolution to end_resolution
+    while (res <= end_resolution) {
+        lc <- igraph::cluster_louvain(graph, resolution = res)  # Perform Louvain clustering
+        modularity_value <- igraph::modularity(lc)  # Calculate modularity
+        num_clusters <- length(unique(igraph::membership(lc)))  # Get the number of clusters
+        print(paste0("====> Clusters detected: ", num_clusters, " Resolution: ", res, " with modularity: ", modularity_value))
+        
+        # Check if modularity is above threshold and the number of clusters is within the target range
+        if (modularity_value >= min_modularity && num_clusters >= target_clusters_range[1] && num_clusters <= target_clusters_range[2]) {
+            # Update best resolution if this configuration provides a good balance
+            if (modularity_value > best_modularity) {
+                best_modularity <- modularity_value
+                best_clusters <- num_clusters
+                optimal_resolution <- res
+            }
+        }
+        
+        # Increment resolution by 0.1 for the next iteration
+        res <- res + 0.1
+    }
+    
+    return(list(optimal_resolution = optimal_resolution, best_modularity = best_modularity, best_clusters = best_clusters))
 }
