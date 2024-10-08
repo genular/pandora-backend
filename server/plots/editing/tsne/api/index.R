@@ -92,6 +92,15 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         if(is_var_empty(settings$perplexity, "perplexity") == TRUE){
             settings$perplexity <- 30
         }
+        if(is_var_empty(settings$max_iter, "max_iter") == TRUE){
+            settings$max_iter <- NULL
+        }
+        if(is_var_empty(settings$theta, "theta") == TRUE){
+            settings$theta <- NULL
+        }
+        if(is_var_empty(settings$eta, "eta") == TRUE){
+            settings$eta <- NULL
+        }
 
         if(is_var_empty(settings$clustLinkage, "clustLinkage") == TRUE){
             settings$clustLinkage = "ward.D2"
@@ -245,11 +254,23 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         dataset <- loadDataFromFileSystem(selectedFilePath)
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
 
-        ## Cast all non numeric values to NA
-        dataset_filtered <- castAllStringsToNA(dataset_filtered, c(settings$colorVariables, settings$groupingVariables))
+        print(paste("==> Selected Columns 1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
 
-        ## Check if grouping variable is numeric and add prefix to it
+        ## Cast all non numeric values to NA
+        vars_to_cast <- c(settings$colorVariables, settings$groupingVariables)
+        if (is.null(vars_to_cast)){
+            vars_to_cast <- character(0)
+        }else{
+            print(paste("==> Casting to NA: ", vars_to_cast))
+        }
+
+        print(paste0("==> castAllStringsToNA"))
+        dataset_filtered <- castAllStringsToNA(dataset_filtered, vars_to_cast)
+
+        print(paste0("==> Checking if variables are numeric"))
+        ## TODO: Check if grouping variable is numeric and add prefix to it
         num_test <- dataset_filtered %>% select(where(is.numeric))
+
         for (groupVariable in settings$groupingVariables) {
             if(groupVariable %in% names(num_test)){
                 dataset_filtered[[groupVariable]] <- paste("g",dataset_filtered[[groupVariable]],sep="_")
@@ -293,6 +314,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
 
+        # save(tsne_calc, file = "/tmp/tsne_calc.Rdata")
 
         ## Main t-SNE plot 
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
@@ -347,7 +369,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         print(paste0("===> Clustering using", settings$clusterType))
         set.seed(1337)
         if(settings$clusterType == "Louvain"){
-           clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+           clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings) 
         }else if(settings$clusterType == "Hierarchical"){
            clust_plot_tsne <- cluster_tsne_hierarchical(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }else if(settings$clusterType == "Mclust"){
@@ -400,14 +422,24 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
-        processingData <- list(
-            dataset = dataset,
-            dataset_filtered = dataset_filtered,
-            tsne_calc = tsne_calc,
-            settings = settings,
-            clust_plot_tsne = clust_plot_tsne
 
+        processingData <- list(
+            # The original dataset loaded from the file system, containing all rows and columns before filtering or preprocessing.
+            raw_dataset = dataset,
+            # The dataset after filtering based on the selected columns, grouping variables, and preprocessing steps (e.g., removal of non-numeric values).
+            filtered_dataset = dataset_filtered, 
+             # The result of the t-SNE calculation, including the transformed data points (low-dimensional representation) and additional information like normalization.
+            tsne_results = tsne_calc, 
+            # The user-defined settings and parameters used for generating plots, t-SNE, clustering, and other analysis (e.g., point size, color palette, clustering method).
+            analysis_settings = settings,
+            # The results of clustering applied on the t-SNE output, including cluster assignments and silhouette scores.
+            tsne_cluster_results = clust_plot_tsne,
+             # The original dataset enriched with the cluster assignments from the t-SNE clustering process, where each row now belongs to a cluster.
+            dataset_with_clusters = dastaset_with_clusters,
+            # The data prepared for heatmap visualization, usually consisting of the clustered t-SNE output with additional features used for heatmap plotting.
+            heatmap_data = data_for_heatmap
         )
+
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 

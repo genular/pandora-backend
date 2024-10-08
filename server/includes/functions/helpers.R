@@ -632,13 +632,11 @@ convert_to_numeric <- function(data) {
 castAllStringsToNA <- function(dataset, excludeColumns = c()) {
     # Validate inputs
     if (!is.data.frame(dataset))  {
-        print(paste0("=====> ERROR: The 'dataset' must be a dataframe."))
-        return(dataset)
+        stop("=====> ERROR: The 'dataset' must be a dataframe.")
     }
 
     if (!is.character(excludeColumns)) {
-        print(paste0("=====> ERROR: The 'excludeColumns' must be a character vector."))
-        return(dataset)
+        stop("=====> ERROR: castAllStringsToNA The 'excludeColumns' must be a character vector.")
     }
     
     # Identify columns to process
@@ -647,20 +645,21 @@ castAllStringsToNA <- function(dataset, excludeColumns = c()) {
     # Process each included column
     dataset[includedColumns] <- lapply(dataset[includedColumns], function(column) {
         if (is.factor(column)) {
-            # Optionally handle factors differently, e.g., convert to character first
             column <- as.character(column)
         }
         if (is.character(column)) {
             # Convert all non-numeric strings to NA
-            as.numeric(column)
+            suppressWarnings(as.numeric(column))
         } else {
             # Leave columns of other types unchanged
             column
         }
     })
+
     # Return the modified dataset
     return(dataset)
 }
+
 
 safe_access <- function(data, ...) {
   elements <- list(...)

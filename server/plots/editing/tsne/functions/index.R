@@ -1,64 +1,130 @@
 ## T-Distributed Stochastic Neighbor Embedding using a Barnes-Hut Implementation
 ## https://cran.r-project.org/web/packages/Rtsne/Rtsne.pdf
+## The calculate_tsne function is designed to perform t-distributed Stochastic Neighbor Embedding (t-SNE) on a given dataset, 
+## with careful handling of potential edge cases to ensure robustness across various use cases. 
+## 
+## Dimensionality Reduction: The primary purpose of the function is to reduce high-dimensional data into a 2-dimensional space 
+## using t-SNE for visualization and analysis.
+## Dynamic Parameter Adjustment: It dynamically adjusts t-SNE parameters based on the dataset's characteristics 
+## to optimize performance and prevent errors.
+## Data Validation: Implements several checks to ensure the input data is suitable for t-SNE, handling issues like 
+## insufficient data, missing values, and non-numeric columns.
+
 calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
-	info.norm <- dataset
-	# Remap column names
-	names(info.norm) <- plyr::mapvalues(names(info.norm), from=fileHeader$remapped, to=fileHeader$original)
+    set.seed(1337)
+
+    info.norm <- dataset
+    # Remap column names
+    names(info.norm) <- plyr::mapvalues(names(info.norm), from = fileHeader$remapped, to = fileHeader$original)
 
     if(!is.null(settings$groupingVariables) && removeGroups == TRUE){
-    	print(paste0("====> Removing grouping variables"))
-    	dataset <- dataset %>% select(-any_of(settings$groupingVariables)) 
+        print(paste0("====> Removing grouping variables: ", settings$groupingVariables))
+        dataset <- dataset %>% select(-any_of(settings$groupingVariables)) 
     }
 
     # Remove non-numeric columns
-	tsne_data <- dataset %>% select(where(is.numeric))
-	num_samples <- nrow(tsne_data)
-	num_features <- ncol(tsne_data)
+    tsne_data <- dataset %>% select(where(is.numeric))
 
-    pca_result <- prcomp(dataset %>% select(where(is.numeric)), scale. = TRUE)
+    # Check for sufficient numeric columns
+    if(ncol(tsne_data) < 1){
+        stop("Not enough numeric columns to perform t-SNE.")
+    }
+
+    # Remove columns with zero variance
+    tsne_data <- tsne_data %>% select(where(~ var(.) != 0))
+
+    # Re-check after removing zero variance columns
+    if(ncol(tsne_data) < 1){
+        stop("Not enough variable numeric columns to perform t-SNE.")
+    }
+
+    # Check for NA values
+    if(any(is.na(tsne_data))){
+        stop("Input data for t-SNE contains missing values.")
+    }
+
+    num_samples <- nrow(tsne_data)
+    num_features <- ncol(tsne_data)
+
+    # Ensure sufficient samples
+    if(num_samples < 4){
+        stop("Not enough data to perform t-SNE (minimum 4 samples required).")
+    }
+
+    # Perform PCA to determine initial_dims
+    pca_result <- prcomp(tsne_data, scale. = TRUE)
     explained_variance <- cumsum(pca_result$sdev^2) / sum(pca_result$sdev^2)
-    initial_dims <- max(which(explained_variance <= 0.9)) # Adjust to keep 90% variance
-    initial_dims <- min(initial_dims, 100) # Set a reasonable upper limit to ensure computational efficiency
+
+    if(any(explained_variance <= 0.9)){
+        initial_dims <- max(which(explained_variance <= 0.9))
+    } else {
+        initial_dims <- 1
+    }
+    initial_dims <- min(initial_dims, ncol(tsne_data), 100)
+    initial_dims <- max(initial_dims, 1)
 
     print(paste0("Using initial_dims: ", initial_dims))
 
-    # Adjust perplexity based on dataset size, not to exceed half the number of rows
-	perplexity <- min(settings$perplexity, nrow(dataset)/2)
-	if (perplexity != settings$perplexity) {
-		message("====> Adjusting perplexity to: ", perplexity)
-	}
+    # Adjust perplexity based on dataset size
+    max_perplexity <- floor((num_samples - 1) / 3)
+    if(max_perplexity < 1){
+        stop("Not enough data to compute perplexity.")
+    }
+    perplexity <- min(settings$perplexity, max_perplexity)
+    if (perplexity != settings$perplexity) {
+        message("====> Adjusting perplexity to: ", perplexity)
+    }
 
-	header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
+    header_mapped <- fileHeader %>% filter(remapped %in% names(tsne_data))
 
-	pca.scale <- TRUE
-	if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
-		pca.scale <- FALSE
-	}
+    pca.scale <- TRUE
+    if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
+        pca.scale <- FALSE
+    }
 
-    # Adjust max_iter based on dataset size and complexity
-    # Example heuristic: Increase max_iter for larger or more complex datasets
-    base_iter <- 1000
-    complexity_factor <- sqrt(num_samples * num_features) / 500 # Example heuristic
-    
-    max_iter <- base_iter + (500 * complexity_factor)
-    max_iter <- min(max_iter, 10000) # Setting an upper limit
-    max_iter <- round(max_iter, 0)
+
+    # Set t-SNE parameters
+    # Check if settings are provided and not zero
+    if (!is.null(settings$max_iter) && settings$max_iter != 0 &&
+        !is.null(settings$theta) && settings$theta != 0 &&
+        !is.null(settings$eta) && settings$eta != 0) {
+        # Use the provided settings
+        max_iter <- settings$max_iter
+        theta <- settings$theta
+        eta <- settings$eta
+    } else {
+        # Adjust max_iter and other parameters based on dataset size
+        if (num_samples < 500) {
+            max_iter <- 10000  # Increased iterations for small datasets
+            theta <- 0         # Use exact t-SNE
+            eta <- 500         # Higher learning rate
+        } else {
+            # Adjust max_iter based on dataset complexity
+            base_iter <- 3000
+            complexity_factor <- sqrt(num_samples * num_features) / 500
+            max_iter <- base_iter + (500 * complexity_factor)
+            max_iter <- min(max_iter, 10000)
+            max_iter <- round(max_iter, 0)
+            
+            eta <- 150
+            # Dynamically adjust theta and eta based on dataset size
+            if (num_samples < 5000) {
+                theta <- 0.2
+                eta <- 250
+            } else {
+                theta <- 0.5
+                eta <- 250
+            }
+        }
+    }
+
+
+    exaggeration_factor <- 12
 
     print(paste0("Using max_iter: ", max_iter))
-
- 	eta <- 150
-    # Dynamically adjust theta based on dataset size
-    # Smaller datasets can use a more accurate (lower) theta
-    if (num_samples < 1000) {
-        theta <- 0  # More accurate, suitable for small datasets
-    } else if (num_samples >= 1000 && num_samples < 5000) {
-        theta <- 0.2  # Balance between accuracy and speed
-        eta <- 250
-    } else {
-        theta <- 0.5  # Faster, suitable for larger datasets
-        eta <- 250
-    }
     print(paste0("Using theta: ", theta))
+    print(paste0("Using eta: ", eta))
+    print(paste0("Using exaggeration_factor: ", exaggeration_factor))
 
     tsne.norm <- Rtsne::Rtsne(
         as.matrix(tsne_data),
@@ -72,13 +138,26 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
         max_iter = max_iter,
         theta = theta,
         eta = eta,
-        verbose = FALSE
+        exaggeration_factor = exaggeration_factor,
+        verbose = FALSE,
+        num_threads = 1
     )
 
-	info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
+    info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
 
-	return(list(info.norm = info.norm, tsne.norm = tsne.norm, tsne_columns = header_mapped$original))
+    return(list(
+        info.norm = info.norm,
+        tsne.norm = tsne.norm, 
+        tsne_columns = header_mapped$original, 
+        perplexity = perplexity, 
+        initial_dims = initial_dims, 
+        max_iter = max_iter, 
+        theta = theta, 
+        eta = eta
+    ))
 }
+
+
 
 ## Plot TSNE data
 plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){ 
@@ -132,19 +211,23 @@ plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable
     return(tmp_path) 
 }
 
-## https://jmonlong.github.io/Hippocamplus/2018/02/13/tsne-and-clustering/
 
 # KNN graph and Louvain community detection
+## https://jmonlong.github.io/Hippocamplus/2018/02/13/tsne-and-clustering/
 cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 	set.seed(1337)
+
+    # Debugging: Print dimensions of info.norm and tsne.norm$Y
+    print(paste0("===> INFO: info.norm dimensions: ", paste(dim(info.norm), collapse = " x ")))
+    print(paste0("===> INFO: tsne.norm$Y dimensions: ", paste(dim(tsne.norm$Y), collapse = " x ")))
+
 	knn_clusters <- settings$knn_clusters
     if(nrow(tsne.norm$Y) < knn_clusters){
     	knn_clusters <- round(nrow(tsne.norm$Y) / 2)
-    	print(paste0("====> Quick-fix - Rtsne->tsne.norm->Y rows: ",nrow(tsne.norm$Y)," Adjusting KNN k to half of it: ", knn_clusters))
+    	print(paste0("===> INFO: Quick-fix - Rtsne->tsne.norm->Y rows: ",nrow(tsne.norm$Y)," Adjusting KNN k to half of it: ", knn_clusters))
     }
 
-    print(paste0("====>Maximum number of nearest neighbors to search: ", knn_clusters))
-
+    print(paste0("===> INFO: Maximum number of nearest neighbors to search: ", knn_clusters))
 
 	knn.norm = FNN::get.knn(as.matrix(tsne.norm$Y), k = knn_clusters)
 	knn.norm = data.frame(
@@ -155,44 +238,75 @@ cluster_tsne_knn_louvain <- function(info.norm, tsne.norm, settings){
 
 	nw.norm = igraph::graph_from_data_frame(knn.norm, directed = FALSE)
 	nw.norm = igraph::simplify(nw.norm)
-	lc.norm = igraph::cluster_louvain(nw.norm)
 
-	info.norm$pandora_cluster = as.factor(igraph::membership(lc.norm))
+    lc.norm <- igraph::cluster_louvain(nw.norm)
+
+    # Debugging: Print number of clusters found
+    num_clusters <- length(unique(igraph::membership(lc.norm)))
+    print(paste0("===> INFO: Number of clusters found by cluster_louvain: ", num_clusters))
+    modularity <- igraph::modularity(lc.norm)
+    print(paste0("===> INFO: Modularity: ", modularity))
+
+    info.norm$pandora_cluster <- as.factor(igraph::membership(lc.norm))
+
+    # Debugging: Check for NA values in pandora_cluster
+    num_na_clusters <- sum(is.na(info.norm$pandora_cluster))
+    print(paste0("===> INFO: Number of NA clusters in pandora_cluster: ", num_na_clusters))
 
     # Replace NA values with 100 specifically
     na_indices <- is.na(info.norm$pandora_cluster)
-    info.norm$pandora_cluster[na_indices] <- 100
+    num_na <- sum(na_indices)
+    if(num_na > 0){
+        # Add 100 to the levels of pandora_cluster
+        info.norm$pandora_cluster <- factor(info.norm$pandora_cluster, levels = c(levels(info.norm$pandora_cluster), "100"))
+        # Now assign 100 to NA indices
+        info.norm$pandora_cluster[na_indices] <- "100"
+        print(paste0("===> INFO: Replaced ", num_na, " NA cluster assignments with 100"))
+    }
 
     distance_matrix <- dist(tsne.norm$Y)
+    print(paste0("===> INFO: Distance matrix computed with size: ", attr(distance_matrix, "Size")))
+
     silhouette_scores <- cluster::silhouette(as.integer(info.norm$pandora_cluster), distance_matrix)
     if(is.matrix(silhouette_scores)) {
         # Extract the silhouette widths from the scores
         silhouette_widths <- silhouette_scores[, "sil_width"]
         avg_silhouette_score <- mean(silhouette_widths, na.rm = TRUE)
+        print(paste0("===> INFO: Average silhouette score: ", avg_silhouette_score))
+    } else {
+        print("===> INFO: Silhouette scores computation did not return a matrix.")
     }
 
     # Compute cluster centers based on final clustering results
     lc.cent <- info.norm %>%
         group_by(pandora_cluster) %>%
         summarize(across(c(tsne1, tsne2), median, na.rm = TRUE), .groups = 'drop')
+
+    # Debugging: Print number of cluster centers computed
+    print(paste0("===> INFO: Computed cluster centers for ", nrow(lc.cent), " clusters"))
+
     # Compute cluster sizes (number of samples per cluster)
     cluster_sizes <- info.norm %>%
       group_by(pandora_cluster) %>%
       summarise(num_samples = n(), .groups = 'drop') # Calculate the number of samples in each cluster
+
     # Join the cluster sizes back to the lc.cent dataframe to include the number of samples per cluster
     lc.cent <- lc.cent %>%
       left_join(cluster_sizes, by = "pandora_cluster")
+
     # Create the 'label' column that combines cluster ID and number of samples
     lc.cent <- lc.cent %>%
       mutate(label = paste(pandora_cluster, "-", num_samples))
+
     # Drop the 'num_samples' column if you no longer need it
     lc.cent <- select(lc.cent, -num_samples)
 
-	return(list(info.norm = info.norm, cluster_data = lc.cent, avg_silhouette_score = avg_silhouette_score))
+    return(list(info.norm = info.norm, cluster_data = lc.cent, avg_silhouette_score = avg_silhouette_score, modularity = modularity))
 }
 
 # Hierarchical clustering
 cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
+    set.seed(1337)
     # Validate settings
     if (!"clustLinkage" %in% names(settings) || !"clustGroups" %in% names(settings)) {
         stop("Settings must include 'clustLinkage' and 'clustGroups'.")
@@ -298,6 +412,7 @@ cluster_tsne_hierarchical <- function(info.norm, tsne.norm, settings) {
 
 # Mclust clustering
 cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
+    set.seed(1337)
     print(paste("==> cluster_tsne_mclust clustGroups: ", settings$clustGroups))
 
     avg_silhouette_score <- 0
@@ -401,7 +516,7 @@ cluster_tsne_mclust <- function(info.norm, tsne.norm, settings) {
 
 #Density-based clustering
 cluster_tsne_density <- function(info.norm, tsne.norm, settings){
-	set.seed(1337)
+    set.seed(1337)
 
     # Prepare data for DBSCAN
     tsne_data <- tsne.norm$Y
