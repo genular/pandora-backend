@@ -4,6 +4,35 @@ use Slim\Http\Response;
 
 
 /**
+ * Updates parts of the user profile.
+ * 
+ * This route allows users to update their first name, last name, phone number, and OpenAI API key.
+ * The request is authenticated, and user details are updated based on their ID.
+ *
+ * @param Request  $request  Slim's HTTP request object.
+ * @param Response $response Slim's HTTP response object.
+ * @param array    $args     Route parameters as an associative array (unused in this function).
+ *
+ * @return Response Returns a JSON response indicating the success status of the update operation.
+ */
+$app->post('/backend/user/update-profile', function (Request $request, Response $response, array $args) {
+    $user_details = $request->getAttribute('user');
+    $user_id = $user_details['user_id'];
+
+    $Users = $this->get('PANDORA\Users\Users');
+    $post = $request->getParsedBody();
+
+    // Call the new updateUserProfile method
+    $result = $Users->updateUserProfile($user_id, $post);
+
+    $success = $result->rowCount() > 0;
+    $message = $success ? "Profile updated successfully." : "No changes made or update failed.";
+
+    return $response->withJson(["success" => $success, "message" => $message]);
+});
+
+
+/**
  * Handles user login requests.
  * 
  * This route is responsible for processing login requests by checking the provided 

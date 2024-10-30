@@ -260,32 +260,46 @@ $app->get('/backend/system/get-log', function ($request, $response, $args) {
 $app->post('/backend/system/describe_ai', function (Request $request, Response $response, array $args) {
     $success = true;
 
-	$user_details = $request->getAttribute('user');
-	$user_id = $user_details['user_id'];
+    // Get user details from the request attribute
+    $user_details = $request->getAttribute('user');
+    $user_id = $user_details['user_id'];
 
-	$Users = $this->get('PANDORA\Users\Users');
-	$user_details = $Users->getUsersByUserId($user_id);
+    // Fetch user details using the Users service
+    $Users = $this->get('PANDORA\Users\Users');
+    $user_details = $Users->getUsersByUserId($user_id);
 
-
-	$post = $request->getParsedBody();
-	
+    // Parse the submitted data
+    $post = $request->getParsedBody();
     if (isset($post['submitData'])) {
         $submitData = json_decode(base64_decode(urldecode($post['submitData'])), true);
+    } else {
+        return $response->withJson(["success" => false, "message" => "No data provided."]);
     }
 
-	// $prompt = EOF
-	// 	I have conducted a series of machine learning experiments to address a supervised classification task. I employed various different ML models.
-	// 	Please provide a summary all this results combined, in JSON format with a one and only text key "summary" highlighting any significant observations regarding performance or applicability. In short write me an short overview if we made any good model or not!
-	// EOF;
+    // Ensure the required fields are present
+    if (!isset($submitData['type'], $submitData['value'])) {
+        return $response->withJson(["success" => false, "message" => "Missing required fields."]);
+    }
 
+    $promptType = $submitData['type'];
+    $promptQuery = $submitData['value'];
+    $promptImages = $submitData['images'];
+
+
+    // Fetch the response from the LLM_AI service
     $LLM_AI = $this->get('PANDORA\Helpers\LLM_AI');
-    $response = $LLM_AI->get($submitData, $user_details['openai_api']);
+    $ai_response = $LLM_AI->get($promptQuery, $promptImages, null, $user_details['openai_api']);
 
-    if($response === false){
-		$success = false;
-	}
+    // Check if the response from LLM_AI is valid
+    if ($ai_response === false) {
+        $success = false;
+        $message = "AI response generation failed.";
+    } else {
+        $message = $ai_response;
+    }
 
-    return $response->withJson(["success" => $success, "message" => $response]);
+    // Return the JSON response
+    return $response->withJson(["success" => $success, "message" => $message]);
 });
 
 /**

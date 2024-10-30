@@ -20,7 +20,7 @@ RUN chmod +x /tmp/prepare_docker_storage.sh
 ## Lets build and configure PANDORA
 RUN su - genular -c 'cd /var/www/genular/pandora \
 	&& git checkout . && git pull origin master \
-	&& yarn install --check-files \
+	&& yarn install --check-files --ignore-engines \
 	&& yarn run webpack:web:prod \
 	--isDemoServer=false \
 	--server_frontend=http://localhost:3010 \

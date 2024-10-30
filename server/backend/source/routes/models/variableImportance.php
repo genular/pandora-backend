@@ -14,7 +14,7 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 	$message = [];
 
 	$config = $this->get('Noodlehaus\Config');
-	$redirectURL = $config->get('default.frontend.server.url');
+	$redirectURL = $config->get('default.frontend.server.url'); 
 
 	$user_details = $request->getAttribute('user');
 	$user_id = $user_details['user_id'];
@@ -24,7 +24,11 @@ $app->get('/backend/queue/exploration/variableImportance', function (Request $re
 	$resampleID = $request->getQueryParam('resampleID', 0);
 	$modelsID = $request->getQueryParam('modelsID', [0]);
 
-	$selectedOutcomeOptionsIDs = $request->getQueryParam('selectedOutcomeOptionsIDs', [0]);
+	$selectedOutcomeOptionsIDs = $request->getQueryParam('selectedOutcomeOptionsIDs', []);
+	// If only 0 in array than clear it out
+	if (count($selectedOutcomeOptionsIDs) == 1 && $selectedOutcomeOptionsIDs[0] == 0) {
+		$selectedOutcomeOptionsIDs = [];
+	}
 
 	$page = $request->getQueryParam('page', 1);
 	$page_size = $request->getQueryParam('page_size', 20);

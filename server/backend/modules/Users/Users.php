@@ -53,6 +53,18 @@ class Users {
 
 		$this->logger->addInfo("==> INFO: PANDORA\Users constructed");
 	}
+
+	public function updateUserProfile($user_id, $data) {
+	    // Define which fields we want to allow updates for
+	    $allowedFields = ['first_name', 'last_name', 'phone', 'openai_api'];
+
+	    // Filter out any fields that are not allowed
+	    $updateData = array_intersect_key($data, array_flip($allowedFields));
+
+	    // Perform the update on the users_details table
+	    return $this->database->update("users_details", $updateData, ["uid" => $user_id]);
+	}
+
 	/**
 	 * Get number of total users in database
 	 * @return [int]

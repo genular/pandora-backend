@@ -1,4 +1,4 @@
-plot_auc_roc_multiclass_testing <- function(roc_data, settings, tmp_hash){ 
+plot_auc_roc_multiclass_testing <- function(roc_data, settings, tmp_hash, method){ 
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
    
@@ -14,7 +14,7 @@ plot_auc_roc_multiclass_testing <- function(roc_data, settings, tmp_hash){
 			    geom_abline(slope = 1, intercept = 0, color = "#D3D3D3", alpha = 0.85, linetype="longdash") +
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
-			    labs(title = "Multi-class ROC Curves",
+			    labs(title = paste0("Multi-class ROC Curves for ", method),
 			         subtitle = paste("Comparison of model performance across different classes (testing-m)"),
 			         color = "Class Comparison (AUC)") 
 
@@ -28,7 +28,7 @@ plot_auc_roc_multiclass_testing <- function(roc_data, settings, tmp_hash){
 }
 
 
-plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, settings, tmp_hash){ 
+plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, settings, tmp_hash, method){ 
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
    
@@ -45,7 +45,7 @@ plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, setting
 			    scale_color_brewer(type = "qual", palette = "Set1", labels = auc_labels) +
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
-			    labs(title = "Multi-class ROC Curves (One-vs-All)",
+			    labs(title = paste0("Multi-class ROC Curves (One-vs-All) for ", method),
 			         subtitle = paste("Comparison of model performance across different classes (testing-s)"),
 			         color = "Class Comparison") 
 
@@ -58,7 +58,7 @@ plot_auc_roc_multiclass_testing_single <- function(roc_data, auc_labels, setting
     return(tmp_path) 
 }
 
-plot_auc_roc_multiclass_training <- function(roc_data, settings, tmp_hash){ 
+plot_auc_roc_multiclass_training <- function(roc_data, settings, tmp_hash, method){ 
 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
    
@@ -74,7 +74,7 @@ plot_auc_roc_multiclass_training <- function(roc_data, settings, tmp_hash){
 			    geom_abline(slope = 1, intercept = 0, color = "#D3D3D3", alpha = 0.85, linetype="longdash") +
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
-			    labs(title = "Multi-class ROC Curves",
+			    labs(title = paste0("Multi-class ROC Curves for ", method),
 			         subtitle = paste("Comparison of model performance across different classes (training-m)"),
 			         color = "Class Comparison (AUC)") 
 
@@ -87,7 +87,7 @@ plot_auc_roc_multiclass_training <- function(roc_data, settings, tmp_hash){
     return(tmp_path) 
 }
 
-plot_auc_roc_multiclass_training_single <- function(roc_data, auc_labels, settings, tmp_hash){
+plot_auc_roc_multiclass_training_single <- function(roc_data, auc_labels, settings, tmp_hash, method){
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
 
 	plotData <- ggplot(roc_data, aes(x = FPR, y = TPR, color = Class)) +
@@ -103,7 +103,7 @@ plot_auc_roc_multiclass_training_single <- function(roc_data, auc_labels, settin
 			    scale_color_brewer(type = "qual", palette = "Set1", labels = auc_labels) +
 			    theme(text=element_text(size=settings$fontSize))  + 
 			    scale_fill_brewer(palette=settings$colorPalette) +
-			    labs(title = "Multi-class ROC Curves (One-vs-All)",
+			    labs(title = paste0("Multi-class ROC Curves (One-vs-All) for ", method),
 			         subtitle = paste("Comparison of model performance across different classes (training-s)"),
 			         color = "Class Comparison") 
 
@@ -134,8 +134,8 @@ plot_auc_roc_training_probabilities <- function(trainingPredictions, outcome_map
 	    style_roc(major.breaks = c(0, 0.1, 0.25, 0.5, 0.75, 0.9, 1),
 	              minor.breaks = c(seq(0, 0.1, by = 0.01), seq(0.9, 1, by = 0.01)),
 	              guide = TRUE, 
-	              xlab = "False Positive Rate (FPR) (1 - Specificity)",
-	              ylab = "True Positive Rate (TPR) (Sensitivity)",
+	              xlab = paste0("False Positive Rate (FPR) (1 - Specificity)"),
+	              ylab = paste0("True Positive Rate (TPR) (Sensitivity)"),
 	              theme = theme_bw) + 
 	    geom_abline(slope = 1, intercept = 0, color = "#D3D3D3", alpha = 0.85, linetype="longdash") +
 	    theme(text=element_text(size=settings$fontSize))  + 

@@ -92,6 +92,10 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             settings$pickBestClusterMethod <- "Modularity" ## Modularity, Silhouette, Overall, SIMON
         }
 
+        if(is_var_empty(settings$selectedColumnsSIMON) == TRUE){
+            settings$selectedColumnsSIMON <- NULL
+        }
+
         ## Louvain pickBestClusterMethod SIMON specific
 
         if(is_var_empty(settings$weights) == TRUE){
@@ -435,6 +439,12 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             }else if(settings$pickBestClusterMethod == "Overall"){
                 tsne_clust <- pick_best_cluster_overall(tsne_clust, tsne_calc)
             }else if(settings$pickBestClusterMethod == "SIMON"){
+
+                if(is.null(settings$selectedColumnsSIMON)){
+                    settings$selectedColumnsSIMON <- settings$selectedColumns
+                    print(paste0("===> SIMON: Using selectedColumns: ", paste(settings$selectedColumnsSIMON, collapse = ", ")))
+                }
+
                 best_cluster <- pick_best_cluster_simon(dataset, tsne_clust, tsne_calc, settings)
                 tsne_clust <- best_cluster$tsne_clust
             }else{
@@ -471,6 +481,10 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             }else if(settings$pickBestClusterMethod == "Overall"){
                 tsne_clust <- pick_best_cluster_overall(tsne_clust, tsne_calc)
             }else if(settings$pickBestClusterMethod == "SIMON"){
+                if(is.null(settings$selectedColumnsSIMON)){
+                    settings$selectedColumnsSIMON <- settings$selectedColumns
+                    print(paste0("===> SIMON: Using selectedColumns: ", paste(settings$selectedColumnsSIMON, collapse = ", ")))
+                }
                 best_cluster <- pick_best_cluster_simon(dataset, tsne_clust, tsne_calc, settings)
                 tsne_clust <- best_cluster$tsne_clust
             }else{

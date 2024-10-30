@@ -16,6 +16,23 @@ class LLM_AI {
      */
     protected $logger;
 
+
+    public $SYSTEM_PROMPT = "You are an expert machine learning assistant analyzing and comparing the performance of a single model based on training and testing metrics, with a primary focus on AUCROC. Your task is to provide a concise and detailed explanation of the model’s performance and generalization ability.
+
+        Output your findings in Markdown (.MD) format where:
+        1. Training AUCROC: Describe what the model’s AUCROC during training reveals about its learning quality, such as successful learning patterns or potential overfitting.
+        2. Testing AUCROC: Explain what the AUCROC score on the testing set indicates about the model’s performance on unseen data, such as its generalization capacity.
+        3. Comparison and Insights: Offer a comparison of training vs. testing AUCROC values to assess robustness, potential overfitting, or underfitting. Identify any signs of imbalance, and provide insights on whether adjustments may improve performance.
+
+        Structure your response as follows:
+
+        Summary:
+        	A detailed comparison of training and testing AUCROC performance. Explanation should cover learning quality, generalization capability, and any observed overfitting or underfitting.
+        Top models:
+			Identify the top-performing models. Include insights on their performance and potential areas for improvement.
+        
+        Make sure to maintain accuracy and clarity, ensuring the explanation is easily understandable for readers with basic machine learning knowledge.";
+
     /**
      * Instance of Helpers for utility functions.
      * @var Helpers
@@ -49,37 +66,59 @@ class LLM_AI {
      * 
      * @throws \OpenAI\Exceptions\ErrorException If there's an issue with the request.
      */
-	public function get($prompt, $open_ai_key) {
+	public function get($USER_PROMPT, $USER_IMAGES = [], $SYSTEM_PROMPT = null, $open_ai_key) {
 		$client = \OpenAI::client($open_ai_key);
 		$content = false;
+		
+		if ($SYSTEM_PROMPT === null) {
+			$SYSTEM_PROMPT = $this->SYSTEM_PROMPT;
+		}
+
+		// System and user prompt messages
+		$messages = [
+		    [
+		        "role" => "system",
+		        "content" => $SYSTEM_PROMPT
+		    ],
+		    [
+		        "role" => "user",
+		        "content" => $USER_PROMPT
+		    ]
+		];
+
+		// Encode each image and add it to the messages array
+		foreach ($USER_IMAGES as $image) {
+		    $encoded_image = $image;
+		    $messages[] = [
+		        "role" => "user",
+		        "content" => [
+		            [
+		                "type" => "image_url",
+		                "image_url" => [
+		                    "url" => "data:image/png;base64," . $encoded_image
+		                ]
+		            ]
+		        ]
+		    ];
+		}
 
 		try {
 			$response = $client->chat()->create([
-			    'model' => 'gpt-4',
-			    'messages' => [
-			        [
-			            "role" => "system",
-			            "content" => "You are a highly knowledgeable and professional assistant with expertise in both supervised and unsupervised machine learning, data analysis, and AI technologies. You provide accurate, detailed, and understandable explanations tailored to a technical audience."
-			        ],
-			        [
-			            "role" => "user",
-			            "content" => $prompt
-			        ]
-			    ],
-			    'temperature' => 0.7, // A lower temperature for more deterministic, less creative responses.
-			    'max_tokens' => 1500, // Increase if you need more detailed responses.
-			    'frequency_penalty' => 0.5, // Penalize frequent tokens to encourage diversity.
-			    'presence_penalty' => 0.5, // Penalize new tokens to encourage topic focus.
+			    'model' => 'gpt-4o-mini-2024-07-18',
+			    'messages' => $messages,
+			    'max_tokens' => 5000
 			]);
 
 			$content = "";
-
 			foreach ($response->choices as $result) {
 				$content = $result->message->content;
-			}
+			} 
+			// Remove URLs from the markdown content
+        	$content = preg_replace('/\[(.*?)\]\((https?:\/\/[^\s)]+)\)/i', '$1', $content);
 		} catch (\OpenAI\Exceptions\ErrorException $e) {
 			$this->logger->error("OpenAI API key is not valid!");
 		}
 		return $content;
 	}
+
 }

@@ -163,7 +163,7 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
 
                     if (!is.null(results$roc_data) && length(results$roc_data) > 0) {
                         plot_unique_hash[["training"]]$auc_roc[[method]] <- digest::digest(paste0(resampleID, "_",args$settings,"_training_auc_roc_", method), algo="md5", serialize=F)
-                        tmp_path <- plot_auc_roc_multiclass_training_single(results$roc_data, results$auc_labels, settings, plot_unique_hash[["training"]]$auc_roc[[method]])
+                        tmp_path <- plot_auc_roc_multiclass_training_single(results$roc_data, results$auc_labels, settings, plot_unique_hash[["training"]]$auc_roc[[method]], method)
 
                         res.data$training$auc_roc[[method]] <- optimizeSVGFile(tmp_path)
                         res.data$training$auc_roc_png[[method]] <- convertSVGtoPNG(tmp_path)
@@ -192,7 +192,7 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
                     results <- list(roc_data = NULL)
                     if (!is.null(results$roc_data) && length(results$roc_data) > 0) {
                         plot_unique_hash[["training"]]$auc_roc_multiclass[[method]] <- digest::digest(paste0(resampleID, "_",args$settings,"_training_auc_roc_multiclass_", method), algo="md5", serialize=F)
-                        tmp_path <- plot_auc_roc_multiclass_training(results$roc_data, settings, plot_unique_hash[["training"]]$auc_roc_multiclass[[method]])
+                        tmp_path <- plot_auc_roc_multiclass_training(results$roc_data, settings, plot_unique_hash[["training"]]$auc_roc_multiclass[[method]], method)
 
                         res.data$training$auc_roc_multiclass[[method]] <- optimizeSVGFile(tmp_path)
                         res.data$training$auc_roc_multiclass_png[[method]] <- convertSVGtoPNG(tmp_path)
@@ -221,7 +221,7 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
 
                     if (!is.null(results$roc_data) && length(results$roc_data) > 0) {
                         plot_unique_hash[["testing"]]$auc_roc[[method]] <- digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc_roc_", method), algo="md5", serialize=F)
-                        tmp_path <- plot_auc_roc_multiclass_testing_single(results$roc_data, results$auc_labels, settings, plot_unique_hash[["testing"]]$auc_roc[[method]])
+                        tmp_path <- plot_auc_roc_multiclass_testing_single(results$roc_data, results$auc_labels, settings, plot_unique_hash[["testing"]]$auc_roc[[method]], method)
 
                         res.data$testing$auc_roc[[method]] <- optimizeSVGFile(tmp_path)
                         res.data$testing$auc_roc_png[[method]] <- convertSVGtoPNG(tmp_path)
@@ -249,7 +249,7 @@ pandora$handle$plots$modelsummary$renderPlot$multiClass <- expression(
 
                     if (!is.null(results$roc_data) && length(results$roc_data) > 0) {
                         plot_unique_hash[["testing"]]$auc_roc_multiclass[[method]] <- digest::digest(paste0(resampleID, "_",args$settings,"_testing_auc_roc_multiclass_", method), algo="md5", serialize=F)
-                        tmp_path <- plot_auc_roc_multiclass_testing(results$roc_data, settings, plot_unique_hash[["testing"]]$auc_roc_multiclass[[method]])
+                        tmp_path <- plot_auc_roc_multiclass_testing(results$roc_data, settings, plot_unique_hash[["testing"]]$auc_roc_multiclass[[method]], method)
 
                         res.data$testing$auc_roc_multiclass[[method]] <- optimizeSVGFile(tmp_path)
                         res.data$testing$auc_roc_multiclass_png[[method]] <- convertSVGtoPNG(tmp_path)
