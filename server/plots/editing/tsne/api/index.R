@@ -73,6 +73,42 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             settings$clusterType <- "Louvain"
         }
 
+        ## Louvain Specific START (immunaut)
+        if(is_var_empty(settings$resolution_increments) == TRUE){
+            settings$resolution_increments <-  c(0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5)
+            #settings$resolution_increments <- c(0.01, 0.1, 0.2, 0.3, 0.4)
+        }
+
+        if(is_var_empty(settings$min_modularities) == TRUE){
+            settings$min_modularities <- c(0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9)
+            #settings$min_modularities <- c(0.5, 0.6, 0.7, 0.8) 
+        }
+
+        if(is_var_empty(settings$target_clusters_range) == TRUE){
+            settings$target_clusters_range <- c(3, 6)
+        }
+
+        if(is_var_empty(settings$pickBestClusterMethod) == TRUE){
+            settings$pickBestClusterMethod <- "Modularity" ## Modularity, Silhouette, Overall, SIMON
+        }
+
+        ## Louvain pickBestClusterMethod SIMON specific
+
+        if(is_var_empty(settings$weights) == TRUE){
+            settings$weights <- list(AUROC = 0.5, modularity = 0.3, silhouette = 0.2)
+        }
+
+        if(is_var_empty(settings$selectedPackages) == TRUE){
+            settings$selectedPackages <- c("rf", "RRF", "RRFglobal", "gcvEarth", "cforest", "nb")
+        }
+
+        if(is_var_empty(settings$trainingTimeout) == TRUE){
+            settings$trainingTimeout <- 360
+        }
+
+        ## Louvain Specific END
+
+
         if(is_var_empty(settings$removeNA, "removeNA") == TRUE){
             settings$removeNA = FALSE
         }
@@ -376,32 +412,87 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         print(paste0("===> Clustering using", settings$clusterType))
         set.seed(1337)
         if(settings$clusterType == "Louvain"){
-           clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings) 
+            tsne_clust <- list()
+            iteration <- 1
+            for (res_increment in settings$resolution_increments) {
+                for (min_modularity in settings$min_modularities) {
+                    tmp <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings, res_increment, min_modularity)
+
+                    if(tmp$num_clusters < min(settings$target_clusters_range) && tmp$num_clusters > max(settings$target_clusters_range)){
+                        message("===> INFO: Skipping cluster with ", tmp$num_clusters, " clusters")
+                        next
+                    }
+                    
+                    tsne_clust[[iteration]] <- tmp
+                    iteration <- iteration + 1
+                }
+            }
+
+            if(settings$pickBestClusterMethod == "Modularity"){
+                tsne_clust <- pick_best_cluster_modularity(tsne_clust)
+            }else if(settings$pickBestClusterMethod == "Silhouette"){
+                tsne_clust <- pick_best_cluster_silhouette(tsne_clust)
+            }else if(settings$pickBestClusterMethod == "Overall"){
+                tsne_clust <- pick_best_cluster_overall(tsne_clust, tsne_calc)
+            }else if(settings$pickBestClusterMethod == "SIMON"){
+                best_cluster <- pick_best_cluster_simon(dataset, tsne_clust, tsne_calc, settings)
+                tsne_clust <- best_cluster$tsne_clust
+            }else{
+                tsne_clust <- pick_best_cluster_modularity(tsne_clust)
+            }
+
         }else if(settings$clusterType == "Hierarchical"){
-           clust_plot_tsne <- cluster_tsne_hierarchical(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+           tsne_clust <- cluster_tsne_hierarchical(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }else if(settings$clusterType == "Mclust"){
-           clust_plot_tsne <- cluster_tsne_mclust(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+           tsne_clust <- cluster_tsne_mclust(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }else if(settings$clusterType == "Density"){
-           clust_plot_tsne <- cluster_tsne_density(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+           tsne_clust <- cluster_tsne_density(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
         }else{
-           clust_plot_tsne <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+            tsne_clust <- list()
+            iteration <- 1
+            for (res_increment in settings$resolution_increments) {
+                for (min_modularity in settings$min_modularities) {
+                    tmp <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings, res_increment, min_modularity)
+
+                    if(tmp$num_clusters < min(settings$target_clusters_range) && tmp$num_clusters > max(settings$target_clusters_range)){
+                        message("===> INFO: Skipping cluster with ", tmp$num_clusters, " clusters")
+                        next
+                    }
+                    
+                    tsne_clust[[iteration]] <- tmp
+                    iteration <- iteration + 1
+                }
+            }
+
+            if(settings$pickBestClusterMethod == "Modularity"){
+                tsne_clust <- pick_best_cluster_modularity(tsne_clust)
+            }else if(settings$pickBestClusterMethod == "Silhouette"){
+                tsne_clust <- pick_best_cluster_silhouette(tsne_clust)
+            }else if(settings$pickBestClusterMethod == "Overall"){
+                tsne_clust <- pick_best_cluster_overall(tsne_clust, tsne_calc)
+            }else if(settings$pickBestClusterMethod == "SIMON"){
+                best_cluster <- pick_best_cluster_simon(dataset, tsne_clust, tsne_calc, settings)
+                tsne_clust <- best_cluster$tsne_clust
+            }else{
+                tsne_clust <- pick_best_cluster_modularity(tsne_clust)
+            }
         }
 
-        res.data$avg_silhouette_score <- round(clust_plot_tsne$avg_silhouette_score, 2)
+        res.data$avg_silhouette_score <- round(tsne_clust$avg_silhouette_score, 2)
 
-        ## Get clusters from clust_plot_tsne$info.norm[["cluster"]] and add it to original dataset in "dataset" variable
-        dastaset_with_clusters <- dataset
-        if(nrow(dastaset_with_clusters) == nrow(clust_plot_tsne$info.norm)){
-            dastaset_with_clusters$pandora_cluster <- clust_plot_tsne$info.norm$pandora_cluster
+        ## Get clusters from tsne_clust$info.norm[["cluster"]] and add it to original dataset in "dataset" variable
+        dataset_with_clusters <- dataset
+        if(nrow(dataset_with_clusters) == nrow(tsne_clust$info.norm)){
+            dataset_with_clusters$pandora_cluster <- tsne_clust$info.norm$pandora_cluster
         }
         ## Rename column names to its originals
-        names(dastaset_with_clusters) <- plyr::mapvalues(names(dastaset_with_clusters), from=fileHeader$remapped, to=fileHeader$original)
+        names(dataset_with_clusters) <- plyr::mapvalues(names(dataset_with_clusters), from=fileHeader$remapped, to=fileHeader$original)
         
-        dataset_with_clusters <- remove_outliers(dastaset_with_clusters, settings)
-        data_for_heatmap <- remove_outliers(clust_plot_tsne$info.norm, settings)
+        dataset_with_clusters <- remove_outliers(dataset_with_clusters, settings)
+        data_for_heatmap <- remove_outliers(tsne_clust$info.norm, settings)
 
 
-        tmp_path <- plot_clustered_tsne(clust_plot_tsne$info.norm, clust_plot_tsne$cluster_data, settings, plot_unique_hash$tsne_cluster_plot)
+        tmp_path <- plot_clustered_tsne(tsne_clust$info.norm, tsne_clust$cluster_data, settings, plot_unique_hash$tsne_cluster_plot)
         res.data$tsne_cluster_plot <- optimizeSVGFile(tmp_path)
         res.data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
 
@@ -440,9 +531,9 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             # The user-defined settings and parameters used for generating plots, t-SNE, clustering, and other analysis (e.g., point size, color palette, clustering method).
             analysis_settings = settings,
             # The results of clustering applied on the t-SNE output, including cluster assignments and silhouette scores.
-            tsne_cluster_results = clust_plot_tsne,
+            tsne_cluster_results = tsne_clust,
              # The original dataset enriched with the cluster assignments from the t-SNE clustering process, where each row now belongs to a cluster.
-            dataset_with_clusters = dastaset_with_clusters,
+            dataset_with_clusters = dataset_with_clusters,
             # The data prepared for heatmap visualization, usually consisting of the clustered t-SNE output with additional features used for heatmap plotting.
             heatmap_data = data_for_heatmap
         )
@@ -452,7 +543,7 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
 
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
-        saveCachedList(tmp_path, dastaset_with_clusters, type = "csv")
+        saveCachedList(tmp_path, dataset_with_clusters, type = "csv")
         res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)
 
 

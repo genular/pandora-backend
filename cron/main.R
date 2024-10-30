@@ -59,6 +59,8 @@ options(java.parameters=paste0("-Xmx",maximum_memory,"M"))
 # Set global CRON execution time limit in seconds, this is not model train time out limit
 # 604800 <- 7 days
 globalTimeLimit <- 604800
+ghost_process <- FALSE
+
 
 setTimeLimit(cpu = globalTimeLimit, elapsed = globalTimeLimit, transient=FALSE)
 
@@ -141,13 +143,15 @@ if(length(serverData) < 1){
                 }
             }else{
                 should_quit <- TRUE
+
                 ## Check for ghost processes that are not running anymore
                 if(length(process_list) == 1){
                     ## Remove PID file
                     if(file.exists(UPTIME_PID)){
-                        cat(paste0("======> INFO: Deleting UPTIME_PID file for ghost process \r\n"))
+                        cat(paste0("======> INFO: Deleting UPTIME_PID file for ghost process. pid_time_diff: ",pid_time_diff," globalTimeLimit: ",globalTimeLimit," \r\n"))
                         invisible(file.remove(UPTIME_PID))
                         should_quit <- FALSE
+                        ghost_process <- TRUE
                     }
                 }
                 if(should_quit == TRUE){
@@ -374,6 +378,11 @@ for (dataset in datasets) {
 
         if(model %in% models_restrict){
             cat(paste0("===> WARNING: RESTRICTED. Skipping model: ",model," \r\n"))
+            next()
+        }
+
+        if(ghost_process == TRUE){
+            cat(paste0("===> INFO: Ghost process detected, skipping model: ",model," \r\n"))
             next()
         }
 

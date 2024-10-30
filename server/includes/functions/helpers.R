@@ -1,3 +1,10 @@
+# Helper function to normalize scores with NA handling
+#' @keywords internal
+normalize <- function(x) {
+    if (max(x) == min(x)) return(rep(0.5, length(x)))  # Middle ground if no range
+    (x - min(x)) / (max(x) - min(x))
+}
+
 #' @title Checks process is running
 #' @description Checks if we can find process by part of this name in running process list
 #' @param identifier cron_analysis
@@ -13,6 +20,7 @@ is_process_running <- function(identifier){
 
     return(process_list)
 }
+
 #' @title Kill process
 #' @description Kills processes by PIDs
 #' @param process_list numeric vector

@@ -253,6 +253,9 @@ caretTrainModel <- function(data, model_details, problemType, outcomeColumn, pre
     train_args <- c(train_args, tuneList)
     model.execution <- tryCatch( garbage <- R.utils::captureOutput(results$data <- R.utils::withTimeout(do.call(caret::train, train_args), substitute = FALSE, timeout=model_details$process_timeout, cpu=model_details$process_timeout, onTimeout = "error") ), error = function(e){ return(e) } )
 
+    model_time_end <- Sys.time()
+    cat(paste0("===> INFO: Model RAW training end: ",model_time_end,"\r\n"))
+
     # Ignore warnings while processing errors, actually we should move this to have training suppressed as well!?
     options(warn = -1)
     if(!inherits(model.execution, "error") && !inherits(results$data, 'try-error') && !is.null(results$data)){
@@ -337,7 +340,22 @@ caretPredict <- function(trainingFit, dataTesting, outcomeColumn, model_details)
             # model's inability to predict certain classes returns NA
             if(!is.null(results$predictions) && any(is.na(results$predictions))){
                 cat(paste0("===> WARNING: Imputing (mean) NaN predictions\r\n"))
-                results$predictions <- results$predictions %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x))
+                # Impute missing values in numeric columns with the mean
+                results$predictions <- tryCatch({
+                    # Convert factor columns to numeric to avoid issues in mutate_all
+                    results$predictions <- results$predictions %>% mutate(across(where(is.factor), as.numeric))
+                    
+                    # Impute missing values in numeric columns with the mean
+                    results$predictions %>%
+                        mutate(across(where(is.numeric), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+                    
+                }, warning = function(w) {
+                    cat("===> WARNING: Issue with NaN imputation -", conditionMessage(w), "\n")
+                     return(NULL) 
+                }, error = function(e) {
+                    cat("===> ERROR: Failed to impute NaN predictions -", conditionMessage(e), "\n")
+                     return(NULL) 
+                })
 
                 # For Median use:
                 # preProcessMapping <- preProcessResample(results$predictions, c("medianImpute"), NULL, NULL)
