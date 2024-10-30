@@ -1193,8 +1193,8 @@ auto_simon_ml <- function(dataset_ml, settings) {
         settings$outcome = "immunaut"
     }
 
-    if (is_var_empty(settings$selectedColumns) == TRUE) {
-        settings$selectedColumns = NULL
+    if (is_var_empty(settings$selectedColumnsSIMON) == TRUE) {
+        settings$selectedColumnsSIMON = NULL
     }
 
     if (is_var_empty(settings$excludedColumns) == TRUE) {
@@ -1224,9 +1224,9 @@ auto_simon_ml <- function(dataset_ml, settings) {
         ))
     }
     ##  Exclude columns from the dataset if specified
-    if (!is.null(settings$selectedColumns)) {
-        message(paste("Selected columns: ", paste(c(settings$outcome, settings$selectedColumns), collapse = ", ")))
-        dataset_ml <- dataset_ml[, c(settings$outcome, settings$selectedColumns)]
+    if (!is.null(settings$selectedColumnsSIMON)) {
+        message(paste("Selected columns (selectedColumnsSIMON): ", paste(c(settings$outcome, settings$selectedColumnsSIMON), collapse = ", ")))
+        dataset_ml <- dataset_ml[, c(settings$outcome, settings$selectedColumnsSIMON)]
     }
 
     ##  Exclude columns from the dataset if specified
