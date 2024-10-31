@@ -660,27 +660,29 @@ db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel,
         }
 
         ## Insert Testing prAUC
-        if(!is.null(prAUC)){
+        if (!is.null(prAUC)) {
             print(paste0("===> INFO: Inserting model prAUC variables"))
             performanceVariables <- getPerformanceVariable("prAUC", performanceVariables)
             pvDetails <- performanceVariables %>% filter(value == "prAUC")
 
             for (class_name in names(prAUC)) {
-                if(!is.null(prAUC[[class_name]]$auc.integral)){
-                    auc_integral_value <- prAUC[[class_name]]$auc.integral
-                    if (!is.null(auc_integral_value)) {
-                        class_id <- outcome_mapping %>%
-                                    filter(class_remapped == class_name) %>%
-                                    pull(id) %>%
-                                    ifelse(is.na(.), 0, .) # Fallback to 0 if class_id not found
-                        auc_integral_value <- ifelse(is.nan(auc_integral_value), "NULL", sprintf("%.10f", auc_integral_value))
-                        prefQuery <- paste(c(prefQuery, paste0("(NULL, ", modelID, ", ", class_id, ", ",pvDetails$id,", '",auc_integral_value,"', NOW())")), collapse = ",")
-                    } else {
-                        warning(paste("prAUC value missing for class", class_name))
-                    }
+                class_prAUC <- prAUC[[class_name]]
+                
+                # Check if class_prAUC is a list and contains auc.integral
+                if (is.list(class_prAUC) && !is.null(class_prAUC$auc.integral)) {
+                    auc_integral_value <- class_prAUC$auc.integral
+                    class_id <- outcome_mapping %>%
+                                filter(class_remapped == class_name) %>%
+                                pull(id) %>%
+                                ifelse(is.na(.), 0, .) # Fallback to 0 if class_id not found
+                    auc_integral_value <- ifelse(is.nan(auc_integral_value), "NULL", sprintf("%.10f", auc_integral_value))
+                    prefQuery <- paste(c(prefQuery, paste0("(NULL, ", modelID, ", ", class_id, ", ", pvDetails$id, ", '", auc_integral_value, "', NOW())")), collapse = ",")
+                } else {
+                    warning(paste("prAUC or auc.integral missing or invalid for class", class_name))
                 }
             }
         }
+
 
         ## Insert Testing Accuracy/Kappa or RMSE, Rsquared, MAE
         if(!is.null(predPostResample) & length(predPostResample) >= 2){
