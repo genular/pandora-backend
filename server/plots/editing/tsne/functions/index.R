@@ -1493,10 +1493,16 @@ pick_best_cluster_simon <- function(dataset, tsne_clust, tsne_calc, settings) {
         all_silhouettes[i] <- tsne_clust[[i]]$avg_silhouette_score
     }
 
-    # Apply normalization to all metrics
-    norm_aurocs <- normalize(all_aurocs)
-    norm_modularities <- normalize(all_modularities)
-    norm_silhouettes <- normalize(all_silhouettes)
+    # Only normalize AUROC if it is the only metric with a weight > 0
+    if (settings$weights$AUROC == 1 && settings$weights$modularity == 0 && settings$weights$silhouette == 0) {
+        norm_aurocs <- all_aurocs  # Use AUROC directly without normalization
+        norm_modularities <- all_modularities
+        norm_silhouettes <- all_silhouettes
+    } else {
+        norm_aurocs <- normalize(all_aurocs)
+        norm_modularities <- normalize(all_modularities)
+        norm_silhouettes <- normalize(all_silhouettes)
+    }
 
     # Track the best score and associated cluster
     best_score <- -Inf
@@ -1530,7 +1536,17 @@ pick_best_cluster_simon <- function(dataset, tsne_clust, tsne_calc, settings) {
     }
 
     if (is.null(best_cluster)) {
-        stop("No valid clustering result found with non-missing values for AUROC, modularity, and silhouette.")
+        print("===> ERROR: No valid clustering result found with non-missing values for AUROC, modularity, and silhouette. Selecting the first cluster as a fallback.")
+        # Fallback to the first cluster in the list
+        best_cluster <- list(
+            tsne_clust = tsne_clust[[1]],
+            combined_score = (settings$weights$AUROC * norm_aurocs[1]) + 
+                             (settings$weights$modularity * norm_modularities[1]) + 
+                             (settings$weights$silhouette * norm_silhouettes[1]),
+            modularity = all_modularities[1],
+            silhouette = all_silhouettes[1],
+            auroc = all_aurocs[1]
+        )
     }
 
     message(paste0(
@@ -1539,9 +1555,11 @@ pick_best_cluster_simon <- function(dataset, tsne_clust, tsne_calc, settings) {
         " | Clusters: ", best_cluster$tsne_clust$num_clusters, 
         " | MOD: ", round(best_cluster$tsne_clust$modularity, 3), 
         " | SIL: ", round(best_cluster$tsne_clust$avg_silhouette_score, 3),
-        " | AUC: ", round(max(best_cluster$auroc), 3)
+        " | AUC: ", round(max(best_cluster$auroc), 3),
+        "\n===> INFO: Weights settings: AUROC = ", settings$weights$AUROC, 
+        ", Modularity = ", settings$weights$modularity, 
+        ", Silhouette = ", settings$weights$silhouette
     ))
-
 
     return(best_cluster)
 }

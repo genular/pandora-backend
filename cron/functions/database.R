@@ -714,14 +714,14 @@ db.apps.pandora.saveMethodAnalysisData <- function(resampleID, trainModel,
 #' @param modelID
 #' @return 
 db.apps.pandora.saveVariableImportance <- function(varImportance, modelID){
-    modelID <-as.numeric(modelID)
+    modelID <- as.numeric(modelID)
+    
     # Correctly escape feature names without converting to a list
-    # No alteration to varImportance dataframe structure here
     escaped_feature_names <- sapply(varImportance$feature_name, function(x) {
         SQL <- dbQuoteString(databasePool, x)
         substr(SQL, 2, nchar(SQL) - 1) # Remove leading and trailing quotes for inclusion in query
     }, USE.NAMES = FALSE)
-
+    
     # Construct the query part for each row
     query_values <- vapply(seq_len(nrow(varImportance)), function(i) {
         sprintf("(NULL, %d, '%s', %d, %f, %f, %d, NOW())", 
@@ -732,20 +732,46 @@ db.apps.pandora.saveVariableImportance <- function(varImportance, modelID){
                 varImportance$score_no[i], 
                 varImportance$rank[i])
     }, character(1))
-
+    
     # Complete query construction
     query <- paste("INSERT IGNORE INTO `models_variables` (`id`, `mid`, `feature_name`, `drm_id`, `score_perc`, `score_no`, `rank`, `created`) VALUES", 
                    paste(query_values, collapse = ", "))
-
-    # Execute the query
-    results <- dbExecute(databasePool, query)
-
+    
+    # Execute the query within a tryCatch block
+    results <- tryCatch({
+        dbExecute(databasePool, query)
+    }, error = function(e) {
+        # Print debugging information on error
+        cat("Error executing query:\n", query, "\n")
+        cat("Error message:", e$message, "\n")
+        
+        # Print row details that might contain problematic NA values
+        if (any(is.na(varImportance))) {
+            cat("NA values detected in varImportance dataframe:\n")
+            print(varImportance[is.na(varImportance), ])
+        } else {
+            cat("No NA values detected in varImportance dataframe.\n")
+        }
+        return(NULL)
+    })
+    
+    # Calculate hash for ordered varImportance
     varImportanceOrdered <- varImportance[order(varImportance$feature_name, decreasing = FALSE), ]
     mv_hash <- digest::digest(paste(varImportanceOrdered$feature_name, collapse = ','), algo = "md5", serialize = FALSE)
-    updateDatabaseField("models", "mv_hash", mv_hash, "id", modelID)
-
+    
+    # Update database field in a tryCatch block
+    update_result <- tryCatch({
+        updateDatabaseField("models", "mv_hash", mv_hash, "id", modelID)
+    }, error = function(e) {
+        cat("Error updating mv_hash field for modelID", modelID, "\n")
+        cat("Error message:", e$message, "\n")
+        return(NULL)
+    })
+    
+    # Return results or NULL if an error occurred
     return(results)
 }
+
 
 #' @title Save RFE results
 #' @description  Save new resample with selected columns from RFE

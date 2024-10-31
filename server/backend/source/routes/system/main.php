@@ -351,3 +351,53 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
 
     return $response->withJson(["success" => true, "message" => 'Update process initiated.']);
 });
+
+$app->get('/backend/system/live-logs', function (Request $request, Response $response, array $args) {
+    $offsets = $request->getQueryParam('offset', []);
+    $maxLinesPerLog = 500;  // Limit lines per log to prevent oversized responses
+
+    $logFiles = [
+        "Cron Log" => "/var/log/pandora-cron.log",
+        "Backend Log" => realpath(realpath(dirname(__DIR__)) . "/../logs/pandora.log"),
+        "PM2 Server Logs (User)" => "/home/login/.pm2/logs",
+        "PM2 Server Logs (Root)" => "/root/.pm2/logs",
+        "Nginx Server Logs" => "/var/log/nginx",
+        "Supervisor Supervisord Log" => "/var/log/supervisor/supervisord.log",
+        "Supervisor Logs Directory" => "/var/log/supervisor",
+        "Prepare Storage Log" => "/var/log/prepare_storage_log",
+        "MariaDB Log" => "/var/log/mariadb_log",
+        "PHP Log" => "/var/log/php_log",
+        "Nginx Log" => "/var/log/nginx_log",
+        "PM2 Log" => "/var/log/pm2_log",
+        "Cron Log" => "/var/log/cron_log"
+    ];
+
+    $logs = [];
+    foreach ($logFiles as $key => $filePath) {
+        if (file_exists($filePath) && is_readable($filePath) && is_file($filePath)) {
+            $offset = isset($offsets[$key]) ? (int)$offsets[$key] : 0;
+            $fileContent = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $logSlice = array_slice($fileContent, $offset, $maxLinesPerLog);  // Limit the number of lines
+
+            $logs[$key] = array_map(function($line) {
+                $content = mb_convert_encoding(trim($line), 'UTF-8', 'UTF-8');
+                return [
+                    'content' => $content,
+                    'hash' => md5($content)
+                ];
+            }, $logSlice);
+        } else {
+            error_log("Warning: Log file $filePath does not exist or is not readable.");
+        }
+    }
+
+    $responseData = ["success" => true, "logs" => $logs, "newOffset" => array_map('count', $logs)];
+    $jsonResponse = json_encode($responseData, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_UNESCAPED_UNICODE);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        $errorMessage = json_last_error_msg();
+        return $response->withJson(["success" => false, "message" => "JSON encoding error: $errorMessage"], 500);
+    }
+
+    return $response->write(trim($jsonResponse))->withHeader('Content-Type', 'application/json');
+});
