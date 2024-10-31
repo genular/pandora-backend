@@ -357,6 +357,14 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
 
+        print(colnames(tsne_calc$info.norm))
+        print(paste0("========================="))
+        print(settings$groupingVariables)
+        print(paste0("========================="))
+        print(settings$colorVariables)
+
+
+
         res.data$tsne_perplexity <- tsne_calc$perplexity
         res.data$tsne_exaggeration_factor <- tsne_calc$exaggeration_factor
         res.data$tsne_max_iter <- tsne_calc$max_iter
@@ -364,27 +372,48 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         res.data$tsne_eta <- tsne_calc$eta
 
         ## Main t-SNE plot 
+        print(paste0("===> Plotting t-SNE (plot_tsne)"))
+
         tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
+
         ## Color-by placeholder
         res.data$tsne_plot[["main_plot"]]$colorby <- list()
         res.data$tsne_plot[["main_plot"]]$name <- "Main plot"
         res.data$tsne_plot[["main_plot"]]$svg <- optimizeSVGFile(tmp_path)
         res.data$tsne_plot[["main_plot"]]$png <- convertSVGtoPNG(tmp_path)
 
-        if(!is.null(settings$colorVariables)){
+        if (!is.null(settings$colorVariables)) {
+            for (colorVariable in settings$colorVariables) {
+                print(colorVariable)
+                # Check if colorVariable exists in both fileHeader and tsne_calc$info.norm
+                if (colorVariable %in% fileHeader$remapped) {
+                    # If it exists in both, continue with processing
+                    coloringVariable <- fileHeader %>% filter(remapped == colorVariable)
+                    coloringVariable <- coloringVariable$original
 
-            for(colorVariable in settings$colorVariables){
-                coloringVariable <- fileHeader %>% filter(remapped %in% colorVariable)
-                coloringVariable <- coloringVariable$original
+                    if(coloringVariable %in% colnames(tsne_calc$info.norm)){
+                        # Generate plot hash and paths
+                        plot_unique_hash$tsne_plot[[paste0("main_plot", colorVariable)]] <- 
+                            digest::digest(paste0(selectedFileID, "_", args$settings, "_tsne_plot_main_", colorVariable), algo = "md5", serialize = FALSE)
+                        
+                        tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings, plot_unique_hash$tsne_plot[[paste0("main_plot", colorVariable)]])
 
-                plot_unique_hash$tsne_plot[[paste0("main_plot",colorVariable)]] <- digest::digest(paste0(selectedFileID, "_",args$settings,"_tsne_plot_main_",colorVariable), algo="md5", serialize=F)
-                tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings,  plot_unique_hash$tsne_plot[[paste0("main_plot",colorVariable)]])
+                        # Update results with color-by plot details
+                        res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$name <- coloringVariable
+                        res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
+                        res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$png <- convertSVGtoPNG(tmp_path_c)
+                    } else {
+                        # If colorVariable does not exist in tsne_calc$info.norm, print a warning
+                        print(paste("Warning: colorVariable", colorVariable, "not found in tsne_calc$info.norm"))
+                    }
 
-                res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$name <- coloringVariable
-                res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
-                res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$png <- convertSVGtoPNG(tmp_path_c)
+                } else {
+                    # If colorVariable does not exist in tsne_calc$info.norm, print a warning
+                    print(paste("Warning: colorVariable", colorVariable, "not found in file header"))
+                }
             }
         }
+
 
 
         if(!is.null(settings$groupingVariables)){

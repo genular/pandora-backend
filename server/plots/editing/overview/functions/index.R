@@ -77,23 +77,57 @@ plot_matrix_plot = function(dataset, settings, fileHeader){
     }else{
         print("Generating plot_matrix_plot single")
 
-        plot_dataset <- dataset %>% 
-                    #select(responder, starts_with("tcell_elispot")) %>%
-                    #filter(disease_severity == "severe") %>% 
-                    drop_na() %>% 
-                    select(any_of(settings$selectedColumns))
+        # Ensure dataset is a data frame
+        plot_dataset <- as.data.frame(dataset)
 
-        names(plot_dataset) <- plyr::mapvalues(names(plot_dataset), from=fileHeader$remapped, to=fileHeader$original)
+        # Filter selected columns to those that exist in the dataset
+        valid_columns <- settings$selectedColumns[settings$selectedColumns %in% colnames(plot_dataset)]
+        if (length(valid_columns) < 2) {
+            print("No valid columns found in dataset to generate the plot. Ensure at least two columns are selected.")
+            renderedPlot <- NULL
+        }else{
+            renderedPlot <- TRUE
+        }
 
-        renderedPlot <- plot_dataset %>% GGally::ggpairs(., 
-                            title = "Correlation matrix",
-                            lower = list(continuous = GGally::wrap("smooth", alpha = 0.3, size=0.1), discrete = "blank", combo="blank"),
-                            diag = list(discrete="barDiag", continuous = GGally::wrap("densityDiag", alpha=0.5)), 
-                            upper = list(combo = GGally::wrap("box_no_facet", alpha=0.5)))
+        if(!is.null(renderedPlot)){
+            # Select the validated columns and drop rows with NAs
+            plot_dataset <- plot_dataset %>%
+                select(any_of(valid_columns)) %>%
+                drop_na()
+
+            # Map column names from `remapped` to `original` in `fileHeader`, only for existing columns
+            existing_mapped_columns <- valid_columns[valid_columns %in% fileHeader$remapped]
+            plot_dataset <- plot_dataset %>%
+                rename_with(~ plyr::mapvalues(.x, from = fileHeader$remapped, to = fileHeader$original, warn_missing = FALSE), .cols = existing_mapped_columns)
+
+            # Generate the correlation matrix plot if we have at least two columns
+            if (ncol(plot_dataset) >= 2) {
+                renderedPlot <- GGally::ggpairs(
+                    plot_dataset, 
+                    title = "Correlation matrix",
+                    lower = list(
+                        continuous = GGally::wrap("smooth", alpha = 0.3, size = 0.1), 
+                        discrete = "blank", 
+                        combo = "blank"
+                    ),
+                    diag = list(
+                        discrete = "barDiag", 
+                        continuous = GGally::wrap("densityDiag", alpha = 0.5)
+                    ), 
+                    upper = list(combo = GGally::wrap("box_no_facet", alpha = 0.5))
+                )
+                print("Plot generated successfully.")
+            } else {
+                print("Insufficient columns for plotting. At least two columns are required for a correlation matrix.")
+            }
+        }
+
     }
 
-    renderedPlot <- renderedPlot + scale_fill_brewer(palette=settings$colorPalette) + 
-                    theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
+    if(!is.null(renderedPlot)){
+        renderedPlot <- renderedPlot + scale_fill_brewer(palette=settings$colorPalette) + 
+                theme(text=element_text(size=settings$fontSize), axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank())
+    }
 
     return(renderedPlot)
 }

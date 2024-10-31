@@ -206,25 +206,48 @@ pandora$handle$plots$editing$overview$renderPlot <- expression(
         if(is_null(settings$selectedColumns)) {
             selectedColumns <- fileHeader %>% arrange(unique_count) %>% slice(settings$cutOffColumnSize) %>% arrange(position) %>% select(remapped)
             settings$selectedColumns <- tail(selectedColumns$remapped, settings$cutOffColumnSize)
-            plot_all_columns <- TRUE
         }else if(length(settings$selectedColumns) == nrow(fileHeader)) {
             plot_all_columns <- TRUE
         }
-        ## Remove grouping variable from selected columns
-        settings$selectedColumns <-  setdiff(settings$selectedColumns, settings$groupingVariable)
+
+
+        if (!is.null(settings$groupingVariable) && !is.null(settings$selectedColumns)) {
+            settings$selectedColumns <- setdiff(settings$selectedColumns, settings$groupingVariable)
+        }
+
 
         ## Load dataset
         dataset <- loadDataFromFileSystem(selectedFilePath)
 
+        if(plot_all_columns == TRUE){
+            settings$selectedColumns <- names(dataset)
+        }
+
+        if(!is.null(settings$selectedColumns) && length(settings$selectedColumns) > 0){
+            settings$selectedColumns <- fileHeader %>% filter(remapped %in% settings$selectedColumns) %>% arrange(position) %>% select(remapped) %>% pull()
+        }
+        if(!is.null(settings$groupingVariable) && length(settings$groupingVariable) > 0){
+            settings$groupingVariable <- fileHeader %>% filter(remapped %in% settings$groupingVariable) %>% arrange(position) %>% select(remapped) %>% pull()
+        }
+
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariable)]
+
+        print("++++++++++++++++++++")
+        print(names(dataset))
+        print("++++++++++++++++++++")
+        print(c(settings$selectedColumns, settings$groupingVariable))
+        print("++++++++++++++++++++")
+        print(dataset_filtered)
+        print("++++++++++++++++++++")
     
         if(!is.null(settings$preProcessedData)){
             ## Preprocess data except grouping variables
-            preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable , methods = c("medianImpute", "center", "scale"))
-            dataset_filtered <- preProcessedData$processedMat
-            #preProcessedData <- preProcessData(dataset_filtered, settings$groupingVariable , settings$groupingVariable ,  methods = c("nzv", "zv"))
-            #dataset_filtered <- preProcessedData$processedMat
+            preProcessedData <- preProcessData(dataset_filtered, NULL , NULL, methods = c("medianImpute", "center", "scale"))
+            if(!is.null(preProcessedData$processedMat)){
+                dataset_filtered <- preProcessedData$processedMat
+            }
         }
+
 
         rendered_plot_tableplot <- plot_tableplot(dataset_filtered, settings, fileHeader)
 
@@ -241,25 +264,29 @@ pandora$handle$plots$editing$overview$renderPlot <- expression(
         }
         rendered_plot_matrix <- plot_matrix_plot(dataset_filtered, settings, fileHeader)
         
-        tmp_path <- tempfile(pattern = plot_unique_hash[["distribution_plot"]], tmpdir = tempdir(), fileext = ".svg")
-        svg(tmp_path, width = 12 * settings$aspect_ratio, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-            print(rendered_plot_matrix)
-        dev.off()
+        if(!is.null(rendered_plot_matrix)){
+            tmp_path <- tempfile(pattern = plot_unique_hash[["distribution_plot"]], tmpdir = tempdir(), fileext = ".svg")
+            svg(tmp_path, width = 12 * settings$aspect_ratio, height = 12, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
+                print(rendered_plot_matrix)
+            dev.off()
 
-        response_data$distribution_plot = optimizeSVGFile(tmp_path)
-        response_data$distribution_plot_png =  convertSVGtoPNG(tmp_path)
-
+            response_data$distribution_plot = optimizeSVGFile(tmp_path)
+            response_data$distribution_plot_png =  convertSVGtoPNG(tmp_path)
+        }
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
+
         processingData <- list(
-            plot_tableplot = ifelse(exists("rendered_plot_tableplot"), rendered_plot_tableplot, FALSE),
-            plot_matrix = ifelse(exists("rendered_plot_matrix"), rendered_plot_matrix, FALSE),
-            settings = ifelse(exists("settings"), settings, FALSE),
-            dataset = ifelse(exists("dataset"), dataset, FALSE),
-            dataset_filtered_processed = ifelse(exists("dataset_filtered"), dataset_filtered, FALSE)
+            plot_tableplot = if (exists("rendered_plot_tableplot") && length(rendered_plot_tableplot) > 0) rendered_plot_tableplot else FALSE,
+            plot_matrix = if (exists("rendered_plot_matrix") && length(rendered_plot_matrix) > 0) rendered_plot_matrix else FALSE,
+            settings = if (exists("settings") && length(settings) > 0) settings else FALSE,
+            dataset = if (exists("dataset") && length(dataset) > 0) dataset else FALSE,
+            dataset_filtered_processed = if (exists("dataset_filtered") && length(dataset_filtered) > 0) dataset_filtered else FALSE
         )
+
         saveCachedList(tmp_path, processingData)
+
         response_data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
 
         return (list(success = TRUE, message = response_data))
