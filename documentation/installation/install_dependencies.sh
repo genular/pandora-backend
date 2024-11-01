@@ -319,24 +319,24 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
 
 
         # accept the name of our website
-        echo "${yellow}R Version (eg. 3.6.3/n) Enter 3.6.3${clear}"
+        echo "${yellow}R Version (eg. 4.4.1/n) Enter 4.4.1${clear}"
         read -e R_VERSION
 
         if [ "${R_VERSION}" == "" ] ; then
-            R_VERSION="3.6.3"
+            R_VERSION="4.4.1"
         fi
 
         echo ""
 
         if [ "$R_VERSION" != n ] ; then
             
-            R_URL="https://cloud.r-project.org/src/base/R-3/R-${R_VERSION}.tar.gz"
+            R_URL="https://cloud.r-project.org/src/base/R-4/R-${R_VERSION}.tar.gz"
 
             if curl --head --fail --silent "$R_URL" >/dev/null; then
                 echo "R Download file found on: $R_URL"
             else
-                R_URL="https://cran.r-project.org/src/base/R-3/R-3.6.3.tar.gz"
-                echo "R Download file not found, fallback to default 3.6.3: $R_URL"
+                R_URL="https://cloud.r-project.org/src/base/R-4/R-4.4.1.tar.gz"
+                echo "R Download file not found, fallback to default 4.4.1: $R_URL"
             fi
 
             # Create temporary directory
