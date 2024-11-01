@@ -356,39 +356,46 @@ $app->get('/backend/system/live-logs', function (Request $request, Response $res
     $offsets = $request->getQueryParam('offset', []);
     $maxLinesPerLog = 500;  // Limit lines per log to prevent oversized responses
 
+    // Define log sources with file paths or PM2 commands
     $logFiles = [
-        "Cron Log" => "/var/log/pandora-cron.log",
-        "Backend Log" => realpath(realpath(dirname(__DIR__)) . "/../logs/pandora.log"),
-        "PM2 Server Logs (User)" => "/home/login/.pm2/logs",
-        "PM2 Server Logs (Root)" => "/root/.pm2/logs",
-        "Nginx Server Logs" => "/var/log/nginx",
-        "Supervisor Supervisord Log" => "/var/log/supervisor/supervisord.log",
-        "Supervisor Logs Directory" => "/var/log/supervisor",
-        "Prepare Storage Log" => "/var/log/prepare_storage_log",
-        "MariaDB Log" => "/var/log/mariadb_log",
-        "PHP Log" => "/var/log/php_log",
-        "Nginx Log" => "/var/log/nginx_log",
-        "PM2 Log" => "/var/log/pm2_log",
-        "Cron Log" => "/var/log/cron_log"
+        "SIMON" => "/var/log/pandora-cron.log",
+        "Analysis" => realpath(dirname(__DIR__) . "/../logs/pandora-analysis.log"),
+        "Plots" => realpath(dirname(__DIR__) . "/../logs/pandora-plots.log"),
+        "API Backend" => realpath(dirname(__DIR__) . "/../logs/pandora.log"),
     ];
 
     $logs = [];
-    foreach ($logFiles as $key => $filePath) {
-        if (file_exists($filePath) && is_readable($filePath) && is_file($filePath)) {
-            $offset = isset($offsets[$key]) ? (int)$offsets[$key] : 0;
-            $fileContent = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            $logSlice = array_slice($fileContent, $offset, $maxLinesPerLog);  // Limit the number of lines
+    foreach ($logFiles as $key => $filePathOrCommand) {
+        $logContent = [];
 
-            $logs[$key] = array_map(function($line) {
-                $content = mb_convert_encoding(trim($line), 'UTF-8', 'UTF-8');
-                return [
-                    'content' => $content,
-                    'hash' => md5($content)
-                ];
-            }, $logSlice);
-        } else {
-            error_log("Warning: Log file $filePath does not exist or is not readable.");
+        // Check if the entry is a pm2 command or a log file path
+        if (strpos($filePathOrCommand, 'pm2 logs') === 0) {
+            $commandOutput = shell_exec("/home/login/.yarn/bin/" . $filePathOrCommand . " 2>&1"); // Specify pm2 path
+
+            if ($commandOutput) {
+                $lines = explode(PHP_EOL, trim($commandOutput));
+                $logContent = array_slice($lines, 0, $maxLinesPerLog); // Limit lines
+            } else {
+                error_log("Warning: Failed to retrieve PM2 logs for $key using command: $filePathOrCommand");
+            }
         }
+        // Otherwise, handle as a regular log file if path is valid
+        elseif (file_exists($filePathOrCommand) && is_readable($filePathOrCommand) && is_file($filePathOrCommand)) {
+            $offset = isset($offsets[$key]) ? (int)$offsets[$key] : 0;
+            $fileContent = file($filePathOrCommand, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $logContent = array_slice($fileContent, $offset, $maxLinesPerLog);  // Limit lines per log
+        } else {
+            error_log("Warning: Log file or command $filePathOrCommand for $key does not exist or is not readable.");
+        }
+
+        // Process log content into response structure
+        $logs[$key] = array_map(function($line) {
+            $content = mb_convert_encoding(trim($line), 'UTF-8', 'UTF-8');
+            return [
+                'content' => $content,
+                'hash' => md5($content)
+            ];
+        }, $logContent);
     }
 
     $responseData = ["success" => true, "logs" => $logs, "newOffset" => array_map('count', $logs)];

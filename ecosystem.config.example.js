@@ -38,8 +38,7 @@ const watchOptions = {
 };
 
 module.exports = {
-    apps: [
-        {
+    apps: [{
             name: "pandora-analysis",
             cwd: backendPath,
             script: "./server/analysis/index.R",
@@ -50,7 +49,9 @@ module.exports = {
             interpreter: "/usr/bin/Rscript",
             env: {
                 NODE_ENV: "development"
-            }
+            },
+            output: "./server/backend/source/logs/pandora-analysis.log", // Custom log file for stdout
+            error: "./server/backend/source/logs/pandora-analysis-error.log" // Custom log file for stderr
         },
         {
             name: "pandora-plots",
@@ -63,7 +64,9 @@ module.exports = {
             interpreter: "/usr/bin/Rscript",
             env: {
                 NODE_ENV: "development"
-            }
+            },
+            output: "./server/backend/source/logs/pandora-plots.log", // Custom log file for stdout
+            error: "./server/backend/source/logs/pandora-plots-error.log" // Custom log file for stderr
         }
         // {
         //     name: "pandora-analysis-python",
