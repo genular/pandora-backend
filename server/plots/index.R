@@ -32,7 +32,7 @@ deployAPI <- function(pandora, options = list(host = "127.0.0.1", port = 8181)) 
     }
     cookie_name <- paste0("pandora_", SERVER_NAME)
 
-    router <- plumber::plumber$new()
+    router <- plumber::Plumber$new()
     router$registerHooks(session_cookie(pandoraConfig$secret, name = cookie_name, expiration = Sys.time() + (20 * 365 * 24 * 60 * 60)))
 
     # Register filters for logging, CORS, and authentication
@@ -90,7 +90,7 @@ deployAPI <- function(pandora, options = list(host = "127.0.0.1", port = 8181)) 
 
 # Remove the uptime PID file if it exists to signify a fresh start
 if (file.exists(UPTIME_PID)) {
-    file.remove(UPTIME_PID)
+    invisible(file.remove(UPTIME_PID))
 }
 
 # Record the start time of the Pandora service
