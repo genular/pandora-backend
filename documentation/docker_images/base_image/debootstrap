@@ -426,7 +426,7 @@ echo "Installation of advanced dependencies START"
 	pecl install -f libsodium
 	echo "===========================================> INSTALLATION step: 7 END"
 
-	echo 'www-data ALL=(genular) NOPASSWD: /usr/bin/git, /usr/local/bin/composer, /usr/bin/yarn' | sudo tee /etc/sudoers.d/www-data-genular
+	echo 'www-data ALL=(genular) NOPASSWD: /usr/bin/git, /usr/bin/yarn, /usr/bin/php8.2, /usr/local/bin/composer, /usr/bin/pm2' | sudo tee /etc/sudoers.d/www-data-genular
 	sudo chmod 440 /etc/sudoers.d/www-data-genular
 
 	## Socket location directory

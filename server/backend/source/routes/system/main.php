@@ -322,7 +322,7 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
     // Check if running in a Docker container
     $isDocker = $this->get('settings')["is_docker"];
     $userToExecuteAs = $isDocker ? 'genular' : 'login';
-    $sudoPrefix = $isDocker ? "sudo -u $userToExecuteAs " : "";
+    $sudoPrefix = "sudo -u $userToExecuteAs ";
 
     $updates = [];
     foreach ($repos as $name => $repoPath) {
@@ -334,14 +334,29 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
         // Change directory to the repository path
         chdir($repoPath);
 
-        // Fetch the latest changes from the remote using sudo if necessary
-        exec($sudoPrefix . 'git fetch origin master 2>&1', $fetchOutput, $fetchResult);
+        // Get the current remote URL for origin
+        $remoteUrl = trim(shell_exec($sudoPrefix . 'git remote get-url origin'));
+        
+        // Convert SSH URL to HTTPS if necessary
+        if (strpos($remoteUrl, 'git@github.com:') === 0) {
+            $httpsUrl = preg_replace('/^git@github\.com:/', 'https://github.com/', $remoteUrl);
+        } else {
+            $httpsUrl = $remoteUrl; // Use as-is if already HTTPS
+        }
+
+        // Use the HTTPS URL directly in the git fetch command
+        $cmd = $sudoPrefix . 'git fetch ' . escapeshellarg($httpsUrl) . ' master 2>&1';
+        
+        // Fetch the latest changes from the remote using HTTPS URL
+        exec($cmd, $fetchOutput, $fetchResult);
+
         $fetchOutputText = implode("\n", $fetchOutput);  // Combine output into a single string
+
         if ($fetchResult !== 0) {
             $userInfo = posix_getpwuid(posix_geteuid());
             $updates[$name] = [
                 "status" => "error",
-                "message" => "User: " . $userInfo['name'] . " failed to fetch updates: $fetchOutputText"
+                "message" => "User: " . $userInfo['name'] . " CMD: ".$cmd." ERROR: $fetchOutputText"
             ];
             continue;
         }
@@ -367,71 +382,127 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
 });
 
 
-
-/**
- * Handles the system update process.
- *
- * This endpoint initiates a series of actions to update the system's backend and frontend components.
- * It performs a 'git pull' operation on both frontend and backend repositories to synchronize them with their
- * respective remote versions. Additionally, it runs 'composer install' and its post-install script in the backend,
- * and executes 'yarn build' for the frontend to compile and prepare it for production.
- * 
- *
- * @param Request  $request  The request object provided by Slim framework, containing request details.
- * @param Response $response The response object used to return data back to the client.
- * @param array    $args     Additional arguments passed to the route.
- *
- * @return Response Returns a JSON response indicating the success or failure of the update operations, 
- * including detailed messages about each step of the process.
- */
 $app->get('/backend/system/update', function (Request $request, Response $response, array $args) {
     // Load configuration
     $config = $this->get('Noodlehaus\Config');
-    
+
     // Extract URLs from the config
     $frontendUrl = $config->get('default.frontend.server.url');
     $backendUrl = $config->get('default.backend.server.url');
-
 
     // Check if running in a Docker container
     $isDocker = $this->get('settings')["is_docker"];
     $userToExecuteAs = $isDocker ? 'genular' : 'login';
 
-    $assetsPath = __DIR__ . '/../../../public/assets';
-    $filePath = $assetsPath . '/UPDATE';
+    // Define the sudo prefix
+    $sudoPrefix = "sudo -u $userToExecuteAs";
 
-    // Ensure the directory exists and is writable
-    if (!file_exists($assetsPath)) {
-        if (!mkdir($assetsPath, 0777, true)) {
-            $message = 'Failed to create assets directory.';
-            return $response->withJson(["success" => false, "message" => $message]);
-        }
+    $baseBackendPath = realpath(__DIR__ . '/../../../../../');
+    $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
+
+    // Ensure paths are valid
+    if (!$baseBackendPath || !$baseFrontendPath) {
+        return $response->withJson([
+            "success" => false,
+            "message" => "Invalid directory structure"
+        ]);
     }
 
-    // Write/update URLs in the file
-    $fileContent = "FRONTEND_URL=$frontendUrl\nBACKEND_URL=$backendUrl\n";
+    $updates = [
+        'Frontend' => [
+            'path' => $baseFrontendPath,
+            'success' => "Frontend repository updated successfully.",
+            'error' => "Failed to update the frontend repository.",
+        ],
+        'Backend' => [
+            'path' => $baseBackendPath,
+            'success' => "Backend repository updated successfully.",
+            'error' => "Failed to update the backend repository.",
+        ]
+    ];
 
-    if (file_put_contents($filePath, $fileContent) === false) {
-        return $response->withJson(["success" => false, "message" => 'Failed to write to the file.']);
-    }else{
+    $successMessages = [];
+    foreach ($updates as $name => &$repo) {
+        // Check if the path exists
+        if (!is_dir($repo['path'])) {
+            return $response->withJson([
+                "success" => false,
+                "message" => "Path does not exist for $name: {$repo['path']}"
+            ]);
+        }
 
-        $maxWaitTime = 600; // 10min Maximum wait time in seconds
-        $startTime = time();
+        // Change to the repository directory
+        chdir($repo['path']);
 
-        while (file_exists($filePath)) {
-            // Check if maximum wait time has been reached
-            if ((time() - $startTime) > $maxWaitTime) {
-                // remove the file
-                @unlink($filePath);
-                return $response->withJson(["success" => false, "message" => 'Update process timed out.']);
+        // Get the current branch
+        $command = "$sudoPrefix git rev-parse --abbrev-ref HEAD";
+        exec($command, $output, $result);
+        if ($result !== 0 || empty($output)) {
+            return $response->withJson([
+                "success" => false,
+                "message" => "Failed to get current branch for $name: " . implode("\n", $output)
+            ]);
+        }
+        $currentBranch = trim($output[0]);
+
+        // Build the commands for this repo
+        $commands = [
+            "$sudoPrefix git checkout .",
+            "$sudoPrefix git fetch origin $currentBranch",
+            "$sudoPrefix git checkout $currentBranch",
+            "$sudoPrefix git pull origin $currentBranch"
+        ];
+
+        // Additional commands specific to Frontend or Backend
+        if ($name === 'Frontend') {
+            $commands = array_merge($commands, [
+                "$sudoPrefix yarn install --check-files",
+                "$sudoPrefix yarn run webpack:web:prod --isDemoServer=false --server_frontend=$frontendUrl --server_backend=$backendUrl --server_homepage=$frontendUrl"
+            ]);
+        } elseif ($name === 'Backend') {
+            $commands = array_merge($commands, [
+                "$sudoPrefix /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs",
+                "$sudoPrefix /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json"
+            ]);
+        }
+
+        // Execute commands
+        foreach ($commands as $command) {
+            // Reset output and result
+            $output = [];
+            $result = null;
+            exec($command, $output, $result);
+            if ($result !== 0) {
+                return $response->withJson([
+                    "success" => false,
+                    "message" => "Error updating $name: Command '$command' failed with output: " . implode("\n", $output)
+                ]);
             }
-            // Sleep for a short period to avoid continuous looping
-            sleep(1);
         }
+
+        // Collect success message
+        $successMessages[] = $repo['success'];
     }
 
-    return $response->withJson(["success" => true, "message" => 'Update process initiated.']);
+    // Restart pm2 processes
+    $pm2Command = "$sudoPrefix pm2 restart all";
+    exec($pm2Command, $pm2Output, $pm2Result);
+    if ($pm2Result !== 0) {
+        return $response->withJson([
+            "success" => false,
+            "message" => "Failed to restart pm2 processes: " . implode("\n", $pm2Output)
+        ]);
+    }
+
+    // Return success message
+    return $response->withJson([
+        "success" => true,
+        "message" => 'Update process completed successfully.',
+        "details" => $successMessages
+    ]);
 });
+
+
 
 $app->get('/backend/system/live-logs', function (Request $request, Response $response, array $args) {
     $offsets = $request->getQueryParam('offset', []);

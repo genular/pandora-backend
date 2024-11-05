@@ -34,45 +34,45 @@ if [ -d "$APP_DIR_BACKEND" ]; then
     echo "===> MAINTENANCE $(date) - Removed Java error logs from backend directory"
 fi
 
-# Update git repositories if UPDATE exists
-UPDATE_FILE="$APP_DIR_BACKEND/server/backend/public/assets/UPDATE"
-if [ -f "$UPDATE_FILE" ]; then
-    echo "===> MAINTENANCE $(date) - Update required, updating git repositories..."
-
-    source $UPDATE_FILE
-
-    if [ "$IS_DOCKER" = "true" ]; then
-        echo "===> MAINTENANCE $(date) - Update Docker image START"
-        # Update Frontend repository
-        if cd "$APP_DIR_FRONTEND"; then
-            echo "===> MAINTENANCE $(date) - Update frontend start"
-            current_branch=$(git rev-parse --abbrev-ref HEAD)
-            sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
-            sudo -u genular yarn install --check-files && \
-            sudo -u genular yarn run webpack:web:prod --isDemoServer=false --server_frontend=$FRONTEND_URL --server_backend=$BACKEND_URL --server_homepage=$FRONTEND_URL
-
-            echo "===> MAINTENANCE $(date) - Updated Frontend repository successfully."
-        else
-            echo "===> MAINTENANCE $(date) - Failed to change directory to $APP_DIR_FRONTEND"
-        fi
-
-        # Update Backend repository
-        if cd "$APP_DIR_BACKEND/server/backend"; then
-            echo "===> MAINTENANCE $(date) - Update backend start"
-            current_branch=$(git rev-parse --abbrev-ref HEAD)
-            sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
-            sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs && \
-            sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
-            echo "===> MAINTENANCE $(date) - Updated Backend repository successfully."
-        else
-            echo "===> MAINTENANCE $(date) - Failed to change directory to $APP_DIR_BACKEND/server/backend"
-        fi
-
-        ## Restart pm2 processes
-        pm2 restart all
-    fi
-    
-    # Delete the UPDATE file after updates
-    rm -f "$UPDATE_FILE"
-    echo "===> MAINTENANCE $(date) - Deleted the UPDATE file"
-fi
+## # Update git repositories if UPDATE exists
+## UPDATE_FILE="$APP_DIR_BACKEND/server/backend/public/assets/UPDATE"
+## if [ -f "$UPDATE_FILE" ]; then
+##     echo "===> MAINTENANCE $(date) - Update required, updating git repositories..."
+## 
+##     source $UPDATE_FILE
+## 
+##     if [ "$IS_DOCKER" = "true" ]; then
+##         echo "===> MAINTENANCE $(date) - Update Docker image START"
+##         # Update Frontend repository
+##         if cd "$APP_DIR_FRONTEND"; then
+##             echo "===> MAINTENANCE $(date) - Update frontend start"
+##             current_branch=$(git rev-parse --abbrev-ref HEAD)
+##             sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
+##             sudo -u genular yarn install --check-files && \
+##             sudo -u genular yarn run webpack:web:prod --isDemoServer=false --server_frontend=$FRONTEND_URL --server_backend=$BACKEND_URL --server_homepage=$FRONTEND_URL
+## 
+##             echo "===> MAINTENANCE $(date) - Updated Frontend repository successfully."
+##         else
+##             echo "===> MAINTENANCE $(date) - Failed to change directory to $APP_DIR_FRONTEND"
+##         fi
+## 
+##         # Update Backend repository
+##         if cd "$APP_DIR_BACKEND/server/backend"; then
+##             echo "===> MAINTENANCE $(date) - Update backend start"
+##             current_branch=$(git rev-parse --abbrev-ref HEAD)
+##             sudo -u genular git checkout . && sudo -u genular git fetch && sudo -u genular git checkout "$current_branch" && sudo -u genular git pull origin "$current_branch" && \
+##             sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs && \
+##             sudo -u genular /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
+##             echo "===> MAINTENANCE $(date) - Updated Backend repository successfully."
+##         else
+##             echo "===> MAINTENANCE $(date) - Failed to change directory to $APP_DIR_BACKEND/server/backend"
+##         fi
+## 
+##         ## Restart pm2 processes
+##         pm2 restart all
+##     fi
+##     
+##     # Delete the UPDATE file after updates
+##     rm -f "$UPDATE_FILE"
+##     echo "===> MAINTENANCE $(date) - Deleted the UPDATE file"
+## fi
