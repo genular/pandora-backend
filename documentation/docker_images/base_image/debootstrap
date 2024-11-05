@@ -141,103 +141,81 @@ deb-src http://deb.debian.org/debian stable-updates main contrib non-free
 #deb-src https://deb.debian.org/debian/ stable-updates main
 __EOS__
 
-## Example: https://gist.github.com/takumin/952b5144e7b6466c6006
 ( rootfs_chroot /bin/sh << '__EOS__'
 	#!/bin/sh
 
 	set -e
 
 	export HOME=/root
-
-
 	export GIT_SSL_NO_VERIFY=1
 	export DEBIAN_FRONTEND=noninteractive
 	export DEBIAN_PRIORITY=critical
 	export DEBCONF_NONINTERACTIVE_SEEN=true
 	export NODE_OPTIONS=--openssl-legacy-provider
+	export TZ="Europe/Amsterdam"
 
-	# locale
-	echo "===> INSTALLATION preperation: installing locales START"
-	apt-get clean && apt-get update && apt-get install -y locales
+	# Update and install locales
+	echo "===> INSTALLATION preparation: installing locales START"
+	apt-get clean && apt-get update
+	apt-get install -y locales
 
-	# Generate locales
-	echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
-	echo 'en_GB.UTF-8 UTF-8' >> /etc/locale.gen
-
+	# Generate and configure locales
+	echo 'en_US.UTF-8 UTF-8\nen_GB.UTF-8 UTF-8' > /etc/locale.gen
 	locale-gen
-	dpkg-reconfigure locales
+	echo 'locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8, en_GB.UTF-8 UTF-8' | debconf-set-selections
+	echo 'locales locales/default_environment_locale select en_US.UTF-8' | debconf-set-selections
+	dpkg-reconfigure --frontend noninteractive locales
 
-	echo 'locales locales/locales_to_be_generated    multiselect en_US.UTF-8 UTF-8' | debconf-set-selections
-	echo 'locales locales/default_environment_locale select      en_US.UTF-8'       | debconf-set-selections
-
-	echo "LC_ALL=en_US.UTF-8" | tee -a /etc/environment
-	sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen
-	echo "LANG=en_US.UTF-8" | tee -a /etc/locale.conf
-
-	# Set locale
+	echo "LANG=en_US.UTF-8" > /etc/default/locale
+	echo "LC_ALL=en_US.UTF-8" >> /etc/environment
 	update-locale LANG=en_US.UTF-8
-	export LANG=en_US.UTF-8
 
-	# Export env vars
-	echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc
 	echo "export LANG=en_US.UTF-8" >> ~/.bashrc
-	echo "export LANGUAGE=en_US.UTF-8" >> ~/.bashrc
+	echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc
 
-	export LANGUAGE=en_US.UTF-8
-	export LANG=en_US.UTF-8
-	export LC_CTYPE=en_US.UTF-8
-	export LC_ALL=en_US.UTF-8
+	echo "===> INSTALLATION preparation: installing locales DONE"
 
-	echo "===> INSTALLATION preperation: installing locales DONE"
+	apt-get update && apt-get upgrade -y
 
+	# Install required packages
+	apt-get install -y dbus sudo curl wget apt-utils debconf-utils
 
-	apt-get update && apt-get upgrade
-
-	# systemd require dbus
-	apt-get install dbus sudo curl wget
-
-	## Add support for installation of PHP - currently using 8.2
-	apt-get -y install apt-transport-https lsb-release ca-certificates
+	# Add PHP repository and install PHP
+	apt-get install -y apt-transport-https lsb-release ca-certificates
 	wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-	sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+	echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
 	apt-get update
 
-	# Because of yarn conflict
-	apt-get remove cmdtest
+	# Resolve yarn conflict by removing cmdtest
+	apt-get remove -y cmdtest
 
-	# dbus initilized
+	# Initialize dbus
 	dbus-uuidgen > /var/lib/dbus/machine-id
 
-	# delay configuration install packages
-	apt-get install apt-utils
-
-	# package configuration utility
-	apt-get install debconf-utils
-
-
-	# tzdata
+	# Configure timezone
+	apt-get install -y tzdata
+	ln -fs /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
 	echo 'Europe/Amsterdam' > /etc/timezone
-	cp /usr/share/zoneinfo/Europe/Amsterdam /etc/localtime
-	dpkg-reconfigure tzdata
+	dpkg-reconfigure --frontend noninteractive tzdata
 
-	# enable root login
+	# Enable root login
 	echo 'root:toor' | chpasswd
 
-	# adduser genular if user doesnt exsist
-	if [ -z "$(getent passwd genular)" ]; then
-		adduser --disabled-password --gecos "Debian Live User,,," genular
-		echo 'genular:genular' | chpasswd
-		## Add an Existing User to a Group
-		usermod -a -G sudo genular
+	# Add genular user if it does not exist
+	if ! getent passwd genular > /dev/null; then
+	    adduser --disabled-password --gecos "Debian Live User,,," genular
+	    echo 'genular:genular' | chpasswd
+	    usermod -aG sudo genular
 	fi
 
-	# log
+	# Log installed packages and selections
 	dpkg -l > /packages.log
 	debconf-get-selections > /configs.log
 
-	# cleanup
+	# Cleanup
 	rm /var/lib/dbus/machine-id
 	apt-get clean
+
 __EOS__
 )
 
