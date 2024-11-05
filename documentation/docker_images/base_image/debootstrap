@@ -429,7 +429,7 @@ echo "Installation of advanced dependencies START"
 	echo 'www-data ALL=(genular) NOPASSWD: /usr/bin/git, /usr/bin/yarn, /usr/bin/php8.2, /usr/local/bin/composer, /usr/bin/pm2' | sudo tee /etc/sudoers.d/www-data-genular
 	sudo chmod 440 /etc/sudoers.d/www-data-genular
 
-	echo 'www-data ALL=(root) NOPASSWD: "/usr/local/bin/pm2 restart all"' | sudo tee /etc/sudoers.d/www-data-pm2
+	echo 'www-data ALL=(root) NOPASSWD: /usr/local/bin/pm2' | sudo tee /etc/sudoers.d/www-data-pm2
 	sudo chmod 440 /etc/sudoers.d/www-data-pm2
 
 	## Socket location directory

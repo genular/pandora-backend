@@ -30,8 +30,8 @@ declare -A B_CONF
 B_CONF[salt]=$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 8)
 B_CONF[secret]=$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 16)
 
-B_CONF[details_title]="genular"
-B_CONF[details_email]="support@genular.com"
+B_CONF[details_title]="PANDORA"
+B_CONF[details_email]="atomic.research.lab@gmail.com"
 
 B_CONF[data_path]="/mnt/data"
 
