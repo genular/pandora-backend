@@ -28,8 +28,12 @@ downloadDataset <- function(file_from, useCache = TRUE){
     file_to <- paste0(temp_directory, "/", basename(file_from))
     ## Path to the local extracted file
     file_path_local <- base::gsub(".tar.gz", "", file_to, fixed = TRUE)
-    ## in case of duplicated name, on uploading, also check for this one
-    file_path_local_dup <- base::gsub(".*_", "", file_path_local)
+    ## Extract the directory part of the file path
+    dir_path <- dirname(file_path_local)
+    ## Extract the file name without path, and remove part before the last underscore
+    file_name_dup <- sub(".*_", "", basename(file_path_local))
+    ## Reconstruct the full path with the modified file name
+    file_path_local_dup <- file.path(dir_path, file_name_dup)
 
     if(useCache == TRUE){
         if(file.exists(file_path_local)){
@@ -67,7 +71,8 @@ downloadDataset <- function(file_from, useCache = TRUE){
 
     if(!file.exists(file_path_local)){
         file_path_local_dup <- gsub(".*_", "", file_path_local)
-        if(!file.exists(file_path_local_dup)){
+
+        if(!file.exists(file_path_local_dup_full)){
             cat(paste0("===> ERROR: Cannot locate extracted file: ",file_path_local," nor ",file_path_local_dup," \r\n"))
             file_exist <- FALSE
         }else{

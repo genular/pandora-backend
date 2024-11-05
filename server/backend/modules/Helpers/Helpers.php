@@ -187,17 +187,38 @@ class Helpers {
 	 * @return string|false Returns the new path if the renaming was successful, or `false` if it failed.
 	 */
 	public function renamePathToHash($path_parts) {
-	    // Construct the original and new path using dirname and an MD5 hash of the basename
-	    $file_from = $path_parts['dirname'] . "/" . $path_parts['basename'];
-	    $file_to = $path_parts['dirname'] . "/" . md5($path_parts['basename']);
+	    // Construct the full path to the file
+	    $file_path = $path_parts['dirname'] . "/" . $path_parts['basename'];
 
-	    // Attempt to rename the file or directory. If unsuccessful, return false.
-	    if (!rename($file_from, $file_to)) {
-	        $file_to = false;
+	    // Open the file for reading
+	    $file_handle = fopen($file_path, 'rb');
+	    if (!$file_handle) {
+	        return false; // Return false if file cannot be opened
+	    }
+
+	    // Initialize MD5 hash context
+	    $ctx = hash_init('md5');
+	    while (!feof($file_handle)) {
+	        // Update hash with chunks of file
+	        $buffer = fread($file_handle, 8192); // Read in 8KB chunks
+	        hash_update($ctx, $buffer);
+	    }
+	    fclose($file_handle);
+
+	    // Finalize the hash
+	    $content_hash = hash_final($ctx);
+
+	    // Construct the new path with the content-based hash
+	    $file_to = $path_parts['dirname'] . "/" . $content_hash;
+
+	    // Attempt to rename the file. If unsuccessful, return false.
+	    if (!rename($file_path, $file_to)) {
+	        return false;
 	    }
 
 	    return $file_to;
 	}
+
 
 	/**
 	 * [compressPath description]
