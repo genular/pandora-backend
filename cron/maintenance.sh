@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "===> MAINTENANCE $(date) - Docker Check: $IS_DOCKER"
-
 LOG_FILE="/var/log/pandora-cron.log"
 MAX_SIZE=$((100 * 1024 * 1024))  # 100 MB in bytes
 
@@ -30,9 +28,19 @@ fi
 
 # Remove hs_err files from backend directory if it exists
 if [ -d "$APP_DIR_BACKEND" ]; then
-    find "$APP_DIR_BACKEND" -maxdepth 1 -name 'hs_err_pid*.log' -exec rm {} \;
-    echo "===> MAINTENANCE $(date) - Removed Java error logs from backend directory"
+    # Find files and count them
+    file_count=$(find "$APP_DIR_BACKEND" -maxdepth 1 -name 'hs_err_pid*.log' | wc -l)
+
+    # Only proceed if file count is greater than zero
+    if [ "$file_count" -gt 0 ]; then
+        # Delete the files
+        find "$APP_DIR_BACKEND" -maxdepth 1 -name 'hs_err_pid*.log' -exec rm {} \;
+
+        # Echo statement confirming deletion
+        echo "===> MAINTENANCE $(date) - Removed $file_count Java error logs from backend directory"
+    fi
 fi
+
 
 ## # Update git repositories if UPDATE exists
 ## UPDATE_FILE="$APP_DIR_BACKEND/server/backend/public/assets/UPDATE"
