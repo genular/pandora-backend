@@ -302,6 +302,56 @@ $app->post('/backend/system/describe_ai', function (Request $request, Response $
     return $response->withJson(["success" => $success, "message" => $message]);
 });
 
+
+$app->get('/backend/system/check-updates', function (Request $request, Response $response, array $args) {
+
+    // Define base paths relative to __DIR__
+    $baseBackendPath = realpath(__DIR__ . '/../../../../../');
+    $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
+
+    // Ensure paths are valid
+    if (!$baseBackendPath || !$baseFrontendPath) {
+        return $response->withJson(["success" => false, "message" => "Invalid directory structure"]);
+    }
+
+    // Set repository paths based on environment
+    $repos = [
+        'Frontend' => $baseFrontendPath,
+        'Backend' => $baseBackendPath
+    ];
+
+    $updates = [];
+    foreach ($repos as $name => $repoPath) {
+        if (!is_dir($repoPath . '/.git')) {
+            $updates[$name] = ["status" => "error", "message" => "Not a valid Git repository"];
+            continue;
+        }
+
+        // Change directory to the repository path
+        chdir($repoPath);
+
+        exec('git fetch origin master 2>&1', $fetchOutput, $fetchResult);
+        $fetchOutputText = implode("\n", $fetchOutput);  // Combine output into a single string
+        if ($fetchResult !== 0) {
+            $userInfo = posix_getpwuid(posix_geteuid());
+            $updates[$name] = ["status" => "error", "message" => "User: ".$userInfo['name']." Failed to fetch updates: $fetchOutputText"];
+            continue;
+        }
+
+        // Check if local master is behind remote master
+        $behindCount = intval(trim(shell_exec('git rev-list HEAD..origin/master --count')));
+
+        if ($behindCount > 0) {
+            $updates[$name] = ["status" => "behind", "behindBy" => $behindCount, "message" => "$name repository is behind by $behindCount commits"];
+        } else {
+            $updates[$name] = ["status" => "up-to-date", "message" => "$name repository is up to date"];
+        }
+    }
+
+    return $response->withJson(["success" => true, "updates" => $updates]);
+});
+
+
 /**
  * Handles the system update process.
  *
@@ -331,8 +381,8 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     $isDocker = $this->get('settings')["is_docker"];
     $userToExecuteAs = $isDocker ? 'genular' : 'login';
 
-    $assetsPath = __DIR__ . '/../../../public/assets'; // Adjust path as needed to point to your public/assets directory
-    $filePath = $assetsPath . '/update.txt';
+    $assetsPath = __DIR__ . '/../../../public/assets';
+    $filePath = $assetsPath . '/UPDATE';
 
     // Ensure the directory exists and is writable
     if (!file_exists($assetsPath)) {
@@ -347,6 +397,21 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
 
     if (file_put_contents($filePath, $fileContent) === false) {
         return $response->withJson(["success" => false, "message" => 'Failed to write to the file.']);
+    }else{
+
+        $maxWaitTime = 600; // 10min Maximum wait time in seconds
+        $startTime = time();
+
+        while (file_exists($filePath)) {
+            // Check if maximum wait time has been reached
+            if ((time() - $startTime) > $maxWaitTime) {
+                // remove the file
+                @unlink($filePath);
+                return $response->withJson(["success" => false, "message" => 'Update process timed out.']);
+            }
+            // Sleep for a short period to avoid continuous looping
+            sleep(1);
+        }
     }
 
     return $response->withJson(["success" => true, "message" => 'Update process initiated.']);

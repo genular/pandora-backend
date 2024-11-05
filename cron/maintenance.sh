@@ -34,8 +34,8 @@ if [ -d "$APP_DIR_BACKEND" ]; then
     echo "===> MAINTENANCE $(date) - Removed Java error logs from backend directory"
 fi
 
-# Update git repositories if update.txt exists
-UPDATE_FILE="$APP_DIR_BACKEND/server/backend/public/assets/update.txt"
+# Update git repositories if UPDATE exists
+UPDATE_FILE="$APP_DIR_BACKEND/server/backend/public/assets/UPDATE"
 if [ -f "$UPDATE_FILE" ]; then
     echo "===> MAINTENANCE $(date) - Update required, updating git repositories..."
 
@@ -72,7 +72,7 @@ if [ -f "$UPDATE_FILE" ]; then
         pm2 restart all
     fi
     
-    # Delete the update.txt file after updates
+    # Delete the UPDATE file after updates
     rm -f "$UPDATE_FILE"
-    echo "===> MAINTENANCE $(date) - Deleted the update.txt file"
+    echo "===> MAINTENANCE $(date) - Deleted the UPDATE file"
 fi
