@@ -319,7 +319,7 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
 
 
         # accept the name of our website
-        echo "${yellow}R Version (eg. 4.4.1/n) Enter 4.4.1${clear}"
+        echo "${yellow}R Version (eg. 4.4.1) Enter 4.4.1${clear}"
         read -e R_VERSION
 
         if [ "${R_VERSION}" == "" ] ; then
