@@ -429,15 +429,25 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
     fi
     echo ""
 
-    if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
-        export GITHUB_TOKEN=$GITHUB_PAT_TOKEN
+    if [ "${GITHUB_PAT_TOKEN}" != "n" ]; then
         export GITHUB_PAT=$GITHUB_PAT_TOKEN
-        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" >> /home/genular/.Renviron
-        sudo echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" >>  $(R RHOME)/etc/Renviron
-        # sudo echo 'TZ="America/Los_Angeles"' >>  $(R RHOME)/etc/Renviron
+        
+        # Append GITHUB_PAT to .Renviron with correct permissions
+        echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" | sudo tee -a /home/genular/.Renviron >/dev/null
+        
+        # Append GITHUB_PAT to the system-wide Renviron file
+        # Capture the R_HOME directory path correctly and append to its Renviron
+        R_HOME=$(sudo R RHOME)
+        echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" | sudo tee -a "$R_HOME/etc/Renviron" >/dev/null
+        
+        # Set the environment variable within R
+        sudo Rscript -e "Sys.setenv(GITHUB_PAT = '$GITHUB_PAT_TOKEN')"
+        export GITHUB_PAT=$GITHUB_PAT_TOKEN
+        
+        # Optionally, manage timezone setting for R
+        # echo 'TZ="America/Los_Angeles"' | sudo tee -a "$R_HOME/etc/Renviron" >/dev/null
+        echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
     fi
-
-    echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
 
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
@@ -448,8 +458,8 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
         fi
 
         sudo Rscript -e "install.packages('remotes', repo = 'https://cloud.r-project.org/')"
-        sudo Rscript -e "remotes::install_github('r-lib/usethis')"
 
+        sudo Rscript -e "remotes::install_github('r-lib/usethis')"
         sudo Rscript -e "remotes::install_github('r-lib/devtools')"
 
         if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
