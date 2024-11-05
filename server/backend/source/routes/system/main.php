@@ -427,6 +427,7 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     $successMessages = [];
     $updateStartTime = microtime(true);
     foreach ($updates as $name => &$repo) {
+
         // Check if the path exists
         if (!is_dir($repo['path'])) {
             return $response->withJson([
@@ -483,9 +484,20 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
             ]);
         } elseif ($name === 'Backend' && $isDocker) {
             $phpPath = $isDocker ? '/usr/bin/php8.2' : '/usr/bin/php';
+
+            // Change to the 'server/backend' directory
+            $backendSubDir = "{$repo['path']}/server/backend";
+            if (!is_dir($backendSubDir)) {
+                $this->get('Monolog\Logger')->info("PANDORA '/system/update' Backend subdirectory does not exist: $backendSubDir");
+                return $response->withJson([
+                    "success" => false,
+                    "message" => "Backend subdirectory does not exist: $backendSubDir"
+                ]);
+            }
+
             $commands = array_merge($commands, [
-                "$sudoPrefix $phpPath /usr/local/bin/composer install --ignore-platform-reqs",
-                "$sudoPrefix $phpPath /usr/local/bin/composer post-install /tmp/configuration.json"
+                "cd $backendSubDir && $sudoPrefix $phpPath /usr/local/bin/composer install --ignore-platform-reqs",
+                "cd $backendSubDir && $sudoPrefix $phpPath /usr/local/bin/composer post-install /tmp/configuration.json"
             ]);
         }
 
