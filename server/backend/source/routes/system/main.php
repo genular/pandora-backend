@@ -534,16 +534,22 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
 
     if($isDocker){
         $this->get('Monolog\Logger')->info("PANDORA '/system/update' Restarting PM2 processes");
-        // Restart pm2 processes
-        $pm2Command = "sudo -u root pm2 restart all";
+
+        // Restart PM2 processes with environment updates
+        $pm2Command = "sudo -u root pm2 restart all --update-env";
         exec($pm2Command, $pm2Output, $pm2Result);
+
         if ($pm2Result !== 0) {
+            $this->get('Monolog\Logger')->error("PANDORA '/system/update' Failed to restart PM2 processes: " . implode("\n", $pm2Output));
             return $response->withJson([
                 "success" => false,
-                "message" => "Failed to restart pm2 processes: " . implode("\n", $pm2Output)
+                "message" => "Failed to restart PM2 processes: " . implode("\n", $pm2Output)
             ]);
         }
+
+        $this->get('Monolog\Logger')->info("PANDORA '/system/update' PM2 processes restarted successfully.");
     }
+
 
 
 
