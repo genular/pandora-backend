@@ -535,7 +535,7 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     if($isDocker){
         $this->get('Monolog\Logger')->info("PANDORA '/system/update' Restarting PM2 processes");
         // Restart pm2 processes
-        $pm2Command = "$sudoPrefix pm2 restart all";
+        $pm2Command = "sudo -u root pm2 restart all";
         exec($pm2Command, $pm2Output, $pm2Result);
         if ($pm2Result !== 0) {
             return $response->withJson([
