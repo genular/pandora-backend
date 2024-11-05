@@ -430,29 +430,32 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
     echo ""
 
     if [ "${GITHUB_PAT_TOKEN}" != "n" ]; then
+        
         export GITHUB_PAT=$GITHUB_PAT_TOKEN
+        export R_HOME=$(sudo R RHOME)
+
+        # Append GITHUB_PAT to the system-wide Renviron file for environment variable
+        echo "GITHUB_PAT=$GITHUB_PAT" | sudo tee -a "$R_HOME/etc/Renviron" >/dev/null
+
+        # Append GITHUB_PAT to the local user-specific Renviron file
+        echo "GITHUB_PAT=$GITHUB_PAT" | sudo tee -a "/home/genular/.Renviron" >/dev/null
+
+        # Add CRAN mirror to the system-wide Rprofile.site for R configuration
+        echo 'local({r <- getOption("repos"); r["CRAN"] <- "https://cloud.r-project.org"; options(repos = r)})' | sudo tee -a "$R_HOME/etc/Rprofile.site" >/dev/null
+
+        # Optionally, manage timezone setting for R in Renviron
+        echo 'TZ="Europe/Amsterdam"' | sudo tee -a "$R_HOME/etc/Renviron" >/dev/null
         
-        # Append GITHUB_PAT to .Renviron with correct permissions
-        echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" | sudo tee -a /home/genular/.Renviron >/dev/null
-        
-        # Append GITHUB_PAT to the system-wide Renviron file
-        # Capture the R_HOME directory path correctly and append to its Renviron
-        R_HOME=$(sudo R RHOME)
-        echo "GITHUB_PAT=$GITHUB_PAT_TOKEN" | sudo tee -a "$R_HOME/etc/Renviron" >/dev/null
-        
-        # Set the environment variable within R
-        sudo Rscript -e "Sys.setenv(GITHUB_PAT = '$GITHUB_PAT_TOKEN')"
-        export GITHUB_PAT=$GITHUB_PAT_TOKEN
-        
-        # Optionally, manage timezone setting for R
-        # echo 'TZ="America/Los_Angeles"' | sudo tee -a "$R_HOME/etc/Renviron" >/dev/null
-        echo "${green}}==========> GitHub PAT token: $GITHUB_PAT_TOKEN ${clear}"
+        # Optionally, manage timezone setting for R in local user-specific Renviron
+        echo 'TZ="Europe/Amsterdam"' | sudo tee -a "/home/genular/.Renviron" >/dev/null
+
+        # Confirm addition
+        echo -e "\e[32m==========> GitHub PAT token and CRAN mirror set in R environment \e[0m"
     fi
 
     if [ "$install_rdep" == y ] ; then
         echo "${green}}==========> Installing shared dependencies${clear}"
-        
-        sudo Rscript -e "utils::setRepositories(ind = 0, addURLs = c(CRAN = 'https://cloud.r-project.org/'))"
+
         if [ "${R_VERSION}" == "4.4.1" ] ; then
             sudo Rscript -e "install.packages('stringi', configure.args='--disable-pkg-config')"
         fi
@@ -463,8 +466,11 @@ if [ "${MODS[pandora_cron]}" == y ] || [ "${MODS[pandora_plots]}" == y ] || [ "$
         sudo Rscript -e "remotes::install_github('r-lib/devtools')"
 
         if [ "${GITHUB_PAT_TOKEN}" != "n" ] ; then
-            sudo Rscript -e "usethis::use_git_config(user.name = 'LogIN-', user.email = 'info@ivantomic.com')"
-            sudo Rscript -e "credentials::set_github_pat('$GITHUB_PAT_TOKEN')"
+            sudo Rscript -e "usethis::use_git_config(user.name = 'LogIN-', user.email = 'atomic.research.lab@gmail.com')"
+
+            echo -e "machine github.com\nlogin $GITHUB_PAT_TOKEN\npassword x-oauth-basic" | sudo tee "/home/genular/.netrc" >/dev/null
+            sudo chmod 600 "/home/genular/.netrc"  # Ensure file is only accessible by the user
+            sudo chown genular:genular "/home/genular/.netrc"  # Change ownership to genular user
         fi
 
         if [ "${R_VERSION}" == "3.6.3" ] ; then

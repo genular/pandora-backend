@@ -128,3 +128,31 @@ After starting the container, access PANDORA at `http://localhost:3010` to creat
   `docker system prune -a`
 - Delete a Docker volume:
   `docker volume rm genular_data`
+
+
+# chroot
+```bash
+# Navigate to your debootstrap directory
+cd ./documentation/docker_images/base_image/images/genular
+
+sudo mount --bind /dev dev/
+sudo mount --bind /dev/pts dev/pts/
+sudo mount -t proc /proc proc/
+sudo mount -t sysfs /sys sys/
+sudo mount -t tmpfs tmpfs tmp/
+
+sudo chroot .
+
+## TO EXIT
+exit
+
+cd ..
+
+# Unmount the filesystems
+sudo umount -l ./documentation/docker_images/base_image/images/genular/tmp/
+sudo umount -l ./documentation/docker_images/base_image/images/genular/sys/
+sudo umount -l ./documentation/docker_images/base_image/images/genular/proc/
+sudo umount -l ./documentation/docker_images/base_image/images/genular/dev/pts/
+sudo umount -l ./documentation/docker_images/base_image/images/genular/dev/
+
+```
