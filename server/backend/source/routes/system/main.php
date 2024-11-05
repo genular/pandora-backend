@@ -397,8 +397,15 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     // Define the sudo prefix
     $sudoPrefix = "sudo -u $userToExecuteAs";
 
-    $baseBackendPath = realpath(__DIR__ . '/../../../../../');
-    $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
+    // Define paths based on environment
+    if ($isDocker) {
+        $baseFrontendPath = '/var/www/genular/pandora';
+        $baseBackendPath = '/var/www/genular/pandora-backend';
+    } else {
+        // Define base paths relative to __DIR__
+        $baseBackendPath = realpath(__DIR__ . '/../../../../../');
+        $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
+    }
 
     // Ensure paths are valid
     if (!$baseBackendPath || !$baseFrontendPath) {
@@ -432,10 +439,19 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
         }
 
         // Change to the repository directory
-        chdir($repo['path']);
+        if (!chdir($repo['path'])) {
+            return $response->withJson([
+                "success" => false,
+                "message" => "Failed to change directory to {$repo['path']} for $name"
+            ]);
+        }
+
+        // Reset output and result before getting current branch
+        $output = [];
+        $result = null;
 
         // Get the current branch
-        $command = "$sudoPrefix git rev-parse --abbrev-ref HEAD";
+        $command = "$sudoPrefix git rev-parse --abbrev-ref HEAD 2>&1";
         exec($command, $output, $result);
         if ($result !== 0 || empty($output)) {
             return $response->withJson([
@@ -466,12 +482,15 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
             ]);
         }
 
+
         // Execute commands
         foreach ($commands as $command) {
             // Reset output and result
             $output = [];
             $result = null;
+            
             exec($command, $output, $result);
+
             if ($result !== 0) {
                 return $response->withJson([
                     "success" => false,
