@@ -397,15 +397,11 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     // Define the sudo prefix
     $sudoPrefix = "sudo -u $userToExecuteAs";
 
-    // Define paths based on environment
-    if ($isDocker) {
-        $baseFrontendPath = '/var/www/genular/pandora';
-        $baseBackendPath = '/var/www/genular/pandora-backend';
-    } else {
-        // Define base paths relative to __DIR__
-        $baseBackendPath = realpath(__DIR__ . '/../../../../../');
-        $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
-    }
+    $baseBackendPath = realpath(__DIR__ . '/../../../../../');
+    $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
+
+    $this->get('Monolog\Logger')->info("PANDORA '/system/update' Started");
+
 
     // Ensure paths are valid
     if (!$baseBackendPath || !$baseFrontendPath) {
@@ -429,6 +425,7 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
     ];
 
     $successMessages = [];
+    $updateStartTime = microtime(true);
     foreach ($updates as $name => &$repo) {
         // Check if the path exists
         if (!is_dir($repo['path'])) {
@@ -452,14 +449,23 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
 
         // Get the current branch
         $command = "$sudoPrefix git rev-parse --abbrev-ref HEAD 2>&1";
+        $this->get('Monolog\Logger')->info("PANDORA '/system/update' Getting current branch for $name: $command");
+
+        // Start timing
+        $startTime = microtime(true);
         exec($command, $output, $result);
+        $endTime = microtime(true);
+        $duration = round($endTime - $startTime, 2); // Duration in seconds
+
         if ($result !== 0 || empty($output)) {
+            $this->get('Monolog\Logger')->error("PANDORA '/system/update' Failed to get current branch for $name. Duration: {$duration}s. Output: " . implode("\n", $output));
             return $response->withJson([
                 "success" => false,
                 "message" => "Failed to get current branch for $name: " . implode("\n", $output)
             ]);
         }
         $currentBranch = trim($output[0]);
+        $this->get('Monolog\Logger')->info("PANDORA '/system/update' Current branch for $name: $currentBranch. Duration: {$duration}s");
 
         // Build the commands for this repo
         $commands = [
@@ -475,48 +481,67 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
                 "$sudoPrefix yarn install --check-files",
                 "$sudoPrefix yarn run webpack:web:prod --isDemoServer=false --server_frontend=$frontendUrl --server_backend=$backendUrl --server_homepage=$frontendUrl"
             ]);
-        } elseif ($name === 'Backend') {
+        } elseif ($name === 'Backend' && $isDocker) {
+            $phpPath = $isDocker ? '/usr/bin/php8.2' : '/usr/bin/php';
             $commands = array_merge($commands, [
-                "$sudoPrefix /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs",
-                "$sudoPrefix /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json"
+                "$sudoPrefix $phpPath /usr/local/bin/composer install --ignore-platform-reqs",
+                "$sudoPrefix $phpPath /usr/local/bin/composer post-install /tmp/configuration.json"
             ]);
         }
 
+        $this->get('Monolog\Logger')->info("PANDORA '/system/update' Executing commands for: $name");
 
         // Execute commands
         foreach ($commands as $command) {
             // Reset output and result
             $output = [];
             $result = null;
-            
+
+            $this->get('Monolog\Logger')->info("PANDORA '/system/update' Starting command: $command");
+
+            // Start timing
+            $cmdStartTime = microtime(true);
             exec($command, $output, $result);
+            $cmdEndTime = microtime(true);
+            $cmdDuration = round($cmdEndTime - $cmdStartTime, 2); // Duration in seconds
 
             if ($result !== 0) {
+                $this->get('Monolog\Logger')->error("PANDORA '/system/update' Command failed: $command. Duration (sec): {$cmdDuration}s. Output: " . implode("\n", $output));
                 return $response->withJson([
                     "success" => false,
                     "message" => "Error updating $name: Command '$command' failed with output: " . implode("\n", $output)
                 ]);
             }
+
+            $this->get('Monolog\Logger')->info("PANDORA '/system/update' Command succeeded: $command. Duration (sec): {$cmdDuration}s");
         }
 
         // Collect success message
         $successMessages[] = $repo['success'];
     }
 
-    // Restart pm2 processes
-    $pm2Command = "$sudoPrefix pm2 restart all";
-    exec($pm2Command, $pm2Output, $pm2Result);
-    if ($pm2Result !== 0) {
-        return $response->withJson([
-            "success" => false,
-            "message" => "Failed to restart pm2 processes: " . implode("\n", $pm2Output)
-        ]);
+    if($isDocker){
+        $this->get('Monolog\Logger')->info("PANDORA '/system/update' Restarting PM2 processes");
+        // Restart pm2 processes
+        $pm2Command = "$sudoPrefix pm2 restart all";
+        exec($pm2Command, $pm2Output, $pm2Result);
+        if ($pm2Result !== 0) {
+            return $response->withJson([
+                "success" => false,
+                "message" => "Failed to restart pm2 processes: " . implode("\n", $pm2Output)
+            ]);
+        }
     }
+
+
+
+    $updateEndTime = microtime(true);
+    $updateDuration = round($updateEndTime - $updateStartTime, 2); // Duration in seconds
 
     // Return success message
     return $response->withJson([
         "success" => true,
-        "message" => 'Update process completed successfully.',
+        "message" => 'Update process completed successfully in ' . $updateDuration . ' seconds.',
         "details" => $successMessages
     ]);
 });
