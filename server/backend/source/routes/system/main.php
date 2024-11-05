@@ -304,7 +304,6 @@ $app->post('/backend/system/describe_ai', function (Request $request, Response $
 
 
 $app->get('/backend/system/check-updates', function (Request $request, Response $response, array $args) {
-
     // Define base paths relative to __DIR__
     $baseBackendPath = realpath(__DIR__ . '/../../../../../');
     $baseFrontendPath = realpath(__DIR__ . '/../../../../../../pandora');
@@ -314,11 +313,16 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
         return $response->withJson(["success" => false, "message" => "Invalid directory structure"]);
     }
 
-    // Set repository paths based on environment
+    // Set repository paths
     $repos = [
         'Frontend' => $baseFrontendPath,
         'Backend' => $baseBackendPath
     ];
+
+    // Check if running in a Docker container
+    $isDocker = $this->get('settings')["is_docker"];
+    $userToExecuteAs = $isDocker ? 'genular' : 'login';
+    $sudoPrefix = $isDocker ? "sudo -u $userToExecuteAs " : "";
 
     $updates = [];
     foreach ($repos as $name => $repoPath) {
@@ -330,26 +334,38 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
         // Change directory to the repository path
         chdir($repoPath);
 
-        exec('git fetch origin master 2>&1', $fetchOutput, $fetchResult);
+        // Fetch the latest changes from the remote using sudo if necessary
+        exec($sudoPrefix . 'git fetch origin master 2>&1', $fetchOutput, $fetchResult);
         $fetchOutputText = implode("\n", $fetchOutput);  // Combine output into a single string
         if ($fetchResult !== 0) {
             $userInfo = posix_getpwuid(posix_geteuid());
-            $updates[$name] = ["status" => "error", "message" => "User: ".$userInfo['name']." Failed to fetch updates: $fetchOutputText"];
+            $updates[$name] = [
+                "status" => "error",
+                "message" => "User: " . $userInfo['name'] . " failed to fetch updates: $fetchOutputText"
+            ];
             continue;
         }
 
         // Check if local master is behind remote master
-        $behindCount = intval(trim(shell_exec('git rev-list HEAD..origin/master --count')));
+        $behindCount = intval(trim(shell_exec($sudoPrefix . 'git rev-list HEAD..origin/master --count')));
 
         if ($behindCount > 0) {
-            $updates[$name] = ["status" => "behind", "behindBy" => $behindCount, "message" => "$name repository is behind by $behindCount commits"];
+            $updates[$name] = [
+                "status" => "behind",
+                "behindBy" => $behindCount,
+                "message" => "$name repository is behind by $behindCount commits"
+            ];
         } else {
-            $updates[$name] = ["status" => "up-to-date", "message" => "$name repository is up to date"];
+            $updates[$name] = [
+                "status" => "up-to-date",
+                "message" => "$name repository is up to date"
+            ];
         }
     }
 
     return $response->withJson(["success" => true, "updates" => $updates]);
 });
+
 
 
 /**
