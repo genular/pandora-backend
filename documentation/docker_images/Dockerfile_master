@@ -3,7 +3,7 @@
 
 FROM "genular/base_image:master"
 
-MAINTAINER LogIN- "info@genular.com"
+MAINTAINER LogIN- "atomic.research.lab@gmail.com"
 
 # Set a working directory
 WORKDIR /tmp
