@@ -47,6 +47,8 @@ if (PHP_SAPI == 'cli') {
 	$settings['environment'] = $env;
 }
 
+
+
 // Using a different container
 // http://discourse.slimframework.com/t/using-a-different-container/1029
 // https://akrabat.com/replacing-pimple-in-a-slim-3-application/

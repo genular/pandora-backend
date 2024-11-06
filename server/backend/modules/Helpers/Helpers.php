@@ -20,6 +20,7 @@ class Helpers {
         // $this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
     }
 
+
     /**
      * Checks if a given string is a valid JSON.
      * 
@@ -190,23 +191,27 @@ class Helpers {
 	    // Construct the full path to the file
 	    $file_path = $path_parts['dirname'] . "/" . $path_parts['basename'];
 
-	    // Open the file for reading
-	    $file_handle = fopen($file_path, 'rb');
-	    if (!$file_handle) {
-	        return false; // Return false if file cannot be opened
-	    }
+	    if(isset($path_parts['file_hash'])){
+	    	$content_hash = $path_parts['file_hash'];
+	    }else{
+		    // Open the file for reading
+		    $file_handle = fopen($file_path, 'rb');
+		    if (!$file_handle) {
+		        return false; // Return false if file cannot be opened
+		    }
 
-	    // Initialize MD5 hash context
-	    $ctx = hash_init('md5');
-	    while (!feof($file_handle)) {
-	        // Update hash with chunks of file
-	        $buffer = fread($file_handle, 8192); // Read in 8KB chunks
-	        hash_update($ctx, $buffer);
-	    }
-	    fclose($file_handle);
+		    // Initialize MD5 hash context
+		    $ctx = hash_init('md5');
+		    while (!feof($file_handle)) {
+		        // Update hash with chunks of file
+		        $buffer = fread($file_handle, 8192); // Read in 8KB chunks
+		        hash_update($ctx, $buffer);
+		    }
+		    fclose($file_handle);
 
-	    // Finalize the hash
-	    $content_hash = hash_final($ctx);
+		    // Finalize the hash
+		    $content_hash = hash_final($ctx);
+	    }
 
 	    // Construct the new path with the content-based hash
 	    $file_to = $path_parts['dirname'] . "/" . $content_hash;
@@ -226,18 +231,31 @@ class Helpers {
 	 * @return [type]
 	 */
 	public function compressPath($file_from) {
-		// 1. Archive file
-		$targz = $this->which_cmd("tar");
-		// Check if tar is available
-		if ($targz === false) {
-			die("error: cannot detect path to tar library compressPath: " . $this->targz);
-		}
+	    // Detect paths to tar and pigz (if available)
+	    $targz = $this->which_cmd("tar");
+	    $pigz = $this->which_cmd("pigz") ?: "gzip"; // Fallback to gzip if pigz isn't available
 
-		$tar_cmd = $targz . " -zcvf " . $file_from . ".tar.gz -C " . dirname($file_from) . " " . basename($file_from);
-		$gzipped = exec($tar_cmd);
+	    // Ensure tar is available
+	    if ($targz === false) {
+	        die("error: cannot detect path to tar library compressPath: " . $this->targz);
+	    }
 
-		return $file_from . ".tar.gz";
+	    // Log the original file size in MB
+	    $originalSizeMB = filesize($file_from) / (1024 * 1024);
+	    $this->logger->addInfo("==> Original file size: " . round($originalSizeMB, 2) . " MB");
+
+	    // Form the command, using pigz or gzip for faster compression
+	    $tar_cmd = $targz . " -cf - -C " . dirname($file_from) . " " . basename($file_from) . " | " . $pigz . " > " . $file_from . ".tar.gz";
+	    exec($tar_cmd);
+
+	    // Log the compressed file size in MB
+	    $compressedSizeMB = filesize($file_from . ".tar.gz") / (1024 * 1024);
+	    $this->logger->addInfo("==> Compressed file size: " . round($compressedSizeMB, 2) . " MB");
+
+	    return $file_from . ".tar.gz";
 	}
+
+
 
 	/**
 	 * Normalizes a string to be used as data names or identifiers.
@@ -309,8 +327,6 @@ class Helpers {
 
 	    return $csv;
 	}
-
-
 	/**
 	 * [validateCSVFileHeader description]
 	 * @param  [type] $filePath
@@ -318,71 +334,96 @@ class Helpers {
 	 */
 	public function validateCSVFileHeader($filePath) {
 
-		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: filePath: " . $filePath);
+	    $this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: filePath: " . $filePath);
 
-		$path_parts = pathinfo($filePath);
+	    // Extract path information and file details
+	    $this->logger->addInfo("==> Starting path and file details extraction.");
+	    $path_parts = pathinfo($filePath);
 
-		$data = array(
-			'info' => $path_parts,
-			'dirname' => $path_parts['dirname'],
-			'basename' => $path_parts['basename'],
-			'filename' => $path_parts['filename'],
-			'item_type' => (substr($path_parts['filename'], 0, 10) !== "genSysFile") ? 1 : 2,
-			'extension' => isset($path_parts['extension']) ? '.' . strtolower($path_parts['extension']) : '',
-			'mime_type' => mime_content_type($filePath),
-			'filesize' => filesize($filePath),
-			'file_hash' => hash_file('sha256', $filePath),
-			'details' => array("header" => array("original" => "", "formatted" => [])),
-			'message' => []
-		);
+	    $data = array(
+	        'info' => $path_parts,
+	        'dirname' => $path_parts['dirname'],
+	        'basename' => $path_parts['basename'],
+	        'filename' => $path_parts['filename'],
+	        'item_type' => (substr($path_parts['filename'], 0, 10) !== "genSysFile") ? 1 : 2,
+	        'extension' => isset($path_parts['extension']) ? '.' . strtolower($path_parts['extension']) : '',
+	        'mime_type' => mime_content_type($filePath),
+	        'filesize' => filesize($filePath),
+	        'file_hash' => hash_file('sha256', $filePath),
+	        'details' => array("header" => array("original" => "", "formatted" => [])),
+	        'message' => []
+	    );
+	    $this->logger->addInfo("==> File details extracted: ", $data);
 
-		$this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: extension: ". $data['extension']);
-		// Skip header check for system files and do it only for user files
-		if (file_exists($filePath) && $data['item_type'] === 1 && $data['extension'] === '.csv'){
+	    if (file_exists($filePath) && $data['item_type'] === 1 && $data['extension'] === '.csv') {
+	        $this->logger->addInfo("==> Valid CSV file confirmed for header check.");
 
-			// Check if we have BOM in the file and remove it
-			$fileContent = file_get_contents($filePath);
-			$bom = pack("CCC", 0xef, 0xbb, 0xbf);
+	        // Open the original file for reading and a temporary file for writing
+	        $fileHandle = fopen($filePath, 'r');
+	        $tempFilePath = $filePath . '.tmp';
+	        $tempFileHandle = fopen($tempFilePath, 'w');
 
-			if (0 === strncmp($fileContent, $bom, 3)) {
-				// BOM Detected
-				$bom = pack('H*','EFBBBF');
-	    		$fileContent = preg_replace("/^$bom/", '', $fileContent);
-				//$fileContent = mb_convert_encoding($fileContent, "UTF-8");
-				file_put_contents($filePath, $fileContent);
-			}
+	        if ($fileHandle === false || $tempFileHandle === false) {
+	            $this->logger->addError("==> Unable to open files for processing.");
+	            if ($fileHandle) fclose($fileHandle);
+	            if ($tempFileHandle) fclose($tempFileHandle);
+	            return false;
+	        }
 
-			$header = trim(fgets(fopen($filePath, 'r')));
-			// Remove newline character from header
-			if (substr($header, -2) === "\n") {
-				$header = substr($header, 0, -2);
-			}
+	        // Read the first line and check for BOM
+	        $this->logger->addInfo("==> Reading and processing header.");
+	        $header = fgets($fileHandle);
+	        $bom = pack("CCC", 0xef, 0xbb, 0xbf);
+	        if (strncmp($header, $bom, 3) === 0) {
+	            $this->logger->addInfo("==> BOM detected in header. Removing BOM.");
+	            $header = substr($header, 3); // Remove BOM from header
+	        }
 
-			$data['details']["header"]["original"] = $header;
-			// ($row, $delimiter, $enclosure , $escape)
-			$header_items = str_getcsv($header, ",", '"', "\\");
-			unset($header);
-			// We need at least 3 columns one outcome + features
-			if (is_array($header_items) && count($header_items) > 2) {
-				$remapped = array();
+	        // Store and log original header
+	        $header = rtrim($header, "\n"); // Remove any newline characters
+	        $data['details']["header"]["original"] = $header;
+	        $this->logger->addInfo("==> Original header extracted: " . $header);
+
+	        // Remap header items if valid
+	        $header_items = str_getcsv($header, ",", '"', "\\");
+	        if (is_array($header_items) && count($header_items) > 2) {
+	            $this->logger->addInfo("==> Header is valid with at least 3 columns.");
+
+	            $remapped = array_map(function ($index) {
+	                return "column" . $index;
+	            }, array_keys($header_items));
+
 				foreach ($header_items as $itemKey => $itemValue) {
 					$itemValueHash = md5($itemKey . $itemValue);
-					$remapped[$itemKey] = "column" . $itemKey;
 					if (!isset($data['details']["header"]["formatted"][$itemValueHash])) {
 						$data['details']["header"]["formatted"][$itemValueHash] = array("original" => $itemValue, "position" => $itemKey, "remapped" => $remapped[$itemKey]);
 					}
 				}
 
-				$headerReplacedCSV = "\"" . implode('","', $remapped) . "\"\n";
+	            $headerReplacedCSV = "\"" . implode('","', $remapped) . "\"\n";
+	            fwrite($tempFileHandle, $headerReplacedCSV); // Write new header to temporary file
+	            $this->logger->addInfo("==> New header written to temporary file.");
 
-				// read into array
-				$arr = file($filePath);
-				// edit first line
-				$arr[0] = $headerReplacedCSV;
-				// write back to file
-				file_put_contents($filePath, implode($arr));
+	            // Copy remaining lines from the original file
+	            $this->logger->addInfo("==> Copying remaining lines to temporary file.");
+	            while (($line = fgets($fileHandle)) !== false) {
+	                fwrite($tempFileHandle, $line);
+	            }
 
-				$pandas_command = <<<EOFC
+	            fclose($fileHandle);
+	            fclose($tempFileHandle);
+
+	            // Replace the original file with the temporary file
+	            if (!rename($tempFilePath, $filePath)) {
+	                $this->logger->addError("==> Error replacing the original file with the updated file.");
+	                return false;
+	            }
+	            $this->logger->addInfo("==> Header replacement completed successfully.");
+
+	            // Run Pandas command to get unique counts
+	            try {
+	                $this->logger->addInfo("==> Executing Pandas command for unique counts.");
+	                $pandas_command = <<<EOFC
 eval "$(conda shell.bash hook)"
 pn_cmd=`cat <<EOF
 import pandas as pd
@@ -392,29 +433,42 @@ EOF`
 python -c "\$pn_cmd"
 EOFC;
 
-				$pandas_output = shell_exec($pandas_command);
+	                $pandas_output = shell_exec($pandas_command);
+	                if ($pandas_output === null) {
+	                    $this->logger->addError("==> Error executing Pandas command. Command returned null.");
+	                } else {
+	                    $this->logger->addInfo("==> Pandas command executed. Output: " . $pandas_output);
+	                }
 
-				// $this->logger->addInfo("==> INFO: PANDORA\Helpers\Helpers\validateCSVFileHeader: pandas_command: ");
-				// $this->logger->addInfo($pandas_command);
+	                $pandas_output = json_decode(trim($pandas_output), true);
+	            } catch (Exception $e) {
+	                $this->logger->addError("==> Error during Pandas command execution: " . $e->getMessage());
+	                return false;
+	            }
 
-				$pandas_output = json_decode(trim($pandas_output), true);
+	            // Process unique counts and update header information
+	            $this->logger->addInfo("==> Processing unique counts for each column.");
+	            foreach ($data['details']["header"]["formatted"] as $itemKey => $itemValue) {
+	                if (is_array($pandas_output) && isset($pandas_output[$itemValue["remapped"]])) {
+	                    $itemValue["unique_count"] = $pandas_output[$itemValue["remapped"]];
+	                    $data['details']["header"]["formatted"][$itemKey] = $itemValue;
+	                } else {
+	                    $itemValue["unique_count"] = false;
+	                    $data['details']["header"]["formatted"][$itemKey] = $itemValue;
+	                }
+	            }
+	            $this->logger->addInfo("==> Unique counts processed and updated.");
 
-				foreach ($data['details']["header"]["formatted"] as $itemKey => $itemValue) {
-					if (is_array($pandas_output) && isset($pandas_output[$itemValue["remapped"]])) {
-						$itemValue["unique_count"] = $pandas_output[$itemValue["remapped"]];
-						$data['details']["header"]["formatted"][$itemKey] = $itemValue;
-					} else {
-						$itemValue["unique_count"] = false;
-						$data['details']["header"]["formatted"][$itemKey] = $itemValue;
-					}
-				}
+	        } else {
+	            $this->logger->addWarning("==> Invalid header: less than 3 columns found.");
+	            array_push($data['message'], "delimiters_check");
+	        }
+	    } else {
+	        $this->logger->addWarning("==> Skipped header check for system files or non-CSV files.");
+	    }
 
-			} else {
-				array_push($data['message'], "delimiters_check");
-			}
-		} // Header check for user files
-
-		return ($data);
+	    $this->logger->addInfo("==> Completed validateCSVFileHeader process.");
+	    return $data;
 	}
 
 
@@ -577,6 +631,18 @@ EOFC;
 		$length = strlen($needle);
 		return (substr($haystack, 0, $length) === $needle);
 	}
+
+	public function utf8ize($data) {
+	    if (is_array($data)) {
+	        foreach ($data as $key => $value) {
+	            $data[$key] = $this->utf8ize($value);
+	        }
+	    } else if (is_string($data)) {
+	        return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+	    }
+	    return $data;
+	}
+
 
 	/**
 	 * Check if string ends with some another string

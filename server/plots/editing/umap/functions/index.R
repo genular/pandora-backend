@@ -1,71 +1,76 @@
-calculate_umap <- function(dataset, groupingVariable = NULL, settings, fileHeader){
+calculate_umap <- function(dataset, groupingVariable = NULL, settings, fileHeader) {
+    # Detect CPU cores for parallel processing
+    cpu_cores <- parallel::detectCores(logical = FALSE)
+    message(paste("==> Detected CPU cores:", cpu_cores))
 
-	names(dataset) <- plyr::mapvalues(names(dataset), from=fileHeader$remapped, to=fileHeader$original)
+    # Convert dataset to data.table for more efficient handling
+    data.table::setDT(dataset)
+    message("==> Dataset converted to data.table")
 
+    # Map values for column names based on file header
+    message("==> Renaming columns based on file header")
+    data.table::setnames(dataset, old = fileHeader$remapped, new = fileHeader$original, skip_absent = TRUE)
 
-    if(!is.null(groupingVariable)){
-    	print(paste0("====> Removing grouping variable: ", groupingVariable))
-    	umap_data <- dataset %>% select(-any_of(groupingVariable)) 
-
-    	if(settings$includeOtherGroups == FALSE){
-    		print(paste0("====> Removing all other grouping variables"))
-    		other_groups <- fileHeader %>% filter(remapped %in% settings$groupingVariables)
-    		other_groups <- other_groups$original
-
-    		umap_data <- umap_data %>% select(-any_of(other_groups))
-    		print(names(umap_data))
-    	}
-    }else{
-    	umap_data <- dataset
+    # Filter out grouping variables if specified
+    if (!is.null(groupingVariable)) {
+        message("==> Removing specified grouping variable and other groups if not included")
+        dataset[, (groupingVariable) := NULL]
+        
+        if (!settings$includeOtherGroups) {
+            other_groups <- dplyr::filter(fileHeader, remapped %in% settings$groupingVariables) %>% dplyr::pull(original)
+            dataset[, (other_groups) := NULL]
+        }
     }
 
-	umap_data <- umap_data %>% select(where(is.numeric))
+    # Select only numeric columns
+    numeric_cols <- names(Filter(is.numeric, dataset))
+    umap_data <- dataset[, ..numeric_cols]
 
-
-	pca_clusters <- settings$pca_clusters
-    if(min(nrow(umap_data), ncol(umap_data)) <= pca_clusters){
-    	pca_clusters <- NULL
-    	print(paste0("====> Quick-fix - Adjusting PCA clusters"))
+    # Dynamically calculate PCA components if dataset has high dimensions
+    pca_clusters <- min(50, ncol(umap_data))  # Cap PCA components to 50 or fewer
+    if (ncol(umap_data) > pca_clusters) {
+        message("==> Reducing dimensions with PCA")
+        pca_result <- stats::prcomp(umap_data, center = TRUE, scale. = TRUE, rank. = pca_clusters)
+        umap_data <- data.table::as.data.table(pca_result$x)
     }
 
-	# Dynamically adjust parameters based on the input data
-	n_samples <- nrow(umap_data)
-	n_features <- ncol(umap_data)
+    # Choose nn_method dynamically
+    nn_method <- if (nrow(umap_data) > 10000) "annoy" else "fnn"
+    n_neighbors <- max(15, min(100, sqrt(nrow(umap_data)) / 2))
+    min_dist <- if (nrow(umap_data) > 50000) 0.1 else 0.05
+    spread <- if (nrow(umap_data) > 50000) 1.2 else 1.0
+    learning_rate <- if (nrow(umap_data) > 100000) 2.0 else 1.5
+    init_method <- if (ncol(umap_data) > 100) "pca" else "spectral"
+    init_sdev <- if (nrow(umap_data) > 50000) 0.1 else 0.05
 
-	# Adjust 'n_neighbors' based on a heuristic or dataset characteristics
-	n_neighbors <- max(15, min(50, sqrt(n_samples)/2))
+    message("==> Running UMAP with method:", nn_method, "and", cpu_cores, "threads")
+    reduced_umap <- uwot::umap(
+        X = umap_data,
+        y = if (!is.null(groupingVariable)) dataset[[groupingVariable]] else NULL,
+        n_neighbors = n_neighbors,
+        n_components = 2,
+        metric = "euclidean",
+        n_epochs = ifelse(nrow(umap_data) > 10000, 200, 500),
+        learning_rate = learning_rate,
+        init = init_method,
+        init_sdev = init_sdev,
+        spread = spread,
+        min_dist = min_dist,
+        nn_method = nn_method,
+        n_trees = if (nn_method == "annoy") ceiling(nrow(umap_data) * 0.001) * 10 else NULL,
+        search_k = if (nn_method == "annoy") 2 * n_neighbors * ceiling(nrow(umap_data) * 0.001) * 10 else NULL,
+        pca = pca_clusters,
+        batch = TRUE,
+        n_threads = cpu_cores,
+        n_sgd_threads = "auto",
+        verbose = TRUE
+    )
 
-	# 'min_dist' can be kept static or adjusted based on data density or domain knowledge
-	min_dist <- 0.001
+    message("==> UMAP completed")
 
-	# Determine 'pca_clusters' dynamically, for instance, based on variance explained if needed
-	# This is a placeholder; actual calculation would require a PCA analysis
-	pca_clusters <- min(50, n_features)
-
-	# Adjust 'n_trees' based on dataset size
-	n_trees <- ceiling((n_samples * 0.001)) * 10
-
-	# Correct function to check for NULL
-	if(!is.null(groupingVariable)){
-	    dataset[[groupingVariable]] <- as.factor(dataset[[groupingVariable]])
-
-	    reduced_umap <- umap(umap_data, y = dataset[[groupingVariable]],
-	                         n_neighbors = n_neighbors, min_dist = min_dist, verbose = FALSE,
-	                         n_threads = 8, pca = pca_clusters, n_trees = n_trees,
-	                         approx_pow = TRUE, init = "spca",
-	                         target_weight = 0.5, ret_model = TRUE)
-	} else {
-	    reduced_umap <- umap(umap_data,
-	                         n_neighbors = n_neighbors, min_dist = min_dist, verbose = FALSE,
-	                         n_threads = 8, pca = pca_clusters, n_trees = n_trees,
-	                         approx_pow = TRUE, init = "spca",
-	                         target_weight = 0.5, ret_model = TRUE)
-	}
-
-
-	return(list(umap_data = reduced_umap, umap_dataset = umap_data, dataset = dataset))
-
+    return(list(umap_data = reduced_umap, umap_dataset = umap_data, dataset = dataset))
 }
+
 
 
 plot_umap <- function(umap_data, umap_dataset, type = "train", groupingVariable = NULL, settings, fileHeader, tmp_hash){

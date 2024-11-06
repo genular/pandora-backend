@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 17, 2024 at 07:56 PM
--- Server version: 11.3.2-MariaDB-log
--- PHP Version: 8.3.3
+-- Generation Time: Nov 06, 2024 at 10:33 PM
+-- Server version: 11.5.2-MariaDB-log
+-- PHP Version: 8.3.11
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -56,7 +56,7 @@ CREATE TABLE `dataset_queue` (
   `extraction` tinyint(4) DEFAULT 0 COMMENT 'Should we do array intersection',
   `backwardSelection` tinyint(4) DEFAULT 0 COMMENT 'Are we doing recursive feature elimination.\n0 - No\n1 - Yes',
   `sparsity` float DEFAULT NULL,
-  `packages` longtext DEFAULT NULL COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n	packageID: \n	serverGroup:\n}',
+  `packages` longtext DEFAULT NULL COMMENT 'JSON - Packages/Models to use in the process with their tunning parametars\n{\n packageID: \n serverGroup:\n}',
   `status` tinyint(6) DEFAULT NULL COMMENT '0 Created\n1 User confirmed - and resamples active\n2 User canceled - Inactive\n3 Marked for processing - cron job must pick it up\n4 R Processing\n5 R Finished - Sucess\n6 R Finished - Errors\n7 User Paused\n8 User resumed',
   `processing_time` int(11) DEFAULT 0 COMMENT 'Total processing time - miliseconds',
   `servers_total` int(11) DEFAULT 0 COMMENT 'Total number of created cloud servers that needs to do processing',
@@ -413,7 +413,9 @@ CREATE TABLE `users_details` (
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(255) DEFAULT NULL,
   `account_type` tinyint(1) DEFAULT NULL COMMENT '1 - Global Administrator\n2 - User\n3 - Organization Administrator\n4 - Organization User',
-  `openai_api` varchar(255) DEFAULT NULL,
+  `registration_key` char(32) DEFAULT NULL COMMENT 'API Key used for registration',
+  `llm_api_key` varchar(255) DEFAULT NULL COMMENT 'LLM API Key',
+  `llm_api_endpoint` varchar(255) DEFAULT NULL COMMENT 'LLM API Endpoint URL',
   `created` datetime DEFAULT NULL,
   `updated` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci COMMENT='All details regardion to specific User';
@@ -429,13 +431,13 @@ CREATE TABLE `users_files` (
   `uid` int(11) DEFAULT NULL COMMENT 'User ID',
   `ufsid` int(11) DEFAULT NULL COMMENT 'users_file_servers_id connection, if is NULL default is used',
   `item_type` tinyint(6) DEFAULT NULL COMMENT '1 - user uploaded the file\n2 - system created file (cron, data partitions etc.)',
-  `file_path` varchar(255) DEFAULT NULL COMMENT 'Full path to the file with a filename, without base directory',
+  `file_path` text DEFAULT NULL COMMENT 'Full path to the file with a filename, without base directory',
   `filename` char(32) DEFAULT NULL COMMENT 'MD5 safe filename ',
   `display_filename` varchar(255) DEFAULT NULL COMMENT 'Display filename',
-  `size` int(11) DEFAULT 0 COMMENT 'Filesize in bytes ot the original file not gzipped one',
+  `size` bigint(20) DEFAULT 0 COMMENT 'Filesize in bytes ot the original file not gzipped one',
   `extension` varchar(25) DEFAULT NULL COMMENT 'file extension',
   `mime_type` varchar(75) DEFAULT NULL,
-  `details` longtext DEFAULT NULL COMMENT 'File details currently in following format:\n{\n	"header": {\n		"original": "",\n		"formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n	}\n}',
+  `details` longtext DEFAULT NULL COMMENT 'File details currently in following format:\n{\n "header": {\n   "original": "",\n   "formatted": [{"original":"pregnant","position":0,"remapped":"column0"}]\n  }\n}',
   `file_hash` char(64) DEFAULT NULL COMMENT 'SHA256 hash of original file not gzipped one',
   `created` datetime DEFAULT NULL COMMENT 'timestamp',
   `updated` datetime DEFAULT NULL COMMENT 'timestamp'
@@ -649,7 +651,7 @@ ALTER TABLE `users_details`
 --
 ALTER TABLE `users_files`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `users_files_unique` (`uid`,`item_type`,`file_hash`,`file_path`),
+  ADD UNIQUE KEY `users_files_unique` (`uid`,`item_type`,`file_hash`,`file_path`) USING HASH,
   ADD KEY `uid_idx` (`uid`);
 ALTER TABLE `users_files` ADD FULLTEXT KEY `display_filename_idx` (`display_filename`);
 

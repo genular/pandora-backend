@@ -143,63 +143,96 @@ $app->post('/backend/system/filesystem/upload', function (Request $request, Resp
 		}
 	}
 
-	// File upload is finished!
-	if ($success === true) {
-		// Validate File Header and rename it to standardize column names!
-		$details = $Helpers->validateCSVFileHeader($uploaded_path);
+    if ($success === true) {
+        // Step 1: Validate File Header and Rename Columns
+        $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Starting validation and renaming process for uploaded file.");
+        $details = $Helpers->validateCSVFileHeader($uploaded_path);
+        
+        if (count($details["message"]) === 0) {
+            $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File header validated successfully. Details: " . json_encode($details));
 
-		if (count($details["message"]) === 0) {
+            // Step 2: Rename the file to hash-based standard
+            $renamed_path = $Helpers->renamePathToHash($details);
+            $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File renamed to: " . $renamed_path);
 
-			$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' renamePathToHash " . json_encode($details));
-			$renamed_path = $Helpers->renamePathToHash($details);
+            // Step 3: Compress the file if it is a CSV
+            if ($details['extension'] === ".csv") {
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File is a CSV. Starting compression.");
+                $gzipped_path = $Helpers->compressPath($renamed_path);
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Compression completed. Compressed file path: " . $gzipped_path);
+            } else {
+                $gzipped_path = $renamed_path;
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File is not a CSV. Skipping compression.");
+            }
 
-			if($details['extension'] === ".csv"){
-				// Compress original file to GZ archive format
-				$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' renamed_path " . $renamed_path);
-				$gzipped_path = $Helpers->compressPath($renamed_path);
-			}else{
-				$gzipped_path = $renamed_path;
-			}
+            // Step 4: Upload compressed file to the storage
+            $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Starting upload to remote storage. File path: " . $gzipped_path);
+            try {
+                $remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, $uploadPath);
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File uploaded successfully to storage. Remote path: " . $remote_path);
+            } catch (Exception $e) {
+                $this->get('Monolog\Logger')->error("PANDORA '/backend/system/filesystem/upload' Error during file upload: " . $e->getMessage());
+                $success = false;
+                $message = "Error during file upload.";
+                return;
+            }
 
-			// Upload compressed file to the Storage
-			$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' uploadFile " . $gzipped_path);
-			$remote_path = $FileSystem->uploadFile($user_id, $gzipped_path, $uploadPath);
+            // Step 5: Insert file reference to the database
+            $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Inserting file reference into the database. Remote path: " . $remote_path);
+            $file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+            sleep(5);
 
-			// Save reference to Database
-			$this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' insertFileToDatabase " . $remote_path);
+            if($file_id){
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File reference inserted into database. File ID: " . $file_id);
+            }
 
-			$file_id = $UsersFiles->insertFileToDatabase($user_id, $details, $remote_path);
+            // Step 6: Cleanup - Delete local files
+            sleep(5); // Delay to ensure any pending processes are completed
+            $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Starting cleanup of local files.");
 
-			sleep(3);
+            if (file_exists($uploaded_path)) {
+                @unlink($uploaded_path);
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Deleted original uploaded file: " . $uploaded_path);
+            }
+            if (file_exists($renamed_path)) {
+                @unlink($renamed_path);
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Deleted renamed file: " . $renamed_path);
+            }
+            if (file_exists($gzipped_path)) {
+                @unlink($gzipped_path);
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Deleted compressed file: " . $gzipped_path);
+            }
 
-			// Delete and cleanup local files
-			if (file_exists($uploaded_path)) {
-				@unlink($uploaded_path);
-			}
-			if (file_exists($renamed_path)) {
-				@unlink($renamed_path);
-			}
-			if (file_exists($gzipped_path)) {
-				@unlink($gzipped_path);
-			}
+            $file_details = false;
+            if($file_id){
+                // Step 7: Fetch file details
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' Fetching file details from the database for response.");
+                $file_details = $UsersFiles->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
+            }
 
-			$file_details = $UsersFiles->getFileDetails($file_id, ["id", "size", "display_filename", "extension", "mime_type", "item_type"], true);
 
-			if ($file_details !== false) {
-				$message = array(
-					"id" => $file_details["id"],
-					"size" => $file_details["size"],
-					"display_filename" => $file_details["display_filename"],
-					"extension" => $file_details["extension"],
-					"mime_type" => $file_details["mime_type"],
-					"item_type" => $file_details["item_type"],
-				);
-			}
-		} else {
-			$success = false;
-			$message = $details["message"];
-		}
-	}
+            if ($file_details !== false) {
+                $message = array(
+                    "id" => $file_details["id"],
+                    "size" => $file_details["size"],
+                    "display_filename" => $file_details["display_filename"],
+                    "extension" => $file_details["extension"],
+                    "mime_type" => $file_details["mime_type"],
+                    "item_type" => $file_details["item_type"],
+                );
+                $this->get('Monolog\Logger')->info("PANDORA '/backend/system/filesystem/upload' File details retrieved successfully: " . json_encode($message));
+            } else {
+                $this->get('Monolog\Logger')->error("PANDORA '/backend/system/filesystem/upload' Failed to retrieve file details for file ID: " . $file_id);
+                $success = false;
+                $message = "Failed to retrieve file details.";
+            }
+        } else {
+            $success = false;
+            $message = $details["message"];
+            $this->get('Monolog\Logger')->error("PANDORA '/backend/system/filesystem/upload' File header validation failed. Details: " . json_encode($details["message"]));
+        }
+    }
+
 
 	return $response->withJson(["success" => $success, "message" => $message]);
 

@@ -14,6 +14,9 @@ use \Monolog\Logger;
 use \PANDORA\Helpers\Cache as Cache;
 use \PANDORA\Helpers\Helpers as Helpers;
 use \PANDORA\System\FileSystem as FileSystem;
+use \PDO as PDO;
+
+
 
 class UsersFiles {
 
@@ -102,6 +105,7 @@ class UsersFiles {
 		return ($display_filename . ".tar.gz");
 	}
 
+
 	/**
 	 * Insert remote file reference into local database
 	 *
@@ -110,31 +114,117 @@ class UsersFiles {
 	 * @param string $remote_path
 	 */
 	public function insertFileToDatabase($user_id, $details, $remote_path) {
-		// Display user friendly name for system files
-		if ($details['item_type'] === 2) {
-			if (substr($details['filename'], 0, 17) !== "genSysFile_queue_") {
-				$details['filename'] = str_replace("genSysFile_queue_", "", $details['filename']);
-			}
-		}
+	    $this->logger->addInfo("==> INFO: START insertFileToDatabase for user_id: " . $user_id);
 
-		$this->database->insert($this->table_name, [
-			"uid" => $user_id,
-			"ufsid" => 1,
-			"item_type" => $details['item_type'],
-			"file_path" => $remote_path,
-			"filename" => md5($details['basename']),
-			"display_filename" => $details['filename'],
-			"size" => $details['filesize'],
-			"extension" => $details['extension'],
-			"mime_type" => $details['mime_type'],
-			"details" => json_encode($details['details']),
-			"file_hash" => $details['file_hash'],
-			"created" => Medoo::raw("NOW()"),
-			"updated" => Medoo::raw("NOW()"),
-		]);
+	    // Adjust filename for system files if necessary
+	    if ($details['item_type'] === 2 && strpos($details['filename'], "genSysFile_queue_") === 0) {
+	        $details['filename'] = str_replace("genSysFile_queue_", "", $details['filename']);
+	        $this->logger->addInfo("==> INFO: System file detected, adjusted display filename to: " . $details['filename']);
+	    }
 
-		return $this->database->id();
+	    // Prepare JSON for 'details' and handle any encoding errors
+	    $details_json = json_encode($this->Helpers->utf8ize($details['details']));
+	    if ($details_json === false) {
+	        $this->logger->addError("==> ERROR: JSON encoding failed for 'details' with error: " . json_last_error_msg());
+	        return false;
+	    }
+
+	    // Prepare the data to be inserted and log the information
+	    $insert_data = [
+	        "uid" => $user_id,
+	        "ufsid" => 1,
+	        "item_type" => $details['item_type'],
+	        "file_path" => $remote_path,
+	        "filename" => md5($details['basename']),
+	        "display_filename" => $details['filename'],
+	        "size" => $details['filesize'],
+	        "extension" => $details['extension'],
+	        "mime_type" => $details['mime_type'],
+	        "details" => $details_json,
+	        "file_hash" => $details['file_hash'],
+	        "created" => Medoo::raw("NOW()"),
+	        "updated" => Medoo::raw("NOW()"),
+	    ];
+	    $this->logger->addInfo("==> INFO: insert_data prepared: " . json_encode($insert_data));
+
+	    // Define SQL for insertion with parameter placeholders
+	    $sql = "
+	        INSERT INTO `{$this->table_name}`
+	        (`uid`, `ufsid`, `item_type`, `file_path`, `filename`, `display_filename`, `size`, `extension`, `mime_type`, `details`, `file_hash`, `created`, `updated`) 
+	        VALUES (:uid, :ufsid, :item_type, :file_path, :filename, :display_filename, :size, :extension, :mime_type, :details, :file_hash, NOW(), NOW())
+	    ";
+
+	    // Mutex lock for sequential execution
+	    $file = fopen('/tmp/db_insert.lock', 'c');
+	    if ($file && flock($file, LOCK_EX)) {
+	        $this->database->pdo->beginTransaction(); // Start transaction
+	        $stmt = $this->database->pdo->prepare($sql);
+
+	        // Bind parameters
+	        $stmt->bindParam(':uid', $user_id, PDO::PARAM_INT);
+	        $stmt->bindParam(':ufsid', $insert_data['ufsid'], PDO::PARAM_INT);
+	        $stmt->bindParam(':item_type', $insert_data['item_type'], PDO::PARAM_INT);
+	        $stmt->bindParam(':file_path', $insert_data['file_path'], PDO::PARAM_STR);
+	        $stmt->bindParam(':filename', $insert_data['filename'], PDO::PARAM_STR);
+	        $stmt->bindParam(':display_filename', $insert_data['display_filename'], PDO::PARAM_STR);
+	        $stmt->bindParam(':size', $insert_data['size'], PDO::PARAM_INT);
+	        $stmt->bindParam(':extension', $insert_data['extension'], PDO::PARAM_STR);
+	        $stmt->bindParam(':mime_type', $insert_data['mime_type'], PDO::PARAM_STR);
+	        $stmt->bindParam(':details', $insert_data['details'], PDO::PARAM_STR);
+	        $stmt->bindParam(':file_hash', $insert_data['file_hash'], PDO::PARAM_STR);
+
+	        // Initialize variable to hold the insert ID
+	        $insert_id = false;
+
+	        try {
+	            // Attempt to execute and commit the transaction
+	            $stmt->execute();
+	            $insert_id = $this->database->pdo->lastInsertId();
+
+	            if ($insert_id) {
+	                $this->database->pdo->commit(); // Commit transaction
+	                $this->logger->addInfo("==> INFO: Database insertion successful. Insert ID: " . $insert_id);
+	            } else {
+	                $last_error = $this->database->error();
+	                $this->logger->addError("==> ERROR: No insert ID returned. Last SQL error: " . json_encode($last_error));
+	                $this->database->pdo->rollBack(); // Rollback transaction
+	            }
+	        } catch (PDOException $pdoException) {
+	            // Check for duplicate key error and log it specifically
+	            if ($pdoException->getCode() === '23000') { // SQLSTATE code for integrity constraint violation
+	                $this->logger->addError("==> ERROR: Duplicate entry detected. " . $pdoException->getMessage());
+	            } else {
+	                $this->logger->addError("==> PDOException encountered during insertion: " . $pdoException->getMessage());
+	            }
+	            $this->database->pdo->rollBack(); // Rollback transaction
+	        } catch (Exception $e) {
+	            $this->logger->addError("==> General Exception encountered during insertion: " . $e->getMessage());
+	            $this->database->pdo->rollBack(); // Rollback transaction
+	        } catch (Throwable $t) {
+	            $this->logger->addError("==> Throwable caught during insertion: " . $t->getMessage());
+	            $this->database->pdo->rollBack(); // Rollback transaction
+	        } finally {
+	            $this->logger->addInfo("==> INFO: Finally block reached; releasing lock.");
+	            
+	            // Release file lock and close handle
+	            if (isset($file) && is_resource($file)) {
+	                flock($file, LOCK_UN);
+	                fclose($file);
+	            }
+	        }
+	    } else {
+	        $this->logger->addError("==> ERROR: Failed to acquire file lock for sequential execution.");
+	    }
+
+	    // Log any additional database errors if present
+	    $log = $this->database->error();
+	    $this->logger->addInfo("==> INFO: Final Database Log: " . json_encode($log));
+
+	    return $insert_id;
 	}
+
+
+
 	/**
 	 * [getFileDetails description]
 	 * @param  [type]  $file_id [description]
@@ -231,8 +321,6 @@ class UsersFiles {
 		}
 
 		$file_contents = file_get_contents($fileInput);
-
-
 
 		// Load CSV file to associative array
 		$lines = explode( "\n", $file_contents );

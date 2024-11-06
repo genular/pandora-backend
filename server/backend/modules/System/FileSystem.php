@@ -271,30 +271,47 @@ class FileSystem {
 	 * @param string $upload_directory Relative directory name: eg uploads
 	 */
 	public function uploadFile($user_id, $file_from, $upload_directory) {
-		$file_basename = basename($file_from);
+	    $file_basename = basename($file_from);
+	    $file_to = "users/" . $user_id . "/" . $upload_directory . "/" . $file_basename;
+	    $this->logger->addInfo("==> INFO: PANDORA\System\FileSystem uploadFile START: " . $file_to);
 
-		$file_to = "users/" . $user_id . "/" . $upload_directory . "/" . $file_basename;
-		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem uploadFile START: " . $file_to);
+	    // Check if file already exists, and create a unique filename if needed
+	    if ($this->filesystem->has($file_to)) {
+	        $unique_suffix = crc32(uniqid((string) microtime(true), true));
+	        $file_to = "users/" . $user_id . "/" . $upload_directory . "/" . $unique_suffix . "_" . $file_basename;
+	        $this->logger->addInfo("==> INFO: File already exists, generating unique filename: " . $file_to);
+	    }
 
-		$exists = $this->filesystem->has($file_to);
-		if ($exists === true) {
-			$file_to = "users/" . $user_id . "/" . $upload_directory . "/" . crc32(round(microtime(true) * 1000)) . "_" . $file_basename;
-		}
+	    // Open file stream for reading
+	    $stream = fopen($file_from, 'r+');
+	    if (!$stream) {
+	        $this->logger->addError("==> ERROR: Failed to open file stream for: " . $file_from);
+	        throw new RuntimeException("Failed to open file for reading: " . $file_from);
+	    }
 
-		$stream = fopen($file_from, 'r+');
-		$this->filesystem->writeStream(
-			$file_to,
-			$stream
-		);
+	    // Write file stream to the target location
+	    try {
+	        $write_result = $this->filesystem->writeStream($file_to, $stream);
+	        if ($write_result === false) {
+	            $this->logger->addError("==> ERROR: Failed to write file to target location: " . $file_to);
+	            throw new RuntimeException("Failed to write file to target: " . $file_to);
+	        }
+	        $this->logger->addInfo("==> INFO: File written successfully to: " . $file_to);
+	    } catch (Exception $e) {
+	        $this->logger->addError("==> ERROR: Exception during file upload: " . $e->getMessage());
+	        throw $e;
+	    } finally {
+	        // Ensure the file stream is closed
+	        if (is_resource($stream)) {
+	            fclose($stream);
+	            $this->logger->addInfo("==> INFO: File stream closed for: " . $file_from);
+	        }
+	    }
 
-		if (is_resource($stream)) {
-			fclose($stream);
-		}
-		
-		$this->logger->addInfo("==> INFO: PANDORA\System\FileSystem uploadFile END: " . $file_to);
-
-		return $file_to;
+	    $this->logger->addInfo("==> INFO: PANDORA\System\FileSystem uploadFile END: " . $file_to);
+	    return $file_to;
 	}
+
 
 	/**
 	 * Downloads file from remote server to temporary place in our local file-system

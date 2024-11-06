@@ -480,19 +480,31 @@ executeSystemCommand <- function(cmd_string, time_out = 300){
     return(cmd_out_status)
 }
 
-convertSVGtoPNG <- function(tmp_path){
-    ## Optimize SVG using svgo package
+convertSVGtoPNG <- function(tmp_path) {
     tmp_path_png <- stringr::str_replace(tmp_path, ".svg", ".png")
-    command <- paste0(which_cmd("rsvg-convert")," ",tmp_path," -f png --dpi-x 300 --dpi-y 300 -o ",tmp_path_png)
+    command <- paste0(which_cmd("rsvg-convert"), " ", tmp_path, " -f png --dpi-x 300 --dpi-y 300 -o ", tmp_path_png)
     
-    cmd_out <- executeSystemCommand(command, 1000)
-
-    if(cmd_out == FALSE){
-        png_data <- FALSE
-    }else{
-        png_data <- as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))   
-    }
-
+    png_data <- tryCatch({
+        # Execute command and check output
+        cmd_out <- executeSystemCommand(command, 1000)
+        
+        if (cmd_out == FALSE) {
+            stop("SVG conversion command failed.")
+        }
+        
+        # Read and encode the PNG data if command succeeds
+        as.character(RCurl::base64Encode(readBin(tmp_path_png, "raw", n = file.info(tmp_path_png)$size), "txt"))
+        
+    }, error = function(e) {
+        # Log error if desired
+        message("==> Error during SVG to PNG conversion: ", e$message)
+        NULL  # Return NULL if any error occurs
+    }, warning = function(w) {
+        # Log warning if desired
+        message("==> Warning during SVG to PNG conversion: ", w$message)
+        NULL  # Return NULL if any warning occurs
+    })
+    
     return(png_data)
 }
 

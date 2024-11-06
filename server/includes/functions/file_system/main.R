@@ -19,9 +19,7 @@ initilizeDatasetDirectory <- function(dataset){
 #' @param file_from users_files.file_path => "4/uploads/8d6468cae76877133d404b8ea0c68bcd.tar.gz"
 #' @param useCache
 #' @return string Path to the local file or FALSE if file doesn't exists
-downloadDataset <- function(file_from, useCache = TRUE){
-    file_exist <- TRUE
-
+downloadDataset <- function(file_from, useCache = TRUE) {
     ## Location to temporary directory where to download files
     temp_directory <- paste0(TEMP_DIR, "/downloads")
     ## Path to the downloaded file
@@ -35,57 +33,46 @@ downloadDataset <- function(file_from, useCache = TRUE){
     ## Reconstruct the full path with the modified file name
     file_path_local_dup <- file.path(dir_path, file_name_dup)
 
-    if(useCache == TRUE){
-        if(file.exists(file_path_local)){
-            return (file_path_local)
+    if (useCache) {
+        if (file.exists(file_path_local)) {
+            return(file_path_local)
         }
-        if(file.exists(file_path_local_dup)){
-            return (file_path_local_dup)
-        }
-    }
-
-    ## Download requested file from S3 compatible object storage
-    exists <- checkFileExists(file_from)
-    if(exists == TRUE){
-        ## Returns downloaded file path: /tmp/n72qNQFX/downloads/90b1125bfcee4b7e7266a048fd4eb8e3.tar.gz
-        file_to <- downloadFile(file_from, file_to)
-        Sys.sleep(2)
-    }else{
-        cat(paste0("===> ERROR: Cannot locate remote file: ",file_from," \r\n"))
-        file_exist <- FALSE
-    }
-    
-    if(!file.exists(file_to)){
-        cat(paste0("===> ERROR: Cannot locate download gzipped file: ",file_to," \r\n"))
-        file_exist <- FALSE
-    }else{
-        utils::untar(tarfile = file_to, list = FALSE, exdir = temp_directory, verbose = T, tar = which_cmd("tar"))
-        
-        if(file.exists(file_path_local) || file.exists(file_path_local_dup)){
-            cat(paste0("===> INFO: Deleting local tar.gz file since its extracted \r\n"))
-            invisible(file.remove(file_to))
+        if (file.exists(file_path_local_dup)) {
+            return(file_path_local_dup)
         }
     }
 
-    file_path_local <- base::gsub(".tar.gz", "", file_to, fixed = TRUE)
-
-    if(!file.exists(file_path_local)){
-        file_path_local_dup <- gsub(".*_", "", file_path_local)
-
-        if(!file.exists(file_path_local_dup_full)){
-            cat(paste0("===> ERROR: Cannot locate extracted file: ",file_path_local," nor ",file_path_local_dup," \r\n"))
-            file_exist <- FALSE
-        }else{
-            file_path_local <- file_path_local_dup
-        }
+    ## Check if file exists in S3 compatible object storage
+    if (!checkFileExists(file_from)) {
+        cat(paste0("===> ERROR: Cannot locate remote file: ", file_from, " \r\n"))
+        return(NA)  # Exit function if the file does not exist remotely
     }
 
-    if(file_exist == FALSE){
-        file_path_local <- file_exist
+    ## Download requested file
+    downloadFile(file_from, file_to)
+    Sys.sleep(2)
+
+    if (!file.exists(file_to)) {
+        cat(paste0("===> ERROR: Cannot locate downloaded gzipped file: ", file_to, " \r\n"))
+        return(NA)
     }
-    
-    return (file_path_local)
+
+    ## Extract the file
+    utils::untar(tarfile = file_to, exdir = temp_directory, verbose = TRUE, tar = which_cmd("tar"))
+    invisible(file.remove(file_to))  # Remove the tar file after extraction
+
+    ## Check for extracted files existence
+    if (file.exists(file_path_local)) {
+        return(file_path_local)
+    }
+    if (file.exists(file_path_local_dup)) {
+        return(file_path_local_dup)
+    }
+
+    cat(paste0("===> ERROR: Cannot locate extracted file: ", file_path_local, " nor ", file_path_local_dup, " \r\n"))
+    return(NA)
 }
+
 
 #' @title  compressPath
 #' @description Compresses file in .tar.gz format and return paths

@@ -44,11 +44,19 @@ myisam_recover_options  = BACKUP
 #table_cache            = 64
 #thread_concurrency     = 10
 
+interactive_timeout             = 28800
+wait_timeout                    = 28800
+net_read_timeout = 600
+net_write_timeout = 600
+innodb_lock_wait_timeout = 120
+connect_timeout = 600
+
+
 #
 # * Query Cache Configuration
 #
 query_cache_limit	= 8M
-query_cache_size        = 128M
+query_cache_size    = 128M
 
 #
 # * Logging and Replication
@@ -56,8 +64,10 @@ query_cache_size        = 128M
 # Both location gets rotated by the cronjob.
 # Be aware that this log type is a performance killer.
 # As of 5.1 you can enable the log at runtime!
-#general_log_file        = /var/log/mysql/mysql.log
-#general_log             = 1
+
+general_log = 1
+general_log_file        = /var/log/mysql/mysql.log
+
 #
 # Error log - should be very few entries.
 #

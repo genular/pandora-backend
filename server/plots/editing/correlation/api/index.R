@@ -234,7 +234,6 @@ pandora$handle$plots$editing$correlation$renderPlot <- expression(
             input_args = input_args,
             corrplot = corrplot_out,
             settings = settings,
-            dataset = dataset,
             dataset_filtered_processed = dataset_filtered
         )
         saveCachedList(tmp_path, processingData)
