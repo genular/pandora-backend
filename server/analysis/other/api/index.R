@@ -4,6 +4,7 @@ pandora$handle$analysis$other$availablePackages <- expression(
         # Get R version information
         r_version <- paste0(R.Version()$major, ".", R.Version()$minor)
         installed_packages <- rownames(installed.packages())
+        
         data <- lapply(caret::getModelInfo(), function(x){
                             installed <- 1
                             classification <- if("Classification" %in% x$type) 1 else 0
