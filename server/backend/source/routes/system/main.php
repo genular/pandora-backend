@@ -334,14 +334,13 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
         // Change directory to the repository path
         chdir($repoPath);
 
-        // Get the current remote URL for origin
         $remoteUrl = trim(shell_exec($sudoPrefix . 'git remote get-url origin'));
         
         // Convert SSH URL to HTTPS if necessary
         if (strpos($remoteUrl, 'git@github.com:') === 0) {
             $httpsUrl = preg_replace('/^git@github\.com:/', 'https://github.com/', $remoteUrl);
         } else {
-            $httpsUrl = $remoteUrl; // Use as-is if already HTTPS
+            $httpsUrl = $remoteUrl;
         }
 
         // Fetch the latest changes from origin
