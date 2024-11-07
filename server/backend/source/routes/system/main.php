@@ -345,7 +345,7 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
         }
 
         // Use the HTTPS URL directly in the git fetch command
-        $cmd = $sudoPrefix . 'git fetch ' . escapeshellarg($httpsUrl) . ' master 2>&1';
+        $cmd = $sudoPrefix . 'git fetch ' . escapeshellarg($httpsUrl) . ' origin master 2>&1';
         
         // Fetch the latest changes from the remote using HTTPS URL
         exec($cmd, $fetchOutput, $fetchResult);
