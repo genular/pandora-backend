@@ -56,7 +56,7 @@ class Users {
 
 	public function updateUserProfile($user_id, $data) {
 	    // Define which fields we want to allow updates for
-	    $allowedFields = ['first_name', 'last_name', 'phone', 'openai_api'];
+	    $allowedFields = ['first_name', 'last_name', 'phone', 'llm_api_key', 'llm_api_endpoint'];
 
 	    // Filter out any fields that are not allowed
 	    $updateData = array_intersect_key($data, array_flip($allowedFields));
@@ -244,7 +244,8 @@ class Users {
 			"users_details.last_name",
 			"users_details.email",
 			"users_details.phone",
-			"users_details.openai_api",
+			"users_details.llm_api_key",
+			"users_details.llm_api_endpoint",
 			"users_details.account_type [Int]",
 			"users_organization.oid [Int]",
 		];

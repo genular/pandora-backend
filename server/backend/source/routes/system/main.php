@@ -288,7 +288,7 @@ $app->post('/backend/system/describe_ai', function (Request $request, Response $
 
     // Fetch the response from the LLM_AI service
     $LLM_AI = $this->get('PANDORA\Helpers\LLM_AI');
-    $ai_response = $LLM_AI->get($promptQuery, $promptImages, null, $user_details['openai_api']);
+    $ai_response = $LLM_AI->get($promptQuery, $promptImages, null, $user_details['llm_api_key']);
 
     // Check if the response from LLM_AI is valid
     if ($ai_response === false) {
