@@ -141,12 +141,12 @@ class Users {
 	 * @param  [type] $firstName       [description]
 	 * @param  [type] $lastName        [description]
 	 * @param  [type] $phoneNumber     [description]
-	 * @param  [type] $org_invite_code [description]
+	 * @param  [type] $registration_key [description]
 	 * @param  [type] $validation_hash [description]
 	 * @param  [type] $account_type [description]
 	 * @return [int]                   User ID
 	 */
-	public function register($username, $password, $email_adress, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash, $account_type) {
+	public function register($username, $password, $email_adress, $firstName, $lastName, $phoneNumber, $registration_key, $validation_hash, $account_type) {
 		$salt = $this->Helpers->generateRandomString(16);
 		$hash_password = hash('sha256', $salt . $password);
 
@@ -169,16 +169,16 @@ class Users {
 		}
 		$organization_id = false;
 		if ($user_id !== null) {
-			if (trim($org_invite_code) !== "") {
+			if (trim($registration_key) !== "") {
 
 				$this->database->insert("organization", [
-					"invite_code" => $org_invite_code,
+					"invite_code" => $registration_key,
 					"salt" => $this->Helpers->generateRandomString(16),
 					"status" => 1,
 					"created" => Medoo::raw("NOW()"),
 				]);
 
-				$organization_id_results = $this->database->get("organization", ['id'], ["invite_code" => $org_invite_code]);
+				$organization_id_results = $this->database->get("organization", ['id'], ["invite_code" => $registration_key]);
 				$organization_id = $organization_id_results["id"];
 				$this->logger->addInfo("User organization code: " . json_encode($organization_id_results));
 			}
@@ -189,7 +189,7 @@ class Users {
 				$this->database->insert("users_organization", [
 					"uid" => $user_id,
 					"oid" => $organization_id,
-					"invite_code" => $org_invite_code,
+					"invite_code" => $registration_key,
 					"account_type" => $account_type,
 					"created" => Medoo::raw("NOW()"),
 					"updated" => Medoo::raw("NOW()"),

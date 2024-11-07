@@ -196,7 +196,7 @@ pandora$handle$plots$editing$umap$renderPlot <- expression(
                 data_testing <- list()
                 groupingVariables <- settings$groupingVariables
                 for(groupVariable in groupingVariables){
-                    print(paste0("=====> Creating data partitions percentage: ", groupVariable))
+                    print(paste0("=====> Creating data partitions grouping variable: ", groupVariable))
                     if(groupVariable %in% names(dataset_filtered)){
                         selectedPartitionSplit <- settings$selectedPartitionSplit
                         props <- table(dataset_filtered[[groupVariable]])
@@ -233,10 +233,11 @@ pandora$handle$plots$editing$umap$renderPlot <- expression(
         umap_calc <- list()
         ## Calculate umap
         umap_calc[["main_plot"]] <- calculate_umap(dataset_filtered, NULL, settings, fileHeader)
-        ## Plot umap
-        tmp_path <- plot_umap(umap_calc[["main_plot"]]$umap_data, umap_calc[["main_plot"]]$dataset, "train", NULL, settings, fileHeader,  plot_unique_hash$umap_plot[["main_plot"]]$train)
-        
         message("==> UMAP calculation and plot completed in ", Sys.time() - umap_calc_time)
+
+        ## Plot umap
+        tmp_path <- plot_umap(umap_calc[["main_plot"]]$umap_data, umap_calc[["main_plot"]]$pca_result, umap_calc[["main_plot"]]$dataset, "train", NULL, settings, fileHeader,  plot_unique_hash$umap_plot[["main_plot"]]$train)
+        
 
         res.data$umap_plot[["main_plot"]]$name <- "Main Plot"
         res.data$umap_plot[["main_plot"]]$train <- list(
@@ -261,7 +262,7 @@ pandora$handle$plots$editing$umap$renderPlot <- expression(
 
                 ## Calculate umap for each target data for supervised dimension reduction
                 umap_calc[[groupVariable]] <- calculate_umap(umap_train_dataset, groupingVariable, settings, fileHeader)
-                tmp_path <- plot_umap(umap_calc[[groupVariable]]$umap_data, umap_calc[[groupVariable]]$dataset, "train", groupingVariable, settings, fileHeader,  plot_unique_hash$umap_plot[[groupVariable]]$train)
+                tmp_path <- plot_umap(umap_calc[[groupVariable]]$umap_data, umap_calc[[groupVariable]]$pca_result, umap_calc[[groupVariable]]$dataset, "train", groupingVariable, settings, fileHeader,  plot_unique_hash$umap_plot[[groupVariable]]$train)
 
                 res.data$umap_plot[[groupVariable]]$name <- groupingVariable
                 res.data$umap_plot[[groupVariable]]$train <- list(
@@ -270,7 +271,7 @@ pandora$handle$plots$editing$umap$renderPlot <- expression(
                 )
 
                 if(settings$selectedPartitionSplit < 100){
-                    tmp_path <- plot_umap(umap_calc[[groupVariable]]$umap_data, data_testing[[groupVariable]], "test", groupingVariable, settings, fileHeader,  plot_unique_hash$umap_plot[[groupVariable]]$test)
+                    tmp_path <- plot_umap(umap_calc[[groupVariable]]$umap_data, umap_calc[[groupVariable]]$pca_result, data_testing[[groupVariable]], "test", groupingVariable, settings, fileHeader,  plot_unique_hash$umap_plot[[groupVariable]]$test)
                     res.data$umap_plot[[groupVariable]]$name <- groupingVariable
                     res.data$umap_plot[[groupVariable]]$test <- list(
                         svg = optimizeSVGFile(tmp_path),

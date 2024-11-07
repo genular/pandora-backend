@@ -1,4 +1,7 @@
 p_load("uwot")
+p_load("RcppAnnoy")
+p_load("RcppHNSW")
+p_load("rnndescent")
 
 source(paste0("server/",SERVER_NAME,"/editing/umap/functions/index.R"))
 

@@ -37,7 +37,7 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 	$validationValue = urldecode(base64_decode($args['validationValue']));
 
 	$allowedTables = array('users', 'users_details', 'users_organization', 'organization_details', 'coupon_code');
-	$allowedFields = array('username', 'email', 'invite_code', 'name', 'private', 'coupon_code', 'org_invite_code');
+	$allowedFields = array('username', 'email', 'invite_code', 'name', 'private', 'coupon_code', 'registration_key');
 
 	if (!in_array($validationTable, $allowedTables)) {
 		$success = false;
@@ -49,7 +49,7 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 
 	if ($success !== false) {
 
-		if($validationField === 'org_invite_code'){
+		if($validationField === 'registration_key'){
 
 			if(strtolower($validationValue) === base64_decode("YXRvbWljbGFi")){
 				$recordAvaliable = true;

@@ -275,7 +275,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 			$firstName = $post["user"]['firstName'];
 			$lastName = $post["user"]['lastName'];
 			$phoneNumber = $post["user"]['phoneNumber'];
-			$org_invite_code = $post["user"]['org_invite_code'];
+			$registration_key = $post["user"]['registration_key'];
 
 			$account_type = 2;
 			if ($totalUsersRegistered < 1) {
@@ -300,7 +300,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 			if ($userExsistCheck === false) {
 				$validation_hash = md5($username . $email . $firstName);
 				$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' registering user");
-				$user_id = $users->register($username, $password, $email, $firstName, $lastName, $phoneNumber, $org_invite_code, $validation_hash, $account_type);
+				$user_id = $users->register($username, $password, $email, $firstName, $lastName, $phoneNumber, $registration_key, $validation_hash, $account_type);
 
 				$post["user"]["user_id"] = $user_id;
 			}
