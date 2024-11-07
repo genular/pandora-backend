@@ -238,31 +238,30 @@ class System {
 	    }
 	    
 		if (count($data) > 0) {
-			$status = true;
-			foreach ($data as $package_key => $package_value) {
-				$tuning_parameters = [];
-				if (isset($package_value["tuning_parameters"]) and is_array($package_value["tuning_parameters"])) {
-					if (is_array($package_value["tuning_parameters"]["parameter"])) {
-						foreach ($package_value["tuning_parameters"]["parameter"] as $t_key => $t_value) {
-							if (!isset($tuning_parameters[$t_key])) {
-								$tuning_parameters[$t_key] = array(
-									"id" => $t_value,
-									"class" => $package_value["tuning_parameters"]["class"][$t_key],
-									"label" => $package_value["tuning_parameters"]["label"][$t_key],
-								);
-							}
-						}
-					} else {
-						$tuning_parameters[] = array(
-							"id" => $package_value["tuning_parameters"]["parameter"],
-							"class" => $package_value["tuning_parameters"]["class"],
-							"label" => $package_value["tuning_parameters"]["label"],
-						);
-					}
-				}
+		    $status = true;
+		    foreach ($data as $package_key => $package_value) {
+		        $tuning_parameters = [];
+		        if (isset($package_value["tuning_parameters"]) && is_array($package_value["tuning_parameters"])) {
+		            if (isset($package_value["tuning_parameters"]["parameter"]) && is_array($package_value["tuning_parameters"]["parameter"])) {
+		                foreach ($package_value["tuning_parameters"]["parameter"] as $t_key => $t_value) {
+		                    $tuning_parameters[$t_key] = [
+		                        "id" => $t_value,
+		                        "class" => $package_value["tuning_parameters"]["class"][$t_key] ?? null,
+		                        "label" => $package_value["tuning_parameters"]["label"][$t_key] ?? null,
+		                    ];
+		                }
+		            } else {
+		                $tuning_parameters[] = [
+		                    "id" => $package_value["tuning_parameters"]["parameter"] ?? null,
+		                    "class" => $package_value["tuning_parameters"]["class"] ?? null,
+		                    "label" => $package_value["tuning_parameters"]["label"] ?? null,
+		                ];
+		            }
+		        }
 
-				$dependencies = (is_array($package_value["dependencies"]) ? $package_value["dependencies"] : [$package_value["dependencies"]]);
-				$tags = (is_array($package_value["tags"]) ? $package_value["tags"] : [$package_value["tags"]]);
+		        $dependencies = is_array($package_value["dependencies"]) ? $package_value["dependencies"] : [$package_value["dependencies"]];
+		        $tags = is_array($package_value["tags"]) ? $package_value["tags"] : [$package_value["tags"]];
+
 
 				$package = array(
 					"internal_id" => $package_key,
