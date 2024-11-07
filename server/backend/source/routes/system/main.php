@@ -344,19 +344,14 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
             $httpsUrl = $remoteUrl; // Use as-is if already HTTPS
         }
 
-        // Use the HTTPS URL directly in the git fetch command
-        $cmd = $sudoPrefix . 'git fetch ' . escapeshellarg($httpsUrl) . ' origin master 2>&1';
-        
-        // Fetch the latest changes from the remote using HTTPS URL
-        exec($cmd, $fetchOutput, $fetchResult);
-
-        $fetchOutputText = implode("\n", $fetchOutput);  // Combine output into a single string
+        // Fetch the latest changes from origin
+        $fetchCmd = $sudoPrefix . 'git fetch origin 2>&1';
+        exec($fetchCmd, $fetchOutput, $fetchResult);
 
         if ($fetchResult !== 0) {
-            $userInfo = posix_getpwuid(posix_geteuid());
             $updates[$name] = [
                 "status" => "error",
-                "message" => "User: " . $userInfo['name'] . " CMD: ".$cmd." ERROR: $fetchOutputText"
+                "message" => "Failed to fetch updates: " . implode("\n", $fetchOutput)
             ];
             continue;
         }
