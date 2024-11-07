@@ -532,26 +532,27 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
         $successMessages[] = $repo['success'];
     }
 
-    if($isDocker){
+    if ($isDocker) {
         $this->get('Monolog\Logger')->info("PANDORA '/system/update' Restarting PM2 processes");
 
         // Restart PM2 processes with environment updates
         $pm2Command = "sudo -u root pm2 restart all --update-env";
         exec($pm2Command, $pm2Output, $pm2Result);
 
-        if ($pm2Result !== 0) {
-            $this->get('Monolog\Logger')->error("PANDORA '/system/update' Failed to restart PM2 processes: " . implode("\n", $pm2Output));
+        // Check for both success indicators: zero exit code OR expected output message
+        $pm2OutputString = implode("\n", $pm2Output);
+        $pm2Success = ($pm2Result === 0 || strpos($pm2OutputString, "Applying action restartProcessId on app") !== false);
+
+        if (!$pm2Success) {
+            $this->get('Monolog\Logger')->error("PANDORA '/system/update' Failed to restart PM2 processes: " . $pm2OutputString);
             return $response->withJson([
                 "success" => false,
-                "message" => "Failed to restart PM2 processes: " . implode("\n", $pm2Output)
+                "message" => "Failed to restart PM2 processes: " . $pm2OutputString
             ]);
         }
 
         $this->get('Monolog\Logger')->info("PANDORA '/system/update' PM2 processes restarted successfully.");
     }
-
-
-
 
     $updateEndTime = microtime(true);
     $updateDuration = round($updateEndTime - $updateStartTime, 2); // Duration in seconds
