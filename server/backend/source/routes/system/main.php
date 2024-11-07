@@ -362,7 +362,10 @@ $app->get('/backend/system/check-updates', function (Request $request, Response 
         }
 
         // Check if local master is behind remote master
-        $behindCount = intval(trim(shell_exec($sudoPrefix . 'git rev-list HEAD..origin/master --count')));
+        $cmd = $sudoPrefix . 'git rev-list HEAD..origin/master --count';
+        $behindCount = intval(trim(shell_exec($cmd)));
+
+        $this->get('Monolog\Logger')->info("PANDORA '/system/check-updates' $name behind count: $behindCount");
 
         if ($behindCount > 0) {
             $updates[$name] = [
