@@ -241,23 +241,30 @@ class System {
 		    $status = true;
 		    foreach ($data as $package_key => $package_value) {
 		        $tuning_parameters = [];
-		        if (isset($package_value["tuning_parameters"]) && is_array($package_value["tuning_parameters"])) {
-		            if (isset($package_value["tuning_parameters"]["parameter"]) && is_array($package_value["tuning_parameters"]["parameter"])) {
-		                foreach ($package_value["tuning_parameters"]["parameter"] as $t_key => $t_value) {
-		                    $tuning_parameters[$t_key] = [
-		                        "id" => $t_value,
-		                        "class" => $package_value["tuning_parameters"]["class"][$t_key] ?? null,
-		                        "label" => $package_value["tuning_parameters"]["label"][$t_key] ?? null,
-		                    ];
-		                }
-		            } else {
-		                $tuning_parameters[] = [
-		                    "id" => $package_value["tuning_parameters"]["parameter"] ?? null,
-		                    "class" => $package_value["tuning_parameters"]["class"] ?? null,
-		                    "label" => $package_value["tuning_parameters"]["label"] ?? null,
-		                ];
-		            }
-		        }
+				if (isset($package_value["tuning_parameters"]) && is_array($package_value["tuning_parameters"])) {
+				    // Check if 'parameter' exists and is an array
+				    if (isset($package_value["tuning_parameters"]["parameter"]) && is_array($package_value["tuning_parameters"]["parameter"])) {
+				        foreach ($package_value["tuning_parameters"]["parameter"] as $t_key => $t_value) {
+				            // Ensure 'class' and 'label' keys exist and are arrays before accessing them by $t_key
+				            $tuning_parameters[$t_key] = [
+				                "id" => $t_value,
+				                "class" => isset($package_value["tuning_parameters"]["class"]) && is_array($package_value["tuning_parameters"]["class"]) 
+				                           ? $package_value["tuning_parameters"]["class"][$t_key] ?? null 
+				                           : null,
+				                "label" => isset($package_value["tuning_parameters"]["label"]) && is_array($package_value["tuning_parameters"]["label"]) 
+				                           ? $package_value["tuning_parameters"]["label"][$t_key] ?? null 
+				                           : null,
+				            ];
+				        }
+				    } else {
+				        // Handle case where 'parameter' is not an array, assuming it's a single value
+				        $tuning_parameters[] = [
+				            "id" => $package_value["tuning_parameters"]["parameter"] ?? null,
+				            "class" => $package_value["tuning_parameters"]["class"] ?? null,
+				            "label" => $package_value["tuning_parameters"]["label"] ?? null,
+				        ];
+				    }
+				}
 
 		        $dependencies = is_array($package_value["dependencies"]) ? $package_value["dependencies"] : [$package_value["dependencies"]];
 		        $tags = is_array($package_value["tags"]) ? $package_value["tags"] : [$package_value["tags"]];
