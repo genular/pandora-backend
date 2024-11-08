@@ -187,16 +187,16 @@ class ComposerScripts {
 
 				// Update $arguments with the environment variable values if they are set
 				if ($frontendUrl) {
-					$arguments['default']['frontend']['server']['url'] = 'http://frontend'; // $frontendUrl;
+					$arguments['default']['frontend']['server']['url'] = $frontendUrl;
 				}
 				if ($backendUrl) {
-					$arguments['default']['backend']['server']['url'] = 'https://backend'; // $backendUrl;
+					$arguments['default']['backend']['server']['url'] = $backendUrl;
 				}
 				if ($analysisUrl) {
-					$arguments['default']['analysis']['server']['url'] = 'http://analysis:111'; // $analysisUrl;
+					$arguments['default']['analysis']['server']['url'] = $analysisUrl;
 				}
 				if ($plotsUrl) {
-					$arguments['default']['plots']['server']['url'] = 'https://plots:222'; // $plotsUrl;
+					$arguments['default']['plots']['server']['url'] = $plotsUrl;
 				}
 
 				$config_path = realpath(__DIR__ . '/../../../../config.yml');
