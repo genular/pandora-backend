@@ -324,10 +324,11 @@ echo "Installation of advanced dependencies START"
 	ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 	ln -s /etc/nginx/sites-available/genular.conf /etc/nginx/sites-enabled/genular.conf
 
-	chown www-data:www-data /etc/nginx/sites-available/default
-	chown www-data:www-data /etc/nginx/sites-available/genular.conf
-	chmod 644 /etc/nginx/sites-available/default
-	chmod 644 /etc/nginx/sites-available/genular.conf
+	chown genular:www-data /etc/nginx/sites-available/genular.conf
+	chown genular:www-data /etc/nginx/sites-available/default
+
+	chmod 664 /etc/nginx/sites-available/genular.conf 
+	chmod 664 /etc/nginx/sites-available/default
 
 	## Change the Primary Group of a genular user
 	usermod -g www-data genular
