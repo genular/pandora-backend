@@ -132,12 +132,12 @@ class ComposerScripts {
 	                echo "==> $placeholder_port ==> $port\n";
 	                echo "==> $placeholder_url 	==> $url\n";
 
-	                str_replace($placeholder_url, $url, $nginxConfig);
-	                str_replace($placeholder_port, $port, $nginxConfig);
+			        // Capture the result of str_replace and update $nginxConfig
+			        $nginxConfig = str_replace($placeholder_url, $url, $nginxConfig);
+			        $nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);
 	            }
 	        }
 
-	        var_dump($nginxConfig);
 
 			if (is_writable($path)) {
 			    $bytesWritten = file_put_contents($path, $nginxConfig);
