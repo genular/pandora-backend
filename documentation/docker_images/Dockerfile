@@ -31,9 +31,9 @@ ENV SERVER_FRONTEND_URL=${SERVER_FRONTEND_URL} \
     SERVER_ANALYSIS_URL=${SERVER_ANALYSIS_URL} \
     SERVER_PLOTS_URL=${SERVER_PLOTS_URL}
 
-
+    
 ## Lets build and configure PANDORA
-RUN su - genular -c 'cd /var/www/genular/pandora \
+RUN sudo -E -u genular bash -c 'cd /var/www/genular/pandora \
     && git checkout . && git fetch && git checkout master && git pull origin master \
     && yarn install --check-files --ignore-engines \
     && yarn run webpack:web:prod \
