@@ -149,10 +149,10 @@ exit
 cd ..
 
 # Unmount the filesystems
-sudo umount -l ./documentation/docker_images/base_image/images/genular/tmp/
-sudo umount -l ./documentation/docker_images/base_image/images/genular/sys/
-sudo umount -l ./documentation/docker_images/base_image/images/genular/proc/
-sudo umount -l ./documentation/docker_images/base_image/images/genular/dev/pts/
-sudo umount -l ./documentation/docker_images/base_image/images/genular/dev/
+sudo umount -l ./genular/tmp/
+sudo umount -l ./genular/sys/
+sudo umount -l ./genular/proc/
+sudo umount -l ./genular/dev/pts/
+sudo umount -l ./genular/dev/
 
 ```
