@@ -118,6 +118,9 @@ class ComposerScripts {
 	            'placeholder_plots_url' => $arguments['default']['plots']['server']['url'] ?? null,
 	        ];
 
+	        var_dump($placeholders);
+
+
 	        // Replace each placeholder with its respective hostname and port if the URL is provided
 	        foreach ($placeholders as $placeholder => $url) {
 	            if ($url) {
