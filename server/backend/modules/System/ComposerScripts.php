@@ -130,10 +130,14 @@ class ComposerScripts {
 	                $nginxConfig = preg_replace_callback(
 	                    "/(server\s*\{[^\}]*server_name\s+$placeholder;[^\}]*\})/m",
 	                    function ($matches) use ($hostname, $port, $updatePorts) {
+
+	                    	echo "==> New URL: $hostname:$port <==\n";
+	                   
 	                        // Update the server_name and listen directives within the matched server block
 	                        $block = $matches[0];
 	                        $block = preg_replace('/server_name\s+\S+;/', "server_name $hostname;", $block);
 	                        if($updatePorts){
+	                        	echo "==> Updating ports... <==\n";
 	                        	$block = preg_replace('/listen\s+\d+\s+default_server;/', "listen $port default_server;", $block);
 	                        	$block = preg_replace('/listen\s+\[::\]:\d+\s+default_server;/', "listen [::]:$port default_server;", $block);
 	                        }
