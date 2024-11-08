@@ -38,6 +38,9 @@ RUN cd /var/www/genular/pandora \
     && /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
     && /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
 
+# Switch back to root for remaining tasks
+USER root
+
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
 # Expose the necessary ports
