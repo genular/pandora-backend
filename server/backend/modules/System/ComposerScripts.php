@@ -133,7 +133,7 @@ class ComposerScripts {
 	                echo "==> $placeholder_url 	==> $hostname\n";
 
 			        // Capture the result of str_replace and update $nginxConfig
-			        $nginxConfig = str_replace($placeholder_url, $url, $nginxConfig);
+			        $nginxConfig = str_replace($placeholder_url, $hostname, $nginxConfig);
 			        $nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);
 	            }
 	        }
