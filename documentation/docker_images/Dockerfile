@@ -17,15 +17,19 @@ COPY ./configuration.example.json /tmp/configuration.json
 COPY ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
 RUN chmod +x /tmp/prepare_docker_storage.sh
 
-# Set default environment variables for URLs
+# Define build arguments
 ARG SERVER_FRONTEND_URL="http://localhost:3010"
 ARG SERVER_BACKEND_URL="http://localhost:3011"
 ARG SERVER_HOMEPAGE_URL="http://localhost:3010"
 ARG SERVER_ANALYSIS_URL="http://localhost:3012"
 ARG SERVER_PLOTS_URL="http://localhost:3013"
 
-ENV SERVER_FRONTEND_URL=${SERVER_FRONTEND_URL} SERVER_BACKEND_URL=${SERVER_BACKEND_URL} \
-    SERVER_HOMEPAGE_URL=${SERVER_HOMEPAGE_URL} SERVER_ANALYSIS_URL=${SERVER_ANALYSIS_URL} SERVER_PLOTS_URL=${SERVER_PLOTS_URL}
+# Transfer ARGs to ENV for persistence throughout the build and runtime phases
+ENV SERVER_FRONTEND_URL=${SERVER_FRONTEND_URL} \
+    SERVER_BACKEND_URL=${SERVER_BACKEND_URL} \
+    SERVER_HOMEPAGE_URL=${SERVER_HOMEPAGE_URL} \
+    SERVER_ANALYSIS_URL=${SERVER_ANALYSIS_URL} \
+    SERVER_PLOTS_URL=${SERVER_PLOTS_URL}
 
 
 ## Lets build and configure PANDORA
@@ -33,7 +37,10 @@ RUN su - genular -c 'cd /var/www/genular/pandora \
     && git checkout . && git fetch && git checkout master && git pull origin master \
     && yarn install --check-files --ignore-engines \
     && yarn run webpack:web:prod \
-       --isDemoServer=false \
+	    --isDemoServer=false \
+	    --SERVER_FRONTEND_URL=$SERVER_FRONTEND_URL \
+	    --SERVER_BACKEND_URL=$SERVER_BACKEND_URL \
+	    --SERVER_HOMEPAGE_URL=$SERVER_HOMEPAGE_URL \
     && cd /var/www/genular/pandora-backend/server/backend/ \
     && git checkout . && git fetch && git checkout master && git pull origin master \
     && /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
@@ -41,14 +48,11 @@ RUN su - genular -c 'cd /var/www/genular/pandora \
 
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
-# Expose the ports!
-## frontend
+# Expose the necessary ports
 EXPOSE 3010
-## backend
 EXPOSE 3011
 EXPOSE 3012
 EXPOSE 3013
 
+# Run supervisord
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-
-# voila!
