@@ -144,6 +144,8 @@ class ComposerScripts {
 	            }
 	        }
 
+	        var_dump($nginxConfig);
+
 			if (is_writable($path)) {
 			    $bytesWritten = file_put_contents($path, $nginxConfig);
 			    if ($bytesWritten === false) {
