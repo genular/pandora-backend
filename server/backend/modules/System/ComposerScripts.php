@@ -142,13 +142,16 @@ class ComposerScripts {
 	            }
 	        }
 
-	        // Save updated Nginx config and check for success
-	        $bytesWritten = file_put_contents($path, $nginxConfig);
-	        if ($bytesWritten === false) {
-	            echo "Failed to update " . ucfirst($key) . " Nginx configuration!\n";
-	        } else {
-	            echo ucfirst($key) . " Nginx configuration successfully updated with new hostnames and ports!\n";
-	        }
+			if (is_writable($path)) {
+			    $bytesWritten = file_put_contents($path, $nginxConfig);
+			    if ($bytesWritten === false) {
+			        echo "Failed to update " . ucfirst($key) . " Nginx configuration!\n";
+			    } else {
+			        echo ucfirst($key) . " Nginx configuration successfully updated with new hostnames and ports!\n";
+			    }
+			} else {
+			    echo "Permission denied: Cannot write to Nginx configuration at $path. Please adjust permissions.\n";
+			}
 	    }
 
 	    if($success === true) {
