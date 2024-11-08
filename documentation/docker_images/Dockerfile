@@ -22,7 +22,6 @@ ENV SERVER_FRONTEND_URL="http://localhost:3010" SERVER_HOMEPAGE_URL="http://loca
     SERVER_BACKEND_URL="http://localhost:3011" SERVER_ANALYSIS_URL="http://localhost:3012" \
     SERVER_PLOTS_URL="http://localhost:3013"
 
-
 USER genular
 
 # Build and configure PANDORA
