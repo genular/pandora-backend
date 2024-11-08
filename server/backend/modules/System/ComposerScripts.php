@@ -129,7 +129,7 @@ class ComposerScripts {
 	                // Use regex to find and update the specific server block
 	                $nginxConfig = preg_replace_callback(
 	                    "/(server\s*\{[^\}]*server_name\s+$placeholder;[^\}]*\})/m",
-	                    function ($matches) use ($hostname, $port) {
+	                    function ($matches) use ($hostname, $port, $updatePorts) {
 	                        // Update the server_name and listen directives within the matched server block
 	                        $block = $matches[0];
 	                        $block = preg_replace('/server_name\s+\S+;/', "server_name $hostname;", $block);
