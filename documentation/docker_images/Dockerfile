@@ -33,10 +33,7 @@ RUN su - genular -c 'cd /var/www/genular/pandora \
     && git checkout . && git fetch && git checkout master && git pull origin master \
     && yarn install --check-files --ignore-engines \
     && yarn run webpack:web:prod \
-    --isDemoServer=false \
-    --server_frontend=$SERVER_FRONTEND_URL \
-    --server_backend=$SERVER_BACKEND_URL \
-    --server_homepage=$SERVER_HOMEPAGE_URL \
+       --isDemoServer=false \
     && cd /var/www/genular/pandora-backend/server/backend/ \
     && git checkout . && git fetch && git checkout master && git pull origin master \
     && /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
