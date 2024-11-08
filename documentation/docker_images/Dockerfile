@@ -23,7 +23,8 @@ ENV SERVER_FRONTEND_URL="http://localhost:3010" SERVER_HOMEPAGE_URL="http://loca
     SERVER_PLOTS_URL="http://localhost:3013"
 
 ## Lets build and configure PANDORA
-RUN su - genular -c 'cd /var/www/genular/pandora \
+RUN export SERVER_FRONTEND_URL SERVER_BACKEND_URL SERVER_HOMEPAGE_URL SERVER_ANALYSIS_URL SERVER_PLOTS_URL \
+ && su - genular -c 'cd /var/www/genular/pandora \
 	&& git checkout . && git fetch && git checkout master && git pull origin master \
 	&& yarn install --check-files --ignore-engines \
 	&& yarn run webpack:web:prod \
