@@ -18,24 +18,29 @@ COPY ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
 RUN chmod +x /tmp/prepare_docker_storage.sh
 
 # Set default environment variables for URLs
-ENV SERVER_FRONTEND_URL="http://localhost:3010" SERVER_HOMEPAGE_URL="http://localhost:3010" \
-    SERVER_BACKEND_URL="http://localhost:3011" SERVER_ANALYSIS_URL="http://localhost:3012" \
-    SERVER_PLOTS_URL="http://localhost:3013"
+ARG SERVER_FRONTEND_URL="http://localhost:3010"
+ARG SERVER_BACKEND_URL="http://localhost:3011"
+ARG SERVER_HOMEPAGE_URL="http://localhost:3010"
+ARG SERVER_ANALYSIS_URL="http://localhost:3012"
+ARG SERVER_PLOTS_URL="http://localhost:3013"
+
+ENV SERVER_FRONTEND_URL=${SERVER_FRONTEND_URL} SERVER_BACKEND_URL=${SERVER_BACKEND_URL} \
+    SERVER_HOMEPAGE_URL=${SERVER_HOMEPAGE_URL} SERVER_ANALYSIS_URL=${SERVER_ANALYSIS_URL} SERVER_PLOTS_URL=${SERVER_PLOTS_URL}
+
 
 ## Lets build and configure PANDORA
-RUN export SERVER_FRONTEND_URL SERVER_BACKEND_URL SERVER_HOMEPAGE_URL SERVER_ANALYSIS_URL SERVER_PLOTS_URL \
- && su - genular -c 'cd /var/www/genular/pandora \
-	&& git checkout . && git fetch && git checkout master && git pull origin master \
-	&& yarn install --check-files --ignore-engines \
-	&& yarn run webpack:web:prod \
-	--isDemoServer=false \
-    --server_frontend=${SERVER_FRONTEND_URL} \
-    --server_backend=${SERVER_BACKEND_URL} \
-    --server_homepage=${SERVER_HOMEPAGE_URL} \
-	&& cd /var/www/genular/pandora-backend/server/backend/ \
-	&& git checkout . && git fetch && git checkout master && git pull origin master \
-	&& /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
-	&& /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json'
+RUN su - genular -c 'cd /var/www/genular/pandora \
+    && git checkout . && git fetch && git checkout master && git pull origin master \
+    && yarn install --check-files --ignore-engines \
+    && yarn run webpack:web:prod \
+    --isDemoServer=false \
+    --server_frontend=$SERVER_FRONTEND_URL \
+    --server_backend=$SERVER_BACKEND_URL \
+    --server_homepage=$SERVER_HOMEPAGE_URL \
+    && cd /var/www/genular/pandora-backend/server/backend/ \
+    && git checkout . && git fetch && git checkout master && git pull origin master \
+    && /usr/bin/php8.2 /usr/local/bin/composer install --ignore-platform-reqs \
+    && /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json'
 
 COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
