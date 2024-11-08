@@ -118,9 +118,6 @@ class ComposerScripts {
 	            'placeholder_plots' => $arguments['default']['plots']['server']['url'] ?? null,
 	        ];
 
-	        var_dump($placeholders);
-
-
 	        // Replace each placeholder with its respective hostname and port if the URL is provided
 	        foreach ($placeholders as $placeholder => $url) {
 	            if ($url) {
@@ -130,7 +127,10 @@ class ComposerScripts {
 	                $port = $parsedUrl['port'] ?? (($scheme === 'https') ? 443 : 80);
 
 	                $placeholder_url = $placeholder . '_url';
-	                $placeholder_port = $placeholder . '_url';
+	                $placeholder_port = $placeholder . '_port';
+
+	                echo "==> $placeholder_port ==> $port\n";
+	                echo "==> $placeholder_url 	==> $url\n";
 
 	                str_replace($placeholder_url, $url, $nginxConfig);
 	                str_replace($placeholder_port, $port, $nginxConfig);
