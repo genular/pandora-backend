@@ -1,8 +1,8 @@
 # Default server configuration
 #
 server {
-	listen 3010 default_server;
-	listen [::]:3010 default_server;
+	listen placeholder_frontend_port default_server;
+	listen [::]:placeholder_frontend_port default_server;
 
 	root /var/www/genular/pandora/compiled/web;
 

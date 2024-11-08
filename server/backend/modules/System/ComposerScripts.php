@@ -112,10 +112,10 @@ class ComposerScripts {
 
 	        // Define placeholders and the corresponding URLs from arguments
 	        $placeholders = [
-	            'placeholder_frontend_url' => $arguments['default']['frontend']['server']['url'] ?? null,
-	            'placeholder_backend_url' => $arguments['default']['backend']['server']['url'] ?? null,
-	            'placeholder_analysis_url' => $arguments['default']['analysis']['server']['url'] ?? null,
-	            'placeholder_plots_url' => $arguments['default']['plots']['server']['url'] ?? null,
+	            'placeholder_frontend' => $arguments['default']['frontend']['server']['url'] ?? null,
+	            'placeholder_backend' => $arguments['default']['backend']['server']['url'] ?? null,
+	            'placeholder_analysis' => $arguments['default']['analysis']['server']['url'] ?? null,
+	            'placeholder_plots' => $arguments['default']['plots']['server']['url'] ?? null,
 	        ];
 
 	        var_dump($placeholders);
@@ -129,25 +129,11 @@ class ComposerScripts {
 	                $scheme = $parsedUrl['scheme'] ?? 'http';
 	                $port = $parsedUrl['port'] ?? (($scheme === 'https') ? 443 : 80);
 
-	                // Use regex to find and update the specific server block
-	                $nginxConfig = preg_replace_callback(
-	                    "/(server\s*\{[^\}]*server_name\s+$placeholder;[^\}]*\})/m",
-	                    function ($matches) use ($hostname, $port, $updatePorts) {
+	                $placeholder_url = $placeholder . '_url';
+	                $placeholder_port = $placeholder . '_url';
 
-	                    	echo "==> New URL: $hostname:$port <==\n";
-	                   
-	                        // Update the server_name and listen directives within the matched server block
-	                        $block = $matches[0];
-	                        $block = preg_replace('/server_name\s+\S+;/', "server_name $hostname;", $block);
-	                        if($updatePorts){
-	                        	echo "==> Updating ports... <==\n";
-	                        	$block = preg_replace('/listen\s+\d+\s+default_server;/', "listen $port default_server;", $block);
-	                        	$block = preg_replace('/listen\s+\[::\]:\d+\s+default_server;/', "listen [::]:$port default_server;", $block);
-	                        }
-	                        return $block;
-	                    },
-	                    $nginxConfig
-	                );
+	                str_replace($placeholder_url, $url, $nginxConfig);
+	                str_replace($placeholder_port, $port, $nginxConfig);
 	            }
 	        }
 
