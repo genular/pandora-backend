@@ -324,6 +324,11 @@ echo "Installation of advanced dependencies START"
 	ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 	ln -s /etc/nginx/sites-available/genular.conf /etc/nginx/sites-enabled/genular.conf
 
+	chown www-data:www-data /etc/nginx/sites-available/default
+	chown www-data:www-data /etc/nginx/sites-available/genular.conf
+	chmod 644 /etc/nginx/sites-available/default
+	chmod 644 /etc/nginx/sites-available/genular.conf
+
 	## Change the Primary Group of a genular user
 	usermod -g www-data genular
 	## Display User Groups
@@ -416,6 +421,12 @@ echo "Installation of advanced dependencies START"
 
 	echo 'www-data ALL=(root) NOPASSWD: /usr/local/bin/pm2' | sudo tee /etc/sudoers.d/www-data-pm2
 	sudo chmod 440 /etc/sudoers.d/www-data-pm2
+
+	echo 'www-data ALL=(root) NOPASSWD: /usr/sbin/nginx *' | sudo tee /etc/sudoers.d/www-data-nginx
+	sudo chmod 440 /etc/sudoers.d/www-data-nginx
+
+	echo 'www-data ALL=(root) NOPASSWD: /usr/bin/supervisorctl' | sudo tee /etc/sudoers.d/www-data-supervisorctl
+	sudo chmod 440 /etc/sudoers.d/www-data-supervisorctl
 
 	## Socket location directory
 	mkdir -p "$rootfsDir/run/php"
@@ -642,6 +653,60 @@ __EOS__
 	echo "Installing PANDORA deps END"
 
 fi
+
+( rootfs_chroot /bin/sh << '__EOS__'
+   # Clean up apt cache, temp files, and logs
+    apt-get clean
+
+	# Remove APT cache and lists
+	rm -rf /var/cache/apt/archives/*.deb
+	rm -rf /var/lib/apt/lists/*
+
+	# Remove documentation, man pages, locales, and timezone info
+	rm -rf /usr/share/doc/*
+	rm -rf /usr/share/man/*
+	rm -rf /usr/share/locale/*
+	rm -rf /usr/share/zoneinfo/*
+
+	# Clear log files
+	find /var/log -type f -exec truncate --size=0 {} \;
+
+	# Remove temporary files
+	rm -rf /tmp/*
+	rm -rf /var/tmp/*
+	rm -rf ~/.cache/*
+
+    # Remove unnecessary locale and man files
+    rm -rf /usr/share/locale/*
+    rm -rf /usr/share/man/*
+    rm -rf /usr/share/doc/*
+    rm -rf /usr/share/info/*
+
+	# Remove unnecessary packages
+	apt-get autoremove -y
+
+	# Zero out free space to reduce image size
+	dd if=/dev/zero of=/EMPTY bs=1M || :
+	rm -f /EMPTY
+__EOS__
+)
+
+( rootfs_chroot /bin/sh << '__EOS__'
+	# Clean up R package installation files
+	find /usr/local/lib/R/site-library/ -name "doc" -type d -exec rm -rf {} +
+	find /usr/local/lib/R/site-library/ -name "help" -type d -exec rm -rf {} +
+	find /usr/local/lib/R/site-library/ -name "demo" -type d -exec rm -rf {} +
+	find /usr/local/lib/R/site-library/ -name "tests" -type d -exec rm -rf {} +
+	find /usr/local/lib/R/site-library/ -name "html" -type d -exec rm -rf {} +
+	find /usr/local/lib/R/site-library/ -name "*.so" -exec strip --strip-unneeded {} +
+	rm -rf /usr/local/lib/R/site-library/*/R/cache/*
+	find /usr/local/lib/R/site-library/ -name "*.o" -type f -exec rm -f {} +
+	find /usr/local/lib/R/site-library/ -name "*.dll" -type f -exec rm -f {} +
+	rm -rf /usr/local/lib/R/site-library/*/src
+	rm -rf /tmp/Rtmp*
+__EOS__
+)
+
 
 # Docker mounts tmpfs at /dev and procfs at /proc so we can remove them
 sudo rm -rf "$rootfsDir/dev"

@@ -11,7 +11,6 @@
         "unicoart/slim-token-authentication": "dev-master",
         "symfony/yaml": "^4.2",
         "braintree/braintree_php": "^3.30",
-        "hassankhan/config": "^1.0",
         "sendgrid/sendgrid": "^6.2",
         "league/flysystem-aws-s3-v3": "^1.0",
         "league/flysystem-webdav": "^1.0",
@@ -24,7 +23,8 @@
         "mongodb/mongodb": "^1.15",
         "openai-php/client": "^0.6.4",
         "guzzlehttp/guzzle": "^7.7",
-        "http-interop/http-factory-guzzle": "^1.2"
+        "http-interop/http-factory-guzzle": "^1.2",
+        "hassankhan/config": "^3.1"
     },
     "authors": [
         {

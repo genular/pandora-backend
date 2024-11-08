@@ -6,7 +6,8 @@ server {
 
 	root /var/www/genular/pandora/compiled/web;
 
-	server_name _;
+	server_name placeholder_frontend_url;
+
     index index.html;
     
     charset utf-8;
@@ -22,8 +23,9 @@ server {
 
 	# CSS and Javascript
 	location ~* \.(?:css|js)$ {
-		add_header Cache-Control "max-age=31536000";
-		access_log off;
+	    add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate";
+	    expires off;
+	    access_log off;
 	}
 
 	access_log /var/log/nginx/dashboard.genular.localhost_access.log;

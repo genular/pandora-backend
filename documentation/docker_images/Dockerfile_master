@@ -19,8 +19,11 @@ RUN chmod +x /tmp/prepare_docker_storage.sh
 
 # Set default environment variables for URLs
 ENV SERVER_FRONTEND_URL="http://localhost:3010"
-ENV SERVER_BACKEND_URL="http://localhost:3011"
 ENV SERVER_HOMEPAGE_URL="http://localhost:3010"
+
+ENV SERVER_BACKEND_URL="http://localhost:3011"
+ENV SERVER_ANALYSIS_URL="http://localhost:3012"
+ENV SERVER_PLOTS_URL="http://localhost:3013"
 
 ## Lets build and configure PANDORA
 RUN su - genular -c 'cd /var/www/genular/pandora \
