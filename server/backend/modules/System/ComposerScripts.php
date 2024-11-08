@@ -209,7 +209,7 @@ class ComposerScripts {
 
 				// Check if all environment variables are set before updating Nginx
 				if ($frontendUrl && $backendUrl && $analysisUrl && $plotsUrl) {
-					self::updateNginxConfig($arguments, false);
+					self::updateNginxConfig($arguments, true);
 				} else {
 					echo "Skipping Nginx configuration update: One or more environment variables are not set.\n";
 				}
