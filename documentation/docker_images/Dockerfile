@@ -17,6 +17,11 @@ COPY ./configuration.example.json /tmp/configuration.json
 COPY ./prepare_docker_storage.sh /tmp/prepare_docker_storage.sh
 RUN chmod +x /tmp/prepare_docker_storage.sh
 
+COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Set default environment variables for URLs
 ENV SERVER_FRONTEND_URL="http://localhost:3010" SERVER_HOMEPAGE_URL="http://localhost:3010" \
     SERVER_BACKEND_URL="http://localhost:3011" SERVER_ANALYSIS_URL="http://localhost:3012" \
@@ -41,7 +46,6 @@ RUN cd /var/www/genular/pandora \
 # Switch back to root for remaining tasks
 USER root
 
-COPY ["./supervisord.conf", "/etc/supervisor/conf.d/supervisord.conf"] 
 
 # Expose the necessary ports
 EXPOSE 3010
@@ -49,5 +53,4 @@ EXPOSE 3011
 EXPOSE 3012
 EXPOSE 3013
 
-# Run supervisord
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+ENTRYPOINT ["/entrypoint.sh"]

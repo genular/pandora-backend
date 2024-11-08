@@ -90,7 +90,7 @@ class ComposerScripts {
 		return $merged;
 	}
 
-	public static function updateNginxConfig($arguments) {
+	public static function updateNginxConfig($arguments, $updatePorts) {
 
 	    // Define paths to the Nginx configuration files
 	    $configPaths = [
@@ -133,8 +133,10 @@ class ComposerScripts {
 	                        // Update the server_name and listen directives within the matched server block
 	                        $block = $matches[0];
 	                        $block = preg_replace('/server_name\s+\S+;/', "server_name $hostname;", $block);
-	                        $block = preg_replace('/listen\s+\d+\s+default_server;/', "listen $port default_server;", $block);
-	                        $block = preg_replace('/listen\s+\[::\]:\d+\s+default_server;/', "listen [::]:$port default_server;", $block);
+	                        if($updatePorts){
+	                        	$block = preg_replace('/listen\s+\d+\s+default_server;/', "listen $port default_server;", $block);
+	                        	$block = preg_replace('/listen\s+\[::\]:\d+\s+default_server;/', "listen [::]:$port default_server;", $block);
+	                        }
 	                        return $block;
 	                    },
 	                    $nginxConfig
@@ -207,7 +209,7 @@ class ComposerScripts {
 
 				// Check if all environment variables are set before updating Nginx
 				if ($frontendUrl && $backendUrl && $analysisUrl && $plotsUrl) {
-					self::updateNginxConfig($arguments);
+					self::updateNginxConfig($arguments, false);
 				} else {
 					echo "Skipping Nginx configuration update: One or more environment variables are not set.\n";
 				}
