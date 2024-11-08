@@ -202,7 +202,12 @@ class ComposerScripts {
 
 				$result = self::array_merge_recursive_distinct($config, $arguments);
 
-				self::updateNginxConfig($arguments);
+				// Check if all environment variables are set before updating Nginx
+				if ($frontendUrl && $backendUrl && $analysisUrl && $plotsUrl) {
+					self::updateNginxConfig($arguments);
+				} else {
+					echo "Skipping Nginx configuration update: One or more environment variables are not set.\n";
+				}
 
 				try {
 					$yaml = Yaml::dump($result, 2, 4);
