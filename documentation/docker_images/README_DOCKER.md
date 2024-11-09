@@ -110,6 +110,11 @@ docker run --rm --network=host \
     --interactive \
     --env IS_DOCKER='true' \
     --env TZ=America/Los_Angeles \
+    --env SERVER_FRONTEND_URL="http://localhost:3010" \
+    --env SERVER_BACKEND_URL="http://localhost:3011" \
+    --env SERVER_HOMEPAGE_URL="http://localhost:3010" \
+    --env SERVER_ANALYSIS_URL="http://localhost:3012" \
+    --env SERVER_PLOTS_URL="http://localhost:3013" \
     --volume genular_data:/mnt/usrdata \
     --publish 3010:3010 \
     --publish 3011:3011 \

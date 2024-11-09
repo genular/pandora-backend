@@ -15,9 +15,11 @@ fi
 
 # Check if configuration file exists for composer post-install
 if [ -f /tmp/configuration.json ]; then
-    echo "Running composer post-install with configuration.json..."
-    cd /var/www/genular/pandora-backend/server/backend/
-    /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
+    if [ -n "$SERVER_FRONTEND_URL" ] && [ -n "$SERVER_BACKEND_URL" ] && [ -n "$SERVER_HOMEPAGE_URL" ]; then
+        echo "Running composer post-install with configuration.json..."
+        cd /var/www/genular/pandora-backend/server/backend/
+        /usr/bin/php8.2 /usr/local/bin/composer post-install /tmp/configuration.json
+    fi
 else
     echo "/tmp/configuration.json not found. Skipping composer post-install."
 fi
