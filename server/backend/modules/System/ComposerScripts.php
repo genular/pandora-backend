@@ -137,7 +137,7 @@ class ComposerScripts {
 			        if($updatePorts === true){
 			        	$nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);	
 			        }else{
-			        	
+
 			        	if($placeholder === 'placeholder_frontend'){
 			        		$port = 3010;
 			        	}else if($placeholder === 'placeholder_backend'){
@@ -167,12 +167,25 @@ class ComposerScripts {
 			}
 	    }
 
-	    if($success === true) {
-		    // Reload Nginx to apply the new configurations
-		    // exec('sudo /usr/sbin/nginx -s reload');
-		    // exec('sudo supervisorctl restart nginx:nginx_00', $output, $returnCode);
-		    echo "==> Nginx reloaded successfully.\n";
-	    }
+		if ($success === true) {
+		    // Check if Supervisor is running and managing Nginx
+		    exec('sudo supervisorctl status nginx:nginx_00', $output, $returnCode);
+
+		    if ($returnCode === 0) { // Supervisor is running and managing Nginx
+		        // Reload Nginx to apply new configurations
+		        echo "==> Reloading Nginx via Supervisor...\n";
+		        exec('sudo supervisorctl restart nginx:nginx_00', $output, $returnCode);
+		        
+		        if ($returnCode === 0) {
+		            echo "==> Nginx reloaded successfully.\n";
+		        } else {
+		            echo "==> Failed to reload Nginx via Supervisor.\n";
+		        }
+		    } else {
+		        // If Supervisor is not running or doesn't manage Nginx, reload Nginx directly
+		        echo "==> Supervisor not running...\n";
+		    }
+		}
 	}
 
 	/**
@@ -220,7 +233,7 @@ class ComposerScripts {
 
 				// Check if all environment variables are set before updating Nginx
 				if ($frontendUrl && $backendUrl && $analysisUrl && $plotsUrl) {
-					self::updateNginxConfig($arguments, false);
+					self::updateNginxConfig($arguments, true);
 				} else {
 					echo "Skipping Nginx configuration update: One or more environment variables are not set.\n";
 				}
