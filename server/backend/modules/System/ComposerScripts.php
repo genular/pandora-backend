@@ -142,8 +142,6 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                     );
                 }else{
                 	echo "==> No $marker found in $key\n";
-                	var_dump($nginxConfig);
-                exit;
                 }
 
                 // Replace ports in listen directives
