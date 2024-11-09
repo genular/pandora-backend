@@ -1,8 +1,8 @@
 # Default server configuration
 #
 server {
-	listen placeholder_frontend_port default_server; #FRONTEND_PORT
-	listen [::]:placeholder_frontend_port default_server; #FRONTEND_PORT
+	listen placeholder_frontend_port; #FRONTEND_PORT
+	listen [::]:placeholder_frontend_port; #FRONTEND_PORT
 
 	root /var/www/genular/pandora/compiled/web;
 

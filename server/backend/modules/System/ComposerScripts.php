@@ -161,10 +161,10 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 		                    // Determine if this is an IPv6 or IPv4 listen directive
 		                    if (strpos($line, '[::]') !== false) {
 		                        // IPv6 listen directive
-		                        $newConfig[] = "listen [::]:$port default_server; $marker";
+		                        $newConfig[] = "listen [::]:$port; $marker";
 		                    } else {
 		                        // IPv4 listen directive
-		                        $newConfig[] = "listen $port default_server; $marker";
+		                        $newConfig[] = "listen $port; $marker";
 		                    }
 		                } else {
 		                    // Keep the line unchanged
