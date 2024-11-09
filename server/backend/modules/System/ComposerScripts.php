@@ -131,17 +131,21 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 
                 // Replace URLs with hostname in server_name directives
                 if (strpos($marker, $nginxConfig) !== false && $hostname) {
-                	
+                	echo "==> Updating $key Nginx configuration with new hostname: $hostname\n";
+					
                     $nginxConfig = preg_replace(
                         "/server_name\s+\S+\s*;\s*$marker/m",
                         "server_name $hostname; # $marker",
                         $nginxConfig
                     );
+                }else{
+                	echo "==> No $marker found in $key\n";
                 }
 
                 // Replace ports in listen directives
                 if (strpos($marker, $nginxConfig) !== false && $port) {
-
+                	echo "==> Updating $key Nginx configuration with new port: $port\n";
+					
                     $nginxConfig = preg_replace_callback(
                         "/listen\s+\d+\s+default_server;\s*$marker/m",
                         function ($matches) use ($port, $marker) {
@@ -157,6 +161,8 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                         },
                         $nginxConfig
                     );
+                }else{
+                	echo "==> No $marker found in $key\n";
                 }
             }
         }
@@ -178,6 +184,9 @@ public static function updateNginxConfig($arguments, $updatePorts) {
     // Reload Nginx if changes were made successfully
     if ($success) {
         exec('sudo supervisorctl status nginx:nginx_00', $output, $returnCode);
+
+        var_dump($output);
+        var_dump($returnCode);
 
         if ($returnCode === 0) { // Supervisor is running and managing Nginx
             echo "==> Reloading Nginx via Supervisor...\n";
@@ -249,8 +258,6 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 					$yaml = Yaml::dump($result, 2, 4);
 					file_put_contents($config_path, $yaml);
 					echo "Configuration successfully changed!\r\n";
-					echo "==> " . $yaml . " <==\r\n";
-					echo "=========================\r\n";
 				} catch (ParseException $exception) {
 					printf('Unable to save the YAML string: %s', $exception->getMessage());
 				}
