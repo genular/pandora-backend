@@ -129,6 +129,8 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                 $hostname = $parsedUrl['host'] ?? null;
                 $port = $parsedUrl['port'] ?? (($parsedUrl['scheme'] ?? 'http') === 'https' ? 443 : 80);
 
+
+
                 // Replace URLs with hostname in server_name directives
                 if (strpos($marker, $nginxConfig) !== false && $hostname) {
                 	echo "==> Updating $key Nginx configuration with new hostname: $hostname\n";
@@ -140,6 +142,8 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                     );
                 }else{
                 	echo "==> No $marker found in $key\n";
+                	var_dump($nginxConfig);
+                exit;
                 }
 
                 // Replace ports in listen directives
