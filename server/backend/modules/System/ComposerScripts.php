@@ -109,62 +109,52 @@ public static function updateNginxConfig($arguments, $updatePorts) {
         
         // Load the Nginx config file
         $nginxConfig = file_get_contents($path);
-        
-		// Define markers and the corresponding URLs and ports from arguments
 		$placeholders = [
 		    '#BACKEND_URL' => $arguments['default']['backend']['server']['url'] ?? null,
 		    '#ANALYSIS_URL' => $arguments['default']['analysis']['server']['url'] ?? null,
 		    '#PLOTS_URL' => $arguments['default']['plots']['server']['url'] ?? null,
-		    '#FRONTEND_URL' => $arguments['default']['frontend']['server']['url'] ?? null,
-		    '#BACKEND_PORT' => $arguments['default']['backend']['server']['port'] ?? null,
-		    '#ANALYSIS_PORT' => $arguments['default']['analysis']['server']['port'] ?? null,
-		    '#PLOTS_PORT' => $arguments['default']['plots']['server']['port'] ?? null,
-		    '#FRONTEND_PORT' => $arguments['default']['frontend']['server']['port'] ?? null,
+		    '#FRONTEND_URL' => $arguments['default']['frontend']['server']['url'] ?? null
 		];
 
 		// Replace each marker with the actual hostname and port if provided
-		foreach ($placeholders as $marker => $value) {
-		    if ($value) {
-		        // If the marker is a URL, extract the hostname
-		        if (strpos($marker, '_URL') !== false) {
-		            $parsedUrl = parse_url($value);
-		            $hostname = $parsedUrl['host'] ?? null;
+		foreach ($placeholders as $marker => $url) {
+		    if ($url) {
+		        $parsedUrl = parse_url($url);
+		        $hostname = $parsedUrl['host'] ?? null;
+		        $port = $parsedUrl['port'] ?? (($parsedUrl['scheme'] ?? 'http') === 'https' ? 443 : 80);
 
-		            // Replace URLs with hostname in server_name directives
-		            if ($hostname && strpos($nginxConfig, $marker) !== false) {
-		                echo "==> Updating Nginx configuration for $marker with new hostname: $hostname\n";
-		                $nginxConfig = preg_replace(
-		                    "/server_name\s+\S+\s*;\s*$marker/m",
-		                    "server_name $hostname; $marker",
-		                    $nginxConfig
-		                );
-		            } else {
-		                echo "==> No $marker found or hostname is null.\n";
-		            }
+		        // Replace URLs with hostname in server_name directives
+		        if ($hostname && strpos($nginxConfig, $marker) !== false) {
+		            echo "==> Updating Nginx configuration for $marker with new hostname: $hostname\n";
+		            $nginxConfig = preg_replace(
+		                "/server_name\s+\S+\s*;\s*$marker/m",
+		                "server_name $hostname; $marker",
+		                $nginxConfig
+		            );
+		        } else {
+		            echo "==> No $marker found or hostname is null.\n";
 		        }
 
-		        // If the marker is a PORT, update the listen directive
-		        if (strpos($marker, '_PORT') !== false) {
-		            $port = is_numeric($value) ? $value : (($value['scheme'] ?? 'http') === 'https' ? 443 : 80);
+		        // Replace ports in listen directives
+		        if ($port && strpos($nginxConfig, "{$marker}_PORT") !== false) {
+		            echo "==> Updating Nginx configuration for {$marker}_PORT with new port: $port\n";
 		            
-		            echo "==> Updating Nginx configuration for $marker with new port: $port\n";
-		            
-		            // Split the configuration into lines to handle line-by-line replacements
+		            // Break the config into lines for line-by-line processing
 		            $lines = explode("\n", $nginxConfig);
 		            $newConfig = [];
 
 		            foreach ($lines as $line) {
-		                // Check if the line contains the #MARKER and replace if it matches
-		                if (strpos($line, $marker) !== false) {
-		                    echo "==> Replacing line with port: $port for marker $marker\n";
+		                // Check if the line has the #MARKER and replace if it matches
+		                if (strpos($line, "{$marker}_PORT") !== false) {
+		                    echo "==> Replacing line with port: $port for marker {$marker}_PORT\n";
 		                    
 		                    // Determine if this is an IPv6 or IPv4 listen directive
 		                    if (strpos($line, '[::]') !== false) {
 		                        // IPv6 listen directive
-		                        $newConfig[] = "listen [::]:$port default_server; $marker";
+		                        $newConfig[] = "listen [::]:$port default_server; {$marker}_PORT";
 		                    } else {
 		                        // IPv4 listen directive
-		                        $newConfig[] = "listen $port default_server; $marker";
+		                        $newConfig[] = "listen $port default_server; {$marker}_PORT";
 		                    }
 		                } else {
 		                    // Keep the line unchanged
@@ -177,7 +167,6 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 		        }
 		    }
 		}
-
 
         // Write updated config back to the file
         if (is_writable($path)) {
