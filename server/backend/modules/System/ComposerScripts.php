@@ -109,7 +109,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
         
         // Load the Nginx config file
         $nginxConfig = file_get_contents($path);
-        
+
 		// Define markers and the corresponding URLs and ports from arguments
 		$placeholders = [
 		    '#BACKEND_URL' => $arguments['default']['backend']['server']['url'] ?? null,
@@ -200,7 +200,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
         var_dump($output);
         var_dump($returnCode);
 
-        if ($returnCode === 0) { // Supervisor is running and managing Nginx
+        if ($returnCode === 0 || $returnCode === 3) { // Supervisor is running and managing Nginx
             echo "==> Reloading Nginx via Supervisor...\n";
             exec('sudo supervisorctl restart nginx:nginx_00', $output, $returnCode);
             
