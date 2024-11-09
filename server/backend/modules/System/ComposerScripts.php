@@ -90,103 +90,107 @@ class ComposerScripts {
 		return $merged;
 	}
 
-	public static function updateNginxConfig($arguments, $updatePorts) {
+public static function updateNginxConfig($arguments, $updatePorts) {
 
-	    // Define paths to the Nginx configuration files
-	    $configPaths = [
-	        'backend' => realpath('/etc/nginx/sites-available/genular.conf') ?: realpath(__DIR__ . '/../../../../documentation/docker_images/base_image/images/genular/etc/nginx/sites-available/genular.conf'),
-	        'frontend' => realpath('/etc/nginx/sites-available/default') ?: realpath(__DIR__ . '/../../../../documentation/docker_images/base_image/images/genular/etc/nginx/sites-available/default')
-	    ];
+    // Define paths to the Nginx configuration files
+    $configPaths = [
+        'backend' => realpath('/etc/nginx/sites-available/genular.conf') ?: realpath(__DIR__ . '/../../../../documentation/docker_images/base_image/images/genular/etc/nginx/sites-available/genular.conf'),
+        'frontend' => realpath('/etc/nginx/sites-available/default') ?: realpath(__DIR__ . '/../../../../documentation/docker_images/base_image/images/genular/etc/nginx/sites-available/default')
+    ];
 
-	    $success = false;
+    $success = false;
 
-	    
-	    // Check if configuration files exist
-	    foreach ($configPaths as $key => $path) {
-	        if (!$path) {
-	            echo ucfirst($key) . " Nginx configuration file not found!\n";
-	            continue;
-	        }
-	        // Load the Nginx config file
-	        $nginxConfig = file_get_contents($path);
+    // Check if configuration files exist
+    foreach ($configPaths as $key => $path) {
+        if (!$path) {
+            echo ucfirst($key) . " Nginx configuration file not found!\n";
+            continue;
+        }
+        
+        // Load the Nginx config file
+        $nginxConfig = file_get_contents($path);
 
-	        // Define placeholders and the corresponding URLs from arguments
-	        $placeholders = [
-	            'placeholder_frontend' => $arguments['default']['frontend']['server']['url'] ?? null,
-	            'placeholder_backend' => $arguments['default']['backend']['server']['url'] ?? null,
-	            'placeholder_analysis' => $arguments['default']['analysis']['server']['url'] ?? null,
-	            'placeholder_plots' => $arguments['default']['plots']['server']['url'] ?? null,
-	        ];
+        // Define markers and the corresponding URLs and ports from arguments
+        $placeholders = [
+            '#BACKEND_URL' => $arguments['default']['backend']['server']['url'] ?? null,
+            '#ANALYSIS_URL' => $arguments['default']['analysis']['server']['url'] ?? null,
+            '#PLOTS_URL' => $arguments['default']['plots']['server']['url'] ?? null,
+            '#FRONTEND_URL' => $arguments['default']['frontend']['server']['url'] ?? null,
+            '#BACKEND_PORT' => $arguments['default']['backend']['server']['port'] ?? null,
+            '#ANALYSIS_PORT' => $arguments['default']['analysis']['server']['port'] ?? null,
+            '#PLOTS_PORT' => $arguments['default']['plots']['server']['port'] ?? null,
+            '#FRONTEND_PORT' => $arguments['default']['frontend']['server']['port'] ?? null,
+        ];
 
-	        // Replace each placeholder with its respective hostname and port if the URL is provided
-	        foreach ($placeholders as $placeholder => $url) {
-	            if ($url) {
-	                $parsedUrl = parse_url($url);
-	                $hostname = $parsedUrl['host'];
-	                $scheme = $parsedUrl['scheme'] ?? 'http';
-	                $port = $parsedUrl['port'] ?? (($scheme === 'https') ? 443 : 80);
+        // Replace each marker with the actual hostname and port if provided
+        foreach ($placeholders as $marker => $value) {
+            if ($value) {
+                $parsedUrl = parse_url($value);
+                $hostname = $parsedUrl['host'] ?? null;
+                $port = $parsedUrl['port'] ?? (($parsedUrl['scheme'] ?? 'http') === 'https' ? 443 : 80);
 
-	                $placeholder_url = $placeholder . '_url';
-	                $placeholder_port = $placeholder . '_port';
+                // Replace URLs with hostname in server_name directives
+                if (strpos($marker, '_URL') !== false && $hostname) {
+                    $nginxConfig = preg_replace(
+                        "/server_name\s+\S+\s*;\s*$marker/m",
+                        "server_name $hostname; # $marker",
+                        $nginxConfig
+                    );
+                }
 
-	                echo "==> $placeholder_port ==> $port\n";
-	                echo "==> $placeholder_url 	==> $hostname\n";
+                // Replace ports in listen directives
+                if (strpos($marker, '_PORT') !== false && $port) {
+                    $nginxConfig = preg_replace_callback(
+                        "/listen\s+\d+\s+default_server;\s*$marker/m",
+                        function ($matches) use ($port, $marker) {
+                            return "listen $port default_server; # $marker";
+                        },
+                        $nginxConfig
+                    );
+                    $nginxConfig = preg_replace_callback(
+                        "/listen\s+\[\:\:\]\:\d+\s+default_server;\s*$marker/m",
+                        function ($matches) use ($port, $marker) {
+                            return "listen [::]:$port default_server; # $marker";
+                        },
+                        $nginxConfig
+                    );
+                }
+            }
+        }
 
-			        // Capture the result of str_replace and update $nginxConfig
-			        $nginxConfig = str_replace($placeholder_url, $hostname, $nginxConfig);
-			        if($updatePorts === true){
-			        	$nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);	
-			        }else{
+        // Write updated config back to the file
+        if (is_writable($path)) {
+            $bytesWritten = file_put_contents($path, $nginxConfig);
+            if ($bytesWritten === false) {
+                echo "Failed to update " . ucfirst($key) . " Nginx configuration!\n";
+            } else {
+                echo ucfirst($key) . " Nginx configuration successfully updated with new hostnames and ports!\n";
+                $success = true;
+            }
+        } else {
+            echo "Permission denied: Cannot write to Nginx configuration at $path. Please adjust permissions.\n";
+        }
+    }
 
-			        	if($placeholder === 'placeholder_frontend'){
-			        		$port = 3010;
-			        	}else if($placeholder === 'placeholder_backend'){
-			        		$port = 3011;
-			        	}else if($placeholder === 'placeholder_analysis'){
-			        		$port = 3012;
-			        	}else if($placeholder === 'placeholder_plots'){
-			        		$port = 3013;
-			        	}
+    // Reload Nginx if changes were made successfully
+    if ($success) {
+        exec('sudo supervisorctl status nginx:nginx_00', $output, $returnCode);
 
-			        	$nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);	
-			        }
-			        
-	            }
-	        }
+        if ($returnCode === 0) { // Supervisor is running and managing Nginx
+            echo "==> Reloading Nginx via Supervisor...\n";
+            exec('sudo supervisorctl restart nginx:nginx_00', $output, $returnCode);
+            
+            if ($returnCode === 0) {
+                echo "==> Nginx reloaded successfully.\n";
+            } else {
+                echo "==> Failed to reload Nginx via Supervisor.\n";
+            }
+        } else {
+            echo "==> Supervisor not managing Nginx or not running. Skipping restart.\n";
+        }
+    }
+}
 
-
-			if (is_writable($path)) {
-			    $bytesWritten = file_put_contents($path, $nginxConfig);
-			    if ($bytesWritten === false) {
-			        echo "Failed to update " . ucfirst($key) . " Nginx configuration!\n";
-			    } else {
-			        echo ucfirst($key) . " Nginx configuration successfully updated with new hostnames and ports!\n";
-			    }
-			} else {
-			    echo "Permission denied: Cannot write to Nginx configuration at $path. Please adjust permissions.\n";
-			}
-	    }
-
-		if ($success === true) {
-		    // Check if Supervisor is running and managing Nginx
-		    exec('sudo supervisorctl status nginx:nginx_00', $output, $returnCode);
-
-		    if ($returnCode === 0) { // Supervisor is running and managing Nginx
-		        // Reload Nginx to apply new configurations
-		        echo "==> Reloading Nginx via Supervisor...\n";
-		        exec('sudo supervisorctl restart nginx:nginx_00', $output, $returnCode);
-		        
-		        if ($returnCode === 0) {
-		            echo "==> Nginx reloaded successfully.\n";
-		        } else {
-		            echo "==> Failed to reload Nginx via Supervisor.\n";
-		        }
-		    } else {
-		        // If Supervisor is not running or doesn't manage Nginx, reload Nginx directly
-		        echo "==> Supervisor not running...\n";
-		    }
-		}
-	}
 
 	/**
 	 * [updateConfiguration description]
@@ -232,7 +236,7 @@ class ComposerScripts {
 				$result = self::array_merge_recursive_distinct($config, $arguments);
 
 				// Check if all environment variables are set before updating Nginx
-				if ($frontendUrl && $backendUrl && $analysisUrl && $plotsUrl) {
+				if ($frontendUrl || $backendUrl || $analysisUrl || $plotsUrl) {
 					self::updateNginxConfig($arguments, true);
 				} else {
 					echo "Skipping Nginx configuration update: One or more environment variables are not set.\n";

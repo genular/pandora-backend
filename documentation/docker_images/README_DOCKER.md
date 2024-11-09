@@ -112,7 +112,7 @@ docker push genular/pandora:latest
 Prepare the environment and pull the [genular/pandora](https://cloud.docker.com/u/genular/repository/docker/genular/pandora) image from Docker Hub. Run a container with mounted volumes and port mapping:
 
 ```bash
-docker run --rm --detach --name genular_latest_custom_1 --tty --interactive \
+docker run --rm --detach --name genular_latest_custom --tty --interactive \
   --env IS_DOCKER='true' \
   --env TZ=Europe/London \
   --env SERVER_FRONTEND_URL="http://localhost:4010" \
@@ -124,10 +124,10 @@ docker run --rm --detach --name genular_latest_custom_1 --tty --interactive \
   --volume genular_frontend_latest:/var/www/genular/pandora \
   --volume genular_backend_latest:/var/www/genular/pandora-backend \
   --volume genular_data_latest:/mnt/usrdata \
-  --publish 4010:3010 \
-  --publish 4011:3011 \
-  --publish 4012:3012 \
-  --publish 4013:3013 genular/pandora:latest
+  --publish 4010:4010 \
+  --publish 4011:4011 \
+  --publish 4012:4012 \
+  --publish 4013:4013 genular/pandora:latest
 ```
 
 After starting the container, access PANDORA at `http://localhost:3010` to create your account.
