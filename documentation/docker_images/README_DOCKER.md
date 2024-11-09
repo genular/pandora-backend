@@ -102,25 +102,22 @@ docker push genular/pandora:latest
 Prepare the environment and pull the [genular/pandora](https://cloud.docker.com/u/genular/repository/docker/genular/pandora) image from Docker Hub. Run a container with mounted volumes and port mapping:
 
 ```bash
-# Note for Windows users: replace "\" with "`" for newline separators
-docker run --rm --network=host \
-    --detach \
-    --name genular \
-    --tty \
-    --interactive \
-    --env IS_DOCKER='true' \
-    --env TZ=America/Los_Angeles \
-    --env SERVER_FRONTEND_URL="http://localhost:3010" \
-    --env SERVER_BACKEND_URL="http://localhost:3011" \
-    --env SERVER_HOMEPAGE_URL="http://localhost:3010" \
-    --env SERVER_ANALYSIS_URL="http://localhost:3012" \
-    --env SERVER_PLOTS_URL="http://localhost:3013" \
-    --volume genular_data:/mnt/usrdata \
-    --publish 3010:3010 \
-    --publish 3011:3011 \
-    --publish 3012:3012 \
-    --publish 3013:3013 \
-    genular/pandora:latest
+docker run --rm --detach --name genular_test_custom --tty --interactive \
+  --env IS_DOCKER='true' \
+  --env TZ=Europe/London \
+  --env SERVER_FRONTEND_URL="http://localhost:4010" \
+  --env SERVER_BACKEND_URL="http://localhost:4011" \
+  --env SERVER_HOMEPAGE_URL="http://localhost:4010" \
+  --env SERVER_ANALYSIS_URL="http://localhost:4012" \
+  --env SERVER_PLOTS_URL="http://localhost:4013" \
+  --oom-kill-disable  \
+  --volume genular_frontend_latest:/var/www/genular/pandora \
+  --volume genular_backend_latest:/var/www/genular/pandora-backend \
+  --volume genular_data_latest:/mnt/usrdata \
+  --publish 4010:4010 \
+  --publish 4011:4011 \
+  --publish 4012:4012 \
+  --publish 4013:4013 genular/pandora:latest
 ```
 
 After starting the container, access PANDORA at `http://localhost:3010` to create your account.
