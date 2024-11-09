@@ -46,11 +46,4 @@ RUN cd /var/www/genular/pandora \
 # Switch back to root for remaining tasks
 USER root
 
-
-# Expose the necessary ports
-EXPOSE 3010
-EXPOSE 3011
-EXPOSE 3012
-EXPOSE 3013
-
 ENTRYPOINT ["/entrypoint.sh"]

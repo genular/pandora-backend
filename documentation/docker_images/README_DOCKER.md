@@ -112,7 +112,7 @@ docker push genular/pandora:latest
 Prepare the environment and pull the [genular/pandora](https://cloud.docker.com/u/genular/repository/docker/genular/pandora) image from Docker Hub. Run a container with mounted volumes and port mapping:
 
 ```bash
-docker run --rm --detach --name genular_latest_custom --tty --interactive \
+docker run --rm --detach --name genular_latest_custom_1 --tty --interactive \
   --env IS_DOCKER='true' \
   --env TZ=Europe/London \
   --env SERVER_FRONTEND_URL="http://localhost:4010" \
