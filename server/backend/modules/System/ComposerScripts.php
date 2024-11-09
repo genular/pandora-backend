@@ -135,7 +135,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 					
                     $nginxConfig = preg_replace(
                         "/server_name\s+\S+\s*;\s*$marker/m",
-                        "server_name $hostname; # $marker",
+                        "server_name $hostname; $marker",
                         $nginxConfig
                     );
                 }else{
@@ -149,7 +149,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                     $nginxConfig = preg_replace_callback(
                         "/listen\s+\d+\s+default_server;\s*$marker/m",
                         function ($matches) use ($port, $marker) {
-                            return "listen $port default_server; # $marker";
+                            return "listen $port default_server; $marker";
                         },
                         $nginxConfig
                     );
@@ -157,7 +157,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                     $nginxConfig = preg_replace_callback(
                         "/listen\s+\[\:\:\]\:\d+\s+default_server;\s*$marker/m",
                         function ($matches) use ($port, $marker) {
-                            return "listen [::]:$port default_server; # $marker";
+                            return "listen [::]:$port default_server; $marker";
                         },
                         $nginxConfig
                     );
