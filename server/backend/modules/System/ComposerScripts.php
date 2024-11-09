@@ -116,6 +116,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 		    '#ANALYSIS_URL' => $arguments['default']['analysis']['server']['url'] ?? null,
 		    '#PLOTS_URL' => $arguments['default']['plots']['server']['url'] ?? null,
 		    '#FRONTEND_URL' => $arguments['default']['frontend']['server']['url'] ?? null,
+
 		    '#BACKEND_PORT' => $arguments['default']['backend']['server']['url'] ?? null,
 		    '#ANALYSIS_PORT' => $arguments['default']['analysis']['server']['url'] ?? null,
 		    '#PLOTS_PORT' => $arguments['default']['plots']['server']['url'] ?? null,
@@ -125,11 +126,13 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 		// Replace each marker with the actual hostname and port if provided
 		foreach ($placeholders as $marker => $value) {
 		    if ($value) {
+		    	echo "==> Processing marker: $marker - $value\n";
+
+	            $parsedUrl = parse_url($value);
+	            $hostname = $parsedUrl['host'] ?? null;
+
 		        // If the marker is a URL, extract the hostname
 		        if (strpos($marker, '_URL') !== false) {
-		            $parsedUrl = parse_url($value);
-		            $hostname = $parsedUrl['host'] ?? null;
-
 		            // Replace URLs with hostname in server_name directives
 		            if ($hostname && strpos($nginxConfig, $marker) !== false) {
 		                echo "==> Updating Nginx configuration for $marker with new hostname: $hostname\n";
