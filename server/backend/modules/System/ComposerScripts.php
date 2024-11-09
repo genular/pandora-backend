@@ -148,21 +148,23 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                 if (strpos($nginxConfig, $marker) !== false && $port) {
                 	echo "==> Updating $key Nginx configuration with new port: $port\n";
 					
-                    $nginxConfig = preg_replace_callback(
-                        "/listen\s+\d+\s+default_server;\s*$marker/m",
-                        function ($matches) use ($port, $marker) {
-                            return "listen $port default_server; $marker";
-                        },
-                        $nginxConfig
-                    );
+				    // Update IPv4 listen directive (matches numeric or alphanumeric placeholders)
+				    $nginxConfig = preg_replace_callback(
+				        "/listen\s+([a-zA-Z0-9_]+)\s+default_server;\s*$marker/m",
+				        function ($matches) use ($port, $marker) {
+				            return "listen $port default_server; $marker";
+				        },
+				        $nginxConfig
+				    );
 
-                    $nginxConfig = preg_replace_callback(
-                        "/listen\s+\[\:\:\]\:\d+\s+default_server;\s*$marker/m",
-                        function ($matches) use ($port, $marker) {
-                            return "listen [::]:$port default_server; $marker";
-                        },
-                        $nginxConfig
-                    );
+				    // Update IPv6 listen directive (matches numeric or alphanumeric placeholders)
+				    $nginxConfig = preg_replace_callback(
+				        "/listen\s+\[\:\:\]\:([a-zA-Z0-9_]+)\s+default_server;\s*$marker/m",
+				        function ($matches) use ($port, $marker) {
+				            return "listen [::]:$port default_server; $marker";
+				        },
+				        $nginxConfig
+				    );
                 }else{
                 	echo "==> No $marker found in $key\n";
                 }
