@@ -145,26 +145,35 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                 }
 
                 // Replace ports in listen directives
-                if (strpos($nginxConfig, $marker) !== false && $port) {
+                if (strpos($nginxConfig, $marker) !== false && strpos($marker, "_PORT") !== false) {
                 	echo "==> Updating $key Nginx configuration with new port: $port\n";
 					
-				    // Update IPv4 listen directive (matches numeric or alphanumeric placeholders)
-				    $nginxConfig = preg_replace_callback(
-				        "/listen\s+([a-zA-Z0-9_]+)\s+default_server;\s*$marker/m",
-				        function ($matches) use ($port, $marker) {
-				            return "listen $port default_server; $marker";
-				        },
-				        $nginxConfig
-				    );
+					// Break the config into lines for line-by-line processing
+					$lines = explode("\n", $nginxConfig);
+					$newConfig = [];
 
-				    // Update IPv6 listen directive (matches numeric or alphanumeric placeholders)
-				    $nginxConfig = preg_replace_callback(
-				        "/listen\s+\[\:\:\]\:([a-zA-Z0-9_]+)\s+default_server;\s*$marker/m",
-				        function ($matches) use ($port, $marker) {
-				            return "listen [::]:$port default_server; $marker";
-				        },
-				        $nginxConfig
-				    );
+					foreach ($lines as $line) {
+					    // Check if the line has the #MARKER at the end and replace if it matches
+					    if (strpos($line, $marker) !== false) {
+					        echo "==> Updating Nginx configuration line with new port: $port\n";
+					        
+					        // Determine if this is an IPv6 or IPv4 listen directive
+					        if (strpos($line, '[::]') !== false) {
+					            // IPv6 listen directive
+					            $newConfig[] = "listen [::]:$port default_server; {$marker}";
+					        } else {
+					            // IPv4 listen directive
+					            $newConfig[] = "listen $port default_server; {$marker}";
+					        }
+					    } else {
+					        // Keep the line unchanged
+					        $newConfig[] = $line;
+					    }
+					}
+
+					// Rebuild the config from modified lines
+					$nginxConfig = implode("\n", $newConfig);
+
                 }else{
                 	echo "==> No $marker found in $key\n";
                 }
