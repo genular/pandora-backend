@@ -134,7 +134,23 @@ class ComposerScripts {
 
 			        // Capture the result of str_replace and update $nginxConfig
 			        $nginxConfig = str_replace($placeholder_url, $hostname, $nginxConfig);
-			        $nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);
+			        if($updatePorts === true){
+			        	$nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);	
+			        }else{
+			        	
+			        	if($placeholder === 'placeholder_frontend'){
+			        		$port = 3010;
+			        	}else if($placeholder === 'placeholder_backend'){
+			        		$port = 3011;
+			        	}else if($placeholder === 'placeholder_analysis'){
+			        		$port = 3012;
+			        	}else if($placeholder === 'placeholder_plots'){
+			        		$port = 3013;
+			        	}
+
+			        	$nginxConfig = str_replace($placeholder_port, $port, $nginxConfig);	
+			        }
+			        
 	            }
 	        }
 
@@ -204,7 +220,7 @@ class ComposerScripts {
 
 				// Check if all environment variables are set before updating Nginx
 				if ($frontendUrl && $backendUrl && $analysisUrl && $plotsUrl) {
-					self::updateNginxConfig($arguments, true);
+					self::updateNginxConfig($arguments, false);
 				} else {
 					echo "Skipping Nginx configuration update: One or more environment variables are not set.\n";
 				}

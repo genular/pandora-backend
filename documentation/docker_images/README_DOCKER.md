@@ -86,7 +86,7 @@ docker build --no-cache --network=host --tag "genular/pandora:latest" --file ./D
 Run the image to verify it works:
 
 ```bash
-docker run --rm --detach --name genular --tty --interactive --env IS_DOCKER='true' --env TZ=Europe/London --oom-kill-disable --volume genular_frontend_latest:/var/www/genular/pandora --volume genular_backend_latest:/var/www/genular/pandora-backend --volume genular_data_latest:/mnt/usrdata --publish 3010:3010 --publish 3011:3011 --publish 3012:3012 --publish 3013:3013 genular/pandora:latest
+docker run --rm --detach --name genular_latest --tty --interactive --env IS_DOCKER='true' --env TZ=Europe/London --oom-kill-disable --volume genular_frontend_latest:/var/www/genular/pandora --volume genular_backend_latest:/var/www/genular/pandora-backend --volume genular_data_latest:/mnt/usrdata --publish 3010:3010 --publish 3011:3011 --publish 3012:3012 --publish 3013:3013 genular/pandora:latest
 ```
 
 #### Publishing the New Image
@@ -114,10 +114,10 @@ docker run --rm --detach --name genular_test_custom --tty --interactive \
   --volume genular_frontend_latest:/var/www/genular/pandora \
   --volume genular_backend_latest:/var/www/genular/pandora-backend \
   --volume genular_data_latest:/mnt/usrdata \
-  --publish 4010:4010 \
-  --publish 4011:4011 \
-  --publish 4012:4012 \
-  --publish 4013:4013 genular/pandora:latest
+  --publish 3010:4010 \
+  --publish 3011:4011 \
+  --publish 3012:4012 \
+  --publish 3013:4013 genular/pandora:latest
 ```
 
 After starting the container, access PANDORA at `http://localhost:3010` to create your account.
