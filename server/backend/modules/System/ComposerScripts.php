@@ -130,7 +130,8 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                 $port = $parsedUrl['port'] ?? (($parsedUrl['scheme'] ?? 'http') === 'https' ? 443 : 80);
 
                 // Replace URLs with hostname in server_name directives
-                if (strpos($marker, '_URL') !== false && $hostname) {
+                if (strpos($marker, $nginxConfig) !== false && $hostname) {
+                	
                     $nginxConfig = preg_replace(
                         "/server_name\s+\S+\s*;\s*$marker/m",
                         "server_name $hostname; # $marker",
@@ -139,7 +140,8 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                 }
 
                 // Replace ports in listen directives
-                if (strpos($marker, '_PORT') !== false && $port) {
+                if (strpos($marker, $nginxConfig) !== false && $port) {
+
                     $nginxConfig = preg_replace_callback(
                         "/listen\s+\d+\s+default_server;\s*$marker/m",
                         function ($matches) use ($port, $marker) {
@@ -147,6 +149,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                         },
                         $nginxConfig
                     );
+
                     $nginxConfig = preg_replace_callback(
                         "/listen\s+\[\:\:\]\:\d+\s+default_server;\s*$marker/m",
                         function ($matches) use ($port, $marker) {
