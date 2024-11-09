@@ -132,7 +132,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
 
 
                 // Replace URLs with hostname in server_name directives
-                if (strpos($marker, $nginxConfig) !== false && $hostname) {
+                if (strpos($nginxConfig, $marker) !== false && $hostname) {
                 	echo "==> Updating $key Nginx configuration with new hostname: $hostname\n";
 					
                     $nginxConfig = preg_replace(
@@ -147,7 +147,7 @@ public static function updateNginxConfig($arguments, $updatePorts) {
                 }
 
                 // Replace ports in listen directives
-                if (strpos($marker, $nginxConfig) !== false && $port) {
+                if (strpos($nginxConfig, $marker) !== false && $port) {
                 	echo "==> Updating $key Nginx configuration with new port: $port\n";
 					
                     $nginxConfig = preg_replace_callback(
