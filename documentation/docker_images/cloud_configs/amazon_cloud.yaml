@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy Pandora VM with Docker container
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.medium
+    Description: EC2 instance type
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+      - t3.small
+      - t3.medium
+    ConstraintDescription: Must be a valid EC2 instance type.
+
+  ServerFrontendURL:
+    Type: String
+    Default: "http://localhost:3010"
+    Description: URL for the server frontend
+
+  ServerHomepageURL:
+    Type: String
+    Default: "http://localhost:3010"
+    Description: URL for the server homepage
+
+  ServerBackendURL:
+    Type: String
+    Default: "http://localhost:3011"
+    Description: URL for the server backend
+
+  ServerAnalysisURL:
+    Type: String
+    Default: "http://localhost:3012"
+    Description: URL for the analysis server
+
+  ServerPlotsURL:
+    Type: String
+    Default: "http://localhost:3013"
+    Description: URL for the plots server
+
+Resources:
+  PandoraInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: ami-0c55b159cbfafe1f0  # Amazon Linux 2 AMI (update to a region-specific AMI if needed)
+      SecurityGroupIds:
+        - !Ref PandoraSecurityGroup
+      KeyName: my-key-pair  # Replace with your EC2 key pair name
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          # Install Docker
+          yum update -y
+          amazon-linux-extras install docker -y
+          service docker start
+          usermod -a -G docker ec2-user
+          # Log in to ECR and pull the Docker image
+          $(aws ecr get-login --no-include-email --region us-east-1)
+          docker pull ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/pandora-repo:latest
+          # Run Docker container with environment variables
+          docker run -d \
+            -e SERVER_FRONTEND_URL="${ServerFrontendURL}" \
+            -e SERVER_HOMEPAGE_URL="${ServerHomepageURL}" \
+            -e SERVER_BACKEND_URL="${ServerBackendURL}" \
+            -e SERVER_ANALYSIS_URL="${ServerAnalysisURL}" \
+            -e SERVER_PLOTS_URL="${ServerPlotsURL}" \
+            -p 3010:3010 -p 3011:3011 -p 3012:3012 -p 3013:3013 \
+            ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/pandora-repo:latest
+
+  PandoraSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP, HTTPS, and Pandora service ports
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3010
+          ToPort: 3013
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  InstancePublicIP:
+    Description: Public IP address of the Pandora instance
+    Value: !GetAtt PandoraInstance.PublicIp
+  ServerFrontendURL:
+    Description: URL for the server frontend
+    Value: !Ref ServerFrontendURL
+  ServerHomepageURL:
+    Description: URL for the server homepage
+    Value: !Ref ServerHomepageURL
+  ServerBackendURL:
+    Description: URL for the server backend
+    Value: !Ref ServerBackendURL
+  ServerAnalysisURL:
+    Description: URL for the analysis server
+    Value: !Ref ServerAnalysisURL
+  ServerPlotsURL:
+    Description: URL for the plots server
+    Value: !Ref ServerPlotsURL

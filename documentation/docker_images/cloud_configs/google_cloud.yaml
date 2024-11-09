@@ -1,0 +1,90 @@
+imports:
+- path: https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/family/debian-10
+
+resources:
+- name: pandora-vm-instance
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a  # Adjust based on user preference or your preferred default
+    machineType: zones/us-central1-a/machineTypes/n1-standard-1  # Customize as needed
+    metadata:
+      items:
+      - key: google-logging-enabled
+        value: "true"
+      - key: google-monitoring-enabled
+        value: "true"
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          # Update and install Docker
+          apt-get update
+          apt-get install -y docker.io
+          # Pull the Docker image from Google Artifact Registry
+          docker pull us-central1-docker.pkg.dev/pandora-441018/pandora-repo/pandora:latest
+          # Run the Docker container with environment variables set by the user
+          docker run -d \
+            -e SERVER_FRONTEND_URL="${SERVER_FRONTEND_URL}" \
+            -e SERVER_HOMEPAGE_URL="${SERVER_HOMEPAGE_URL}" \
+            -e SERVER_BACKEND_URL="${SERVER_BACKEND_URL}" \
+            -e SERVER_ANALYSIS_URL="${SERVER_ANALYSIS_URL}" \
+            -e SERVER_PLOTS_URL="${SERVER_PLOTS_URL}" \
+            -p 3010:3010 -p 3011:3011 -p 3012:3012 -p 3013:3013 \
+            us-central1-docker.pkg.dev/pandora-441018/pandora-repo/pandora:latest
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: $(ref.debian-10.selfLink)  # Use Debian 10 as a base image; adjust if needed
+    networkInterfaces:
+    - network: global/networks/default
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    serviceAccounts:
+    - email: default
+      scopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    tags:
+      items:
+      - http-server
+      - https-server
+
+# Firewall rule to allow HTTP and HTTPS traffic along with specific ports (3010-3013)
+- name: pandora-allow-http
+  type: compute.v1.firewall
+  properties:
+    network: global/networks/default
+    allowed:
+    - IPProtocol: TCP
+      ports:
+      - "80"
+      - "443"
+      - "3010-3013"
+    sourceRanges: ["0.0.0.0/0"]
+    targetTags:
+    - http-server
+    - https-server
+
+# Define environment variable templates for user configuration
+outputs:
+- name: SERVER_FRONTEND_URL
+  description: "URL for the server frontend"
+  value: "http://localhost:3010"
+
+- name: SERVER_HOMEPAGE_URL
+  description: "URL for the server homepage"
+  value: "http://localhost:3010"
+
+- name: SERVER_BACKEND_URL
+  description: "URL for the server backend"
+  value: "http://localhost:3011"
+
+- name: SERVER_ANALYSIS_URL
+  description: "URL for the analysis server"
+  value: "http://localhost:3012"
+
+- name: SERVER_PLOTS_URL
+  description: "URL for the plots server"
+  value: "http://localhost:3013"
