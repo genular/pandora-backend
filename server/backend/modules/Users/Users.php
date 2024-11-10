@@ -56,7 +56,7 @@ class Users {
 
 	public function updateUserProfile($user_id, $data) {
 	    // Define which fields we want to allow updates for
-	    $allowedFields = ['first_name', 'last_name', 'phone', 'llm_api_key', 'llm_api_endpoint'];
+	    $allowedFields = ['first_name', 'last_name', 'phone', 'llm_api_key', 'llm_api_endpoint', 'registration_key'];
 
 	    // Filter out any fields that are not allowed
 	    $updateData = array_intersect_key($data, array_flip($allowedFields));
@@ -204,6 +204,7 @@ class Users {
 				"email" => $email_adress,
 				"phone" => $phoneNumber,
 				"account_type" => $account_type,
+				"registration_key" => $registration_key,
 				"created" => Medoo::raw("NOW()"),
 				"updated" => Medoo::raw("NOW()"),
 			]);
@@ -244,6 +245,8 @@ class Users {
 			"users_details.last_name",
 			"users_details.email",
 			"users_details.phone",
+			"users_details.account_type",
+			"users_details.registration_key",
 			"users_details.llm_api_key",
 			"users_details.llm_api_endpoint",
 			"users_details.account_type [Int]",

@@ -42,46 +42,15 @@ $app->get('/backend/system/validation/database/{validationTable:.*}/{validationF
 	if (!in_array($validationTable, $allowedTables)) {
 		$success = false;
 	}
-
+	
 	if (!in_array($validationField, $allowedFields)) {
 		$success = false;
 	}
 
 	if ($success !== false) {
-
 		if($validationField === 'registration_key'){
-
-			if(strtolower($validationValue) === base64_decode("YXRvbWljbGFi")){
-				$recordAvaliable = true;
-			}else{
-				$url = 'https://genular.atomic-lab.org/api/validate_key';
-				$api_key = $validationValue;
-				$url_with_api_key = $url . '?api_key=' . urlencode($api_key);
-
-				$options = array(
-				    'ssl' => array(
-				        'verify_peer'       => true,
-				        'verify_peer_name'  => true,
-				        'allow_self_signed' => false,
-				    ),
-				    'http' => array(
-				        'method'  => 'GET',
-				        'timeout' => 15,
-				    ),
-				);
-
-				$context = stream_context_create($options);
-				$check_response = @file_get_contents($url_with_api_key, false, $context);
-
-				if ($check_response !== FALSE) {
-					$check_response_data = json_decode($check_response, true);			
-				    if (isset($check_response_data['valid']) && $check_response_data['valid'] === true) {
-				        $recordAvaliable = true;
-				    }
-				}
-			}
+			$recordAvaliable = $system->checkRegistrationKey($validationValue);
 		}else{
-			// Try to retrieve that row from database
 			$dbResults = $system->databaseAvailability($validationTable, $validationField, $validationValue);
 			if (!$dbResults) {
 				$recordAvaliable = true;

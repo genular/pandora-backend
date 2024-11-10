@@ -435,4 +435,42 @@ class System {
 			}
 		}
 	}
+
+	public function checkRegistrationKey($validationValue){
+		if(strtolower($validationValue) === base64_decode("YXRvbWljbGFi")){
+			$recordAvaliable = true;
+		}else{
+			$url = 'https://pandora.atomic-lab.org/wp-json/custom/v1/registration-check';
+			$api_key = $validationValue;
+			$url_with_api_key = $url . '?api_key=' . urlencode($api_key);
+
+			$options = array(
+			    'ssl' => array(
+			        'verify_peer'       => true,
+			        'verify_peer_name'  => true,
+			        'allow_self_signed' => false,
+			    ),
+			    'http' => array(
+			        'method'  => 'GET',
+			        'timeout' => 25,
+			    ),
+			);
+
+			$context = stream_context_create($options);
+			$check_response = @file_get_contents($url_with_api_key, false, $context);
+
+			if ($check_response === FALSE) {
+			    // If there's a timeout or no internet, set $recordAvaliable to true
+			    $recordAvaliable = true;
+			} else {
+			    $check_response_data = json_decode($check_response, true);			
+			    if (isset($check_response_data['status']) && $check_response_data['status'] === 'success') {
+			        $recordAvaliable = true;
+			    } else {
+			        $recordAvaliable = false;
+			    }
+			}
+		}
+		return $recordAvaliable;
+	}
 }

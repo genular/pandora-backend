@@ -132,14 +132,13 @@ $app->post('/backend/user/logout', function (Request $request, Response $respons
  * @return Response Returns the generated image as a PNG with the appropriate Content-Type header.
  */
 $app->get('/backend/user/avatar', function (Request $request, Response $response, array $args) {
-    // Retrieve the user ID from the query parameters, defaulting to 0 if not provided.
-    $user_id = (int) $request->getQueryParam('id', 0);
+    // Path to the default avatar icon
+    $avatarPath = __DIR__ . '/../../../public/assets/avatar_icon.png';
 
-    // Access the Users class from the dependency container.
-    $Users = $this->get('PANDORA\Users\Users');
-
-    // Fetch user details based on the provided user ID.
-    $user_details = $Users->getUsersByUserId($user_id);
+    // Check if the avatar file exists
+    if (!file_exists($avatarPath)) {
+        return $response->withStatus(404)->write('Avatar icon not found.');
+    }
 
     // Retrieve and validate the avatar size from the query parameters.
     $size = (int) $request->getQueryParam('size', 256);
@@ -147,50 +146,37 @@ $app->get('/backend/user/avatar', function (Request $request, Response $response
         $size = 256; // Reset to default size if the specified size is out of bounds.
     }
 
-    // Validate user ID and prepare fallback initials for unknown users.
-    if (!$user_details || $user_id < 1) {
-        $user_details = ["first_name" => "unknown", "last_name" => ""];
-    }
+    // Load the avatar image
+    $image = imagecreatefrompng($avatarPath);
 
-    // Define color schemes for the avatar background and text.
-    $colors = [
-        ["background" => "#8BC34A", "color" => "#FFFFFF"],
-    ];
-    // Select a random color scheme.
-    $color = $colors[array_rand($colors, 1)];
+    // Get the original image dimensions
+    $originalWidth = imagesx($image);
+    $originalHeight = imagesy($image);
 
-    // Generate initials from the first letters of the first and last name.
-    $initials = substr($user_details["first_name"], 0, 1) . substr($user_details["last_name"], 0, 1);
+    // Create a new blank image with the specified size
+    $resizedImage = imagecreatetruecolor($size, $size);
+    imagesavealpha($resizedImage, true);
+    $transparent = imagecolorallocatealpha($resizedImage, 0, 0, 0, 127);
+    imagefill($resizedImage, 0, 0, $transparent);
 
-    // Create a blank true color image.
-    $image = imagecreatetruecolor($size, $size);
-    
-    // Allocate colors for background and text based on the selected scheme.
-    list($r, $g, $b) = sscanf($color["background"], "#%02x%02x%02x");
-    $bgColor = imagecolorallocate($image, $r, $g, $b);
-    list($r, $g, $b) = sscanf($color["color"], "#%02x%02x%02x");
-    $textColor = imagecolorallocate($image, $r, $g, $b);
-    
-    // Fill the image background.
-    imagefilledrectangle($image, 0, 0, $size, $size, $bgColor);
-    
-    // Position the text in the center of the image.
-    // Note: For better centering, consider calculating the text's bounding box and adjusting placement accordingly.
-    imagestring($image, 5, $size/2, $size/2, $initials, $textColor);
+    // Resize the avatar icon to the specified dimensions
+    imagecopyresampled($resizedImage, $image, 0, 0, 0, 0, $size, $size, $originalWidth, $originalHeight);
 
-    // Capture the generated image data.
+    // Capture the resized image data
     ob_start();
-    imagepng($image);
+    imagepng($resizedImage);
     $data = ob_get_contents();
     ob_end_clean();
 
-    // Cleanup: destroy the image resource to free memory.
+    // Cleanup: destroy the image resources to free memory
     imagedestroy($image);
+    imagedestroy($resizedImage);
 
-    // Write the image data to the response body and set the content type.
-    $response->write($data);
+    // Write the image data to the response body and set the content type
+    $response->getBody()->write($data);
     return $response->withHeader('Content-Type', 'image/png');
 });
+
 
 /**
  * Fetches and returns details for a specific user.
@@ -309,76 +295,7 @@ $app->post('/backend/user/register', function (Request $request, Response $respo
 
 	if ($user_id === null) {
 		$success = false;
-	} else {
-		$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage");
-		$url = 'https://snap.genular.org/simon.php';
-		$collect_data = $post;
-		unset($collect_data["user"]['password']);
-
-		$collect_data["user"]['success'] = $success;
-		$collect_data["timestamp"] = time();
-		$collect_data["date_time"] = date('Y-m-d H:i:s', $collect_data["timestamp"]);
-		if(isset($_SERVER)){
-			$collect_data["other"] = json_encode($_SERVER);
-		}
-
-		$options = array(
-		    'ssl' => array(
-		        'verify_peer'       => true,
-		        'verify_peer_name'  => true,
-		        'allow_self_signed' => false
-		    ),
-			'http' => array(
-				'timeout'=> 10, // timeout of 10 seconds
-				'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-				'method' => 'POST',
-				'content' => http_build_query($collect_data),
-			),
-		);
-
-		$context = stream_context_create($options);
-		try {
-		    $collect_result = @file_get_contents($url, false, $context);
-		    if ($collect_result === FALSE) {
-		        // Manually throw an exception if file_get_contents failed
-		        $error = error_get_last();
-		        $this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage FAILED: " . json_encode($error));
-		    }
-		} catch (Exception $e) {
-		    // Log the exception message
-		    $this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' Send statistics about usage FAILED: " . $e->getMessage());
-		}
 	}
-
-	// If user is successfully registered send verification email
-	// if ($success !== false && $validation_hash !== null) {
-	// 	$this->get('Monolog\Logger')->info("PANDORA '/backend/user/register' verification email");
-	// 	$sendgrid_configured = true;
-	// 	if ($config->get('default.sendgrid_api') === null || strlen($config->get('default.sendgrid_api')) < 20) {
-	// 		$sendgrid_configured = false;
-	// 	}
-	// 	// Don't use this function if sendgrid is not configured or Internet is unavailable
-	// 	if ($this->get('settings')["is_connected"] === true && $sendgrid_configured === true) {
-	// 		$from = new SendGrid\Email($config->get('default.details.title') . " Support", $config->get('default.details.email'));
-	// 		$subject = "Welcome to " . $config->get('default.details.title') . "! Please confirm Your Email";
-	// 		$to = new SendGrid\Email($username, $email);
-	// 		$content = new SendGrid\Content("text/html", "Copyright (c) " . $config->get('default.details.title'));
-	// 		$mail = new SendGrid\Mail($from, $subject, $to, $content);
-	// 		$mail->personalization[0]->addSubstitution("{{username}}", $username);
-	// 		$mail->personalization[0]->addSubstitution("{{email}}", $email);
-	// 		$mail->personalization[0]->addSubstitution("{{firstName}}", $firstName);
-	// 		$confirm_account_url = $config->get('default.backend.server.url');
-	// 		$confirm_account_url = $confirm_account_url . "/backend/user/verify/" . $validation_hash;
-	// 		$mail->personalization[0]->addSubstitution("{{confirm_account_url}}", $confirm_account_url);
-	// 		$mail->setTemplateId($config->get('default.sendgrid_templates.register'));
-	// 		$sg = new \SendGrid($config->get('default.sendgrid_api'));
-	// 		try {
-	// 			$res = $sg->client->mail()->send()->post($mail);
-	// 		} catch (Exception $e) {
-	// 			echo 'Caught exception: ', $e->getMessage(), "\n";
-	// 		}
-	// 	}
-	// }
 
 	return $response->withJson(["success" => $success, "message" => $message]);
 });

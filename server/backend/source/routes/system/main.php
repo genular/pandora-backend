@@ -303,6 +303,32 @@ $app->post('/backend/system/describe_ai', function (Request $request, Response $
 });
 
 
+$app->get('/backend/system/check-registration', function (Request $request, Response $response, array $args) {
+    $success = true;
+    $message = "";
+
+    // Get user details from the request attribute
+    $user_details = $request->getAttribute('user');
+    $registration_key = $user_details['registration_key'];
+
+    // Check if the registration key is a valid MD5 string
+    if (!preg_match('/^[a-f0-9]{32}$/', $registration_key)) {
+        $success = false;
+    }
+
+    if ($success === true) {
+        $system = $this->get('PANDORA\System\System');
+        $registration = $system->checkRegistrationKey($registration_key);
+
+        if ($registration === false) {
+            $success = false;
+        }
+    }
+
+    return $response->withJson(["success" => $success, "message" => $message]);
+});
+
+
 $app->get('/backend/system/check-updates', function (Request $request, Response $response, array $args) {
     // Define base paths relative to __DIR__
     $baseBackendPath = realpath(__DIR__ . '/../../../../../');
