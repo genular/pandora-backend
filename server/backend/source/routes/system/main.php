@@ -309,6 +309,12 @@ $app->get('/backend/system/check-registration', function (Request $request, Resp
 
     // Get user details from the request attribute
     $user_details = $request->getAttribute('user');
+    $user_id = $user_details['user_id'];
+
+    // Fetch user details using the Users service
+    $Users = $this->get('PANDORA\Users\Users');
+    $user_details = $Users->getUsersByUserId($user_id);
+
     $registration_key = $user_details['registration_key'];
 
     // Check if the registration key is a valid MD5 string
