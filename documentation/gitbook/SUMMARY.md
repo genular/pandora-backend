@@ -6,7 +6,7 @@
 
 * [Quickstart](getting-started/quickstart/README.md)
   * [Installation](getting-started/quickstart/installation/README.md)
-    * [CUDA Support](getting-started/quickstart/installation/cuda-support.md)
+    * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
   * [Reinstallation](getting-started/quickstart/reinstallation.md)
 
 ## PANDORA
