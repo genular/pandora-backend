@@ -4,8 +4,30 @@
 
 ## Getting Started
 
-* [Quickstart](getting-started/quickstart.md)
-* [Publish your docs](getting-started/publish-your-docs.md)
+* [Quickstart](getting-started/quickstart/README.md)
+  * [Installation](getting-started/quickstart/installation/README.md)
+    * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
+  * [Reinstallation](getting-started/quickstart/reinstallation.md)
+
+## PANDORA
+
+* [Account Creation](pandora/account-creation/README.md)
+  * [User Settings](pandora/account-creation/user-settings.md)
+* [Dashboard](pandora/dashboard.md)
+* [Workspace](pandora/workspace.md)
+
+## Data Analysis
+
+* [Discovery](data-analysis/discovery/README.md)
+  * [Data Overview](data-analysis/discovery/data-overview.md)
+  * [Correlation](data-analysis/discovery/correlation.md)
+  * [Clustering](data-analysis/discovery/clustering.md)
+  * [PCA Analysis](data-analysis/discovery/pca-analysis.md)
+  * [t-SNE Analysis](data-analysis/discovery/t-sne-analysis.md)
+  * [UMAP](data-analysis/discovery/umap.md)
+* [Predictive](data-analysis/predictive/README.md)
+  * [Machine Learning](data-analysis/predictive/machine-learning.md)
+  * [Exploration](data-analysis/predictive/exploration.md)
 
 ## Basics
 
