@@ -13,6 +13,13 @@
 calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     set.seed(1337)
 
+    # Check if GPU is available and RAPIDS cuML is accessible
+    gpu_available <- py_module_available("cuml") && py_module_available("cupy")
+
+    # Detect CPU cores for parallel processing
+    cpu_cores <- parallel::detectCores(logical = FALSE)
+    message(paste("==> Detected CPU cores:", cpu_cores))
+    
     info.norm <- dataset
     # Remap column names
     names(info.norm) <- plyr::mapvalues(names(info.norm), from = fileHeader$remapped, to = fileHeader$original)
@@ -61,10 +68,7 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     initial_dims <- min(initial_dims, ncol(tsne_data), 100)
     initial_dims <- max(initial_dims, 1)
 
-    print(paste0("Using initial_dims: ", initial_dims))
-
     # Adjust perplexity based on dataset size
-
     if (!is.null(settings$perplexity) && settings$perplexity > 0){
         print("Using provided perplexity")
 
@@ -141,30 +145,55 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
             exaggeration_factor <- 12
         }
     }
-
+    print(paste0("Using initial_dims: ", initial_dims))
+    print(paste0("Using perplexity: ", perplexity))
     print(paste0("Using max_iter: ", max_iter))
     print(paste0("Using theta: ", theta))
     print(paste0("Using eta: ", eta))
     print(paste0("Using exaggeration_factor: ", exaggeration_factor))
 
-    tsne.norm <- Rtsne::Rtsne(
-        as.matrix(tsne_data),
-        dims = 2,
-        perplexity = perplexity,
-        pca = TRUE,
-        pca_center = pca.scale,
-        pca_scale = pca.scale,
-        check_duplicates = FALSE,
-        initial_dims = initial_dims,
-        max_iter = max_iter,
-        theta = theta,
-        eta = eta,
-        exaggeration_factor = exaggeration_factor,
-        verbose = FALSE,
-        num_threads = 1
-    )
+    # Run t-SNE on GPU if available, otherwise fall back to Rtsne
+    if (gpu_available) {
+        print("GPU detected. Using cuML for t-SNE.")
+        
+        # Load the cuML module
+        cuml <- import("cuml")
+        
+        # Convert data to a format compatible with cuML
+        tsne_data_py <- r_to_py(as.matrix(tsne_data))
 
-    info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
+        # Run t-SNE using cuML
+        tsne_norm <- cuml$TSNE(n_components=2, perplexity=perplexity, n_iter=max_iter, learning_rate=eta)
+        tsne_result <- tsne_norm$fit_transform(tsne_data_py)
+
+        # Convert the result back to R format
+        tsne_data_r <- as.data.frame(tsne_result)
+
+        # Store results in info.norm
+        info.norm <- info.norm %>% mutate(tsne1 = tsne_data_r[, 1], tsne2 = tsne_data_r[, 2])
+
+    } else {
+        print("No GPU detected or cuML not available. Falling back to Rtsne.")
+
+        tsne.norm <- Rtsne::Rtsne(
+            as.matrix(tsne_data),
+            dims = 2,
+            perplexity = perplexity,
+            pca = TRUE,
+            pca_center = TRUE,
+            pca_scale = TRUE,
+            check_duplicates = FALSE,
+            initial_dims = initial_dims,
+            max_iter = max_iter,
+            theta = theta,
+            eta = eta,
+            exaggeration_factor = exaggeration_factor,
+            verbose = FALSE,
+            num_threads = cpu_cores
+        )
+
+        info.norm <- info.norm %>% mutate(tsne1 = tsne.norm$Y[, 1], tsne2 = tsne.norm$Y[,2])
+    }
 
     return(list(
         info.norm = info.norm,
@@ -179,33 +208,41 @@ calculate_tsne <- function(dataset, settings, fileHeader, removeGroups = TRUE){
     ))
 }
 
-
-
-## Plot TSNE data
 plot_tsne <- function(info.norm, groupingVariable = NULL, settings, tmp_hash){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))
+    
+    # Check the number of levels in groupingVariable
+    if (!is.null(groupingVariable)) {
+        info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
+        num_groups <- length(unique(info.norm[[groupingVariable]]))
+        
+        # Use a palette with enough colors
+        if (num_groups <= 8) {
+            plot_palette <- RColorBrewer::brewer.pal(max(3, num_groups), settings$colorPalette) # e.g., "Set1"
+        } else {
+            plot_palette <- viridis(num_groups, option = "D") # Adjust option as needed
+        }
+        
+        plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable)) +
+                    scale_color_manual(values = plot_palette)
+    } else {
+        plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2"))
+    }
 
-    if(!is.null(groupingVariable)){
-    	info.norm[[groupingVariable]] <- as.factor(info.norm[[groupingVariable]])
-    	plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2", colour = groupingVariable))
-	}else{
-		plotData <- ggplot(info.norm, aes_string(x = "tsne1", y = "tsne2"))
-	}
+    plotData <- plotData + 
+        geom_point(size = settings$pointSize) +
+        labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
+        theme(text = element_text(size = settings$fontSize), legend.position = settings$legendPosition)
 
-	plotData <- plotData + 
-	    geom_point(size = settings$pointSize) +
-	    labs(x = "t-SNE dimension 1", y = "t-SNE dimension 2") + 
-	    scale_color_brewer(palette=settings$colorPalette) + 
-        theme(text=element_text(size=settings$fontSize), legend.position = settings$legendPosition)
-
-
-    tmp_path <- tempfile(pattern =  tmp_hash, tmpdir = tempdir(), fileext = ".svg")
+    tmp_path <- tempfile(pattern = tmp_hash, tmpdir = tempdir(), fileext = ".svg")
     svg(tmp_path, width = settings$plot_size * settings$aspect_ratio, height = settings$plot_size, pointsize = 12, onefile = TRUE, family = "Arial", bg = "white", antialias = "default")
-        print(plotData)
+    print(plotData)
     dev.off()  
 
     return(tmp_path) 
 }
+
+
 
 plot_tsne_color_by <- function(info.norm, groupingVariable = NULL, colorVariable, settings, tmp_hash){ 
     theme_set(eval(parse(text=paste0(settings$theme, "()"))))

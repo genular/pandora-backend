@@ -3,12 +3,15 @@
 # Check if environment variables are set and run yarn if they are
 if [ -n "$SERVER_FRONTEND_URL" ] && [ -n "$SERVER_BACKEND_URL" ] && [ -n "$SERVER_HOMEPAGE_URL" ]; then
     echo "Running yarn with specified environment variables..."
+    
     cd /var/www/genular/pandora
     yarn run webpack:web:prod \
         --isDemoServer=false \
         --server_frontend="$SERVER_FRONTEND_URL" \
         --server_backend="$SERVER_BACKEND_URL" \
         --server_homepage="$SERVER_HOMEPAGE_URL"
+    chown -hR genular:www-data "/var/www/genular"
+
 else
     echo "Environment variables for yarn not specified. Skipping yarn run."
 fi

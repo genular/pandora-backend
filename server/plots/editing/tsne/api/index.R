@@ -293,76 +293,88 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
             # settings$selectedColumns <- settings$selectedColumns[settings$selectedColumns %!in% settings$excludedColumns]
         }
 
-        ## Load dataset
-        dataset <- loadDataFromFileSystem(selectedFilePath)
+
+        # Step 4 - Load Dataset
+        message("==> Step 4: Loading dataset")
+        step_time <- Sys.time()
+        dataset <- loadDataFromFileSystem(selectedFilePath, header = T, sep = ',', stringsAsFactors = FALSE, data.table = FALSE, retype = FALSE)
+        message("==> Completed Step 4: Dataset loaded in ", Sys.time() - step_time)
+
+        # Filtering dataset
+        message("==> Step 5: Filtering dataset")
+        step_time <- Sys.time()
         dataset_filtered <- dataset[, names(dataset) %in% c(settings$selectedColumns, settings$groupingVariables)]
+        message("==> Completed Step 5: Dataset filtered in ", Sys.time() - step_time)
+        print(paste("==> Selected Columns 1: ", length(settings$selectedColumns), 
+                    " Dataset columns: ", ncol(dataset_filtered), 
+                    " Dataset rows: ", nrow(dataset_filtered)))
 
-        print(paste("==> Selected Columns 1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
 
-        ## Cast all non numeric values to NA
+        # Casting non-numeric values to NA
+        message("==> Step 6: Casting non-numeric values to NA")
+        step_time <- Sys.time()
         vars_to_cast <- c(settings$colorVariables, settings$groupingVariables)
         if (is.null(vars_to_cast)){
             vars_to_cast <- character(0)
-        }else{
+        } else {
             print(paste("==> Casting to NA: ", vars_to_cast))
         }
-
-        print(paste0("==> castAllStringsToNA"))
         dataset_filtered <- castAllStringsToNA(dataset_filtered, vars_to_cast)
+        message("==> Completed Step 6: Casting values in ", Sys.time() - step_time)
 
-        print(paste0("==> Checking if variables are numeric"))
-        ## TODO: Check if grouping variable is numeric and add prefix to it
+        # Checking if variables are numeric
+        message("==> Step 7: Checking if variables are numeric and modifying grouping variables")
+        step_time <- Sys.time()
         num_test <- dataset_filtered %>% select(where(is.numeric))
-
         for (groupVariable in settings$groupingVariables) {
-            if(groupVariable %in% names(num_test)){
-                dataset_filtered[[groupVariable]] <- paste("g",dataset_filtered[[groupVariable]],sep="_")
+            if (groupVariable %in% names(num_test)) {
+                dataset_filtered[[groupVariable]] <- paste("g", dataset_filtered[[groupVariable]], sep="_")
             }
         }
+        message("==> Completed Step 7: Numeric check and modification in ", Sys.time() - step_time)
 
-        ## save(settings, fileHeader, dataset, dataset_filtered, file = "/tmp/configuration.Rdata")
 
-        print(paste("==> Selected Columns 4: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
-        if(!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0){
-            ## Preprocess data except grouping variables
+        print(paste("==> Selected Columns: ", length(settings$selectedColumns), " Dataset columns:",ncol(dataset_filtered)))
 
-            # if(settings$categoricalVariables == TRUE){
-            #     ## settings$preProcessDataset <- c("medianImpute")
-            # }
+        # Preprocessing dataset
+        if (!is.null(settings$preProcessDataset) && length(settings$preProcessDataset) > 0) {
+            message("==> Step 9: Preprocessing dataset")
+            step_time <- Sys.time()
+            
             print(paste0("=====> Preprocessing dataset: ", paste(settings$preProcessDataset, collapse = ", ")))
-
-            ## Preprocess resample data
             preProcessMapping <- preProcessResample(dataset_filtered, 
-                settings$preProcessDataset, 
-                settings$groupingVariables, 
-                settings$groupingVariables)
-
+                                                    settings$preProcessDataset, 
+                                                    settings$groupingVariables, 
+                                                    settings$groupingVariables)
             dataset_filtered <- preProcessMapping$datasetData
-
-            print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
+            print(paste("==> Selected Columns 4.1: ", length(settings$selectedColumns), 
+                        " Dataset columns: ", ncol(dataset_filtered), 
+                        " Dataset rows: ", nrow(dataset_filtered)))
+                        
+            message("==> Completed Step 9: Preprocessing in ", Sys.time() - step_time)
         }
 
-        print(paste("==> Selected Columns 5: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
-        if(settings$removeNA == TRUE){
+        # Removing NA values
+        if (settings$removeNA == TRUE) {
+            message("==> Step 10: Removing NA values")
+            step_time <- Sys.time()
+            
             print(paste0("=====> Removing NA Values"))
             dataset_filtered <- na.omit(dataset_filtered)
+            message("==> Completed Step 10: NA removal in ", Sys.time() - step_time)
         }
-        print(paste("==> Selected Columns 6: ", length(settings$selectedColumns), " Dataset columns: ",ncol(dataset_filtered), " Dataset rows: ", nrow(dataset_filtered)))
 
         if(nrow(dataset_filtered) <= 2) {
             print("==> No enough rows to proceed with PCA analysis")
             return (list(success = FALSE, message = FALSE, details = FALSE))
         }
 
+        # Setting seed and calculating t-SNE
+        message("==> Step 13: Calculating t-SNE")
+        step_time <- Sys.time()
         set.seed(1337)
         tsne_calc <- calculate_tsne(dataset_filtered, settings, fileHeader)
-
-        print(colnames(tsne_calc$info.norm))
-        print(paste0("========================="))
-        print(settings$groupingVariables)
-        print(paste0("========================="))
-        print(settings$colorVariables)
-
+        message("==> Completed Step 13: t-SNE calculation in ", Sys.time() - step_time)
 
 
         res.data$tsne_perplexity <- tsne_calc$perplexity
@@ -371,155 +383,228 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         res.data$tsne_theta <- tsne_calc$theta
         res.data$tsne_eta <- tsne_calc$eta
 
-        ## Main t-SNE plot 
-        print(paste0("===> Plotting t-SNE (plot_tsne)"))
 
-        tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings,  plot_unique_hash$tsne_plot[["main_plot"]])
+        # Generating t-SNE plot
+        message("==> Step 14: Generating t-SNE plot")
+        step_time <- Sys.time()
+        tmp_path <- plot_tsne(tsne_calc$info.norm, NULL, settings, plot_unique_hash$tsne_plot[["main_plot"]])
+        message("==> Completed Step 14: t-SNE plot generation in ", Sys.time() - step_time)
 
         ## Color-by placeholder
         res.data$tsne_plot[["main_plot"]]$colorby <- list()
         res.data$tsne_plot[["main_plot"]]$name <- "Main plot"
+        # Optimizing SVG file
+        message("==> Step 16: Optimizing SVG file")
+        step_time <- Sys.time()
         res.data$tsne_plot[["main_plot"]]$svg <- optimizeSVGFile(tmp_path)
-        res.data$tsne_plot[["main_plot"]]$png <- convertSVGtoPNG(tmp_path)
+        message("==> Completed Step 16: SVG optimization in ", Sys.time() - step_time)
 
+        # Converting SVG to PNG
+        message("==> Step 17: Converting SVG to PNG")
+        step_time <- Sys.time()
+        res.data$tsne_plot[["main_plot"]]$png <- convertSVGtoPNG(tmp_path)
+        message("==> Completed Step 17: SVG to PNG conversion in ", Sys.time() - step_time)
+
+        # Processing color variables
         if (!is.null(settings$colorVariables)) {
+            message("==> Step 18: Processing color variables")
+            step_time <- Sys.time()
+            
             for (colorVariable in settings$colorVariables) {
-                print(colorVariable)
+                print(paste("Processing colorVariable:", colorVariable))
+                
                 # Check if colorVariable exists in both fileHeader and tsne_calc$info.norm
                 if (colorVariable %in% fileHeader$remapped) {
-                    # If it exists in both, continue with processing
+                    message(paste("==> Step 18.1: Found colorVariable", colorVariable, "in fileHeader"))
+                    sub_step_time <- Sys.time()
+                    
+                    # Continue with processing if found
                     coloringVariable <- fileHeader %>% filter(remapped == colorVariable)
                     coloringVariable <- coloringVariable$original
-
-                    if(coloringVariable %in% colnames(tsne_calc$info.norm)){
+                    
+                    if (coloringVariable %in% colnames(tsne_calc$info.norm)) {
+                        message(paste("==> Step 18.2: Found colorVariable", coloringVariable, "in tsne_calc$info.norm"))
+                        color_plot_time <- Sys.time()
+                        
                         # Generate plot hash and paths
                         plot_unique_hash$tsne_plot[[paste0("main_plot", colorVariable)]] <- 
                             digest::digest(paste0(selectedFileID, "_", args$settings, "_tsne_plot_main_", colorVariable), algo = "md5", serialize = FALSE)
                         
                         tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings, plot_unique_hash$tsne_plot[[paste0("main_plot", colorVariable)]])
-
+                        
                         # Update results with color-by plot details
                         res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$name <- coloringVariable
                         res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
                         res.data$tsne_plot[["main_plot"]]$colorby[[colorVariable]]$png <- convertSVGtoPNG(tmp_path_c)
+                        
+                        message("==> Completed Step 18.2: Color-by plot generation and updates for", coloringVariable, "in ", Sys.time() - color_plot_time)
                     } else {
-                        # If colorVariable does not exist in tsne_calc$info.norm, print a warning
                         print(paste("Warning: colorVariable", colorVariable, "not found in tsne_calc$info.norm"))
                     }
-
+                    
+                    message("==> Completed Step 18.1: Processing colorVariable", colorVariable, "in ", Sys.time() - sub_step_time)
                 } else {
-                    # If colorVariable does not exist in tsne_calc$info.norm, print a warning
                     print(paste("Warning: colorVariable", colorVariable, "not found in file header"))
                 }
             }
+            
+            message("==> Completed Step 18: Color variable processing in ", Sys.time() - step_time)
         }
 
-
-
-        if(!is.null(settings$groupingVariables)){
-            for(groupVariable in settings$groupingVariables){
-                # groupVariable is remaped value
+        # Processing grouping variables
+        if (!is.null(settings$groupingVariables)) {
+            message("==> Step 19: Processing grouping variables")
+            step_time <- Sys.time()
+            
+            for (groupVariable in settings$groupingVariables) {
+                message(paste("==> Step 19.1: Processing groupVariable:", groupVariable))
+                group_step_time <- Sys.time()
+                
+                # groupVariable is remapped value
                 groupingVariable <- fileHeader %>% filter(remapped %in% groupVariable)
                 groupingVariable <- groupingVariable$original
-
-                tmp_path <- plot_tsne(tsne_calc$info.norm, groupingVariable, settings,  plot_unique_hash$tsne_plot[[groupVariable]])
+                
+                # Generate t-SNE plot for grouping variable
+                tmp_path <- plot_tsne(tsne_calc$info.norm, groupingVariable, settings, plot_unique_hash$tsne_plot[[groupVariable]])
                 res.data$tsne_plot[[groupVariable]]$name <- groupingVariable
                 res.data$tsne_plot[[groupVariable]]$svg <- optimizeSVGFile(tmp_path)
                 res.data$tsne_plot[[groupVariable]]$png <- convertSVGtoPNG(tmp_path)
-
-                if(!is.null(settings$colorVariables)){
-                    for(colorVariable in settings$colorVariables){
-
+                message("==> Completed Step 19.1: t-SNE plot for grouping variable", groupVariable, "in ", Sys.time() - group_step_time)
+                
+                # Processing color variables for each grouping variable
+                if (!is.null(settings$colorVariables)) {
+                    message("==> Step 19.2: Processing color variables for groupVariable", groupVariable)
+                    color_step_time <- Sys.time()
+                    
+                    for (colorVariable in settings$colorVariables) {
+                        message(paste("==> Processing colorVariable:", colorVariable, "for groupVariable:", groupVariable))
+                        
                         coloringVariable <- fileHeader %>% filter(remapped %in% colorVariable)
                         coloringVariable <- coloringVariable$original
-
-                        tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings,  plot_unique_hash$tsne_plot[[paste0(groupVariable,colorVariable)]])
+                        
+                        # Generate color-by plot for current grouping and color variables
+                        tmp_path_c <- plot_tsne_color_by(tsne_calc$info.norm, NULL, coloringVariable, settings, plot_unique_hash$tsne_plot[[paste0(groupVariable, colorVariable)]])
                         res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$name <- coloringVariable
                         res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$svg <- optimizeSVGFile(tmp_path_c)
                         res.data$tsne_plot[[groupVariable]]$colorby[[colorVariable]]$png <- convertSVGtoPNG(tmp_path_c)
+                        
+                        message("==> Completed color-by plot for colorVariable", colorVariable, "and groupVariable", groupVariable, "in ", Sys.time() - color_step_time)
                     }
                 }
+                
+                message("==> Completed Step 19.1: Group variable processing for", groupVariable, "in ", Sys.time() - group_step_time)
             }
+            
+            message("==> Completed Step 19: Grouping variable processing in ", Sys.time() - step_time)
         }
 
-        print(paste0("===> Clustering using", settings$clusterType))
+        print(paste0("===> Clustering using ", settings$clusterType))
         set.seed(1337)
-        if(settings$clusterType == "Louvain"){
+        clustering_time <- Sys.time()
+
+        if (settings$clusterType == "Louvain") {
+            message("==> Step 20: Louvain clustering")
             tsne_clust <- list()
             iteration <- 1
+            
             for (res_increment in settings$resolution_increments) {
                 for (min_modularity in settings$min_modularities) {
+                    loop_time <- Sys.time()
                     tmp <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings, res_increment, min_modularity)
 
-                    if(tmp$num_clusters < min(settings$target_clusters_range) && tmp$num_clusters > max(settings$target_clusters_range)){
+                    if (tmp$num_clusters < min(settings$target_clusters_range) || tmp$num_clusters > max(settings$target_clusters_range)) {
                         message("===> INFO: Skipping cluster with ", tmp$num_clusters, " clusters")
                         next
                     }
                     
                     tsne_clust[[iteration]] <- tmp
                     iteration <- iteration + 1
+                    message("==> Completed Louvain clustering iteration in ", Sys.time() - loop_time)
                 }
             }
 
-            if(settings$pickBestClusterMethod == "Modularity"){
+            # Selecting the best cluster
+            select_time <- Sys.time()
+            if (settings$pickBestClusterMethod == "Modularity") {
                 tsne_clust <- pick_best_cluster_modularity(tsne_clust)
-            }else if(settings$pickBestClusterMethod == "Silhouette"){
+            } else if (settings$pickBestClusterMethod == "Silhouette") {
                 tsne_clust <- pick_best_cluster_silhouette(tsne_clust)
-            }else if(settings$pickBestClusterMethod == "Overall"){
+            } else if (settings$pickBestClusterMethod == "Overall") {
                 tsne_clust <- pick_best_cluster_overall(tsne_clust, tsne_calc)
-            }else if(settings$pickBestClusterMethod == "SIMON"){
-
-                if(is.null(settings$selectedColumnsSIMON)){
+            } else if (settings$pickBestClusterMethod == "SIMON") {
+                if (is.null(settings$selectedColumnsSIMON)) {
                     settings$selectedColumnsSIMON <- settings$selectedColumns
                     print(paste0("===> SIMON: Using selectedColumns: ", paste(settings$selectedColumnsSIMON, collapse = ", ")))
                 }
-
                 best_cluster <- pick_best_cluster_simon(dataset, tsne_clust, tsne_calc, settings)
                 tsne_clust <- best_cluster$tsne_clust
-            }else{
+            } else {
                 tsne_clust <- pick_best_cluster_modularity(tsne_clust)
             }
+            message("==> Completed best cluster selection in ", Sys.time() - select_time)
 
-        }else if(settings$clusterType == "Hierarchical"){
-           tsne_clust <- cluster_tsne_hierarchical(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
-        }else if(settings$clusterType == "Mclust"){
-           tsne_clust <- cluster_tsne_mclust(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
-        }else if(settings$clusterType == "Density"){
-           tsne_clust <- cluster_tsne_density(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
-        }else{
+        } else if (settings$clusterType == "Hierarchical") {
+            message("==> Step 20: Hierarchical clustering")
+            cluster_time <- Sys.time()
+            tsne_clust <- cluster_tsne_hierarchical(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+            message("==> Completed Hierarchical clustering in ", Sys.time() - cluster_time)
+
+        } else if (settings$clusterType == "Mclust") {
+            message("==> Step 20: Mclust clustering")
+            cluster_time <- Sys.time()
+            tsne_clust <- cluster_tsne_mclust(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+            message("==> Completed Mclust clustering in ", Sys.time() - cluster_time)
+
+        } else if (settings$clusterType == "Density") {
+            message("==> Step 20: Density clustering")
+            cluster_time <- Sys.time()
+            tsne_clust <- cluster_tsne_density(tsne_calc$info.norm, tsne_calc$tsne.norm, settings)
+            message("==> Completed Density clustering in ", Sys.time() - cluster_time)
+
+        } else {
+            message("==> Step 20: Default clustering method (similar to Louvain)")
             tsne_clust <- list()
             iteration <- 1
+
             for (res_increment in settings$resolution_increments) {
                 for (min_modularity in settings$min_modularities) {
+                    loop_time <- Sys.time()
                     tmp <- cluster_tsne_knn_louvain(tsne_calc$info.norm, tsne_calc$tsne.norm, settings, res_increment, min_modularity)
 
-                    if(tmp$num_clusters < min(settings$target_clusters_range) && tmp$num_clusters > max(settings$target_clusters_range)){
+                    if (tmp$num_clusters < min(settings$target_clusters_range) || tmp$num_clusters > max(settings$target_clusters_range)) {
                         message("===> INFO: Skipping cluster with ", tmp$num_clusters, " clusters")
                         next
                     }
                     
                     tsne_clust[[iteration]] <- tmp
                     iteration <- iteration + 1
+                    message("==> Completed Louvain-like clustering iteration in ", Sys.time() - loop_time)
                 }
             }
 
-            if(settings$pickBestClusterMethod == "Modularity"){
+            # Selecting the best cluster
+            select_time <- Sys.time()
+            if (settings$pickBestClusterMethod == "Modularity") {
                 tsne_clust <- pick_best_cluster_modularity(tsne_clust)
-            }else if(settings$pickBestClusterMethod == "Silhouette"){
+            } else if (settings$pickBestClusterMethod == "Silhouette") {
                 tsne_clust <- pick_best_cluster_silhouette(tsne_clust)
-            }else if(settings$pickBestClusterMethod == "Overall"){
+            } else if (settings$pickBestClusterMethod == "Overall") {
                 tsne_clust <- pick_best_cluster_overall(tsne_clust, tsne_calc)
-            }else if(settings$pickBestClusterMethod == "SIMON"){
-                if(is.null(settings$selectedColumnsSIMON)){
+            } else if (settings$pickBestClusterMethod == "SIMON") {
+                if (is.null(settings$selectedColumnsSIMON)) {
                     settings$selectedColumnsSIMON <- settings$selectedColumns
                     print(paste0("===> SIMON: Using selectedColumns: ", paste(settings$selectedColumnsSIMON, collapse = ", ")))
                 }
                 best_cluster <- pick_best_cluster_simon(dataset, tsne_clust, tsne_calc, settings)
                 tsne_clust <- best_cluster$tsne_clust
-            }else{
+            } else {
                 tsne_clust <- pick_best_cluster_modularity(tsne_clust)
             }
+            message("==> Completed best cluster selection in ", Sys.time() - select_time)
         }
+
+        message("==> Completed Step 20: Clustering in ", Sys.time() - clustering_time)
+
 
         res.data$avg_silhouette_score <- round(tsne_clust$avg_silhouette_score, 2)
 
@@ -528,68 +613,100 @@ pandora$handle$plots$editing$tsne$renderPlot <- expression(
         if(nrow(dataset_with_clusters) == nrow(tsne_clust$info.norm)){
             dataset_with_clusters$pandora_cluster <- tsne_clust$info.norm$pandora_cluster
         }
-        ## Rename column names to its originals
-        names(dataset_with_clusters) <- plyr::mapvalues(names(dataset_with_clusters), from=fileHeader$remapped, to=fileHeader$original)
-        
+
+
+        # Renaming column names to their original values
+        message("==> Step 21: Renaming column names to originals")
+        rename_time <- Sys.time()
+        names(dataset_with_clusters) <- plyr::mapvalues(names(dataset_with_clusters), from = fileHeader$remapped, to = fileHeader$original)
+        message("==> Completed Step 21: Column renaming in ", Sys.time() - rename_time)
+
+        # Removing outliers from dataset with clusters
+        message("==> Step 22: Removing outliers from dataset_with_clusters")
+        outlier_removal_time <- Sys.time()
         dataset_with_clusters <- remove_outliers(dataset_with_clusters, settings)
+        message("==> Completed Step 22: Outlier removal for dataset_with_clusters in ", Sys.time() - outlier_removal_time)
+
+        # Removing outliers from data for heatmap
+        message("==> Step 23: Removing outliers from data_for_heatmap")
+        heatmap_outlier_time <- Sys.time()
         data_for_heatmap <- remove_outliers(tsne_clust$info.norm, settings)
+        message("==> Completed Step 23: Outlier removal for data_for_heatmap in ", Sys.time() - heatmap_outlier_time)
 
 
+        # Plotting clustered t-SNE
+        message("==> Step 24: Plotting clustered t-SNE")
+        tsne_plot_time <- Sys.time()
         tmp_path <- plot_clustered_tsne(tsne_clust$info.norm, tsne_clust$cluster_data, settings, plot_unique_hash$tsne_cluster_plot)
         res.data$tsne_cluster_plot <- optimizeSVGFile(tmp_path)
         res.data$tsne_cluster_plot_png <- convertSVGtoPNG(tmp_path)
+        message("==> Completed Step 24: Clustered t-SNE plot generation in ", Sys.time() - tsne_plot_time)
 
+        # Generating cluster heatmap
+        message("==> Step 25: Generating cluster heatmap")
+        heatmap_time <- Sys.time()
         tmp_path <- cluster_heatmap(data_for_heatmap, settings, plot_unique_hash$tsne_cluster_heatmap_plot)
-        if(tmp_path != FALSE){
+        if (tmp_path != FALSE) {
             res.data$tsne_cluster_heatmap_plot <- optimizeSVGFile(tmp_path)
             res.data$tsne_cluster_heatmap_plot_png <- convertSVGtoPNG(tmp_path)
         }
+        message("==> Completed Step 25: Cluster heatmap generation in ", Sys.time() - heatmap_time)
 
+        # Plotting cluster feature means
+        message("==> Step 26: Plotting cluster feature means")
+        feature_means_time <- Sys.time()
         tmp_path <- plot_cluster_features_means(data_for_heatmap, settings, plot_unique_hash$cluster_features_means)
-        if(tmp_path != FALSE){
+        if (tmp_path != FALSE) {
             res.data$cluster_features_means <- optimizeSVGFile(tmp_path)
             res.data$cluster_features_means_png <- convertSVGtoPNG(tmp_path)
         }
+        message("==> Completed Step 26: Cluster feature means plot generation in ", Sys.time() - feature_means_time)
 
+        # Plotting separated cluster feature means
+        message("==> Step 27: Plotting separated cluster feature means")
+        separated_means_time <- Sys.time()
         tmp_path <- plot_cluster_features_means_separated(data_for_heatmap, settings, plot_unique_hash$cluster_features_means_separated)
-        if(tmp_path != FALSE){
+        if (tmp_path != FALSE) {
             res.data$cluster_features_means_separated <- optimizeSVGFile(tmp_path)
             res.data$cluster_features_means_separated_png <- convertSVGtoPNG(tmp_path)
         }
+        message("==> Completed Step 27: Separated cluster feature means plot generation in ", Sys.time() - separated_means_time)
 
-        # save(dataset_filtered, file="/tmp/dataset_filtered")
-        # save(settings, file="/tmp/settings")
-        # save(fileHeader, file="/tmp/fileHeader")
+        # Check if dataset size is greater than 500MB
+        dataset_size <- object.size(dataset) / (1024^2) # Convert size to MB
+        message("Dataset size: ", round(dataset_size, 2), " MB")
 
         ## save data for latter use
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveObjectHash"]], tmpdir = tempdir(), fileext = ".Rdata")
 
+        # Prepare data for saving
         processingData <- list(
-            # The original dataset loaded from the file system, containing all rows and columns before filtering or preprocessing.
-            raw_dataset = dataset,
-            # The dataset after filtering based on the selected columns, grouping variables, and preprocessing steps (e.g., removal of non-numeric values).
-            filtered_dataset = dataset_filtered, 
-             # The result of the t-SNE calculation, including the transformed data points (low-dimensional representation) and additional information like normalization.
-            tsne_results = tsne_calc, 
+            # The result of the t-SNE calculation, including the transformed data points (low-dimensional representation) and additional information like normalization.
+            tsne_results = tsne_calc,
             # The user-defined settings and parameters used for generating plots, t-SNE, clustering, and other analysis (e.g., point size, color palette, clustering method).
             analysis_settings = settings,
             # The results of clustering applied on the t-SNE output, including cluster assignments and silhouette scores.
             tsne_cluster_results = tsne_clust,
-             # The original dataset enriched with the cluster assignments from the t-SNE clustering process, where each row now belongs to a cluster.
+            # The original dataset enriched with the cluster assignments from the t-SNE clustering process, where each row now belongs to a cluster.
             dataset_with_clusters = dataset_with_clusters,
             # The data prepared for heatmap visualization, usually consisting of the clustered t-SNE output with additional features used for heatmap plotting.
             heatmap_data = data_for_heatmap
         )
 
+        # Conditionally include raw and filtered datasets if size is under 500MB
+        if (dataset_size <= 500) {
+            processingData$raw_dataset <- dataset
+            processingData$filtered_dataset <- dataset_filtered
+        } else {
+            message("Dataset exceeds 500MB, excluding raw_dataset and filtered_dataset from processingData.")
+        }
+
         saveCachedList(tmp_path, processingData)
         res.data$saveObjectHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-6)
-
 
         tmp_path <- tempfile(pattern = plot_unique_hash[["saveDatasetHash"]], tmpdir = tempdir(), fileext = ".csv")
         saveCachedList(tmp_path, dataset_with_clusters, type = "csv")
         res.data$saveDatasetHash = substr(basename(tmp_path), 1, nchar(basename(tmp_path))-4)
-
-
 
         return (list(success = TRUE, message = res.data))
     }
