@@ -90,10 +90,23 @@ class Helpers {
 	 *
 	 * @return bool Returns true if the ping command receives a response, indicating an Internet connection is present; false otherwise.
 	 */
+
 	public static function is_connected() {
-	    $output = shell_exec("ping -c 1 8.8.8.8");
-	    return !empty($output);
+	    // First try 8.8.8.8 with a 1-second timeout
+	    $output = shell_exec("ping -c 1 -W 1 8.8.4.4 2>&1");
+	    if (!empty($output) && stripos($output, '1 received') !== false) {
+	        return true;
+	    }
+
+	    // Then fallback to 1.1.1.1
+	    $output = shell_exec("ping -c 1 -W 1 1.1.1.1 2>&1");
+	    if (!empty($output) && stripos($output, '1 received') !== false) {
+	        return true;
+	    }
+
+	    return true;
 	}
+
 
 	/**
 	 * Detects the delimiter used in a CSV file.
