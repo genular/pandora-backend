@@ -62,14 +62,18 @@ $container->delegate(
 );
 
 $app = new \Slim\App($container);
-// Register routes
-require 'source/routes/main.php';
 
 // Set up dependencies
 require 'source/dependencies/main.php';
 
+$helpers = $container->get(\PANDORA\Helpers\Helpers::class);
+$container->get('settings')['is_connected'] = $helpers->isConnected(); 
+
 // Register middleware
 require 'source/middlewares/main.php';
+
+// Register routes
+require 'source/routes/main.php';
 
 // Run app
 $app->run();

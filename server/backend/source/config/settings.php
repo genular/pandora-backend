@@ -21,7 +21,7 @@ return [
         'is_docker' => getenv('IS_DOCKER') ? true : false,
 
         // Check internet connectivity using a helper function from the PANDORA Helpers class.
-        'is_connected' => Helpers::is_connected(),
+        'is_connected' => false,
 
         // Control whether detailed error messages should be displayed. Recommended to be false in production environments for security.
         'displayErrorDetails' => true,

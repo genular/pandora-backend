@@ -17,6 +17,7 @@ $app->add(new TokenAuthentication([
 		'/backend/user/login',
 		'/backend/user/register',
 		'/backend/user/reset',
+		'/backend/user/password-reset',
 		'/backend/system/status/*',
 		'/backend/system/cron/*',
 		'/backend/system/servers/*',

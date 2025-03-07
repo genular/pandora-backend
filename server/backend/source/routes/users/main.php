@@ -3,6 +3,38 @@ use Slim\Http\Request;
 use Slim\Http\Response;
 
 
+$app->post('/backend/user/password-reset', function (Request $request, Response $response, array $args) {
+    /** @var \PANDORA\Users\Users $Users */
+    $Users = $this->get('PANDORA\Users\Users');
+
+    // Initialize response flags
+    $success = false;
+    $message = "Invalid input data.";
+
+    // Parse the POST body
+    $post = $request->getParsedBody();
+    if (isset($post['email'], $post['password'], $post['registration_key'])) {
+        $email             = $post['email'];
+        $newPassword       = $post['password'];
+        $registration_key  = $post['registration_key'];
+
+        // Call resetPassword
+        $result = $Users->resetPassword($email, $newPassword, $registration_key);
+        if ($result) {
+            $success = true;
+            $message = "Password updated successfully.";
+        } else {
+            $message = "Could not reset password. Invalid email or registration key.";
+        }
+    }
+
+    // Return JSON
+    return $response->withJson([
+        "success" => $success,
+        "message" => $message
+    ]);
+});
+
 /**
  * Updates parts of the user profile.
  * 

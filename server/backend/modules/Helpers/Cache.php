@@ -11,7 +11,6 @@ use \League\Flysystem\Adapter\Local as Local;
 use \League\Flysystem\Filesystem as Filesystem;
 use \MatthiasMullie\Scrapbook\Adapters\Flysystem as Flysystem;
 use Noodlehaus\Config as Config;
-use \PANDORA\Helpers\Helpers as Helpers;
 use \Monolog\Logger;
 
 // https://www.scrapbook.cash/interfaces/key-value-store/
@@ -19,26 +18,23 @@ class Cache {
 	protected $Cache;
 	protected $Config;
 	protected $logger;
-	protected $Helpers;
 
 	public function __construct(
 		Logger $logger,
-		Config $Config,
-		Helpers $Helpers
+		Config $Config
 	) {
 
 		$this->logger = $logger;
 		$this->Config = $Config;
-		$this->Helpers = $Helpers;
 		
 		//$this->logger->addInfo("==> INFO: PANDORA\Helpers\Cache constructed");
 
 		$cache_directory = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/cache";
 
-		$this->Helpers->rrmdir($cache_directory);
+		$this->rrmdir($cache_directory);
 
 		if (!is_dir($cache_directory)) {
-			$check = $this->Helpers->createDirectory($cache_directory);
+			$check = $this->createDirectory($cache_directory);
 			$this->logger->addInfo("==> INFO => PANDORA\Helpers\Cache directory created: " . $cache_directory); 
 		}else{
 			$this->logger->addInfo("==> INFO => PANDORA\Helpers\Cache directory exists: " . $cache_directory);
@@ -51,6 +47,65 @@ class Cache {
 		$cache = new Flysystem($filesystem);
 
 		$this->Cache = $cache;
+	}
+
+
+	/**
+	 * The directory permissions are affected by the current umask. Set the umask for your webserver,
+	 * use PHP's umask function or use the chmod function after the directory has been created.
+	 * @param  [type] $path [description]
+	 * @return [type]       [description]
+	 */
+	public function createDirectory($uri) {
+
+		$chunks = explode('/', $uri);
+		// remove first element since its empty
+		array_splice($chunks, 0, 1);
+
+		$recursive_paths = [];
+
+		foreach ($chunks as $i => $chunk) {
+			$recursive_paths[] = '/' . implode('/', array_slice($chunks, 0, $i + 1));
+
+		}
+		$recursive_paths = array_unique($recursive_paths);
+		foreach ($recursive_paths as $path) {
+			if (!file_exists($path) || !is_dir($path)) {
+				if (!mkdir($path, 0777, true)) {
+					return FALSE;
+				}
+				if (!chmod($path, 0777)) {
+					return FALSE;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Recursively deletes directory. Remove all files, folders and their sub-folders
+	 * @param  string $dir
+	 * @return [type]      [description]
+	 */
+	public function rrmdir($dir) {
+		if (is_dir($dir)) {
+			$objects = scandir($dir);
+			foreach ($objects as $object) {
+				if ($object != "." && $object != "..") {
+					if (filetype($dir . "/" . $object) == "dir") {
+						$this->rrmdir($dir . "/" . $object);
+					} else {
+						unlink($dir . "/" . $object);
+					}
+
+				}
+			}
+			reset($objects);
+			if (is_dir($dir)) {
+				rmdir($dir);
+			}
+		}
 	}
 
 	/**

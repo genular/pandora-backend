@@ -74,6 +74,45 @@ class Users {
 		return $count;
 	}
 
+	public function resetPassword($email, $newPassword, $registrationKey)
+	{
+	    // 1) Find the user_details row that matches this email + registration_key
+	    $userRow = $this->database->get('users_details', ['uid'], [
+	        'email' => $email,
+	        'registration_key' => $registrationKey
+	    ]);
+
+	    if (!$userRow) {
+	        // No matching user_details found
+	        return false;
+	    }
+
+	    $uid = $userRow['uid'];
+
+	    // 2) Generate a new salt & hash the password
+	    $salt = $this->Helpers->generateRandomString(16);
+	    $hashedPassword = hash('sha256', $salt . $newPassword);
+
+	    // 3) Update the users table
+	    $this->database->update('users', [
+	        'password' => $hashedPassword,
+	        'salt' => $salt,
+	        'updated' => \Medoo\Medoo::raw('NOW()')
+	    ], [
+	        'id' => $uid
+	    ]);
+
+	    // Optionally check if the update actually changed a row
+	    $rowCount = $this->database->rowCount();
+	    if ($rowCount < 1) {
+	        // Update may have failed (e.g., user row not found)
+	        return false;
+	    }
+
+	    return true;
+	}
+
+
 	/**
 	 * Logs in user and sets session hash in database
 	 * @param  [string] $username [description]

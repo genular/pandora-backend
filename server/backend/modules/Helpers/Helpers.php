@@ -2,10 +2,12 @@
 namespace PANDORA\Helpers;
 
 use Monolog\Logger;
+use PANDORA\Helpers\Cache;
 
 class Helpers {
 
     protected $logger;
+    protected $cache;
 
     /**
      * Constructor for the Helpers class.
@@ -14,8 +16,9 @@ class Helpers {
      * 
      * @param Logger $logger A Monolog logger instance.
      */
-    public function __construct(Logger $logger) {
+    public function __construct(Logger $logger, Cache $cache) {
         $this->logger = $logger;
+        $this->cache  = $cache;
         // Uncomment the following line to enable logging upon construction.
         // $this->logger->addInfo("==> INFO PANDORA\Helpers\Helpers constructed");
     }
@@ -77,34 +80,38 @@ class Helpers {
 		return $input;
 	}
 
-	/**
-	 * Checks if the device has an Internet connection.
-	 *
-	 * This method attempts to ping a well-known DNS server (Google's public DNS at 8.8.8.8)
-	 * to determine if the device has an active Internet connection. It uses the `shell_exec`
-	 * function to execute the ping command, which is platform-dependent and may require
-	 * specific permissions or configurations on some systems.
-	 *
-	 * Note: This function may not work on all server configurations, especially on Windows servers
-	 * or environments where `shell_exec` is disabled for security reasons.
-	 *
-	 * @return bool Returns true if the ping command receives a response, indicating an Internet connection is present; false otherwise.
-	 */
+    public function isConnected() {
+        // 1) Check cache first
+        $cachedResult = $this->cache->get('pandora.is_connected');
+        if ($cachedResult !== false) {
+            // We have a cached value that hasn't expired yet
+            return $cachedResult;
+        }
 
-	public static function is_connected() {
+        // 2) Not cached or expired -> call the real check
+        $connected = $this->checkInternet();
+
+        // 3) Store result in cache with a 60s TTL
+        $this->cache->set('pandora.is_connected', $connected, 60);
+
+        return $connected;
+    }
+
+	public function checkInternet() {
+		$status = false;
 	    // First try 8.8.8.8 with a 1-second timeout
 	    $output = shell_exec("ping -c 1 -W 1 8.8.4.4 2>&1");
 	    if (!empty($output) && stripos($output, '1 received') !== false) {
-	        return true;
+	        $status = true;
 	    }
 
 	    // Then fallback to 1.1.1.1
 	    $output = shell_exec("ping -c 1 -W 1 1.1.1.1 2>&1");
 	    if (!empty($output) && stripos($output, '1 received') !== false) {
-	        return true;
+	        $status = true;
 	    }
 
-	    return false;
+	    return $status;
 	}
 
 
