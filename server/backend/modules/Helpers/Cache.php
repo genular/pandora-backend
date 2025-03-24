@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:24:16
+ * @Last Modified time: 2019-01-25 16:24:16 
  */
 namespace PANDORA\Helpers;
 use \League\Flysystem\Adapter\Local as Local;
@@ -31,7 +31,7 @@ class Cache {
 
 		$cache_directory = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/cache";
 
-		$this->rrmdir($cache_directory);
+		// $this->rrmdir($cache_directory);
 
 		if (!is_dir($cache_directory)) {
 			$check = $this->createDirectory($cache_directory);
