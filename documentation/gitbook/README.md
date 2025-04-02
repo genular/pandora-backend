@@ -13,5 +13,11 @@ layout:
     visible: true
 ---
 
-# Welcome
+# Welcome to PANDORA
+
+PANDORA is an innovative platform for machine learning and AI based analysis of complex biomedical data.&#x20;
+
+PANDORA can be used for:&#x20;
+
+* Developing&#x20;
 

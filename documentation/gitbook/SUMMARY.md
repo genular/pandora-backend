@@ -1,12 +1,13 @@
 # Table of contents
 
-* [Welcome](README.md)
+* [Welcome to PANDORA](README.md)
 
 ## Getting Started
 
 * [Quickstart](getting-started/quickstart/README.md)
   * [Installation](getting-started/quickstart/installation/README.md)
     * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
+    * [Troubleshooting](getting-started/quickstart/installation/troubleshooting.md)
   * [Reinstallation](getting-started/quickstart/reinstallation.md)
 
 ## PANDORA
