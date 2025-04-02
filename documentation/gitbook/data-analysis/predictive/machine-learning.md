@@ -54,15 +54,12 @@ description: >-
 
     * **Set Training/Testing Dataset partition**: Use the slider to adjust the partition between training and testing. In this case, we will keep the standard 75% partition, though it may make sense to vary the partition based on the machine learning package used.
 
-
-
-    <figure><img src="../../.gitbook/assets/ML_Example_Partition.png" alt=""><figcaption></figcaption></figure>
+    <div align="center" data-full-width="true"><figure><img src="../../.gitbook/assets/ML_Example_Partition.png" alt=""><figcaption></figcaption></figure></div>
 
     * **Configure Preprocessing:** Select preprocessing methods to appropriately standardize data based on your dataset and the machine learning packages you plan to use.
 
-<figure><img src="../../.gitbook/assets/ML_Example_Preprocessing.png" alt=""><figcaption></figcaption></figure>
-
-1. **Choose Models**: Select one or more models from the **Available Packages** list and add them to **Selected Packages**.
-2. **Run Analysis**: Configure advanced options like feature selection and multi-set intersection as needed, then initiate the analysis.
+    <figure><img src="../../.gitbook/assets/ML_Example_Preprocessing.png" alt=""><figcaption></figcaption></figure>
+2. **Choose Models**: Select one or more models from the **Available Packages** list and add them to **Selected Packages**.
+3. **Run Analysis**: Configure advanced options like feature selection and multi-set intersection as needed, then initiate the analysis.
 
 The **Predictive - Start** tab in SIMON simplifies the process of setting up and running predictive models, making it accessible to users with various levels of expertise. Its intuitive interface and extensive model selection provide flexibility for both exploratory and targeted predictive analysis.
