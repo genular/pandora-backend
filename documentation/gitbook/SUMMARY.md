@@ -33,7 +33,6 @@
     * [Training Summary](data-analysis/predictive/exploration/training-summary.md)
     * [ROC Curve Analysis](data-analysis/predictive/exploration/roc-curve-analysis.md)
     * [Model Interpretation](data-analysis/predictive/exploration/model-interpretation.md)
-    * [SAM](data-analysis/predictive/exploration/sam.md)
 
 ## Basics
 
