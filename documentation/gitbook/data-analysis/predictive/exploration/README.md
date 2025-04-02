@@ -6,7 +6,7 @@ description: >-
 
 # Exploration
 
-<figure><img src="../../.gitbook/assets/Exploration.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Exploration.png" alt=""><figcaption></figcaption></figure>
 
 ## Key Functionalities
 
@@ -18,10 +18,10 @@ description: >-
 
 ### 2. Analysis Options
 
-* **Variable Importance:** Helps you understand feature importance and relation to outcome predictions in your models. This can reveal the top contributing features in your model for further analysis.
-* **Training Summary:** Provides whiskerplot comparison of training performance metrics between the selected models&#x20;
-* **ROC Curve Analysis:** Provides a graphical representation for evaluating binary classification performance in models from both training and testing
-* **Model Interpretation:** Allows for investigation of feature impact on model performance through a variety of analysis options.
+* [**Variable Importance**](variable-importance.md)**:** Allows for assessment of feature contributions to model variance and visualization of feature value distribution for each outcome. This can reveal the top contributing features in the model for further analysis.
+* [**Training Summary:**](training-summary.md) Provides whiskerplot comparison of training performance metrics between the selected models&#x20;
+* [**ROC Curve Analysis:**](roc-curve-analysis.md) Provides a graphical representation for evaluating binary classification performance in models from both training and testing
+* [**Model Interpretation:**](model-interpretation.md) Allows for investigation of feature impact on model performance through a variety of analysis options.
 
 ## Conclusion
 
