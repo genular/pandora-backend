@@ -34,6 +34,10 @@
     * [ROC Curve Analysis](data-analysis/predictive/exploration/roc-curve-analysis.md)
     * [Model Interpretation](data-analysis/predictive/exploration/model-interpretation.md)
 
+## Example Workflows
+
+* [Flufighters](example-workflows/flufighters.md)
+
 ## Basics
 
 * [Editor](basics/editor.md)
