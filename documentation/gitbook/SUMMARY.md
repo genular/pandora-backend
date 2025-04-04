@@ -7,12 +7,12 @@
 * [Quickstart](getting-started/quickstart/README.md)
   * [Installation](getting-started/quickstart/installation/README.md)
     * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
-    * [Troubleshooting](getting-started/quickstart/installation/troubleshooting.md)
   * [Reinstallation](getting-started/quickstart/reinstallation.md)
 
 ## PANDORA
 
 * [Account Creation](pandora/account-creation/README.md)
+  * [Reset Password](pandora/account-creation/reset-password.md)
   * [User Settings](pandora/account-creation/user-settings.md)
 * [Dashboard](pandora/dashboard.md)
 * [Workspace](pandora/workspace.md)
@@ -20,6 +20,7 @@
 ## Data Analysis
 
 * [Discovery](data-analysis/discovery/README.md)
+  * [Side Panel Options](data-analysis/discovery/side-panel-options.md)
   * [Data Overview](data-analysis/discovery/data-overview.md)
   * [Correlation](data-analysis/discovery/correlation.md)
   * [Clustering](data-analysis/discovery/clustering.md)
