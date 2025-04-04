@@ -335,9 +335,6 @@ $app->get('/backend/system/check-registration', function (Request $request, Resp
         }
     }
 
-
-
-
     return $response->withJson(["success" => $success, "message" => $message]);
 });
 
@@ -531,10 +528,10 @@ $app->get('/backend/system/update', function (Request $request, Response $respon
                 ]);
             }
 
-            $commands = array_merge($commands, [
-                "cd $backendSubDir && $sudoPrefix $phpPath /usr/local/bin/composer install --ignore-platform-reqs",
-                "cd $backendSubDir && $sudoPrefix $phpPath /usr/local/bin/composer post-install /tmp/configuration.json"
-            ]);
+            // $commands = array_merge($commands, [
+            //     "cd $backendSubDir && $sudoPrefix $phpPath /usr/local/bin/composer install --ignore-platform-reqs",
+            //     "cd $backendSubDir && $sudoPrefix $phpPath /usr/local/bin/composer post-install /tmp/configuration.json"
+            // ]);
         }
 
         $this->get('Monolog\Logger')->info("PANDORA '/system/update' Executing commands for: $name");

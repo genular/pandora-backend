@@ -22,7 +22,7 @@ $app->add(function (Request $request, Response $response, $next) use ($container
 
     // Define CORS headers based on application settings and requirements.
     $headers = [
-        'Access-Control-Allow-Origin' => $config->get('default.frontend.server.url'), // Allows requests from the configured frontend URL.
+        'Access-Control-Allow-Origin' => "*", // $config->get('default.frontend.server.url'), // Allows requests from the configured frontend URL.
         'Access-Control-Allow-Credentials' => 'true', // Allows credentials to be included in the requests.
         'Access-Control-Max-Age' => '60', // Indicates how long the results of a preflight request can be cached.
         'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD', // Specifies the methods allowed when accessing the resource.

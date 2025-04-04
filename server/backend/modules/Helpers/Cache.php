@@ -4,7 +4,7 @@
  * @Author: LogIN-
  * @Date:   2018-04-03 12:22:33
  * @Last Modified by:   LogIN-
- * @Last Modified time: 2019-01-25 16:24:16
+ * @Last Modified time: 2019-01-25 16:24:16 
  */
 namespace PANDORA\Helpers;
 use \League\Flysystem\Adapter\Local as Local;
@@ -37,7 +37,6 @@ class Cache {
 		} else {
 		    $this->logger->addInfo("Cache directory exists: " . $cache_directory);
 		}
-
 		// create Flysystem object
 		$adapter = new Local($cache_directory,  0);
 		

@@ -1,12 +1,13 @@
 # Table of contents
 
-* [Welcome](README.md)
+* [Welcome to PANDORA](README.md)
 
 ## Getting Started
 
 * [Quickstart](getting-started/quickstart/README.md)
   * [Installation](getting-started/quickstart/installation/README.md)
     * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
+    * [Troubleshooting](getting-started/quickstart/installation/troubleshooting.md)
   * [Reinstallation](getting-started/quickstart/reinstallation.md)
 
 ## PANDORA
@@ -27,7 +28,11 @@
   * [UMAP](data-analysis/discovery/umap.md)
 * [Predictive](data-analysis/predictive/README.md)
   * [Machine Learning](data-analysis/predictive/machine-learning.md)
-  * [Exploration](data-analysis/predictive/exploration.md)
+  * [Exploration](data-analysis/predictive/exploration/README.md)
+    * [Variable Importance](data-analysis/predictive/exploration/variable-importance.md)
+    * [Training Summary](data-analysis/predictive/exploration/training-summary.md)
+    * [ROC Curve Analysis](data-analysis/predictive/exploration/roc-curve-analysis.md)
+    * [Model Interpretation](data-analysis/predictive/exploration/model-interpretation.md)
 
 ## Basics
 
