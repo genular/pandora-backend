@@ -31,14 +31,13 @@ class Cache {
 
 		$cache_directory = sys_get_temp_dir() . "/" . $this->Config->get('default.salt') . "/cache";
 
-		$this->rrmdir($cache_directory);
-
 		if (!is_dir($cache_directory)) {
-			$check = $this->createDirectory($cache_directory);
-			$this->logger->addInfo("==> INFO => PANDORA\Helpers\Cache directory created: " . $cache_directory); 
-		}else{
-			$this->logger->addInfo("==> INFO => PANDORA\Helpers\Cache directory exists: " . $cache_directory);
+		    $check = $this->createDirectory($cache_directory);
+		    $this->logger->addInfo("Created cache directory: " . $cache_directory);
+		} else {
+		    $this->logger->addInfo("Cache directory exists: " . $cache_directory);
 		}
+
 		// create Flysystem object
 		$adapter = new Local($cache_directory,  0);
 		
