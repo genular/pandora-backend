@@ -33,8 +33,8 @@ description: >-
     ```
     {% endcode %}
 3. **Access PANDORA**:
-   * Open your browser and go to http://localhost:3010 to start using PANDORA.
+   * Open your browser and go to [http://localhost:3010](http://localhost:3010) to start using PANDORA.
 4. **Allow Firewall Access** (if prompted):
-   * Open your browser and go to http://localhost:3010 to start using PANDORA.
+   * Open your browser and go to [http://localhost:3010](http://localhost:3010) to start using PANDORA.
 
 With that, PANDORA is now installed and ready to use!
