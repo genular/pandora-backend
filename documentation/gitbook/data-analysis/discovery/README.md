@@ -4,7 +4,7 @@ The **Discovery** section provides a powerful suite of tools for visualizing, cl
 
 ***
 
-### 1. Data Overview
+### 1. [Data Overview](./#id-1.-data-overview)
 
 The **Data Overview** tab is your starting point, offering a summary of your dataset and an initial look at data distributions. This tab is essential for understanding the basic structure and trends in your data before moving to more advanced analyses.
 
