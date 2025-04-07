@@ -11,7 +11,7 @@ To access the "Settings" panel, click on the person icon at the top right corner
 ### Key Functionalities
 
 1. **Account and Profile information:**
-   *
+   * ![](<../../.gitbook/assets/user settings.png>)
 2. **System debugging:**&#x20;
    *
 3. **Delete Account:**
