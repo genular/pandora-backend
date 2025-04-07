@@ -4,7 +4,7 @@ The **Discovery** section provides a powerful suite of tools for visualizing, cl
 
 ***
 
-### 1. [Data Overview](./#id-1.-data-overview)
+### 1. [Data Overview](data-overview.md)
 
 The **Data Overview** tab is your starting point, offering a summary of your dataset and an initial look at data distributions. This tab is essential for understanding the basic structure and trends in your data before moving to more advanced analyses.
 
@@ -19,7 +19,7 @@ The **Data Overview** tab is your starting point, offering a summary of your dat
 
 ***
 
-### 2. Correlation
+### 2. [Correlation](correlation.md)
 
 The **Correlation** tab helps you understand relationships between different variables in your dataset. This can reveal, for example, how certain gene expressions or biomarkers are related to one another.
 
@@ -35,7 +35,7 @@ The **Correlation** tab helps you understand relationships between different var
 
 ***
 
-### 3. Hierarchical Clustering
+### 3. [Hierarchical Clustering](clustering.md)
 
 The **Hierarchical Clustering** tab organizes data into clusters based on similarity. It’s especially useful for grouping similar cell types, patient samples, or genes based on shared characteristics.
 
@@ -49,7 +49,7 @@ The **Hierarchical Clustering** tab organizes data into clusters based on simila
 
 ***
 
-### 4. PCA Analysis
+### 4. [PCA Analysis](pca-analysis.md)
 
 **PCA Analysis** (Principal Component Analysis) reduces the complexity of high-dimensional data, highlighting the main components that contribute to variance in your dataset. PCA is particularly valuable for identifying key factors that differentiate cell types or experimental conditions.
 
@@ -65,7 +65,7 @@ The **Hierarchical Clustering** tab organizes data into clusters based on simila
 
 ***
 
-### 5. t-SNE Analysis
+### 5. [t-SNE Analysis](t-sne-analysis.md)
 
 **t-SNE Analysis** (t-distributed Stochastic Neighbor Embedding) is a technique for reducing dimensionality and visualizing high-dimensional data in a two-dimensional plot. This is particularly useful for visualizing clusters in complex data, like single-cell RNA sequencing results.
 
@@ -80,7 +80,7 @@ The **Hierarchical Clustering** tab organizes data into clusters based on simila
 
 ***
 
-### 6. UMAP Analysis
+### 6. [UMAP Analysis](umap.md)
 
 **UMAP Analysis** (Uniform Manifold Approximation and Projection) is another dimensionality reduction technique. It is designed to preserve more of the global structure in the data than t-SNE, making it useful for datasets where maintaining overall data structure is important.
 
