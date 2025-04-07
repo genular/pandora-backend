@@ -4,6 +4,10 @@ description: Enables users to analyze correlations between variables within a da
 
 # Correlation
 
+### Overview
+
+The **Correlation** tab in PANDORA provides a robust environment for exploring relationships between variables in a dataset. With flexible options for preprocessing, correlation method selection, and significance testing, users can tailor the analysis to suit their research needs. This feature helps identify patterns, detect multicollinearity, and decide on further analysis steps.
+
 <figure><img src="../../.gitbook/assets/discovery-correlation.png" alt=""><figcaption></figcaption></figure>
 
 ### **Key Functionalities**
@@ -28,6 +32,3 @@ description: Enables users to analyze correlations between variables within a da
    * **Text Size**: Adjust the size of text labels within the plot for better readability.
    * **Download Options**: Users can download the correlation matrix image (in SVG format) and the raw data for offline analysis.
 
-### **Conclusion**
-
-The **Correlation** tab in PANDORA provides a robust environment for exploring relationships between variables in a dataset. With flexible options for preprocessing, correlation method selection, and significance testing, users can tailor the analysis to suit their research needs. This feature helps identify patterns, detect multicollinearity, and decide on further analysis steps.

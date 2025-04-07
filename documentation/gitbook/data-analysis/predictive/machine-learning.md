@@ -7,6 +7,10 @@ description: >-
 
 # Machine Learning
 
+### Overview
+
+The **Predictive - Start** tab in SIMON simplifies the process of setting up and running predictive models, making it accessible to users with various levels of expertise. Its intuitive interface and extensive model selection provide flexibility for both exploratory and targeted predictive analysis.
+
 <figure><img src="../../.gitbook/assets/predictive-simon.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
@@ -62,4 +66,3 @@ description: >-
 2. **Choose Models**: Select one or more models from the **Available Packages** list and add them to **Selected Packages**.
 3. **Run Analysis**: Configure advanced options like feature selection and multi-set intersection as needed, then initiate the analysis.
 
-The **Predictive - Start** tab in SIMON simplifies the process of setting up and running predictive models, making it accessible to users with various levels of expertise. Its intuitive interface and extensive model selection provide flexibility for both exploratory and targeted predictive analysis.

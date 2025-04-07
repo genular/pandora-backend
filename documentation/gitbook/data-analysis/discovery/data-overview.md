@@ -6,6 +6,10 @@ description: >-
 
 # Data Overview
 
+### Overview&#x20;
+
+The **Data Overview** tab in PANDORA offers comprehensive functionality for preliminary data inspection, allowing users to filter, preprocess, and visualize columns before diving into advanced analysis. This setup ensures that users can effectively manage data preprocessing, select appropriate columns, and tailor visual themes to their needs, making it a valuable tool in the initial stages of data exploration and preparation.
+
 <figure><img src="../../.gitbook/assets/discovery-data-overview-tabls-plot.png" alt=""><figcaption></figcaption></figure>
 
 ### **Key Functionalities**
@@ -32,6 +36,5 @@ description: >-
      * Zero variance indication.
      * Percentage of missing values (NA).
 
-### **Conclusion**
+###
 
-The **Data Overview** tab in PANDORA offers comprehensive functionality for preliminary data inspection, allowing users to filter, preprocess, and visualize columns before diving into advanced analysis. This setup ensures that users can effectively manage data preprocessing, select appropriate columns, and tailor visual themes to their needs, making it a valuable tool in the initial stages of data exploration and preparation.

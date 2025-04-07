@@ -6,6 +6,10 @@ description: >-
 
 # UMAP
 
+### Overview
+
+The **UMAP Analysis** tab in PANDORA offers a comprehensive interface for high-dimensional data visualization, simplifying the process of identifying patterns and clusters in complex datasets. The tab supports preprocessing, customization of plot aesthetics, and various download options, making it a versatile tool for exploratory data analysis.
+
 <figure><img src="../../.gitbook/assets/discovery-umap.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
@@ -44,6 +48,3 @@ description: >-
 
 The UMAP plot provides an interactive display where similar data points are projected close to each other, based on the underlying high-dimensional data structure. Users can observe clusters, patterns, and potential relationships between data points, colored according to the selected grouping variable.
 
-### Conclusion
-
-The **UMAP Analysis** tab in PANDORA offers a comprehensive interface for high-dimensional data visualization, simplifying the process of identifying patterns and clusters in complex datasets. The tab supports preprocessing, customization of plot aesthetics, and various download options, making it a versatile tool for exploratory data analysis.

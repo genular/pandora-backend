@@ -4,6 +4,10 @@ description: Enables users to visualize high-dimensional data.
 
 # t-SNE Analysis
 
+### Overview
+
+The **t-SNE Analysis** tab provides robust tools for high-dimensional data visualization, making it easier to identify clustering patterns and relationships within complex datasets. It supports both standard and clustered t-SNE visualizations, providing valuable insights into data structure.
+
 <figure><img src="../../.gitbook/assets/discovery-tsne.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
@@ -66,6 +70,3 @@ The **Clustered t-SNE Analysis** view offers an enhanced visualization by applyi
 * **Features**: Visualize mean feature values within each cluster.
 * **FoldChange**: Observe fold changes in features across clusters.
 
-### Conclusion
-
-The **t-SNE Analysis** tab provides robust tools for high-dimensional data visualization, making it easier to identify clustering patterns and relationships within complex datasets. It supports both standard and clustered t-SNE visualizations, providing valuable insights into data structure.
