@@ -1,3 +1,9 @@
+---
+description: >-
+  Allows users to perform a variety of analyses to interpret features and their
+  contributions to the model's performance.
+---
+
 # Model Interpretation
 
 <figure><img src="../../../.gitbook/assets/Exploration_Model Interpretation.png" alt=""><figcaption></figcaption></figure>

@@ -36,5 +36,5 @@ The **Data Overview** tab in PANDORA offers comprehensive functionality for prel
      * Zero variance indication.
      * Percentage of missing values (NA).
 
-###
+
 
