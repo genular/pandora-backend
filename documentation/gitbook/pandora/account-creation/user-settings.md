@@ -8,15 +8,18 @@ To access the "Settings" panel, click on the person icon at the top right corner
 
 <figure><img src="../../.gitbook/assets/user settings.png" alt=""><figcaption></figcaption></figure>
 
+You will reach the following page:&#x20;
+
+<figure><img src="../../.gitbook/assets/user settings page.png" alt=""><figcaption></figcaption></figure>
+
 ### Key Functionalities
 
 1. **Account and Profile information:**
-   *
-
-       <figure><img src="../../.gitbook/assets/user settings.png" alt=""><figcaption></figcaption></figure>
-2.
-3.
-4. **System debugging:**&#x20;
-   *
-5. **Delete Account:**
-   *
+   * Access the username, email address and registration key associated with your account, which will already be present on this page
+   * Input and save personal details in your account as needed
+2. **System debugging:**&#x20;
+   * **Update**: Allows users to update to the latest version of PANDORA in an attempt to eliminate any bugs due to outdated software&#x20;
+   * **System log file:** Download various tar.gz logs of the PANDORA and server backends to trace source of any bugs
+   * **Browse log file**: download text document (.log file) with a log of all functions performed on your PANDORA account during your current session
+3. **Danger Area (Delete your account):**
+   * Here is the option to **delete your account** if needed

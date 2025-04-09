@@ -21,3 +21,4 @@ PANDORA can be used for:&#x20;
 
 * Developing&#x20;
 
+<figure><img src=".gitbook/assets/PANDORA Visual.png" alt=""><figcaption></figcaption></figure>
