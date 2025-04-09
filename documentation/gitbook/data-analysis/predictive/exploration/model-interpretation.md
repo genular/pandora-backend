@@ -6,6 +6,12 @@ description: >-
 
 # Model Interpretation
 
+### Overview
+
+The **Model Interpretation** tab in PANDORA offers a powerful suite of analysis tools to investigate feature contributions to the predictive models. Users can select the analyses of interest to generate informative visual plots for improved understanding of feature influence in model performance.
+
+
+
 <figure><img src="../../../.gitbook/assets/Exploration_Model Interpretation.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
@@ -26,10 +32,4 @@ description: >-
 <figure><img src="../../../.gitbook/assets/Model Interpretation_Select Analysis.png" alt=""><figcaption></figcaption></figure>
 
 * **Side Panel:** Toggle visuals on the displayed graph, such as color and font, see the [Side Panel Options](../../discovery/side-panel-options.md) section for more information.
-
-### Conclusion
-
-
-
-
 

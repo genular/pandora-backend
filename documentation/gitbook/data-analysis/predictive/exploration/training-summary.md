@@ -4,6 +4,12 @@ description: Compare performance metrics for your machine learning models.
 
 # Training Summary
 
+### Overview
+
+The **Training Summary** tab in PANDORA offers a comprehensive summary of performance metrics for the selected predictive models. This feature provides users with essential information to compare, evaluate, and refine their predictive models.
+
+
+
 <figure><img src="../../../.gitbook/assets/Exploration_Training Summary.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
@@ -16,6 +22,3 @@ description: Compare performance metrics for your machine learning models.
 2. **Data Exportation**
    * **Copy:** Save the results for Performance Measurements and the Model Fitting Result Summaries by copying from Pandora and pasting into a separate file.
    * **Download:** Export the box plots to a .svg file&#x20;
-
-### Conclusion
-
