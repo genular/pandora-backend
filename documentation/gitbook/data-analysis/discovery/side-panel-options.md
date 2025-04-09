@@ -29,7 +29,5 @@ description: A description of the common side panel options present in the Disco
    * corr:&#x20;
    * zv:
    * nzv:&#x20;
-2. Common combinations:&#x20;
-   * Center
 
 ### Theme Settings
