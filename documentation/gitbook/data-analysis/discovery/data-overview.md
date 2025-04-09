@@ -23,10 +23,27 @@ The **Data Overview** tab in PANDORA offers comprehensive functionality for prel
    * **Color Palette**: Choose a color palette to enhance visual clarity, with options for colorblind accessibility.
    * **Font Size**: Customize font size to ensure readability.
    * **Aspect Ratio**: Adjust the plot’s aspect ratio for optimal display and to fit various screen resolutions.
-3. **Plot Options**:
-   * **Table Plot**: This plot visualizes the data in a tabular format, allowing users to examine aggregated distribution patterns across multiple variables.
-   * **Distribution Plot**: Displays the distribution of values in selected columns, which helps in identifying skewness, outliers, and patterns in the data.
-   * **Download Options**: Users can download the raw data and plot images for offline analysis. Images are available in SVG format for scalability.
+3.  **Plot Options**:
+
+    * **Table Plot**: This plot visualizes the data in a tabular format, allowing users to examine aggregated distribution patterns across multiple variables.
+
+    Example:&#x20;
+
+
+
+    <figure><img src="../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+
+
+
+    * **Distribution Plot**: Displays the distribution of values in selected columns, which helps in identifying skewness, outliers, and patterns in the data.
+
+    Example:&#x20;
+
+    <figure><img src="../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+
+
+
+    * **Download Options**: Users can download the raw data and plot images for offline analysis. Images are available in SVG format for scalability.
 4. **Dynamic Tab Control**:
    * The tab will only be enabled if there is a sufficient amount of data in the selected file, preventing empty visualizations and optimizing performance.
 5. **Bottom Bar Details**:
