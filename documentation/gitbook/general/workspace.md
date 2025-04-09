@@ -20,8 +20,7 @@ The Workspace is a space where the user is able to upload their datasets for ana
 
 
     <figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
-3. **Public Import**: Import public datasets by?
-4.  **New Directory**: Create a new directory by inputting a directory name. This will create a folder on the main Workspace and clicking on the folder will give access to the new directory where the user can upload files they require specific to that directory
+3.  **New Directory**: Create a new directory by inputting a directory name. This will create a folder on the main Workspace and clicking on the folder will give access to the new directory where the user can upload files they require specific to that directory
 
     <div><figure><img src="../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Screenshot 2025-04-09 083033.png" alt=""><figcaption></figcaption></figure></div>
-5. **Delete all**: Delete all the files present in the workspace&#x20;
+4. **Delete all**: Delete all the files present in the workspace&#x20;
