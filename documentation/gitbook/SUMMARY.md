@@ -9,13 +9,13 @@
     * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
   * [Reinstallation](getting-started/quickstart/reinstallation.md)
 
-## PANDORA
+## General
 
-* [Account Creation](pandora/account-creation/README.md)
-  * [Reset Password](pandora/account-creation/reset-password.md)
-  * [User Settings](pandora/account-creation/user-settings.md)
-* [Dashboard](pandora/dashboard.md)
-* [Workspace](pandora/workspace.md)
+* [Account Creation](general/account-creation/README.md)
+  * [Reset Password](general/account-creation/reset-password.md)
+  * [User Settings](general/account-creation/user-settings.md)
+* [Dashboard](general/dashboard.md)
+* [Workspace](general/workspace.md)
 
 ## Data Analysis
 
