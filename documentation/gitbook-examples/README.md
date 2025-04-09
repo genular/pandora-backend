@@ -1,10 +1,12 @@
-# Examples
+# Flu Fighters Example
 
 ## Flu Fighters Example Workflow
 
 Use [this workflow](broken-reference) to explore how baseline immune features can predict responses to the Live Attenuated Influenza Vaccine (LAIV). The main objective is to classify participants as “high” or “low” responders based on changes in immune markers post-vaccination.
 
-Link to dataset: [flu\_fighters.csv](https://raw.githubusercontent.com/atomiclaboratory/systems_immunology_course_2024/refs/heads/main/Course%20Materials/Flu%20Fighters%20Challenge%202024/dataset/flu_fighters.csv)
+Link to dataset:
+
+{% file src=".gitbook/assets/flu_fighters.csv" %}
 
 The dataset contains data from **244 children** (aged 2–5 years) vaccinated with LAIV. Your task is to predict **vaccine responsiveness** (immunogenicity) based on **baseline immune features**. Responsiveness reflects how well a vaccine elicits an immune response, spanning humoral, cellular, and mucosal immunity.
 
