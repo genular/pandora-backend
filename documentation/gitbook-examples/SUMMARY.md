@@ -1,3 +1,3 @@
 # Table of contents
 
-* [Examples](README.md)
+* [Flu Fighters Example](README.md)
