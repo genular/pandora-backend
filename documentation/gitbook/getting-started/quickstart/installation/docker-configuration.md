@@ -22,11 +22,13 @@ If needed, consider increasing the amount of memory (RAM) and the number of CPU 
 
 Identify the backend your Docker setup uses, then refer to the corresponding option below.
 
-### Option 1 - Docker App Backend
-
+{% tabs %}
+{% tab title="Option 1 - Docker App Backend" %}
 <figure><img src="../../../.gitbook/assets/docker_ram_cpu_settings.png" alt=""><figcaption><p>Use these settings to allocate RAM and CPU resources to Docker. Allocate generously for optimal PANDORA performance, but ensure sufficient resources remain for your host operating system.</p></figcaption></figure>
+{% endtab %}
 
-### Option 2 - WSL Backend
-
+{% tab title="Option 2 - WSL Backend" %}
 <figure><img src="../../../.gitbook/assets/docker_wsl.png" alt=""><figcaption><p>When using the WSL backend, resource limits might be managed via<a href="https://learn.microsoft.com/en-us/windows/wsl/wsl-config"> WSL's global configuration</a> (Outside Docker Desktop settings).</p></figcaption></figure>
+{% endtab %}
+{% endtabs %}
 
