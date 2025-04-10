@@ -6,7 +6,7 @@ description: Allows users to perform hierarchical clustering on a dataset.
 
 ### **Overview**
 
-The **Hierarchical Clustering** tab in PANDORA offers a powerful and flexible toolset for clustering data. By providing options for data preprocessing, distance metrics, linkage methods, and display settings, users can generate customized dendrograms that reveal relationships within their datasets. This feature aids in exploratory data analysis, enabling users to uncover hidden patterns and groupings within complex datasets.
+The **Hierarchical Clustering** tab in PANDORA offers a toolset for clustering data. By providing options for data preprocessing, distance metrics, linkage methods, and display settings, users can generate customized dendrograms that reveal relationships within their datasets.&#x20;
 
 <figure><img src="../../.gitbook/assets/discovery-clustering.png" alt=""><figcaption></figcaption></figure>
 
