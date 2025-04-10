@@ -39,6 +39,11 @@
     * [ROC Curve Analysis](data-analysis/predictive/exploration/roc-curve-analysis.md)
     * [Model Interpretation](data-analysis/predictive/exploration/model-interpretation.md)
 
+## Technical System Overview
+
+* [Linux Distribution](technical-system-overview/linux-distribution.md)
+* [Source Code](technical-system-overview/source-code.md)
+
 ## Basics
 
 * [Markdown](basics/markdown.md)
