@@ -1,7 +1,3 @@
----
-description: A description of the settings panel on PANDORA
----
-
 # User Settings
 
 To access the "Settings" panel, click on the person icon at the top right corner of the homepage. This has been illustrated in the image below:&#x20;
@@ -15,11 +11,8 @@ You will reach the following page:&#x20;
 ### Key Functionalities
 
 1. **Account and Profile information:**
-   * Access the username, email address and registration key associated with your account, which will already be present on this page
    * Input and save personal details in your account as needed
 2. **System debugging:**&#x20;
-   * **Update**: Allows users to update to the latest version of PANDORA in an attempt to eliminate any bugs due to outdated software&#x20;
+   * **Update**: Allows users to update to the latest version of PANDORA
    * **System log file:** Download various tar.gz logs of the PANDORA and server backends to trace source of any bugs
-   * **Browse log file**: download text document (.log file) with a log of all functions performed on your PANDORA account during your current session
-3. **Danger Area (Delete your account):**
-   * Here is the option to **delete your account** if needed
+   * **Browse log file**
