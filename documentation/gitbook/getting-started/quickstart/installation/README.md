@@ -2,6 +2,7 @@
 description: >-
   Welcome! Below are the instructions to install PANDORA. If you’re unfamiliar
   with technical installations, don’t worry—just follow these steps carefully.
+icon: hashtag
 ---
 
 # Installation
@@ -17,6 +18,7 @@ description: >-
 2. **Install Docker**:
    * Download Docker from [docker.com](https://www.docker.com/) and follow their easy installation instructions.
    * If you’re unsure, you can follow these [detailed steps](https://docs.docker.com/get-docker/) on Docker’s site.
+   * Make sure Docker is [properly configured](docker-configuration.md).
 
 ### **Step 2: Install PANDORA**
 

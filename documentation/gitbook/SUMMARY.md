@@ -7,6 +7,7 @@
 * [Quickstart](getting-started/quickstart/README.md)
   * [Installation](getting-started/quickstart/installation/README.md)
     * [GPU Support](getting-started/quickstart/installation/gpu-support.md)
+    * [Docker Configuration](getting-started/quickstart/installation/docker-configuration.md)
   * [Reinstallation](getting-started/quickstart/reinstallation.md)
 
 ## General

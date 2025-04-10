@@ -3,6 +3,7 @@ description: >-
   If you need to reinstall PANDORA for any reason, please follow these steps
   carefully to remove the old version and start fresh. Note: This will delete
   any previous data and settings.
+icon: hashtag
 ---
 
 # Reinstallation
