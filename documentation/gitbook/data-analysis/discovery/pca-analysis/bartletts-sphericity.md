@@ -8,7 +8,7 @@ description: >-
 
 ### Overview
 
-The Bartlett's Sphericity tab in PANDORA provides results from the Bartlett's Test of Sphericity and Kaiser-Meyer-Olkin (KMO) Index Test. The provided results can inform users on the suitability of their dataset to be used in principal component analysis and produce meaningful insights.
+The **Bartlett's Sphericity** tab in PANDORA provides results from the Bartlett's Test of Sphericity and Kaiser-Meyer-Olkin (KMO) Index Test. The provided results can inform users on the suitability of their dataset to be used in principal component analysis and produce meaningful insights.
 
 <figure><img src="../../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 

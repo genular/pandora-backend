@@ -49,7 +49,7 @@ The **Hierarchical Clustering** tab organizes data into clusters based on simila
 
 ***
 
-### 4. [PCA Analysis](pca-analysis/)
+### 4. [PCA Analysis](pca-analysis.md)
 
 **PCA Analysis** (Principal Component Analysis) reduces the complexity of high-dimensional data, highlighting the main components that contribute to variance in your dataset. PCA is particularly valuable for identifying key factors that differentiate cell types or experimental conditions.
 

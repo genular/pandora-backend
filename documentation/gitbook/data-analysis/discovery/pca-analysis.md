@@ -10,7 +10,7 @@ description: >-
 
 The **PCA Analysis** tab provides a comprehensive set of tools for dimensionality reduction and exploratory data analysis. By enabling users to preprocess data, choose analysis methods, and customize visualizations, it supports identifying patterns, clusters, and relationships within complex datasets, making it easier to interpret high-dimensional data.
 
-<figure><img src="../../../.gitbook/assets/discovery-pca.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/discovery-pca.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
 

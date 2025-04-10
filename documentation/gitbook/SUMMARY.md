@@ -24,7 +24,7 @@
   * [Data Overview](data-analysis/discovery/data-overview.md)
   * [Correlation](data-analysis/discovery/correlation.md)
   * [Clustering](data-analysis/discovery/clustering.md)
-  * [PCA Analysis](data-analysis/discovery/pca-analysis/README.md)
+  * [PCA Analysis](data-analysis/discovery/pca-analysis.md)
     * [Bartlett's sphericity](data-analysis/discovery/pca-analysis/bartletts-sphericity.md)
   * [t-SNE Analysis](data-analysis/discovery/t-sne-analysis.md)
   * [UMAP](data-analysis/discovery/umap.md)
