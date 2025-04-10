@@ -16,3 +16,5 @@ The PANDORA source code is organized into two distinct GitHub repositories:
 2. **Backend:** ([`genular/pandora-backend`](https://github.com/genular/pandora-backend)) This repository houses the backend logic, which consists of multiple modules written in PHP, R, and Python to handle data processing, analysis, and server-side operations.
 
 This separation allows for independent development and deployment of the user interface and the core processing components. Both components are ultimately included in the final Docker image build.
+
+<img src="../.gitbook/assets/file.excalidraw.svg" alt="Structure" class="gitbook-drawing">
