@@ -8,7 +8,7 @@ The **Predictive** section allows users to create predictive models for complex 
 
 ***
 
-### 1. [Machine Learning](machine-learning/)
+### 1. [Machine Learning](simon/)
 
 The **Machine Learning** tab is your starting point, providing a variety of tunable properties to streamline the process of developing and running your predictive models.
 
