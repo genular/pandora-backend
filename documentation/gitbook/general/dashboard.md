@@ -1,3 +1,7 @@
+---
+icon: gauge-min
+---
+
 # Dashboard
 
 ### Overview

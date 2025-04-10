@@ -3,6 +3,7 @@ description: >-
   Allows users to configure machine learning models by selecting predictors,
   responses, model types, and preprocessing options to suit their specific
   analytical needs.
+icon: message-bot
 ---
 
 # Machine Learning

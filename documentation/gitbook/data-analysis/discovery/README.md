@@ -1,3 +1,7 @@
+---
+icon: chart-scatter-bubble
+---
+
 # Discovery
 
 The **Discovery** section provides a powerful suite of tools for visualizing, clustering, and exploring complex datasets. It is designed to easy to uncover patterns and relationships in biological data through intuitive visualizations. The Discovery section is divided into six tabs, each focusing on a specific type of analysis.

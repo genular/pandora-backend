@@ -2,6 +2,7 @@
 description: >-
   Enables users to explore the results of machine learning models by selecting
   metrics and utilizing built-in analysis tools.
+icon: chart-scatter
 ---
 
 # Exploration

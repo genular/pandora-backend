@@ -1,3 +1,7 @@
+---
+icon: circle-user
+---
+
 # Account Creation
 
 After you installed PANDORA navigate to:

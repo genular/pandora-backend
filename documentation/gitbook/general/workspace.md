@@ -1,3 +1,7 @@
+---
+icon: copy
+---
+
 # Workspace
 
 ### Overview

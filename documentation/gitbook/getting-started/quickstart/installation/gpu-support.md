@@ -1,3 +1,7 @@
+---
+icon: flask-round-poison
+---
+
 # GPU Support
 
 Please be sure that you have correctly configured your NVIDIA Drivers, CUDA and Docker to run with GPU --gpu support.&#x20;
