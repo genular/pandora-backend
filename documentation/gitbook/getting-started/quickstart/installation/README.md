@@ -4,7 +4,9 @@ icon: laptop
 
 # Installation
 
-### **Step 1: Install Docker**
+{% tabs %}
+{% tab title="Step 1: Install Docker" %}
+**Step 1: Install Docker**
 
 1.  **Check Compatibility**:&#x20;
 
@@ -16,9 +18,9 @@ icon: laptop
    * Download Docker from [docker.com](https://www.docker.com/) and follow their easy installation instructions.
    * If you’re unsure, you can follow these [detailed steps](https://docs.docker.com/get-docker/) on Docker’s site.
    * Make sure Docker is [properly configured](docker-configuration.md).
+{% endtab %}
 
-### **Step 2: Install PANDORA**
-
+{% tab title="Step 2: Install PANDORA" %}
 1. **Open Your Terminal**:
    * On Windows, search for **PowerShell** in your Start menu and open it.
    * On MacOS or Linux, open the **Terminal** app.
@@ -35,5 +37,9 @@ icon: laptop
    * Open your browser and go to [http://localhost:3010](http://localhost:3010) to start using PANDORA.
 4. **Allow Firewall Access** (if prompted):
    * Open your browser and go to [http://localhost:3010](http://localhost:3010) to start using PANDORA.
+{% endtab %}
+{% endtabs %}
+
+
 
 With that, PANDORA is now installed and ready to use!
