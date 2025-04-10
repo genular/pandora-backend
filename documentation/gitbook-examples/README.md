@@ -1,10 +1,12 @@
+---
+description: Flu Fighters Example Workflow
+---
+
 # Flu Fighters Example
 
-## Flu Fighters Example Workflow
+Use [this workflow](broken-reference) to explore how baseline immune features can predict responses to the Live Attenuated Influenza Vaccine (LAIV). **The main objective is to classify participants as “high” or “low” responders based on changes in immune markers post-vaccination.**
 
-Use [this workflow](broken-reference) to explore how baseline immune features can predict responses to the Live Attenuated Influenza Vaccine (LAIV). The main objective is to classify participants as “high” or “low” responders based on changes in immune markers post-vaccination.
-
-Link to dataset:
+Link to example dataset:
 
 {% file src=".gitbook/assets/flu_fighters.csv" %}
 
