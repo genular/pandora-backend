@@ -12,7 +12,7 @@ icon: message-bot
 
 The **Predictive - Start** tab in SIMON simplifies the process of setting up and running predictive models, making it accessible to users with various levels of expertise. Its intuitive interface and extensive model selection provide flexibility for both exploratory and targeted predictive analysis.
 
-<figure><img src="../../.gitbook/assets/predictive-simon.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/predictive-simon.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
 
@@ -49,21 +49,21 @@ The **Predictive - Start** tab in SIMON simplifies the process of setting up and
 
     * **Select Predictor variables:** In this case, all predictor variables are selected, and the "exclude predictors" is used to remove non-contributing features from the analysis, such as arbitrary sample ids.&#x20;
 
-    <div data-full-width="true"><figure><img src="../../.gitbook/assets/ML_Example_PredictorSelection.png" alt=""><figcaption></figcaption></figure></div>
+    <div data-full-width="true"><figure><img src="../../../.gitbook/assets/ML_Example_PredictorSelection.png" alt=""><figcaption></figcaption></figure></div>
 
     * **Select Response Variables**: Select the desired response variable. In a classification model, this is the outcome the model is trying to predict based on the predictor features.
 
 
 
-    <figure><img src="../../.gitbook/assets/ML_Example_ResponseSelection.png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/ML_Example_ResponseSelection.png" alt=""><figcaption></figcaption></figure>
 
     * **Set Training/Testing Dataset partition**: Use the slider to adjust the partition between training and testing. In this case, we will keep the standard 75% partition, though it may make sense to vary the partition based on the machine learning package used.
 
-    <div align="center" data-full-width="true"><figure><img src="../../.gitbook/assets/ML_Example_Partition.png" alt=""><figcaption></figcaption></figure></div>
+    <div align="center" data-full-width="true"><figure><img src="../../../.gitbook/assets/ML_Example_Partition.png" alt=""><figcaption></figcaption></figure></div>
 
     * **Configure Preprocessing:** Select preprocessing methods to appropriately standardize data based on your dataset and the machine learning packages you plan to use.
 
-    <figure><img src="../../.gitbook/assets/ML_Example_Preprocessing.png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/ML_Example_Preprocessing.png" alt=""><figcaption></figcaption></figure>
 2. **Choose Models**: Select one or more models from the **Available Packages** list and add them to **Selected Packages**.
 3. **Run Analysis**: Configure advanced options like feature selection and multi-set intersection as needed, then initiate the analysis.
 
