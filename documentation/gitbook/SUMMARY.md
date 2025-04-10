@@ -32,6 +32,7 @@
 * [Predictive](data-analysis/predictive/README.md)
   * [Machine Learning](data-analysis/predictive/machine-learning/README.md)
     * [Multiset Intersection](data-analysis/predictive/machine-learning/multiset-intersection.md)
+    * [Feature Selection](data-analysis/predictive/machine-learning/feature-selection.md)
   * [Exploration](data-analysis/predictive/exploration/README.md)
     * [Variable Importance](data-analysis/predictive/exploration/variable-importance.md)
     * [Training Summary](data-analysis/predictive/exploration/training-summary.md)
