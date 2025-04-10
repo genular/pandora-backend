@@ -1,16 +1,14 @@
 ---
-description: >-
-  Allows users to perform Principal Component Analysis (PCA) on their dataset,
-  helping to reduce dimensionality and visualize relationships.
+description: Helping to reduce dimensionality and visualize relationships.
 ---
 
 # PCA Analysis
 
 ### Overview
 
-The **PCA Analysis** tab provides a comprehensive set of tools for dimensionality reduction and exploratory data analysis. By enabling users to preprocess data, choose analysis methods, and customize visualizations, it supports identifying patterns, clusters, and relationships within complex datasets, making it easier to interpret high-dimensional data.
+The **PCA Analysis** tab provides tools for dimensionality reduction and exploratory data analysis.
 
-<figure><img src="../../.gitbook/assets/discovery-pca.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/discovery-pca.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
 ### Key Functionalities
 
@@ -38,10 +36,6 @@ The **PCA Analysis** tab provides a comprehensive set of tools for dimensionalit
 
 #### 4. Display Options
 
-* **Theme**: Select a theme for visualizing the PCA plot.
-* **Color Palette**: Choose a color palette for the plot.
-* **Font Size**: Set the font size for the plot.
-* **Point Size**: Adjust the size of data points in the plot.
 * **Label Size**: Customize the font size of variable labels.
 * **Ellipse Alpha**: Set the transparency level of ellipses for grouping.
 * **Remove Ellipse**: Toggle to remove or add ellipses around groupings.
