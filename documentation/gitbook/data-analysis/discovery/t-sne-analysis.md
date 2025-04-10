@@ -1,12 +1,8 @@
----
-description: Enables users to visualize high-dimensional data.
----
-
 # t-SNE Analysis
 
 ### Overview
 
-The **t-SNE Analysis** tab provides robust tools for high-dimensional data visualization, making it easier to identify clustering patterns and relationships within complex datasets. It supports both standard and clustered t-SNE visualizations, providing valuable insights into data structure.
+The **t-SNE Analysis** tab supports both standard and clustered t-SNE visualizations.
 
 <figure><img src="../../.gitbook/assets/discovery-tsne.png" alt=""><figcaption></figcaption></figure>
 
@@ -46,16 +42,6 @@ The **t-SNE Analysis** tab provides robust tools for high-dimensional data visua
 * **Dataset Analysis Type**: Select the analysis type, such as heatmap or hierarchical clustering.
 * **Grouped Display**: Display the mean values of clusters on a heatmap.
 * **Remove Outliers for Downstream Analysis**: Choose whether to remove outliers for downstream analyses like machine learning.
-
-#### 6. Theme Settings
-
-* **Theme**: Choose a visual theme for the t-SNE plot.
-* **Color Palette**: Select a color palette for plotting.
-* **Legend Position**: Specify the position of the legend.
-* **Font Size**: Set the font size for plot text.
-* **Point Size**: Adjust the size of data points in the plot.
-* **Aspect Ratio**: Control the aspect ratio of the plot.
-* **Plot Size**: Set the plot’s overall size.
 
 #### 7. Analysis and Download Options
 

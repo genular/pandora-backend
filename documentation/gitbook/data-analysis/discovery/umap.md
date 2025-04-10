@@ -1,14 +1,14 @@
 ---
 description: >-
-  Provides a user-friendly interface to perform and visualize Uniform Manifold
-  Approximation and Projection (UMAP).
+  Interface to perform and visualize Uniform Manifold Approximation and
+  Projection (UMAP).
 ---
 
 # UMAP
 
 ### Overview
 
-The **UMAP Analysis** tab in PANDORA offers a comprehensive interface for high-dimensional data visualization, simplifying the process of identifying patterns and clusters in complex datasets. The tab supports preprocessing, customization of plot aesthetics, and various download options, making it a versatile tool for exploratory data analysis.
+
 
 <figure><img src="../../.gitbook/assets/discovery-umap.png" alt=""><figcaption></figcaption></figure>
 
@@ -27,13 +27,6 @@ The **UMAP Analysis** tab in PANDORA offers a comprehensive interface for high-d
 * **Remove NA**: Enable this option to drop rows with missing values before processing.
 * **Partition Split**: Set the train-test split ratio for supervised learning tasks. The split will be based on the grouping variable’s distribution.
 
-#### 3. Visualization Settings
-
-* **Theme**: Choose a visual theme for the UMAP plot, such as "Black & White" or other aesthetic options.
-* **Color Palette**: Select a color palette for plotting, which enhances the plot’s readability and accessibility.
-* **Font Size**: Adjust the font size of plot labels for better readability.
-* **Ratio**: Set the aspect ratio of the plot to control the plot's dimensions.
-
 #### 4. Plot and Download Options
 
 * **Download Plot**: Save the UMAP plot as an SVG file for further analysis or reporting.
@@ -43,8 +36,4 @@ The **UMAP Analysis** tab in PANDORA offers a comprehensive interface for high-d
 
 * **Auto UMAP Settings**: Automatically adjusts UMAP settings based on data characteristics to optimize the visualization.
 * **Training and Testing Splits**: Enables viewing the UMAP projections for training and testing splits if performing supervised learning.
-
-### UMAP Display
-
-The UMAP plot provides an interactive display where similar data points are projected close to each other, based on the underlying high-dimensional data structure. Users can observe clusters, patterns, and potential relationships between data points, colored according to the selected grouping variable.
 
