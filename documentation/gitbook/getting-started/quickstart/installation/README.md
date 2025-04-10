@@ -1,7 +1,4 @@
 ---
-description: >-
-  Welcome! Below are the instructions to install PANDORA. If you’re unfamiliar
-  with technical installations, don’t worry—just follow these steps carefully.
 icon: hashtag
 ---
 
