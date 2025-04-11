@@ -20,12 +20,12 @@ description: A description of the common side panel options present in the Disco
 
 ### Preprocessing&#x20;
 
-1. Preprocessing options:&#x20;
-   * Center:&#x20;
-   * Scale:&#x20;
-   * knnImpute:&#x20;
-   * bagImpute:&#x20;
-   * medianImpute:&#x20;
+1. PANDORA has several preprocessing options for preparing the user's dataset for analysis. The user can choose one or a combination of the following options:&#x20;
+   * **Center**: Subtracting the mean of the data from the values
+   * **Scale**: Dividing your values by the standard deviation of the data
+   * **knnImpute**: Estimate missing values using the nearest neighbors with similar patterns to the row with the missing value
+   * **bagImpute**:&#x20;
+   * **medianImpute**:&#x20;
    * corr:&#x20;
    * zv:
    * nzv:&#x20;
