@@ -34,3 +34,5 @@ The Dashboard is a space where the user's attempts of training predictive models
       <figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 * **Download queue**: Download the dataset from which predictor and response variables were chosen as a .csv file
 * **Delete queue**: Delete the queue if needed to reduce clutter from unsuccessful queues or to free up space
+
+{% embed url="https://www.youtube.com/watch?v=QMPLj6YzEu0" %}

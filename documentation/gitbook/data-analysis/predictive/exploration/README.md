@@ -25,3 +25,4 @@ The **Predictive - Exploration** tab provides a comprehensive suite of analytica
    * [**ROC Curve Analysis:**](roc-curve-analysis.md) Provides a graphical representation for evaluating binary classification performance in models from both training and testing.
    * [**Model Interpretation:**](model-interpretation.md) Allows for investigation of feature impact on model performance through a variety of analysis options.
 
+{% embed url="https://www.youtube.com/watch?v=ErfpPTmFdZY" %}

@@ -71,3 +71,4 @@ Choose your predictor and response variables, configure preprocessing, and set t
 {% endtab %}
 {% endtabs %}
 
+{% embed url="https://www.youtube.com/watch?v=UC8sXfMjDHE" %}
