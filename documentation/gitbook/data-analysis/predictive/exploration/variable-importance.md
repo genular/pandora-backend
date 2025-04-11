@@ -26,3 +26,5 @@ The **Variable Importance** tab in PANDORA provides robust tools to investigate 
    * **Ratio:** Adjust the plot’s aspect ratio for optimal display and to fit various screen resolutions.
 3. &#x20;**Variable Importance**
    * Bar plot showing feature importance in descending order. For Clarity, users can hover over bars to view the associated feature name and exact variable importance score.
+
+{% embed url="https://www.youtube.com/watch?v=E2KSBN1GST0" %}
