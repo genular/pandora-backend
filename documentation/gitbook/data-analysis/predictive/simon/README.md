@@ -70,5 +70,3 @@ Choose your predictor and response variables, configure preprocessing, and set t
 * **Run Analysis**: Configure advanced options like feature selection and multi-set intersection as needed, then initiate the analysis.
 {% endtab %}
 {% endtabs %}
-
-{% embed url="https://www.youtube.com/watch?v=UC8sXfMjDHE" %}
