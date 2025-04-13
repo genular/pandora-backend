@@ -1,10 +1,10 @@
 ---
 description: >-
   Provides users with insights on the suitability of their dataset for principal
-  component analysis (PCA)
+  component analysis (PCA).
 ---
 
-# Bartlett's sphericity
+# Bartlett's Sphericity
 
 ### Overview
 
