@@ -12,9 +12,10 @@
 
 ## General
 
-* [Account Creation](general/account-creation/README.md)
-  * [Reset Password](general/account-creation/reset-password.md)
-  * [User Settings](general/account-creation/user-settings.md)
+* [Your PANDORA Account](general/your-pandora-account/README.md)
+  * [Account Creation](general/your-pandora-account/account-creation.md)
+  * [Reset Password](general/your-pandora-account/reset-password.md)
+  * [User Settings](general/your-pandora-account/user-settings.md)
 * [Dashboard](general/dashboard.md)
 * [Workspace](general/workspace.md)
 

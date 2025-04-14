@@ -6,6 +6,14 @@ icon: gauge-min
 
 ### Overview
 
+<details>
+
+<summary></summary>
+
+
+
+</details>
+
 The Dashboard is a space where the user's attempts of training predictive models through SIMON are stored. It also consists of basic functions to observe the progression of the training and testing of your predictive models along with a summary of training results.&#x20;
 
 <figure><img src="../.gitbook/assets/PANDORA Dashboard.png" alt=""><figcaption></figcaption></figure>

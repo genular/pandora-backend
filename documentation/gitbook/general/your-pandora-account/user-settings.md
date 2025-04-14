@@ -1,3 +1,7 @@
+---
+icon: gear
+---
+
 # User Settings
 
 To access the "Settings" panel, click on the person icon at the top right corner of the homepage. This has been illustrated in the image below:&#x20;

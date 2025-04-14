@@ -1,3 +1,7 @@
+---
+icon: key
+---
+
 # Reset Password
 
 1. When you click on the "Forgot Password" link at the login page, you will see the following page:&#x20;
