@@ -16,6 +16,12 @@ The **Individuals** tab in PANDORA provides valuable insights on the correlation
 {% tab title="1. Correlation circle(s)" %}
 This sub-tab provides correlation circle plots of all individuals in a non-clustered and clustered form, and allows for comparison between individual contribution and variable contribution in the principal components. These plots can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
 
+How to interpret a correlation circle:&#x20;
+
+* Positively correlated variables are grouped together
+* Negatively correlated variables are positioned opposite of each other about the origin of the plot
+* The distance of a variable from the origin is a measure of its quality on the factor map. Variables located far from the origin are well represented on the factor map.
+
 #### a. Circle
 
 Provides a correlation circle between individuals and principal components with coloring based on the cos2 value for each individual. Learn more about correlation circles on the [PCA Analysis](../pca-analysis.md) page.
