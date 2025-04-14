@@ -4,11 +4,10 @@ icon: circle-user
 
 # Your PANDORA Account
 
-<table data-view="cards"><thead><tr><th></th></tr></thead><tbody><tr><td></td></tr><tr><td></td></tr><tr><td></td></tr></tbody></table>
-
-After you installed PANDORA navigate to:
+<table data-view="cards"><thead><tr><th></th><th data-type="content-ref"></th><th data-hidden data-card-cover data-type="files"></th></tr></thead><tbody><tr><td><ol><li>Account Creation </li></ol></td><td></td><td><a href="../../.gitbook/assets/image (1).png">image (1).png</a></td></tr><tr><td><ol start="2"><li>Reset Password</li></ol></td><td><a href="reset-password.md">reset-password.md</a></td><td></td></tr><tr><td><ol start="3"><li>User Settings</li></ol></td><td><a href="user-settings.md">user-settings.md</a></td><td></td></tr></tbody></table>
 
 * [http://localhost:3010](http://localhost:3010) if you used default installation commands
+*
 
 It could take up to **1 minute** for system to boot-up on first run.
 

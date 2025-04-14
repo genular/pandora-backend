@@ -28,13 +28,13 @@ The Dashboard is a space where the user's attempts of training predictive models
     * **Processing time**: Provides the time taken for the models to complete training and testing with the given dataset and samples
     * **Status**: Illustrates how far along has SIMON reached in training and testing the predictive models for the given dataset. This column will convey if there are any errors, if the model training has been cancelled, percent completion during model training progression, and completion.&#x20;
 
-    <figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
     * **Sparsity**: Percentage of how sparse the given dataset is. Sparsity below 50% is preferred.
     * **Successful models**: The number of models that were successfully trained and tested out of all the models sent to SIMON for processing.&#x20;
 3. **Operations**:
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * **More information**: View basic information, processing time and statistics for the successful models&#x20;
   *   Example:
