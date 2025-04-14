@@ -61,7 +61,7 @@ The **Discovery** section provides tools for visualizing, clustering and explori
 {% endtab %}
 
 {% tab title="t-SNE" %}
-[**t-SNE Analysis**](t-sne-analysis.md) (t-distributed Stochastic Neighbor Embedding) is a technique for reducing dimensionality and visualizing high-dimensional data in a two-dimensional plot. This is particularly useful for visualizing clusters in complex data, like single-cell RNA sequencing results.
+[**t-SNE Analysis**](t-sne-analysis/) (t-distributed Stochastic Neighbor Embedding) is a technique for reducing dimensionality and visualizing high-dimensional data in a two-dimensional plot. This is particularly useful for visualizing clusters in complex data, like single-cell RNA sequencing results.
 
 * **t-SNE Plot**: Reduces data to two dimensions and groups similar data points together, often forming clusters representing cell types or conditions.
 * **Clustered t-SNE Analysis**: Applies clustering to the t-SNE plot, helping to identify and label clusters directly on the plot.

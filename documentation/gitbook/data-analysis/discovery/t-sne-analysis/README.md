@@ -4,7 +4,7 @@
 
 The **t-SNE Analysis** tab supports both standard and clustered t-SNE visualizations.
 
-<figure><img src="../../.gitbook/assets/discovery-tsne.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/discovery-tsne.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
 
