@@ -1,3 +1,9 @@
+---
+description: >-
+  Helping to reduce dimensionality and visualize relationships in a non-linear
+  fashion
+---
+
 # t-SNE Analysis
 
 ### Overview

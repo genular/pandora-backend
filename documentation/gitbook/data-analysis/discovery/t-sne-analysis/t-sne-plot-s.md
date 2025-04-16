@@ -6,6 +6,8 @@ description: >-
 
 # t-SNE plot(s)
 
+### Overview
+
 The **t-SNE plot(s)** tab provides a t-SNE plot for just individuals, and t-SNE plots overlaying the grouping & coloring variables. These plots allow the user to identify trends and clustering within the dataset and investigate how features may correlate to these patterns.
 
 <figure><img src="../../../.gitbook/assets/tSNE_tSNE Plots_highres-min_annotated.png" alt=""><figcaption></figcaption></figure>

@@ -4,11 +4,15 @@ description: Allows users to perform hierarchical clustering on a dataset.
 
 # Hierarchical Clustering
 
+### Overview
+
+The **Hierarchical Clustering** tab simplifies data by grouping similar features and data points together in a hierarchical fashion that progresses from most similar to lease similar cluster groups
+
 <figure><img src="../../.gitbook/assets/Discovery_Clustering_Main-maxcompress-annotated.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Clustering Setup" %}
-For generic setup steps and preprocessing options, please see the [Side Panel Options](side-panel-options.md) page. Information about the settings unique to Hierarchical Clustering setup is provided below:
+For generic setup steps and preprocessing options, please see the [Side Panel Options](side-panel-options.md) page. Information about the settings unique to the Hierarchical Clustering setup is provided below:
 
 * **Scale:** Select how the associated values for coloring in the heatmap are scaled
   * **Row:** Scaled according to other values in the same row of the heatmap
@@ -26,6 +30,6 @@ The output hierarchical clustered heat map shows the scaled values for the selec
 
 The hierarchical clustering output allows for visual assessment of groupings based on the heatmap and can be used to identify trends in the dataset..
 
-<figure><img src="../../.gitbook/assets/CusteredHeatmap.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/CusteredHeatmap.png" alt="" width="375"><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}

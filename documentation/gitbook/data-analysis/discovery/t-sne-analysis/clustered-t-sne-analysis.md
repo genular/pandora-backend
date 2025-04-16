@@ -6,6 +6,8 @@ description: >-
 
 # Clustered t-SNE analysis
 
+### Overview
+
 The **Clustered t-SNE Analysis** view offers enhanced visualization and trend identification by applying clustering methods to the t-SNE plot.
 
 <figure><img src="../../../.gitbook/assets/tSNE_Clustered tSNE_Highres-min_annotated.png" alt=""><figcaption></figcaption></figure>

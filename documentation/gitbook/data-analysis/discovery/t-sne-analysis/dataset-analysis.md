@@ -1,6 +1,12 @@
+---
+description: Helping users assess differences between clusters in their t-SNE analysis
+---
+
 # Dataset analysis
 
+### Overview
 
+The **Dataset analysis** view allows users to investigate feature differences between cluster groups.
 
 <figure><img src="../../../.gitbook/assets/tSNE_Dataset Analysis_Highres-min_annotated.png" alt=""><figcaption></figcaption></figure>
 
