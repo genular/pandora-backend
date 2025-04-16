@@ -8,7 +8,7 @@ description: Allows users to perform hierarchical clustering on a dataset.
 
 The **Hierarchical Clustering** tab simplifies data by grouping similar features and data points together in a hierarchical fashion that progresses from most similar to lease similar cluster groups
 
-<figure><img src="../../.gitbook/assets/Discovery_Clustering_Main-maxcompress-annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Discovery_Clustering_Main-min-annotate.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Clustering Setup" %}
@@ -26,7 +26,7 @@ For generic setup steps and preprocessing options, please see the [Side Panel Op
 {% endtab %}
 
 {% tab title="2. Clustered Heatmap" %}
-The output hierarchical clustered heat map shows the scaled values for the selected rows and columns from the hierarchical clustering setup. Hierarchical clusters are also shown for the columns (at the top) and the rows (on the left side) via a dendrogram.
+The output **hierarchical clustered heat map** shows the scaled values for the selected rows and columns from the hierarchical clustering setup. Hierarchical clusters are also shown for the columns (at the top) and the rows (on the left side) via a dendrogram.
 
 The hierarchical clustering output allows for visual assessment of groupings based on the heatmap and can be used to identify trends in the dataset..
 

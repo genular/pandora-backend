@@ -11,7 +11,7 @@ icon: chart-scatter
 
 The **Predictive - Exploration** tab provides a comprehensive suite of analytical tools to assess performance of machine learning models. It supports users in comparing models and investigating features to develop actionable insights.
 
-<figure><img src="../../../.gitbook/assets/Exploration.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Exploration_Main_Highres_annotated-min.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
 {% tabs %}
 {% tab title="Data Configuration" %}

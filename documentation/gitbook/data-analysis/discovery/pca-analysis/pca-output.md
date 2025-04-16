@@ -20,7 +20,7 @@ Under "Eigenvalues" in the terminal output, the variance contributions for each 
 * **% of var:** The proportion of the total variance among all principal components that the eigenvalue contributes is shown
 * **Cumulative % of var:** Each successive principal component or dimension down the table adds to the total variance; the cumulating variance is shown in this column.
 
-<figure><img src="../../../.gitbook/assets/PCA Output_Eigenvalues.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA Ouput_EIgenvalues_Highres.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Individuals" %}
@@ -31,7 +31,7 @@ Under "Individuals" in the terminal output, results from PCA for the first ten i
 * **Ctr:** Provides a measure of the individual's contribution to the principal component.
 * **Cos2:** The cos2 value indicates how well an individual is represented on the principal component. A value closer to one indicates better representation.
 
-<figure><img src="../../../.gitbook/assets/PCA Output_Individuals.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA Output_Individuals_Highres-min.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Variables" %}
@@ -41,7 +41,7 @@ Under "Variables" in the terminal output, results from PCA for the first ten var
 * **Ctr:** Provides a measure of the variable's contribution to the principal component.
 * **Cos2:** The cos2 value indicates how well a variable is represented on the principal component. A value closer to one indicates better representation.
 
-<figure><img src="../../../.gitbook/assets/PCA Output_Variables.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA Output_Variables_Highres-min.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}
 

@@ -8,13 +8,11 @@ description: Helping to reduce dimensionality and visualize relationships.
 
 The **PCA Analysis** tab provides tools for dimensionality reduction and exploratory data analysis.
 
-<figure><img src="../../.gitbook/assets/PCA_Main.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/PCA_main_Highres_annotated-min.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. PCA Setup" %}
 For generic setup steps and preprocessing options, please see the [Side Panel Options](side-panel-options.md) page. Information about the settings unique to PCA setup is provided below:
-
-
 
 * **Grouping Variable**: Select a variable to use for grouping. This variable won’t impact PCA computation but will be used for plotting.
   * Selecting a grouping variable allows users to investigate if the PCA suggests that individuals with similar grouping variable values tend to cluster in the reduced dimensional space.
@@ -29,8 +27,6 @@ For generic setup steps and preprocessing options, please see the [Side Panel Op
 
 {% tab title="2. Analysis Options" %}
 After running PCA, on the right of the side panel, the user will see results for several analyses.
-
-
 
 * [**Bartlett's Sphericity**](pca-analysis/bartletts-sphericity.md): Provides results for Bartlett's Test of Sphericity and Kaiser-Meyer-Olkin (KMO) Index Test for user to assess suitability of the dataset for PCA.
 * [**Eigenvalues / Variances**](pca-analysis/eigenvalues-variances.md): View eigenvalues and variances to understand the significance of each principal component.

@@ -10,7 +10,7 @@ description: >-
 
 The **Model Interpretation** tab in PANDORA offers a powerful suite of analysis tools to investigate feature contributions to the predictive models. Users can select the analyses of interest to generate informative visual plots for improved understanding of feature influence in model performance.
 
-<figure><img src="../../../.gitbook/assets/Exploration_Model Interpretation.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Exploration_Model Interpretation_Medres_annotated-min.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Setup analyses" %}

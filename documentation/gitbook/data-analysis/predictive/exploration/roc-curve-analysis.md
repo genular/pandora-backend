@@ -12,7 +12,7 @@ The **ROC Curve Analysis** tab in PANDORA provides a clear interface for visuali
 
 
 
-<figure><img src="../../../.gitbook/assets/Exploration_ROC Curves.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Exploration_ROC curves_Medres_annotated-min.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. ROC curves" %}

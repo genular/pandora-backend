@@ -10,7 +10,7 @@ description: >-
 
 The **Eigenvalues/Variances** tab in PANDORA helps users investigate and understand the eigenvalue contribution to the principal component analysis.
 
-<figure><img src="../../../.gitbook/assets/PCA_Eigenvalues.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA_Eigenvalues_Medres-annotated.png" alt=""><figcaption></figcaption></figure>
 
 **Eigenvalues** are a measure of the amount of variance retained by each principal component in PCA and are commonly used to determine the number of principal components to retain.
 
