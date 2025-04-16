@@ -13,8 +13,6 @@ The **Predictive - Exploration** tab provides a comprehensive suite of analytica
 
 <figure><img src="../../../.gitbook/assets/Exploration.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
-### Key Functionalities
-
 {% tabs %}
 {% tab title="Data Configuration" %}
 There are several options for configuring the data to prepare it for exploring the results of the predictive models:&#x20;
