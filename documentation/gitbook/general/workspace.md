@@ -8,7 +8,9 @@ icon: copy
 
 The Workspace is a space where the user is able to upload their datasets for analysis using PANDORA. The user can upload multiple files and view all of them in this space. This is also the space where any files saved to PANDORA (e.g. saving your cluster classifications with the dataset) will show up.
 
-* Add  that it should only be a csv file and link flu fighters as an example
+{% hint style="info" %}
+Users can only upload **.csv** files on PANDORA. For example, see the [flu fighters](https://github.com/atomiclaboratory/systems_immunology_course_2024/blob/main/Course%20Materials/Flu%20Fighters%20Challenge%202024/dataset/flu_fighters.csv) dataset
+{% endhint %}
 
 <figure><img src="../.gitbook/assets/workspace.png" alt=""><figcaption></figcaption></figure>
 

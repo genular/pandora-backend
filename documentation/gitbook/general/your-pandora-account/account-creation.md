@@ -5,7 +5,7 @@ icon: globe
 
 # Account Creation
 
-After you installed PANDORA navigate to:
+After you installed PANDORA, navigate to:
 
 * [http://localhost:3010](http://localhost:3010) if you used default installation commands
 
