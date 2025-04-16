@@ -14,19 +14,33 @@ Users can only upload **.csv** files on PANDORA. For example, see the [flu fight
 
 <figure><img src="../.gitbook/assets/workspace.png" alt=""><figcaption></figcaption></figure>
 
-### Key Functionalities
+{% tabs %}
+{% tab title="File options" %}
+By right-clicking on a file, a panel is presented with various options for the file
 
-1. **File options**: By right-clicking on a file, a panel is presented with various options for the file
-   * **Select**: Choose this file/dataset for using the Discover and Predictive features on PANDORA
-   * **Download**: Download the chosen file&#x20;
-   * **Delete**: Delete the chosen file if it is no longer needed. The user is also able to delete the file by selecting the delete option that appears when you hover your cursor on the file&#x20;
-   * **Preview**: View the first 100 rows and 50 columns of the file on PANDORA
-2.  **File upload**: Upload files by dropping at the stated location or by clicking at that same location&#x20;
+<figure><img src="../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
 
+* **Select**: Choose this file/dataset for using the Discover and Predictive features on PANDORA
+* **Download**: Download the chosen file&#x20;
+* **Delete**: Delete the chosen file if it is no longer needed. The user is also able to delete the file by selecting the delete option that appears when you hover your cursor on the file&#x20;
+* **Preview**: View the first 100 rows and 50 columns of the file on PANDORA
+{% endtab %}
 
+{% tab title="File upload" %}
+Upload files by dropping at the stated location or by clicking at that same location&#x20;
 
-    <figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
-3.  **New Directory**: Create a new directory by inputting a directory name. This will create a folder on the main Workspace and clicking on the folder will give access to the new directory where the user can upload files they require specific to that directory
+<figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption><p>Location of file upload option</p></figcaption></figure>
+{% endtab %}
 
-    <div><figure><img src="../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Screenshot 2025-04-09 083033.png" alt=""><figcaption></figcaption></figure></div>
-4. **Delete all**: Delete all the files present in the workspace&#x20;
+{% tab title="Directory and Delete" %}
+At the top right corner of the Workspace page, the **New Directory** and **Delete all** options reside:&#x20;
+
+<figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+
+* **New Directory**: Create a new directory by inputting a directory name. This will create a folder on the main Workspace and clicking on the folder will give access to the new directory where the user can upload files they require specific to that directory.
+
+<div><figure><img src="../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Screenshot 2025-04-09 083033.png" alt=""><figcaption></figcaption></figure></div>
+
+**Delete all**: Delete all the files present in the workspace.&#x20;
+{% endtab %}
+{% endtabs %}

@@ -28,6 +28,8 @@ Displays the distribution of values in selected columns, which helps in identify
 
 **Download Options**: Users can download the raw data and plot images for offline analysis. Images are available in SVG format for scalability.
 
+[**Side Panel Options**](side-panel-options.md): Users can choose specific columns of the dataset to visualize, along with modifying themes and plot colors to match their preferences&#x20;
+
 **Dynamic Tab Control**:
 
 * The tab will only be enabled if there is a sufficient amount of data in the selected file, preventing empty visualizations and optimizing performance.

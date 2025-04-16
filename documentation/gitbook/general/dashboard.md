@@ -11,11 +11,9 @@ The Dashboard is a space where the user's attempts of training predictive models
 <figure><img src="../.gitbook/assets/PANDORA Dashboard.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
-{% tab title="Exploration" %}
-The user is able to access the [**Exploration**](../data-analysis/predictive/exploration/) tab under [Predictive](../data-analysis/predictive/) by clicking on the desired model row. The user can explore model performances and use PANDORA's explainable AI features here.&#x20;
-{% endtab %}
-
 {% tab title="Basic Information" %}
+The table on Dashboard consists of various information and operations related to the predictive model processes in progress and completed. Here are details for the information provided in the tables:&#x20;
+
 * **Name**: The user is able to change the name of the dataset uploaded for easy distinction between multiple iterations of the same dataset.&#x20;
 * **Created**: Creation date and time (as per GMT time zone)
 * **Processing time**: Provides the time taken for the models to complete training and testing with the given dataset and samples
@@ -30,12 +28,18 @@ The user is able to access the [**Exploration**](../data-analysis/predictive/exp
 {% tab title="Operations" %}
 <figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
+The operations cell, located at the right-end of the table, consists of the following:&#x20;
+
 * **More information**: View basic information, processing time and statistics for the successful models&#x20;
   *   Example:
 
       <figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 * **Download queue**: Download the dataset from which predictor and response variables were chosen as a .csv file
 * **Delete queue**: Delete the queue if needed to reduce clutter from unsuccessful queues or to free up space
+{% endtab %}
+
+{% tab title="Exploration" %}
+The user is able to access the [**Exploration**](../data-analysis/predictive/exploration/) tab under [Predictive](../data-analysis/predictive/) by clicking on the desired model row. The user can explore model performances and use PANDORA's explainable AI features here.&#x20;
 {% endtab %}
 {% endtabs %}
 
