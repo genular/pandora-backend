@@ -35,7 +35,7 @@ The **Discovery** section provides tools for visualizing, clustering and explori
 {% endtab %}
 
 {% tab title="Clustering" %}
-[**Hierarchical Clustering**](clustering.md) tab organizes data into clusters based on similarity.
+[**Hierarchical Clustering**](hierarchical-clustering.md) tab organizes data into clusters based on similarity.
 
 * **Dendrogram**: A tree-like structure showing how different data points are grouped at various levels, revealing hierarchical relationships.
 * **Heatmap**: Provides a color-coded intensity map of data distributions across clusters, allowing for visual comparison of clustered groups.

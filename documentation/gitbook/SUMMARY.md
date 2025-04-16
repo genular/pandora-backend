@@ -25,7 +25,7 @@
   * [Side Panel Options](data-analysis/discovery/side-panel-options.md)
   * [Data Overview](data-analysis/discovery/data-overview.md)
   * [Correlation](data-analysis/discovery/correlation.md)
-  * [Clustering](data-analysis/discovery/clustering.md)
+  * [Hierarchical Clustering](data-analysis/discovery/hierarchical-clustering.md)
   * [PCA Analysis](data-analysis/discovery/pca-analysis.md)
     * [Bartlett's Sphericity](data-analysis/discovery/pca-analysis/bartletts-sphericity.md)
     * [Eigenvalues/Variances](data-analysis/discovery/pca-analysis/eigenvalues-variances.md)
