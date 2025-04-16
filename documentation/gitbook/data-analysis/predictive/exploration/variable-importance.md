@@ -10,19 +10,31 @@ The **Variable Importance** tab in PANDORA provides robust tools to investigate 
 
 <figure><img src="../../../.gitbook/assets/Variable Importance.png" alt=""><figcaption></figcaption></figure>
 
-### Key Functionalities
+{% tabs %}
+{% tab title="1. Feature Filtering" %}
+**Feature filtering** allows the user to filter and select features to investigate features across the dataset and their contributions to the model's variance. The user has the following filtering options:
 
-1. **Feature Filtering**
-   * **Class:** Only show features associated with predictions for the selected binary outcomes.
-   * **Order:** Choose to sort the feature table by various options, including but not limited to rank, name, and feature variance score.
-     * Toggle the adjacent switch next to sort in ascending or descending order.
-2. **Features Across Dataset**
-   * **Define Features:** Select a maximum of 25 features from the table to use in the analysis.
-   * **Dot Plots:** For the selected features, shows the distribution of feature values for each outcome in both the training and testing datasets.
-   * **Theme:** Users can select from various themes, affecting the visual style of the plots.
-   * **Color:** Choose a color palette to enhance visual clarity, with options for colorblind accessibility.
-   * **Font:** Customize font size to ensure readability.
-   * **Dot:** Alter the data point size for enhanced clarity
-   * **Ratio:** Adjust the plot’s aspect ratio for optimal display and to fit various screen resolutions.
-3. &#x20;**Variable Importance**
-   * Bar plot showing feature importance in descending order. For Clarity, users can hover over bars to view the associated feature name and exact variable importance score.
+* **Class:** Only show features associated with predictions for the selected binary outcomes.
+* **Order:** Choose to sort the feature table by various options, including but not limited to rank, name, and feature variance score.
+  * Toggle the adjacent switch next to sort in ascending or descending order.
+* **Download:** Download an Excel sheet with the information shown in the table provided for all features.
+{% endtab %}
+
+{% tab title="2. Features across dataset" %}
+The **Features across the dataset** sub-tab allows users to view the feature value distribution for each outcome from the base dataset (prior to training and testing). The feature values for each outcome are provided in the dot plot, and up to 25 features can be selected for these plots.
+
+The plot display can be customized; see the [side panel options](../../discovery/side-panel-options.md) for more information.
+
+The dot plots can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
+
+<figure><img src="../../../.gitbook/assets/Varaible importance_Features across dataset plots.png" alt="" width="375"><figcaption></figcaption></figure>
+{% endtab %}
+
+{% tab title="3. Variable Importance" %}
+This **Variable importance** sub-tab provides a bar plot showing feature importance in descending order. For Clarity, users can hover over bars to view the associated feature name and exact variable importance score.
+
+This bar plot be right-clicked and saved as a PNG in PANDORA.
+
+<figure><img src="../../../.gitbook/assets/Varaible importance_Bar plot.png" alt="" width="375"><figcaption></figcaption></figure>
+{% endtab %}
+{% endtabs %}

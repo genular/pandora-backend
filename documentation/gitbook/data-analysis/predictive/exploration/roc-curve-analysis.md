@@ -14,15 +14,30 @@ The **ROC Curve Analysis** tab in PANDORA provides a clear interface for visuali
 
 <figure><img src="../../../.gitbook/assets/Exploration_ROC Curves.png" alt=""><figcaption></figcaption></figure>
 
-### Key Functionalities
+{% tabs %}
+{% tab title="1. ROC curves" %}
+The **ROC curves** provide a graphical representation of the trade-off between true positive and false positive rates. ROC curves provide valuable insights into model performance and can be helpful when comparing models. A good ROC curve is one that curves close to the top-left corner, indicating a balance of sensitivity and specificity.
 
-1. **ROC Curves:**
-   * **Training ROC Curve:** Shows the model's ability to correctly classify outcomes within the training dataset. A curve close to the top-left indicates a good balance of sensitivity and specificity.
-   * **Testing ROC Curve:** Demonstrates the model's performance on correctly classifying outcomes with the unseen testing dataset. A curve that remains close to the top-left indicates good learning and ability to generalize to new data.
-   * **Overview:** Snippet of text at the bottom of the page explaining briefly how to interpret and understand the ROC curves.
-2. **Display Options:**
-   * **Side Panel:** Toggle visuals on the displayed graph, such as color and font, see the [Side Panel Options](../../discovery/side-panel-options.md) section for more information.
-   * **One vs All:** Displays ROC Curves of each outcome for only the selected model.
-     * **Model Display:** Choose which model to display the ROC Curve for.
-   * **Comparison:** Displays ROC Curves of all selected models on one graph.
+* **Training ROC curve:** Shows the model's ability to correctly classify outcomes within the training dataset.
+
+<figure><img src="../../../.gitbook/assets/C5_training ROC curve.png" alt="" width="375"><figcaption></figcaption></figure>
+
+* **Testing ROC curve:** Demonstrates the model's performance on correctly classifying outcomes with the unseen testing dataset.
+
+<figure><img src="../../../.gitbook/assets/C5_testing ROC curve.png" alt="" width="375"><figcaption></figcaption></figure>
+{% endtab %}
+
+{% tab title="2. Display Options" %}
+Users can select the model to display the ROC curve for in both training and testing, and can choose to display an ROC curve for all or one model at a time.
+
+* **One-vs-All:** This display setting allows users to select one model to display an ROC curve for at a time, and a curve will be provided for all classification outcomes.
+  * Select the model to display by clicking the tab for the desired model located directly above the ROC curve.
+
+<figure><img src="../../../.gitbook/assets/C5_testing ROC curve.png" alt="" width="375"><figcaption></figcaption></figure>
+
+* **Comparison**: This display setting allows users to view ROC curves of all selected models on one graph.
+
+<figure><img src="../../../.gitbook/assets/ROC curve_Comparison.png" alt="" width="375"><figcaption></figcaption></figure>
+{% endtab %}
+{% endtabs %}
 

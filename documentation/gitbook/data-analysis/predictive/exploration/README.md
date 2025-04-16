@@ -19,7 +19,9 @@ There are several options for configuring the data to prepare it for exploring t
 
 * **Metric Selection:** Choose from a variety of metrics to display for your dataset. Metrics available will change depending on the associated outcomes selected.
 * **Dataset Selection:** Select the dataset of interest to explore the results of its associated machine learning models.
+  * Users can also download .csv files for each resampled data, training data, and testing data.
 * **Model Selection:** Select machine learning models from the dataset to explore and compare results.
+  * Users can also download the Rdata for each selected model at this step.
 {% endtab %}
 
 {% tab title="Analysis Options" %}
