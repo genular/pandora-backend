@@ -1,4 +1,5 @@
 ---
+description: Steps to create your account and start using PANDORA
 icon: globe
 ---
 

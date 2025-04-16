@@ -1,5 +1,5 @@
 ---
-description: Use to examine structure and contents of dataset
+description: Used to examine structure and contents of dataset
 ---
 
 # Data Overview

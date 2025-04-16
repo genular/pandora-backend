@@ -5,6 +5,18 @@ The **Side Panel Options** presents the common tools and settings the user can f
 {% tabs %}
 {% tab title="Column Selection" %}
 
+
+**Columns**: Input specific columns for analysis. The dropdown is filterable and searchable to quickly find columns in large datasets.
+
+<figure><img src="../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+
+2. **First (n) columns**: Select the number of initial columns to display and analyze. This number can be adjusted using the input field
+
+<figure><img src="../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+
+3. **Exclude columns**: Some tabs have the option to remove columns the user does not want to include in their analysis. The dropdown for this option is also filterable and searchable
+
+<figure><img src="../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Preprocessing" %}
