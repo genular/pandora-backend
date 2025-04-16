@@ -9,14 +9,12 @@ icon: message-bot
 
 ### Overview
 
-The Predictive - Start tab in SIMON offers a simple way to set up and run predictive models.
+The **Predictive - Start** tab in SIMON offers a simple way to set up and run predictive models.
 
-<figure><img src="../../../.gitbook/assets/predictive-simon.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/SIMON_Main_Medres-annotated.png" alt=""><figcaption></figcaption></figure>
 
-### Key Functionalities
-
-#### 1. Analysis Properties
-
+{% tabs %}
+{% tab title="1. Analysis Properties" %}
 * **Classification / Regression / Time Series**: Choose the type of analysis you want to perform. Only available options are displayed based on your dataset and selected variables.
 * **Predictor Variables**: Select the independent variables (predictors) for the model. Enable the switch to select all columns, or specify individual columns by typing their names.
 * **Response**: Define the dependent variable (response) that the model will predict or classify.
@@ -24,23 +22,22 @@ The Predictive - Start tab in SIMON offers a simple way to set up and run predic
 * **Training/Testing Dataset Partition (%)**: Adjust the partition between training and testing datasets using a slider (default: 75%). This enables you to set the ratio for model validation.
 * **Additional Exploration Classes**: Add exploratory variables that are not used in the model training but are available for analysis.
 * **Preprocessing**: Apply preprocessing methods such as centering or scaling to standardize data before training the model. You can select multiple options from the dropdown menu.
+* **Reset Features & Selection**: Clears all selected features, models, and settings, allowing you to start with a fresh configuration.
+{% endtab %}
 
-#### 2. Model Selection and Customization
-
+{% tab title="2. Model Selection and Customization" %}
 * **Available Packages**: Choose from a variety of machine learning models available in SIMON. Each model displays its name, type (classification, regression, etc.), and key characteristics.
   * **AdaBoost.M1**: An example of a model available under **Boosted Classification Trees**, with tags like Tree-Based Model, Ensemble Model, Boosting, and more.
 * **Model Filtering**: Filter models by type or features to narrow down the list of packages.
 * **Selected Packages**: Displays the list of selected models for analysis. You can choose multiple models for comparison and evaluation.
+{% endtab %}
 
-#### 3. Advanced Options
-
+{% tab title="3. Advanced options" %}
 * **Multi-Set Intersection**: Enable this option to intersect multiple sets in a Venn-like manner, useful for combining features from different models.
 * **Feature Selection**: Enable feature selection to automatically reduce dimensionality and retain only the most relevant features for the model.
 * **Timeout**: Set a timeout (in minutes) to limit the execution time for model training, preventing lengthy computations.
-
-#### 4. Additional Controls
-
-* **Reset Features & Selection**: Clears all selected features, models, and settings, allowing you to start with a fresh configuration.
+{% endtab %}
+{% endtabs %}
 
 ### Example Workflow
 
