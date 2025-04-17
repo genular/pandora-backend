@@ -6,7 +6,7 @@ icon: gear
 
 To access the "Settings" panel, click on the person icon at the top right corner of the homepage. This has been illustrated in the image below:&#x20;
 
-<figure><img src="../../.gitbook/assets/user settings.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/UserSettings_how_to_access.png" alt=""><figcaption></figcaption></figure>
 
 ### Key Functionalities
 
@@ -16,7 +16,7 @@ To access the "Settings" panel, click on the person icon at the top right corner
 
 Input and save personal details in your account as needed. The user's username, email address and registration key will automatically appear in their respective fields.&#x20;
 
-<figure><img src="../../.gitbook/assets/image (15).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/UserSettings_Account_information.png" alt=""><figcaption></figcaption></figure>
 
 Remember to click on the **Save** button to ensure your information is saved!&#x20;
 {% endtab %}
@@ -24,7 +24,7 @@ Remember to click on the **Save** button to ensure your information is saved!&#x
 {% tab title="System debugging" %}
 This tab has several options to use when trying to debug errors on PANDORA:&#x20;
 
-<figure><img src="../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/UserSettings_debugging_tab.png" alt=""><figcaption></figcaption></figure>
 
 * **Update**: Allows users to update to the latest version of PANDORA
 * **System log file:** Download various tar.gz logs of the PANDORA and server backends to trace source of any bugs
@@ -32,7 +32,7 @@ This tab has several options to use when trying to debug errors on PANDORA:&#x20
 {% endtab %}
 
 {% tab title="Danger area" %}
-<figure><img src="../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/UserSettings_delete_tab.png" alt=""><figcaption></figcaption></figure>
 
 If required, this tab consists of the option of deleting the user's PANDORA account permanently.
 {% endtab %}

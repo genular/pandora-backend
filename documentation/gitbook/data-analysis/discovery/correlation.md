@@ -8,7 +8,7 @@ Use the **Correlation** tab to explore relationships between variables in your d
 
 You can easily see the strength and direction (positive or negative) of correlations between variables. Additionally, you can check the statistical significance (p-values) of these relationships to understand how reliable they are.
 
-<figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_main_page.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Setup and Settings" %}
@@ -38,7 +38,7 @@ This section details the specific settings available in the **Correlation** tab.
   * **Clustering Method:** Select the linkage algorithm (e.g., `ward`, `complete`, `average`) used to build the hierarchy.
   * **Number of Rectangles (Clusters):** If desired, specify the number of clusters (`k`) to highlight with rectangles drawn on the heatmap, based on cutting the dendrogram.
 
-<figure><img src="../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_hierarchical_clustering_settings.png" alt=""><figcaption></figcaption></figure>
 
 #### 3. Text Size
 
@@ -61,11 +61,11 @@ The main output of the **Correlation** tab is a correlogram, which visually repr
 
 **Example 1: Few Variables**
 
-<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption><p>This plot shows correlations between a small number of variables. You can easily see strong positive correlations (large dark red circles) between max_hai_responder and max_iga_responder, and weaker negative correlations (small light blue circles) like between max_hai_responder and h3_v0_seropositive.</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_corr_matrix_correlogram.png" alt=""><figcaption><p>This plot shows correlations between a small number of variables. You can easily see strong positive correlations (large dark red circles) between max_hai_responder and max_iga_responder, and weaker negative correlations (small light blue circles) like between max_hai_responder and h3_v0_seropositive.</p></figcaption></figure>
 
 **Example 2: Few Variables**
 
-<figure><img src="../../.gitbook/assets/image (20).png" alt=""><figcaption><p>PANDORA's correlogram scales effectively even for datasets with many variables. This example reveals distinct blocks of highly correlated variables (clusters of dark red circles), which might indicate groups of related genes or biomarkers. You can also see areas with little correlation (very small, pale circles).</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_corr_matrix_largedataset.png" alt=""><figcaption><p>PANDORA's correlogram scales effectively even for datasets with many variables. This example reveals distinct blocks of highly correlated variables (clusters of dark red circles), which might indicate groups of related genes or biomarkers. You can also see areas with little correlation (very small, pale circles).</p></figcaption></figure>
 {% endtab %}
 
 {% tab title="3. Significance" %}
@@ -96,11 +96,11 @@ You can also visualize the uncertainty around the calculated correlation values.
 
 The images below show correlograms where significance testing and confidence intervals are applied.
 
-<figure><img src="../../.gitbook/assets/image (22).png" alt=""><figcaption><p>In this plot, correlations deemed not statistically significant (at the chosen alpha level, potentially after BH adjustment) are marked with a cross (X). This uses the pch setting for Insignificant Action.</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_Significant_test_with_hashing_pch.png" alt=""><figcaption><p>In this plot, correlations deemed not statistically significant (at the chosen alpha level, potentially after BH adjustment) are marked with a cross (X). This uses the pch setting for Insignificant Action.</p></figcaption></figure>
 
 **Example with Confidence Intervals Plotted (Square Method):**
 
-<figure><img src="../../.gitbook/assets/image (23).png" alt=""><figcaption><p>This plot visualizes both the correlation (color/size) and its confidence interval. Here, the CI Plotting Method might be set to square or a similar option, where the shape or additional elements represent the calculated interval around the correlation estimate. The specific appearance depends on the chosen method.</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_CI_correlogram.png" alt=""><figcaption><p>This plot visualizes both the correlation (color/size) and its confidence interval. Here, the CI Plotting Method might be set to square or a similar option, where the shape or additional elements represent the calculated interval around the correlation estimate. The specific appearance depends on the chosen method.</p></figcaption></figure>
 {% endtab %}
 {% endtabs %}
 

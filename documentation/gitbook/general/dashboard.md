@@ -20,7 +20,7 @@ The table on Dashboard consists of various information and operations related to
 
 **Status**: Tells us current progress of specific task
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Dashboard_Model_status.png" alt=""><figcaption></figcaption></figure>
 
 **Extraction**: Is RFF[ ](../data-analysis/predictive/simon/multiset-intersection.md)(Backward Selection) being used?
 
@@ -34,14 +34,14 @@ The table on Dashboard consists of various information and operations related to
 {% endtab %}
 
 {% tab title="Operations" %}
-<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Dashboard_Operations.png" alt=""><figcaption></figcaption></figure>
 
 The operations column consists of the following:&#x20;
 
 * **More information**: View basic information, processing time and statistics for the successful models and resamples in specific Task.
   *   Example:
 
-      <figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+      <figure><img src="../.gitbook/assets/Dashboard_Operations_More_information_01.png" alt=""><figcaption></figcaption></figure>
 * **Download queue**: Download the dataset from which predictor and response variables were chosen as a .csv file
 * **Delete queue**
 {% endtab %}

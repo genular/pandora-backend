@@ -14,13 +14,13 @@ This plot visualizes the data in a tabular format, allowing users to examine agg
 
 
 
-<figure><img src="../../.gitbook/assets/image (8).png" alt=""><figcaption><p><strong>Table Plot</strong></p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/DataOverview_Table_plot.png" alt=""><figcaption><p><strong>Table Plot</strong></p></figcaption></figure>
 {% endtab %}
 
 {% tab title="Distribution Plot" %}
 Displays the distribution of values in selected columns, which helps in identifying skewness, outliers, and patterns in the data.
 
-<figure><img src="../../.gitbook/assets/image (9).png" alt=""><figcaption><p><strong>Distribution Plot</strong></p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/DataOverview_Distribution_plot.png" alt=""><figcaption><p><strong>Distribution Plot</strong></p></figcaption></figure>
 {% endtab %}
 {% endtabs %}
 
