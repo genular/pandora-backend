@@ -14,7 +14,7 @@ The **Model Interpretation** tab in PANDORA offers a powerful suite of analysis 
 
 {% tabs %}
 {% tab title="1. Setup analyses" %}
-Users can perform multiple analyses with select features to investigate their contributions to the model. Aside from display settings, which are explained on the[ side panel options](../../discovery/side-panel-options.md) page, users have two main settings for running these analyses:
+Users can perform multiple analyses with select features to investigate their contributions to the model. Aside from display settings, which are explained on the[ side panel options](../../discovery/side-panel.md) page, users have two main settings for running these analyses:
 
 * **Vars:** Selects the features to use in the analysis (if applicable).
 * **Analysis:** Choose the analyses to perform on the selected features and generate plots for each.

@@ -8,8 +8,6 @@ The **Discovery** section provides tools for visualizing, clustering and explori
 
 {% tabs %}
 {% tab title="Overview" %}
-### Data Overview
-
 Use the **Data Overview** tab to get a quick summary of your dataset and explore initial data distributions.
 
 #### Available Plots
@@ -27,8 +25,6 @@ Customize your overview using these options:
 {% endtab %}
 
 {% tab title="Correlation" %}
-### Correlation
-
 Use the **Correlation** tab to find relationships between different variables in your dataset.
 
 #### Available Plots
@@ -50,8 +46,6 @@ Adjust how correlations are calculated and displayed:
 {% endtab %}
 
 {% tab title="Clustering" %}
-### Hierarchical Clustering
-
 Use the **Hierarchical Clustering** tab to group your data points (like samples or genes) based on their similarity.
 
 #### Available Plots
@@ -70,8 +64,6 @@ Configure the clustering process and visualization:
 {% endtab %}
 
 {% tab title="PCA" %}
-### PCA Analysis
-
 Use **Principal Component Analysis (PCA)** to simplify high-dimensional data. PCA finds the main sources of variation (principal components) in your dataset, making it easier to see patterns and differences, for example, between cell types or experimental conditions.
 
 #### Available Plots
@@ -91,8 +83,6 @@ Configure the PCA calculation and output:
 {% endtab %}
 
 {% tab title="t-SNE" %}
-### t-SNE Analysis
-
 Use **t-distributed Stochastic Neighbor Embedding (t-SNE)** to visualize high-dimensional data in a low-dimensional space (usually 2D). t-SNE is great for revealing underlying clusters or groups within complex datasets, such as identifying cell populations in single-cell RNA-seq data.
 
 #### Available Plots
@@ -116,8 +106,6 @@ Fine-tune the t-SNE algorithm and the resulting visualization:
 {% endtab %}
 
 {% tab title="UMAP" %}
-### UMAP Analysis
-
 Use **Uniform Manifold Approximation and Projection (UMAP)** for dimensionality reduction and visualization. Like t-SNE, it helps visualize high-dimensional data in 2D, but UMAP often preserves more of the data's global structure. This is useful for understanding the overall relationships between groups in your data.
 
 #### Key Features

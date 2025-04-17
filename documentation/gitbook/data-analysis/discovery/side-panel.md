@@ -1,20 +1,28 @@
-# Side Panel Options
+# Side Panel
 
 The **Side Panel Options** presents the common tools and settings the user can find in the side panels for the tabs in Discovery
 
 {% tabs %}
 {% tab title="Column Selection" %}
-PANDORA allows for various ways to choose parts of the dataset on which the user wants to use the analysis tools:
+The side panels in the **Discovery** section tabs contain common tools for selecting data and configuring analyses. Here are the typical options for choosing which parts of your dataset to analyze:
 
-**Columns**: Input specific columns for analysis. The dropdown is filterable and searchable to quickly find columns in large datasets.
+#### Selecting Data / Columns
+
+PANDORA provides several ways to specify the columns (variables) you want to work with:
+
+* **Columns:**
+  * Select specific columns by name using the dropdown menu.
+  * You can type in the dropdown to search and filter, making it easy to find columns even in large datasets.
+* **First (n) columns:**
+  * Use this option to quickly select the first `n` columns from your dataset for analysis.
+  * Adjust the number `n` using the input field or the `+`/`-` buttons.
+* **Exclude Columns:**
+  * (Available in some tabs) Remove specific columns that you _don't_ want to include in the current analysis.
+  * Similar to the "Columns" selector, this dropdown is searchable and filterable.
 
 <figure><img src="../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 
-2. **First (n) columns**: Select the number of initial columns to display and analyze. This number can be adjusted using the input field
-
 <figure><img src="../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
-
-3. **Exclude columns**: Some tabs have the option to remove columns the user does not want to include in their analysis. The dropdown for this option is also filterable and searchable
 
 <figure><img src="../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 {% endtab %}

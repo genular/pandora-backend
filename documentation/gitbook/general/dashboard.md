@@ -4,8 +4,6 @@ icon: gauge-min
 
 # Dashboard
 
-### Overview
-
 Here you will see all your **Queue Tasks** for training predictive models through SIMON. One **Task** consists of all ML models and datasets you selected and created when [creating Task in SIMON](../data-analysis/predictive/#id-1.-simon-machine-learning). Here you can also observe the progression of the training and testing of your predictive models along with a summary of training results. **More importantly** you need **to select specific completed Task** to continue to [**Exploration**](../data-analysis/predictive/exploration/)**.**
 
 <figure><img src="../.gitbook/assets/PANDORA Dashboard.png" alt=""><figcaption></figcaption></figure>

@@ -8,10 +8,6 @@ To access the "Settings" panel, click on the person icon at the top right corner
 
 <figure><img src="../../.gitbook/assets/user settings.png" alt=""><figcaption></figcaption></figure>
 
-You will reach the following page:&#x20;
-
-<figure><img src="../../.gitbook/assets/user settings page.png" alt=""><figcaption></figcaption></figure>
-
 ### Key Functionalities
 
 {% tabs %}

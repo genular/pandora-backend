@@ -12,17 +12,17 @@
 
 ## General
 
-* [Your PANDORA Account](general/your-pandora-account/README.md)
-  * [Account Creation](general/your-pandora-account/account-creation.md)
-  * [Reset Password](general/your-pandora-account/reset-password.md)
-  * [User Settings](general/your-pandora-account/user-settings.md)
+* [User Account](general/user-account/README.md)
+  * [Account Creation](general/user-account/account-creation.md)
+  * [Reset Password](general/user-account/reset-password.md)
+  * [User Settings](general/user-account/user-settings.md)
 * [Dashboard](general/dashboard.md)
 * [Workspace](general/workspace.md)
 
 ## Data Analysis
 
 * [Discovery](data-analysis/discovery/README.md)
-  * [Side Panel Options](data-analysis/discovery/side-panel-options.md)
+  * [Side Panel](data-analysis/discovery/side-panel.md)
   * [Data Overview](data-analysis/discovery/data-overview.md)
   * [Correlation](data-analysis/discovery/correlation.md)
   * [Hierarchical Clustering](data-analysis/discovery/hierarchical-clustering.md)

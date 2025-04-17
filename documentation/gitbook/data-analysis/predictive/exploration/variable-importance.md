@@ -23,7 +23,7 @@ The **Variable Importance** tab in PANDORA provides robust tools to investigate 
 {% tab title="2. Features across dataset" %}
 The **Features across the dataset** sub-tab allows users to view the feature value distribution for each outcome from the base dataset (prior to training and testing). The feature values for each outcome are provided in the dot plot, and up to 25 features can be selected for these plots.
 
-The plot display can be customized; see the [side panel options](../../discovery/side-panel-options.md) for more information.
+The plot display can be customized; see the [side panel options](../../discovery/side-panel.md) for more information.
 
 The dot plots can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
 
