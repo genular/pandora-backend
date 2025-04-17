@@ -6,33 +6,73 @@ description: Helping to reduce dimensionality and visualize relationships.
 
 ### Overview
 
-The **PCA Analysis** tab provides tools for dimensionality reduction and exploratory data analysis.
+Use the **PCA Analysis** tab to perform Principal Component Analysis (PCA). This is a powerful technique for **dimensionality reduction**, simplifying complex datasets by identifying the main axes of variation (principal components).
+
+**Why use PCA?**
+
+* **Exploratory Data Analysis:** Visualize high-dimensional biological data (like gene expression, proteomics, or flow cytometry data) in 2D or 3D plots to spot patterns, clusters, outliers, or batch effects among your samples.
+* **Machine Learning Preparation:** Reduce the number of features (e.g., genes, proteins) before feeding data into machine learning models. This can:
+  * Improve model performance by focusing on meaningful variation.
+  * Reduce computational complexity and training time.
+  * Help prevent overfitting by removing noise or redundant information.
+* **Understanding Variance:** Identify which original variables contribute most strongly to the differences observed between samples or experimental conditions.
+
+This tab provides tools to calculate principal components and visualize the results through various plots like scree plots, variable contribution plots, and sample scatter plots.
 
 <figure><img src="../../.gitbook/assets/PCA_main_Highres_annotated-min.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. PCA Setup" %}
-For generic setup steps and preprocessing options, please see the [Side Panel Options](side-panel-options.md) page. Information about the settings unique to PCA setup is provided below:
+Setup Options
 
-* **Grouping Variable**: Select a variable to use for grouping. This variable won’t impact PCA computation but will be used for plotting.
-  * Selecting a grouping variable allows users to investigate if the PCA suggests that individuals with similar grouping variable values tend to cluster in the reduced dimensional space.
-* **X and Y Axes**: Choose which principal components to display on the X and Y axes. Defaults to dimension 1 and dimension 2 for X and Y, respectively.
-* **KMO/Bartlett Column Limit**: Set a column limit for performing Kaiser-Meyer-Olkin and Bartlett tests. If the data contains more columns than this limit, these tests will not be performed.
-* **Analysis Method**: Choose between PCA for numerical variables or MCA for categorical ones.
-* **Display Loadings**: Enable this option to show variable loadings on the plot.
-* **Ellipse Alpha**: Set the transparency level of ellipses for grouping.
-* **Remove Ellipse**: Toggle to remove or add concentration ellipses and confidence ellipses around groupings for individuals in the reduced dimensional space.
-  * When toggled on, ellipses are present; when toggled off, ellipses are no longer present.
+* **Grouping Variable:**
+  * Select a categorical variable from your dataset (e.g., 'treatment', 'cell\_type', 'batch').
+  * **Important:** This variable is _only_ used for coloring or grouping points in the output plots (like the Individuals Plot). It does **not** influence the PCA calculation itself.
+  * Use this to visually check if samples with the same label cluster together in the principal component space.
+* **X and Y Axes:**
+  * Choose which principal components (PCs) to display on the X and Y axes of the scatter plots (Individuals and Variables plots).
+  * Defaults usually are PC1 (explains the most variance) for the X-axis and PC2 (explains the second most) for the Y-axis. You can change this to explore other dimensions (e.g., PC2 vs. PC3).
+* **KMO/Bartlett Column Limit:**
+  * Set a maximum number of columns (variables) for performing the Kaiser-Meyer-Olkin (KMO) measure of sampling adequacy and Bartlett's test of sphericity.
+  * These tests help assess if your data is suitable for PCA. If your dataset has more columns than this limit, these tests will be skipped to save computation time.
+* **Analysis Method:**
+  * Choose the appropriate method based on your data type:
+    * **PCA (Principal Component Analysis):** Use for **numerical** variables.
+    * **MCA (Multiple Correspondence Analysis):** Use for **categorical** variables.
+* **Display Loadings:**
+  * Toggle this option ON to overlay variable loadings (arrows indicating variable contributions) onto the Individuals Plot. This helps relate sample positions to the influence of original variables. (Note: May clutter the plot if many variables are present).
+* **Ellipse Options (for Grouping Variable):**
+  * **Remove Ellipse:** Toggle this OFF to draw concentration or confidence ellipses around the groups defined by your **Grouping Variable** on the Individuals Plot. Toggle ON to hide these ellipses.
+  * **Ellipse Alpha:** Adjust the transparency level (0 = fully transparent, 1 = fully opaque) of the group ellipses when they are displayed. Lower values make the ellipses fainter.
 {% endtab %}
 
 {% tab title="2. Analysis Options" %}
-After running PCA, on the right of the side panel, the user will see results for several analyses.
+After the PCA is calculated, a panel (often on the right or as separate sub-tabs) displays detailed results and diagnostics.
 
-* [**Bartlett's Sphericity**](pca-analysis/bartletts-sphericity.md): Provides results for Bartlett's Test of Sphericity and Kaiser-Meyer-Olkin (KMO) Index Test for user to assess suitability of the dataset for PCA.
-* [**Eigenvalues / Variances**](pca-analysis/eigenvalues-variances.md): View eigenvalues and variances to understand the significance of each principal component.
-* [**Variables**](pca-analysis/variables.md): Provides information on the relationship between the dataset variables and the principal components, the quality of variable representation in the principal components, and how much the variables contribute to the formation of principal components.&#x20;
-* [**Individuals**](pca-analysis/individuals.md):Provides information on the relationship between the individuals in the dataset and the principal components, the quality of each individual's representation in the principal components, and how much the individuals contribute to the formation of principal components.&#x20;
-* [**PCA Output**](pca-analysis/pca-output.md): Displays a snippet of detailed PCA results.
+#### 2. Analysis Options / Results Breakdown
+
+* **Bartlett's Sphericity & KMO:**
+  * Provides results for Bartlett's Test of Sphericity and the Kaiser-Meyer-Olkin (KMO) Measure of Sampling Adequacy.
+  * **Bartlett's Test:** Checks if the correlation matrix is significantly different from an identity matrix (i.e., if variables are correlated enough to warrant PCA). A significant p-value (e.g., < 0.05) supports using PCA.
+  * **KMO Index:** Measures the proportion of variance among variables that might be common variance. Values closer to 1 indicate the data is suitable for PCA; values below 0.5 or 0.6 are often considered problematic.
+  * _Note: These tests are only performed if the number of columns is below the limit set in the PCA Setup._
+* **Eigenvalues / Variances:**
+  * Shows the eigenvalue, percentage of variance explained, and cumulative percentage of variance explained for each principal component (PC).
+  * **Eigenvalue:** Represents the amount of variance captured by a specific PC. Larger eigenvalues correspond to more important components.
+  * **Percentage of Variance:** The proportion of the total dataset variance that each PC accounts for.
+  * **Cumulative Percentage:** The total variance explained by including the current PC and all preceding ones. This helps decide how many PCs to retain to capture a desired amount of total variance.
+* **Variables:**
+  * Provides details on how the original variables relate to the principal components. Key metrics include:
+    * **Coordinates/Loadings:** Values indicating how strongly each original variable contributes to each PC (both magnitude and direction).
+    * **Quality of Representation (cos2):** Measures how well a variable is represented by the selected principal components (sum of squared coordinates on those axes). Values close to 1 mean the variable is well-represented in the chosen dimensions.
+    * **Contribution:** The percentage contribution of each variable to the variance of a specific principal component. Variables with high contributions are important for defining that PC.
+* **Individuals:**
+  * Provides details on how the individual samples (rows) relate to the principal components. Key metrics include:
+    * **Coordinates:** The position (score) of each individual sample in the principal component space (e.g., its value on PC1, PC2, etc.).
+    * **Quality of Representation (cos2):** Measures how well an individual sample's variance is captured by the selected principal components. Individuals with high cos2 are well-represented in the PCA plot.
+    * **Contribution:** The percentage contribution of each individual sample to the variance of a specific principal component. Individuals with high contributions strongly influence the direction of that PC and might be outliers.
+* **PCA Output:**
+  * Often displays a summary table or snippet of the core PCA results, potentially including eigenvalues, variable loadings, and individual coordinates in a raw format.
 {% endtab %}
 {% endtabs %}
 

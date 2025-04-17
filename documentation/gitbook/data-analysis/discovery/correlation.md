@@ -6,68 +6,103 @@ description: Enables users to analyze correlations between variables within a da
 
 ### Overview&#x20;
 
-The **Correlation** tab in PANDORA produces correlograms that display the correlation in the dataset, allowing users to visualize important relationships between variables along with the statistical significance and confidence interval of the relationship.&#x20;
+Use the **Correlation** tab to explore relationships between variables in your dataset. PANDORA creates correlograms (correlation plots) that help you visualize these connections.
+
+You can easily see the strength and direction (positive or negative) of correlations between variables. Additionally, you can check the statistical significance (p-values) of these relationships to understand how reliable they are.
 
 <figure><img src="../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
-{% tab title="1. Correlation Setup" %}
-For generic setup steps and preprocessing options, please see the [Side Panel Options](side-panel-options.md) page. Information about the settings unique to Correlation setup is provided below:
+{% tab title="1. Setup and Settings" %}
+This section details the specific settings available in the **Correlation** tab. For general setup steps like column selection and standard preprocessing, refer to the main documentation sections on Side Panel Options and Preprocessing.
 
-* **Correlation Method**: In the Column Selection tab, the user can choose between the _Pearson_, _Kendall_, and _Spearman_ methods to calculate correlation.&#x20;
-* **Correlation Settings**:&#x20;
-  * **NA Action**: Provides the user with options for processing of NA values in the dataset. The default is 'everything', where the NA values are left as is, however the user can choose the method that best suits their dataset. For reference, the [cor( ) documentation](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/cor) talks about the options in detail.
-  * **Plot method**: Consists of several shapes and shading options for the correlogram and visualization of the correlation matrix
-  * **Plot Type**: The user can view their plot as the whole plot, or as the upper or lower half of the plot (split along the diagonal of value 1).&#x20;
-  *   **Reorder Correlation**: Provides the options to choose the order of the variables for the plot, consisting of mathematical and alphabetical options.&#x20;
+#### 1. Correlation Method
 
-      * _**Hierarchical clustering**_: If the user chooses this option, more fields specific to it will appear. The user can choose the clustering method and the number of rectangles (clusters) for their plot.
+* In the **Column Selection** area (or a dedicated "Method" section), choose the statistical method used to calculate correlations:
+  * **Pearson:** Standard correlation coefficient, measures linear relationships. Assumes data is normally distributed.
+  * **Kendall:** Rank-based correlation, measures ordinal association. Less sensitive to outliers than Pearson.
+  * **Spearman:** Rank-based correlation, measures monotonic relationships (how well the relationship can be described using a monotonic function). Also robust to outliers.
 
+#### 2. Correlation Settings
 
+* **NA Action:** Select how to handle missing values (NAs) during correlation calculation.
+  * The default (`everything`) typically attempts to compute correlations whenever possible pairs of observations exist.
+  * Other options (like `pairwise.complete.obs` or `complete.obs`) might be available, allowing you to use only complete pairs or only rows with no NAs across all selected variables. Refer to standard R `cor()` function documentation for detailed behavior of these options if needed.
+* **Plot Method:** Choose how the correlation values are visualized within the plot matrix:
+  * Options often include `circle`, `square`, `ellipse`, `number`, `shade`, `color`, `pie`. These determine the shape or shading used to represent the correlation strength and direction.
+* **Plot Type:** Select which part of the correlation matrix to display:
+  * `full`: Show the entire square matrix.
+  * `upper`: Show only the upper triangle (excluding the diagonal).
+  * `lower`: Show only the lower triangle (excluding the diagonal).
+* **Reorder Correlation:** Choose how variables are ordered along the axes:
+  * Options might include alphabetical order, or ordering based on clustering results (like Angular Order of Eigenvectors, `AOE`, or First Principal Component, `FPC`), or hierarchical clustering.
+* **Hierarchical Clustering:** If you choose a reordering method based on hierarchical clustering (or enable a specific clustering option):
+  * **Clustering Method:** Select the linkage algorithm (e.g., `ward`, `complete`, `average`) used to build the hierarchy.
+  * **Number of Rectangles (Clusters):** If desired, specify the number of clusters (`k`) to highlight with rectangles drawn on the heatmap, based on cutting the dendrogram.
 
-      <figure><img src="../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
 
+#### 3. Text Size
 
-  * **Text size**: Adjust the test size of the variables on the axes&#x20;
+* **Axis Text Size:** Adjust the font size for the variable names displayed on the plot axes using `+`/`-` buttons or by entering a numeric value.
 {% endtab %}
 
 {% tab title="2. Correlogram" %}
-A correlogram is a visual representation of the correlation matrix produced by the processing performed through the correlation setup. Below is a correlogram of a few variables:&#x20;
+Interpreting the Correlogram
 
-<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption></figcaption></figure>
+The main output of the **Correlation** tab is a correlogram, which visually represents the correlation matrix calculated based on your settings.
 
-* **Size**: The size of the circle represents the magnitude of the correlation value between the two variables&#x20;
-* **Color**: Colors in red spectrum represent positive correlation and colors in the blue spectrum represent negative correlation. The shade of the circle corresponds to the correlation value, which can be estimated using the color legend.&#x20;
+#### How to Read the Plot
 
-The correlogram in PANDORA can be used to visualize correlations in larger datasets as well, as shown below:&#x20;
+* **Circles:** Each circle represents the correlation between two variables (one on the x-axis, one on the y-axis).
+* **Size:** The **size** of the circle indicates the **strength (magnitude)** of the correlation. Larger circles mean stronger correlations (closer to 1 or -1), while smaller circles mean weaker correlations (closer to 0).
+* **Color:**
+  * **Reddish colors** indicate a **positive correlation** (as one variable increases, the other tends to increase).
+  * **Bluish colors** indicate a **negative correlation** (as one variable increases, the other tends to decrease).
+  * The **intensity** of the color also reflects the strength of the correlation, corresponding to the values shown on the color legend/bar on the right. Darker shades mean stronger correlations.
 
-<figure><img src="../../.gitbook/assets/image (20).png" alt=""><figcaption><p> </p></figcaption></figure>
+**Example 1: Few Variables**
+
+<figure><img src="../../.gitbook/assets/image (21).png" alt=""><figcaption><p>This plot shows correlations between a small number of variables. You can easily see strong positive correlations (large dark red circles) between max_hai_responder and max_iga_responder, and weaker negative correlations (small light blue circles) like between max_hai_responder and h3_v0_seropositive.</p></figcaption></figure>
+
+**Example 2: Few Variables**
+
+<figure><img src="../../.gitbook/assets/image (20).png" alt=""><figcaption><p>PANDORA's correlogram scales effectively even for datasets with many variables. This example reveals distinct blocks of highly correlated variables (clusters of dark red circles), which might indicate groups of related genes or biomarkers. You can also see areas with little correlation (very small, pale circles).</p></figcaption></figure>
 {% endtab %}
 
 {% tab title="3. Significance" %}
-Along with producing a visualization for the correlation matrix, PANDORA allows users to visualize the significance and confidence interval of the correlation:&#x20;
+Beyond just showing the correlation strength, PANDORA allows you to assess the statistical reliability of these correlations.
 
-*   **Significance Test**: Perform a test to visualize whether the correlation between each variable is statistically significant.
+#### Assessing Significance
 
-    * **Significance Level**: Adjust the threshold for determining statistical significance
-    * **Insignificant Action**: These are options that determine how the insignificant correlations are represented in the plot. For example, the below images shows the significance test with the **pch** setting, where a cross (X) is used to mark the insignificant correlations
+You can perform statistical tests to see if the observed correlations are likely real or could have occurred by chance.
 
+* **Enable Significance Test:** Check this option to calculate p-values for each correlation.
+* **Significance Level (alpha):** Set the threshold (e.g., 0.05) to determine statistical significance. Correlations with a p-value _above_ this threshold are considered "insignificant".
+* **Insignificant Action:** Choose how to visually mark correlations that are _not_ statistically significant on the plot:
+  * `pch`: Places a cross (X) over insignificant correlations (see example below).
+  * `p-value`: Displays the p-value number directly on the plot for insignificant correlations.
+  * `blank`: Hides insignificant correlations entirely, leaving blank spaces.
+  * `label_sig`: Adds significance stars (e.g. \*, \*\*, \*\*\*) based on p-value thresholds.
+* **P-value Adjustment (BH):** Select this option to apply the Benjamini-Hochberg correction to the p-values. This is recommended when testing many correlations simultaneously (common in high-dimensional data) to control the false discovery rate.
 
+#### 4. Visualizing Confidence Intervals
 
-    <figure><img src="../../.gitbook/assets/image (22).png" alt=""><figcaption></figcaption></figure>
+You can also visualize the uncertainty around the calculated correlation values.
 
+* **Enable Confidence Interval:** Check this option to calculate and display confidence intervals (CIs) for the correlations.
+* **Confidence Level:** Set the desired confidence level (e.g., 0.95 for a 95% CI). This determines the width of the interval.
+* **CI Plotting Method:** Choose how the confidence interval is represented visually on the plot (often integrated with the main correlation shape). Options might include drawing lines or using different shapes.
 
+#### Example: Significance and CI Visualization
 
-    * **P-value comparisons (BH)**: Use the Benjamini-Hochberg (BH) method to adjust the p-values when the correlation matrix has a large number of variables
-*   Confidence Interval: Provides options for calculating and visualizing the confidence interval of the correlations
+The images below show correlograms where significance testing and confidence intervals are applied.
 
-    * Confidence Level: Adjust the width of the confidence interval based on desired certainty&#x20;
-    * Plotting Method: Choose the shape to visually represent the confidence interval of the correlations in the plot
-    * Example: A correlogram with visualization of insignificance using **pch**, **0.95 confidence level**, and the **square** plotting method
+<figure><img src="../../.gitbook/assets/image (22).png" alt=""><figcaption><p>In this plot, correlations deemed not statistically significant (at the chosen alpha level, potentially after BH adjustment) are marked with a cross (X). This uses the pch setting for Insignificant Action.</p></figcaption></figure>
 
+**Example with Confidence Intervals Plotted (Square Method):**
 
-
-    <figure><img src="../../.gitbook/assets/image (23).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (23).png" alt=""><figcaption><p>This plot visualizes both the correlation (color/size) and its confidence interval. Here, the CI Plotting Method might be set to square or a similar option, where the shape or additional elements represent the calculated interval around the correlation estimate. The specific appearance depends on the chosen method.</p></figcaption></figure>
 {% endtab %}
 {% endtabs %}
 

@@ -6,72 +6,132 @@ description: >-
 
 # t-SNE Analysis
 
-### Overview
+Use the **t-SNE (t-distributed Stochastic Neighbor Embedding)** tab to visualize high-dimensional data in a low-dimensional map, typically 2D.
 
-The **t-SNE Analysis** tab allows users to visualize high-dimensional data by projecting it into a low-dimensional space. Unlike PCA, which is also a dimensionality reduction algorithm, tSNE uses a nonlinear dimensionality reduction algorithm, making it more suitable for nonlinear datasets.
+t-SNE is particularly good at revealing **local structure** and **clusters** within your data. It works by modeling similarities between high-dimensional data points and representing them as probabilities, then finding a low-dimensional embedding that preserves these similarities.
+
+Unlike PCA, t-SNE uses a **non-linear** algorithm. This often makes it better suited for visualizing complex datasets where relationships aren't linear, such as identifying distinct cell populations in single-cell RNA sequencing (scRNA-seq) data.
+
+Keep in mind:
+
+* t-SNE is primarily for **visualization**, not necessarily for preserving global distances accurately. The distances _between_ clusters in a t-SNE plot might not be meaningful.
+* The resulting plot can depend heavily on the chosen parameters (like perplexity).
 
 <figure><img src="../../../.gitbook/assets/tSNE_Main_min_annotated.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. t-SNE Setup" %}
-For generic setup steps and preprocessing options, please see the [Side Panel Options](../side-panel-options.md) page. Information about the settings unique to the t-SNE setup is provided below:
+Configure the t-SNE calculation and visualization using the options in the side panel. For general setup like initial column selection and standard preprocessing, refer to the main documentation sections.
 
-### T-SNE Hyperparameter setup
+#### 1. t-SNE Hyperparameter Setup
 
-Each of these hyperparameters affects the performance of the t-SNE analysis. Optimal hyperparameter values vary by dataset. **PANDORA can automatically determine the optimal values for the hyperparameters** if these settings are not adjusted by the user.
+These parameters control the core t-SNE algorithm. Finding optimal values often requires experimentation, but PANDORA may provide automatic optimization or reasonable defaults.
 
-* **Perplexity**: Adjust the perplexity, affecting how many neighbors each point considers. Suitable values range from 5 to 50, depending on the dataset.
-* **Exaggeration Factor**: Set a factor to increase or decrease the separation between clusters. Typical values are between 4 and 30.
-* **Theta**: Choose a theta value to control the accuracy/speed trade-off for the t-SNE approximation.
-* **Max Iterations**: Define the maximum number of iterations (or steps) for the t-SNE algorithm, up to 50,000. At a minimum, enough iterations are needed to reach stability.
-* **Learning Rate (Eta)**: Set the learning rate, controlling the step size in the t-SNE optimization. A lower eta may require a larger number of iterations to reach stability.
+* **Perplexity:**
+  * Related to the number of nearest neighbors considered for each point. It balances attention to local vs. global aspects of the data.
+  * Typical values range from 5 to 50. Lower values emphasize local structure; higher values consider more neighbors.
+* **Exaggeration Factor:**
+  * Controls how much the natural clusters in the data are separated from each other during the initial optimization phase. Higher values can create more space between clusters.
+  * Typical values might range from 4 to 30.
+* **Theta:**
+  * Controls the trade-off between speed and accuracy for the Barnes-Hut approximation used in t-SNE.
+  * Lower values (e.g., 0) are more accurate but slower. Higher values (e.g., 0.5 to 1) are faster but less accurate.
+* **Max Iterations:**
+  * The maximum number of optimization steps the algorithm will run.
+  * Should be high enough for the embedding to stabilize (often 1000 or more). PANDORA allows up to 50,000.
+* **Learning Rate (Eta):**
+  * Controls the step size during the optimization process.
+  * Typical values might be around 200. If the learning rate is too high, the embedding might diverge; if too low, it might take many iterations to converge.
 
-### Clustered t-SNE settings
+#### 2. Clustered t-SNE Settings
 
-These settings are specific to the clustered t-SNE analysis.&#x20;
+These settings apply specifically when generating the **Clustered t-SNE Plot**, which runs a clustering algorithm on the 2D t-SNE results.
 
-* **Clustering Algorithm**: Choose the clustering algorithm, such as Louvain, Hierarchical, Mclust, or Density-based clustering. Each clustering algorithm has its own configuration variable, which are provided below.
-  * KNN graph and Louvain
-    * **K:** K nearest neighbors, each point will be assigned a cluster according to the majority cluster value out of the k nearest points, where k is the value you set here.
-  * Hierarchical Clustering
-    * **Clustering Method:** Determine what method to use for the merging of clusters within the hierarchical clustering.
-  * Mclust & Density-based clustering
-    * **epsQuantile:** Parameter controlling the density threshold for clustering. A high value increases the size of the neighborhood for clustering.
+* **Clustering Algorithm:** Choose the method used to identify clusters in the 2D t-SNE map:
+  * **Louvain:** Community detection algorithm often used with KNN graphs.
+    * **K (for KNN graph):** The number of nearest neighbors used to build the graph for Louvain clustering.
+  * **Hierarchical Clustering:** Builds a hierarchy of clusters.
+    * **Clustering Method (Linkage):** Select the linkage method (e.g., `ward`, `complete`, `average`).
+  * **Mclust:** Model-based clustering assuming Gaussian mixture models.
+    * **epsQuantile:** Parameter related to density or neighborhood size (shared with Density-based).
+  * **Density-based clustering (e.g., DBSCAN):** Groups points based on density.
+    * **epsQuantile:** Parameter controlling the density threshold or neighborhood size. Higher values increase the considered neighborhood.
 
-### Dataset Analysis Settings
+#### 3. Dataset Analysis Settings (Post-Clustering Analysis)
 
-The dataset analysis is performed on the clusters created from the clustered t-SNE. Users can toggle the settings below for this analysis.
+Perform further analysis _on the identified clusters_ from the Clustered t-SNE.
 
-* **Dataset Analysis Type**: Select the analysis type, such as heatmap or hierarchical clustering. This analysis is performed on each cluster in the clustered t-SNE.
-* **Grouped Display**: Display the mean values of clusters on a heatmap.
+* **Dataset Analysis Type:** Select how to visualize the characteristics of the identified clusters using the original high-dimensional data:
+  * **Heatmap:** Shows the mean expression/value of original variables within each cluster.
+  * **Hierarchical Clustering:** Performs clustering on the cluster means or representative profiles.
+* **Grouped Display:** (Typically used with Heatmap) Display the mean values of the original variables for each identified t-SNE cluster.
 
-### Optional Settings
+#### 4. Optional Visualization Settings
 
-* **Grouping Variable**: Select a categorical variable to group data points by color on the t-SNE plot. This variable is excluded from the analysis but used for visualization.
-* **Color Variable**: Choose a continuous variable for coloring the t-SNE plot. Unlike the grouping variable, this variable is included in the analysis.
+Control how points are colored in the main t-SNE plots:
+
+* **Grouping Variable:**
+  * Select a **categorical** variable from your metadata (e.g., 'cell\_type', 'treatment').
+  * Points in the t-SNE plot will be colored according to this variable.
+  * **Important:** This variable is **excluded** from the t-SNE calculation itself and used only for visualization.
+* **Color Variable:**
+  * Select a **continuous** variable from your dataset (e.g., expression level of a specific gene, a clinical score).
+  * Points in the t-SNE plot will be colored based on the value of this variable (using a continuous color scale).
+  * **Important:** This variable is **included** in the t-SNE calculation along with other selected features.
 {% endtab %}
 
 {% tab title="2. t-SNE Plot" %}
-The [t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding) plot allows users to identify trends or clusters in the dataset. Some key points that are important to note when interpreting the t-SNE graph:
+The primary output of the **t-SNE Analysis** tab is a 2D scatter plot where each point represents one of your samples (e.g., an individual patient, a cell). The algorithm positions points such that samples that were similar in the original high-dimensional space tend to be close together in the 2D plot.
 
-* Every dot displayed is a specific sample (ie, an individual in a study).
-* The **axes are not directly interpretable**. As a result, little information can be drawn from the distances between each cluster identified in the t-SNE plot.
-* t-SNE primarily **preserves local structure** over global structure in a dataset.
-* **t-SNE performance heavily depends on hyperparameter settings**, which PANDORA can conveniently automatically set for optimal t-SNE performance.
+<figure><img src="../../../.gitbook/assets/Normal_tSNE.png" alt="" width="375"><figcaption><p>Example t-SNE plot showing sample distribution</p></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/Normal_tSNE.png" alt="" width="375"><figcaption></figcaption></figure>
+#### How to Interpret the t-SNE Plot
 
-Additional information is provided below the t-SNE plot about hyperparameter values. This can help with fine-tuning the hyperparameters for optimal model performance.
+* **Identify Clusters/Trends:** Look for groups of points that form distinct clusters. These clusters often represent groups of samples with similar characteristics (e.g., similar cell types, similar responses to treatment).
+* **Focus on Local Structure:** t-SNE excels at revealing local relationships. Points close together within a cluster are likely very similar in the original data.
+* **Axes Are Not Directly Interpretable:** Unlike PCA, the axes (labeled "t-SNE dimension 1" and "t-SNE dimension 2") do not have a specific, interpretable meaning like "variance explained". They are simply the two dimensions chosen for the visualization.
+* **Cluster Separation May Not Reflect True Distance:** While points within a cluster are close because they are similar, the amount of space between distinct clusters doesn't necessarily reflect how dissimilar those groups are in the original data. Don't over-interpret the large-scale distances.
+* **Hyperparameter Dependence:** The final appearance of the plot (cluster shapes, tightness, separation) is highly sensitive to the chosen hyperparameters (Perplexity, Iterations, etc.). Running t-SNE with different parameters might yield different visualizations of the same data.
 
-<figure><img src="../../../.gitbook/assets/t-SNE_hyperparamter info.png" alt=""><figcaption></figcaption></figure>
+#### Hyperparameter Display
+
+PANDORA typically displays the specific hyperparameter values used to generate the current t-SNE plot below the visualization itself.
+
+<figure><img src="../../../.gitbook/assets/t-SNE_hyperparamter info.png" alt=""><figcaption><p>Example display of t-SNE hyperparameters used for the plot</p></figcaption></figure>
+
+This is useful for:
+
+* Recording the exact settings used for your analysis.
+* Comparing results if you experiment with different hyperparameter values.
+* Understanding how the chosen parameters (either default, automatically optimized, or manually set) influenced the resulting plot.
 {% endtab %}
 
-{% tab title="3. t-SNE Analyses" %}
-After running t-SNE, on the right of the side panel, the user will see results for several analyses.
+{% tab title="3. t-SNE Analysis: Results Tabs" %}
+After running the t-SNE calculation, PANDORA presents the results and further analyses in several tabs or sections, often located in a results panel (e.g., on the right side).
 
-* [t-SNE plot(s)](t-sne-plot-s.md): This tab displays t-SNE plots for the overall dataset and for any selected grouping or color variables.
-* [Clustered t-SNE analysis](clustered-t-sne-analysis.md): This tab provides information on the output from t-SNE after clustering has been performed. It is designed to help users identify trends for the dataset in the reduced dimension.
-* [Dataset Analysis](dataset-analysis.md): Depending on the selected setting, performs analysis to display a heatmap or hierarchical clustered analysis of the clusters identified from the clustered t-SNE analysis. This allows the user to identify key differences in feature values between each cluster group.
+#### 1. t-SNE Plot(s) Tab
+
+* **Purpose:** Displays the primary t-SNE visualization(s).
+* **Content:**
+  * Shows the 2D scatter plot where each point is a sample, positioned based on the t-SNE embedding.
+  * If you selected a **Grouping Variable** or **Color Variable** in the setup, additional versions of the plot colored accordingly will be displayed here. This helps visualize how known categories or continuous features map onto the t-SNE structure.
+* **Use:** Identify potential clusters and visualize the distribution of your samples based on their high-dimensional similarities.
+
+#### 2. Clustered t-SNE Analysis Tab
+
+* **Purpose:** Shows the results after applying a clustering algorithm (chosen in the setup) to the 2D t-SNE coordinates.
+* **Content:**
+  * Displays the t-SNE plot where points are colored based on the cluster assignments determined by the selected algorithm (e.g., Louvain, Hierarchical, Mclust, Density-based).
+  * May include summary statistics about the identified clusters (e.g., number of points per cluster).
+* **Use:** Automatically identify and label distinct groups within the t-SNE map, helping to quantify and interpret the observed visual structures.
+
+#### 3. Dataset Analysis Tab
+
+* **Purpose:** Provides deeper insights into the characteristics of the clusters identified in the **Clustered t-SNE analysis** by relating them back to the _original high-dimensional data_.
+* **Content:** Depending on the **Dataset Analysis Type** selected during setup:
+  * **Heatmap:** Displays a heatmap showing the average value (e.g., mean expression level) of the original variables (columns) for each identified t-SNE cluster. Rows might be variables, and columns would be clusters (or vice-versa).
+  * **Hierarchical Clustering:** May show results of further clustering performed on the cluster average profiles, grouping clusters with similar overall variable patterns.
+* **Use:** Understand what makes the identified clusters different from each other in terms of the original features (e.g., which genes are highly expressed in cluster 1 vs. cluster 2). This is crucial for biological interpretation of the t-SNE clusters.
 {% endtab %}
 {% endtabs %}
 

@@ -6,10 +6,10 @@ icon: copy
 
 ### Overview
 
-The Workspace is a space where the user is able to upload their datasets for analysis using PANDORA. The user can upload multiple files and view all of them in this space. This is also the space where any files saved to PANDORA (e.g. saving your cluster classifications with the dataset) will show up.
+The Workspace is a space where the user is able to upload their datasets for analysis. This is also the space where any files saved to PANDORA (e.g. saving your cluster classifications with the dataset) will show up.
 
 {% hint style="info" %}
-Users can only upload **.csv** files on PANDORA. For example, see the [flu fighters](https://github.com/atomiclaboratory/systems_immunology_course_2024/blob/main/Course%20Materials/Flu%20Fighters%20Challenge%202024/dataset/flu_fighters.csv) dataset
+system currently supports only **.csv** files. For example, see the [flu fighters](https://github.com/atomiclaboratory/systems_immunology_course_2024/blob/main/Course%20Materials/Flu%20Fighters%20Challenge%202024/dataset/flu_fighters.csv) dataset
 {% endhint %}
 
 <figure><img src="../.gitbook/assets/workspace.png" alt=""><figcaption></figcaption></figure>
@@ -20,9 +20,9 @@ By right-clicking on a file, a panel is presented with various options for the f
 
 <figure><img src="../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
 
-* **Select**: Choose this file/dataset for using the Discover and Predictive features on PANDORA
-* **Download**: Download the chosen file&#x20;
-* **Delete**: Delete the chosen file if it is no longer needed. The user is also able to delete the file by selecting the delete option that appears when you hover your cursor on the file&#x20;
+* **Select**: Choose this file/dataset for using the [Discover ](../data-analysis/discovery/)and [SIMON](../data-analysis/predictive/simon/)
+* **Download**
+* **Delete**
 * **Preview**: View the first 100 rows and 50 columns of the file on PANDORA
 {% endtab %}
 
@@ -37,7 +37,7 @@ At the top right corner of the Workspace page, the **New Directory** and **Delet
 
 <figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
 
-* **New Directory**: Create a new directory by inputting a directory name. This will create a folder on the main Workspace and clicking on the folder will give access to the new directory where the user can upload files they require specific to that directory.
+* **New Directory**
 
 <div><figure><img src="../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Screenshot 2025-04-09 083033.png" alt=""><figcaption></figcaption></figure></div>
 

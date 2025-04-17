@@ -20,25 +20,28 @@ PANDORA allows for various ways to choose parts of the dataset on which the user
 {% endtab %}
 
 {% tab title="Preprocessing" %}
-PANDORA has several preprocessing options for preparing the user's dataset for analysis. The user can choose one or a combination of the following options:&#x20;
+You can apply these individually or combine them. Preprocessing often improves the results of downstream analyses.
 
-* **Center**: Subtracting the mean of the data from the values
-* **Scale**: Dividing your values by the standard deviation of the data
-* **knnImpute**: Estimate missing values using the nearest neighbors with similar patterns to the row with the missing value
-* **bagImpute**: Estimate missing values using a bagged ensemble of regression trees
-* **medianImpute**: Estimate missing values using the median of the existing values of the variable&#x20;
-* **corr**: Stands for **correlation filtering**, which involves computing correlation between variables and removing redundant ones, which simplifies data and reduces computational cost
-* **zv**: Stands for **remove** **zero variance**, which involves removing any variables with no variance to simplify data for predictive modelling as zero-variance features do not provide any useful information for predictive models&#x20;
-* **nzv**: Stands for **remove** **near-zero variance**, which involves removing any variables with variance close to zero to simplify data for predictive modelling
+
+
+* **Center:** Subtracts the mean value of each variable (column) from all its data points. This centers the data around zero.
+* **Scale:** Divides the values of each variable by its standard deviation. This scales the data to have a unit standard deviation. Often used together with `Center`.
+* **knnImpute:** Fills in missing values (NAs) using the k-Nearest Neighbors algorithm. It finds rows with similar data patterns to the row with the missing value and uses their values to estimate the missing one.
+* **bagImpute:** Fills in missing values using bagged (Bootstrap Aggregated) regression trees. It builds multiple decision trees on bootstrapped samples of the data and averages their predictions to impute missing values.
+* **medianImpute:** Fills in missing values within a variable using the median value of that variable's non-missing data. A simple and robust method.
+* **corr (Correlation Filter):** Calculates the correlation between pairs of variables and removes variables that are highly correlated (above a certain threshold). This reduces redundancy and can simplify models.
+* **zv (Zero Variance):** Removes variables that have zero variance (i.e., all values are the same). These variables provide no information for analysis or modeling.
+* **nzv (Near-Zero Variance):** Removes variables that have very little variance (close to zero). These variables often provide little information and can sometimes cause issues in modeling.
 {% endtab %}
 
 {% tab title="Display" %}
-PANDORA allows for several themes and display settings for plots to accommodate a variety of audiences and potential applications of the figures produced.&#x20;
+Customize the appearance of your plots in PANDORA to suit different needs, like presentations, publications, or personal preferences.
 
-* **Theme:** This consists of options that alter gridlines, background and plot details to suit various applications such as presentations and manuscript publications
-* **Color**: Various color options that the user can pick to suit their preferences. This also includes options for those who are colorblind, and can be found by hovering over the information icon next to the color option and looking for ones that say 'colorblind: true'
-* **Font size**: Adjust the font size of the plot by clicking on the '+' or '-' options or input a number in the field.&#x20;
-* **Plot ratio/size**: Adjust the size of the plot&#x20;
+* **Theme:** Choose from predefined themes that control elements like background color, gridlines, and overall plot aesthetics. Different themes are optimized for different outputs (e.g., a clean theme for publications, a dark theme for presentations).
+* **Color Palette:** Select from various color palettes for your plots.
+  * To find colorblind-friendly options, hover over the information icon (ⓘ) next to the color palette selector – palettes suitable for colorblindness will be indicated.
+* **Font Size:** Adjust the size of text elements (axis labels, titles, etc.) on the plot. Use the `+` and `-` buttons or enter a specific number.
+* **Plot Ratio/Size:** Control the aspect ratio or overall dimensions of the generated plot figure. This helps ensure the plot fits well in documents or slides.
 {% endtab %}
 {% endtabs %}
 

@@ -6,7 +6,7 @@ description: Used to examine structure and contents of dataset
 
 ### Overview&#x20;
 
-The **Data Overview** tab in PANDORA offers  preliminary data inspection, allowing users to filter, preprocess, and visualize columns before diving into analysis.
+Use the **Data Overview** tab for an initial look at your dataset. Here you can inspect, filter, preprocess, and visualize specific columns before starting more complex analyses.
 
 <figure><img src="../../.gitbook/assets/discovery-data-overview-tabls-plot.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
@@ -26,18 +26,19 @@ Displays the distribution of values in selected columns, which helps in identify
 {% endtab %}
 {% endtabs %}
 
-**Download Options**: Users can download the raw data and plot images for offline analysis. Images are available in SVG format for scalability.
+#### Key Features
 
-[**Side Panel Options**](side-panel-options.md): Users can choose specific columns of the dataset to visualize, along with modifying themes and plot colors to match their preferences&#x20;
-
-**Dynamic Tab Control**:
-
-* The tab will only be enabled if there is a sufficient amount of data in the selected file, preventing empty visualizations and optimizing performance.
-
-**Bottom Bar Details**:
-
-* Shows additional details about selected columns, including:
-  * Unique values count.
-  * Whether the column is numeric (for PCA suitability).
-  * Zero variance indication.
+* **Preliminary Inspection:** Get a quick summary and visualize distributions for selected columns.
+* **Side Panel Controls:**
+  * **Column Selection:** Choose which columns (variables) from your dataset you want to visualize.
+  * **Preprocessing:** Apply basic preprocessing steps like normalization or handling missing values directly here. (See Preprocessing Options for details).
+  * **Theme & Colors:** Customize the plot appearance using different themes and color palettes. (See Theme and Display Settings).
+* **Download Options:**
+  * Download the currently displayed plot as an SVG file (scalable vector graphic, good for publications).
+  * Download the raw data subset currently being viewed (after any filtering/preprocessing applied in this tab).
+* **Dynamic Activation:** This tab will only be active if your loaded dataset has sufficient data to display meaningful visualizations. This prevents errors with empty or very small datasets.
+* **Bottom Information Bar:** When you select columns, this bar provides useful metadata about them:
+  * Count of unique values.
+  * Indication if the column is numeric (required for some analyses like PCA).
+  * Flag if the column has zero variance (`zv`).
   * Percentage of missing values (NA).

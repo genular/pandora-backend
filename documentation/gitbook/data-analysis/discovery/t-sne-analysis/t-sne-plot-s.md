@@ -6,11 +6,18 @@ description: >-
 
 # t-SNE plot(s)
 
-### Overview
-
-The **t-SNE plot(s)** tab provides a t-SNE plot for just individuals, and t-SNE plots overlaying the grouping & coloring variables. These plots allow the user to identify trends and clustering within the dataset and investigate how features may correlate to these patterns.
+This tab displays the core t-SNE visualization results. You'll find the main t-SNE plot along with additional versions if you specified **Grouping** or **Coloring** variables during setup. These plots help you visualize potential clusters and see how known sample characteristics map onto the t-SNE embedding.
 
 <figure><img src="../../../.gitbook/assets/tSNE_tSNE Plots_highres-min_annotated.png" alt=""><figcaption></figcaption></figure>
+
+Available Plots in this Tab
+
+1. **Main Plot:** (See label 1 in the screenshot, often selected via a menu 2)
+   * This is the standard t-SNE plot showing the 2D embedding of all your samples. Points are typically displayed with a default color (e.g., black) or potentially colored by density if no other options are chosen.
+   * Use this plot to get an initial sense of the overall structure and potential clusters in your data.
+2. **Plots Colored by Variables:** (See plots under label 3)
+   * **If you selected a Grouping Variable (categorical):** A version of the t-SNE plot where points are colored according to the categories in that variable (e.g., different colors for 'control' vs. 'treated'). This helps visualize if samples from the same predefined group cluster together in the t-SNE map.
+   * **If you selected a Color Variable (continuous):** A version of the t-SNE plot where points are colored based on the value of that continuous variable (e.g., expression level of a gene, age). This helps visualize if the variable shows a gradient or pattern across the t-SNE map.
 
 {% tabs %}
 {% tab title="1. Main plot" %}
@@ -37,3 +44,11 @@ These plots can be downloaded as SVG files or right-clicked and saved as a PNG i
 <figure><img src="../../../.gitbook/assets/Colored_tSNE.png" alt="" width="375"><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}
+
+#### Analysis Goal
+
+By examining these plots, you can:
+
+* Identify potential clusters or groups of similar samples based on their proximity in the 2D map.
+* Investigate whether known sample attributes (Grouping Variable) align with the structures revealed by t-SNE.
+* Explore correlations between continuous variables (Color Variable) and the sample distribution in the t-SNE embedding.

@@ -6,74 +6,115 @@ description: >-
 
 # Variables
 
-### Overview
-
-The **Variables** tab in PANDORA provides valuable insights on the correlation, quality, and contributions of each variable in the principal component analysis.
+This sub-tab focuses on the **relationship between your original variables (columns) and the principal components (PCs)** that were calculated. It helps you understand which variables drive the variance captured by each PC and how well the variables are represented in the reduced PCA space.
 
 <figure><img src="../../../.gitbook/assets/PCA_Variables_Notated.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Correlation circle(s)" %}
-This sub-tab provides correlation circle plots of all variables in a non-clustered and clustered form. These plots can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
+This visualization within the **Variables** sub-tab helps you understand how your original variables relate to the principal components (PCs) and to each other in the reduced PCA space. It's often called a "Correlation Circle" or "Loadings Plot".
 
-How to interpret a correlation circle:&#x20;
+PANDORA typically provides two versions of this plot:
 
-* Positively correlated variables are grouped together
-* Negatively correlated variables are positioned opposite of each other about the origin of the plot
-* The distance of a variable from the origin is a measure of its quality on the factor map. Variables located far from the origin are well represented on the factor map.
+1. **Correlation Plot (Colored by Quality):** Variables colored based on how well they are represented in the plot.
+2. **Correlation Plot Clustered:** Variables colored based on cluster analysis performed on their PCA coordinates/loadings.
 
-#### a. Correlation plot
+<div><figure><img src="../../../.gitbook/assets/Correlation Circle_Correlation Plot.png" alt="" width="375"><figcaption><p>Correlation circle colored by Cos2 (Quality)</p></figcaption></figure> <figure><img src="../../../.gitbook/assets/Correlation Circle_Correlation Plot Clustered.png" alt="" width="375"><figcaption><p>Correlation circle colored by Cluster</p></figcaption></figure></div>
 
-Provides a correlation circle for all variables with coloring based on the cos2 value for each variable.
+#### How to Interpret the Correlation Circle
 
-<figure><img src="../../../.gitbook/assets/Correlation Circle_Correlation Plot.png" alt="" width="375"><figcaption></figcaption></figure>
+* **Variables as Arrows:** Each arrow represents one of your original variables. The endpoint of the arrow shows the variable's coordinates on the chosen principal components (typically PC1 on the X-axis and PC2 on the Y-axis).
+* **Correlation with PCs:**
+  * Variables with arrows pointing strongly towards the right have high positive correlations with PC1.
+  * Variables pointing strongly towards the left have high negative correlations with PC1.
+  * Variables pointing strongly upwards have high positive correlations with PC2, and downwards indicate negative correlations with PC2.
+* **Relationship Between Variables:**
+  * **Positively Correlated:** Variables whose arrows point in roughly the **same direction** are positively correlated with each other.
+  * **Negatively Correlated:** Variables whose arrows point in roughly **opposite directions** (across the origin) are negatively correlated with each other.
+  * **Uncorrelated:** Variables whose arrows are roughly **perpendicular (90 degrees)** are likely uncorrelated.
+* **Quality of Representation (Distance from Origin):**
+  * The **further** an arrow extends from the origin (center), the **better** that variable's variance is represented by the two principal components shown in the plot. Variables close to the origin are not well represented in this specific 2D view (their variance might be explained by other PCs not plotted).
 
-#### b. Correlation plot clustered
+#### Specific Plot Types
 
-Provides a correlation circle for all variables, but with clustering groups overlayed. Each cluster is represented by a different color and is determined by the kmeans clustering algorithm.
+1. **Correlation Plot (Colored by cos2):**
+   * In this version, the color of each arrow typically indicates its **quality of representation (cos2)** on the factor map (the current plot).
+   * Warmer colors (like red/orange) usually signify higher cos2 values, meaning the variable is well-represented in this plot. Cooler colors (like blue/green) indicate lower cos2 values.
+2. **Correlation Plot Clustered:**
+   * This plot applies a clustering algorithm (like k-means) to the variables based on their coordinates (loadings) on the principal components.
+   * Variables are colored according to the cluster they belong to. This helps visually identify groups of variables that have similar profiles or contributions across the principal components.
 
-<figure><img src="../../../.gitbook/assets/Correlation Circle_Correlation Plot Clustered.png" alt="" width="375"><figcaption></figcaption></figure>
+#### Download Options
+
+You can usually download these plots as SVG files (recommended for scalability) or right-click to save them as PNG images directly from PANDORA.
 {% endtab %}
 
 {% tab title="2. Quality of representation" %}
-Provides graphical information on how well each variable is represented on the primary principal components. The plots below can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
+This section within the **Variables** sub-tab provides plots that specifically focus on the **quality of representation (cos2)** for each variable in the principal component analysis. This helps you understand how well the variance of each original variable is captured by the principal components you are examining (typically the first few).
 
-#### Correlation plot
+#### Plots for Assessing Variable Quality
 
-The correlation plot shows how well each variable (listed on the side) is represented in each dimension (listed at the top). A dark red dot indicates greater representation of a variable in the associated principal component, and a dark blue dot corresponds to poor representation. The associated cos2 value for each color is shown on the right side bar.
+1.  **Variable Representation per Dimension (Dot Plot / Heatmap):**
 
-<figure><img src="../../../.gitbook/assets/Quality of representation_Correlation plot.png" alt="" width="375"><figcaption></figcaption></figure>
+    * **What it shows:** This plot displays how strongly each variable (listed on the Y-axis) contributes to or is represented by each selected principal component/dimension (listed on the X-axis, though sometimes only the first few are shown).
+    * **How to read it:**
+      * The color and/or size of the dot at the intersection of a variable and a dimension indicates the strength of the relationship (often the squared coordinate or contribution).
+      * Darker/larger dots (e.g., dark red in the example) indicate a stronger representation or contribution of that variable to that specific dimension.
+      * Lighter/smaller dots (e.g., dark blue) indicate a weaker representation.
+      * The color bar/legend shows the scale for these values (often related to squared coordinates or contributions).
+    * **Use:** Quickly identify which variables are most strongly associated with each individual principal component.
 
-#### Bar plot
+    <figure><img src="../../../.gitbook/assets/Quality of representation_Correlation plot.png" alt="" width="375"><figcaption></figcaption></figure>
+2.  **Total Quality of Representation (Bar Plot):**
 
-This bar plot shows the cos2 value associated with each variable. A high cos2 indicates good representation on the principal components, and so the corresponding variable would be shown further from the origin in the correlation circle. A variable with a low cos2 is poorly represented on the principal components, and would be shown closer to the origin in the correlation circle.
+    * **What it shows:** This bar plot displays the overall quality of representation (total `cos2`) for each variable, summed across the selected principal components (usually the ones plotted, e.g., Dim 1 and Dim 2). Variables are typically sorted from highest cos2 to lowest.
+    * **How to read it:**
+      * Variables with **longer bars** (higher `cos2` values) are well-represented by the selected principal components. Their position in the **Variables Plot (Correlation Circle)** is reliable, and they will appear further from the origin.
+      * Variables with **shorter bars** (lower `cos2` values) are poorly represented by the selected PCs. Their position in the Correlation Circle (often close to the origin) might be misleading, as most of their variance lies in other dimensions.
+    * **Use:** Identify which variables are adequately captured by your main PCA dimensions and which ones are not. This helps validate interpretations made from the Correlation Circle.
 
-<figure><img src="../../../.gitbook/assets/Quality of representation_Bar plot.png" alt="" width="375"><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/Quality of representation_Bar plot.png" alt="" width="375"><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="3. Contribution of variables to PCs" %}
-This sub-tab provides information on how much the variables contribute to the variance in the principal components. The plots below can be downloaded as SVG files or right-clicked and saved as a PNG in PADNORA.
+This section within the **Variables** sub-tab focuses on how much each original variable **contributes** to the variance captured by the principal components (PCs). Identifying high-contribution variables is crucial for interpreting what biological or experimental factors each PC represents.
 
-#### Correlation plot
+#### Plots for Assessing Variable Contribution
 
-The correlation plot shows how well each variable (listed on the side) is represented in each dimension (listed at the top). A dark red dot indicates greater variance contribution from the variable in the associated principal component, and a dark blue dot corresponds to poor variance contribution. The percent contribution to variability in the principal component is shown on the right side bar.
+1.  **Contribution per Dimension (Dot Plot / Heatmap):**
 
-<figure><img src="../../../.gitbook/assets/Contribution of variables to PCs_Correlation plot.png" alt="" width="375"><figcaption></figcaption></figure>
+    * **What it shows:** Similar to the quality plot, this displays the contribution of each variable (Y-axis) to each specific principal component/dimension (X-axis).
+    * **How to read it:**
+      * The color and/or size of the dot represents the **percentage contribution** of that variable to the variance of that specific dimension.
+      * Darker/larger dots (e.g., dark red) indicate a higher contribution. Variables with high contributions heavily influence the direction and variance of that PC.
+      * Lighter/smaller dots (e.g., dark blue) indicate a lower contribution.
+      * The legend/color bar shows the contribution percentage scale.
+    * **Use:** Identify the key variables driving the variance for each individual PC.
 
-#### Bar plot
+    <figure><img src="../../../.gitbook/assets/Contribution of variables to PCs_Correlation plot.png" alt="" width="375"><figcaption><p>Dot plot showing variable contribution per dimension</p></figcaption></figure>
+2.  **Top Contributing Variables (Bar Plot):**
 
-Shows the top 10 variables that contribute to the variance of the principal components
+    * **What it shows:** This bar plot highlights the variables with the highest contribution, typically summed across the selected principal components (e.g., Dim 1 and 2). Often, only the top N (e.g., top 10) contributing variables are shown, sorted from highest contribution to lowest.
+    * **How to read it:**
+      * Variables with **longer bars** contribute more to the variance captured by the selected dimensions. These are the most influential variables for the overall structure seen in the PCA plot (like the Individuals plot).
+      * The **dashed red line** often indicates the expected average contribution level if all variables contributed equally. Variables extending beyond this line contribute more than average.
+    * **Use:** Quickly identify the most important variables driving the separation or patterns observed in your main PCA plots (e.g., PC1 vs PC2).
 
-<figure><img src="../../../.gitbook/assets/Contribution of variables to PCs_Bar plot.png" alt="" width="375"><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/Contribution of variables to PCs_Bar plot.png" alt="" width="375"><figcaption><p>Bar plot showing top contributing variables to selected dimensions</p></figcaption></figure>
+3.  **Correlation Circle (Colored by Contribution):**
 
-#### Correlation circle
+    * **What it shows:** This is the same Variables Plot (Correlation Circle) as described before, but here the arrows representing variables are colored based on their **contribution** level (summed across the displayed PCs).
+    * **How to read it:**
+      * Warmer colors (like red/orange) typically indicate higher contributing variables.
+      * Cooler colors (like blue/green) indicate lower contributing variables.
+      * Interpret the direction and length of arrows as described previously (correlation with PCs, relationship between variables, quality of representation). The color adds information specifically about influence.
+    * **Use:** Visualize the relationships _and_ the importance (contribution) of variables simultaneously.
 
-Provides a correlation circle for all variables with coloring based on the variance contribution for each variable. Learn more about correlation circles on the [PCA Analysis](../pca-analysis.md) page.
+    <figure><img src="../../../.gitbook/assets/Contribution of variables to PCs_Correlation circle.png" alt="" width="375"><figcaption><p>Correlation circle colored by contribution</p></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/Contribution of variables to PCs_Correlation circle.png" alt="" width="375"><figcaption></figcaption></figure>
+#### 4. Dimension Description (Terminal Output)
 
-#### Dimension description
-
-A terminal output for all quantitative variables that gives the correlation value and its associated p-value for principal component one.
+* **What it shows:** Provides a text-based output, often focusing on **Principal Component 1 (Dim.1)**. For quantitative variables, it typically lists the correlation coefficient between each variable and PC1, along with the associated p-value for that correlation.
+* **Use:** Get precise numerical values and statistical significance for the relationship between each variable and the primary axis of variation (PC1). This can supplement the visual interpretations from the plots.
 {% endtab %}
 {% endtabs %}

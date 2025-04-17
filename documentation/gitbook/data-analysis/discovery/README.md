@@ -4,87 +4,139 @@ icon: chart-scatter-bubble
 
 # Discovery
 
-The **Discovery** section provides tools for visualizing, clustering and exploring complex datasets. Use it to uncover patterns and relationships in biological data. The Discovery section is divided into six tabs, each focusing on a specific type of analysis.
+The **Discovery** section provides tools for visualizing, clustering and exploring datasets. The Discovery section is divided into six tabs, each focusing on a specific type of analysis.
 
 {% tabs %}
 {% tab title="Overview" %}
-[**Data Overview**](data-overview.md) tab is offering a summary of your dataset and an initial look at data distributions.&#x20;
+### Data Overview
 
-* **Table Plot**: Aggregates and visualizes the distribution patterns of multiple variables in a single figure, making it easier to spot overarching trends.
-* **Distribution Plot**: Provides frequency and spread visuals for individual variables, which is useful for checking data ranges and identifying outliers.
+Use the **Data Overview** tab to get a quick summary of your dataset and explore initial data distributions.
+
+#### Available Plots
+
+* **Table Plot:** Visualize distribution patterns for multiple variables together in a single figure. This helps you spot broader trends across your data.
+* **Distribution Plot:** Examine the frequency and spread for individual variables. Use this to check data ranges and identify potential outliers.
 
 #### Settings
 
-* **Column Selection**: Choose which variables (columns) to include or exclude from visualizations, allowing you to focus on specific aspects of your data.
-* **Preprocessing**: Simple options for preprocessing, such as normalization or handling missing values, to improve the accuracy of subsequent analyses.
-* **Theme Settings**: Customize the look and feel of the visualizations to make patterns and trends more visually distinct.
+Customize your overview using these options:
+
+* **Column Selection:** Choose which variables (columns) you want to include or exclude from the plots. This lets you focus on specific parts of your data.
+* **Preprocessing:** Apply simple preprocessing steps directly within the tab, such as normalization or handling missing values, before generating visualizations.
+* **Theme Settings:** Change the visual appearance (like colors and styles) of your plots to make patterns easier to see.
 {% endtab %}
 
 {% tab title="Correlation" %}
-[**Correlation** ](correlation.md)tab helps you understand relationships between different variables in your dataset.
+### Correlation
 
-* **Correlation Circle**: Shows correlations among variables in a circular format, allowing quick identification of strong positive or negative relationships.
-* **Correlation Plot**: Displays a classic heatmap-style matrix, where darker shades represent stronger correlations.
-* **Clustered Correlation Plot**: Groups similar variables, making it easy to identify clusters of related biomarkers or genes.
+Use the **Correlation** tab to find relationships between different variables in your dataset.
+
+#### Available Plots
+
+* **Correlation Circle:** Visualize correlations in a circular layout. Quickly spot strong positive or negative relationships between variables.
+* **Correlation Plot:** Show correlations using a standard heatmap matrix. Colors indicate the strength and direction of the correlation.
+* **Clustered Correlation Plot:** Group variables with similar correlation patterns together. This helps identify clusters of related features (like biomarkers or genes).
 
 #### Settings
 
-* **Preprocessing**: Options for handling missing data or normalizing variables, which can improve the quality of correlation analysis.
-* **Correlation Settings**: Configure plot type (circle, heatmap), NA handling, and reordering based on correlation strength.
-* **Significance Threshold**: Set a threshold to highlight only statistically significant correlations, helping to focus on biologically relevant relationships.
+Adjust how correlations are calculated and displayed:
+
+* **Preprocessing:** Apply simple data cleaning steps like handling missing values (NAs) or normalizing data before calculating correlations.
+* **Correlation Settings:**
+  * Choose the plot type (Circle, Heatmap, Clustered Heatmap).
+  * Select how to handle missing values during calculation.
+  * Reorder variables based on correlation strength or clustering.
+* **Significance Threshold:** Set a p-value threshold (e.g., 0.05) to only show statistically significant correlations in the plots. This helps you focus on meaningful relationships.
 {% endtab %}
 
 {% tab title="Clustering" %}
-[**Hierarchical Clustering**](hierarchical-clustering.md) tab organizes data into clusters based on similarity.
+### Hierarchical Clustering
 
-* **Dendrogram**: A tree-like structure showing how different data points are grouped at various levels, revealing hierarchical relationships.
-* **Heatmap**: Provides a color-coded intensity map of data distributions across clusters, allowing for visual comparison of clustered groups.
+Use the **Hierarchical Clustering** tab to group your data points (like samples or genes) based on their similarity.
+
+#### Available Plots
+
+* **Dendrogram:** View a tree diagram that shows how data points are merged into clusters. This helps you understand the hierarchy and relationships within your data.
+* **Heatmap:** See a color-coded grid of your data, often displayed alongside the dendrogram. Rows and columns are reordered based on the clustering, making it easy to visually compare patterns within and between clusters.
 
 #### Settings
 
-* **Clustering Settings**: Adjust the clustering algorithm, distance metric, and linkage method to refine cluster formation.
-* **Display Options**: Customize the appearance of the heatmap and dendrogram for clear interpretation of clustering results.
+Configure the clustering process and visualization:
+
+* **Clustering Settings:**
+  * Choose the distance metric (e.g., Euclidean, Manhattan) to define how similarity between data points is measured.
+  * Select the linkage method (e.g., Ward, Complete, Average) to determine how clusters are merged.
+* **Display Options:** Customize the appearance of the dendrogram and heatmap (like colors, labels, orientation) for better readability and interpretation.
 {% endtab %}
 
 {% tab title="PCA" %}
-[**PCA Analysis**](pca-analysis.md) (Principal Component Analysis) reduces the complexity of high-dimensional data, highlighting the main components that contribute to variance in your dataset. PCA is particularly valuable for identifying key factors that differentiate cell types or experimental conditions.
+### PCA Analysis
 
-* **Eigenvalues/Variances**: Displays the amount of variance each principal component explains, guiding you to the most informative components.
-* **Variables and Individuals Plots**: Show the relationships among variables and individual data points in the principal component space.
+Use **Principal Component Analysis (PCA)** to simplify high-dimensional data. PCA finds the main sources of variation (principal components) in your dataset, making it easier to see patterns and differences, for example, between cell types or experimental conditions.
+
+#### Available Plots
+
+* **Eigenvalues/Variances Plot (Scree Plot):** Shows how much variance each principal component captures. Use this to decide how many components are important to look at.
+* **Variables Plot (Correlation Circle):** Visualizes how the original variables contribute to the principal components. Helps identify which variables drive the separation you see.
+* **Individuals Plot (Scatter Plot):** Shows where your individual samples or data points fall in the reduced principal component space. Useful for spotting clusters or outliers based on the main variance components.
 
 #### Settings
 
-* **Column Selection**: Select specific columns (variables) to include in PCA, focusing on those most relevant to your research.
-* **Preprocessing Options**: Preprocess data to improve consistency in PCA results.
-* **PCA Settings**: Choose the number of components to extract, balancing detail and interpretability.
-* **Display Options**: Customize plots to suit analysis needs, making results more intuitive.
+Configure the PCA calculation and output:
+
+* **Column Selection:** Choose which variables (columns) to include in the PCA. Focus the analysis on relevant features.
+* **Preprocessing Options:** Apply standard preprocessing steps like scaling (standardizing) variables before PCA. This is often recommended to prevent variables with large values from dominating the analysis.
+* **PCA Settings:** Specify the number of principal components to calculate and display.
+* **Display Options:** Customize the appearance of the PCA plots (like point colors, labels) for clearer results.
 {% endtab %}
 
 {% tab title="t-SNE" %}
-[**t-SNE Analysis**](t-sne-analysis/) (t-distributed Stochastic Neighbor Embedding) is a technique for reducing dimensionality and visualizing high-dimensional data in a two-dimensional plot. This is particularly useful for visualizing clusters in complex data, like single-cell RNA sequencing results.
+### t-SNE Analysis
 
-* **t-SNE Plot**: Reduces data to two dimensions and groups similar data points together, often forming clusters representing cell types or conditions.
-* **Clustered t-SNE Analysis**: Applies clustering to the t-SNE plot, helping to identify and label clusters directly on the plot.
+Use **t-distributed Stochastic Neighbor Embedding (t-SNE)** to visualize high-dimensional data in a low-dimensional space (usually 2D). t-SNE is great for revealing underlying clusters or groups within complex datasets, such as identifying cell populations in single-cell RNA-seq data.
+
+#### Available Plots
+
+* **t-SNE Plot:** Displays your data points in two dimensions. Points that are similar in the original high-dimensional space will tend to group together in the t-SNE plot.
+* **Clustered t-SNE Plot:** Runs a clustering algorithm (like k-means or DBSCAN) on the 2D t-SNE coordinates and colors the points according to their assigned cluster. This helps automatically identify and label groups directly on the visualization.
 
 #### Settings
 
-* **t-SNE Settings**: Customize parameters like perplexity and number of iterations for optimal visualization of clusters.
-* **Cluster Settings**: Choose clustering algorithms and methods, configure the number of clusters, and set outlier detection.
-* **Theme Settings**: Customize colors and plot styles for clear visual separation between clusters, aiding in pattern recognition.
+Fine-tune the t-SNE algorithm and the resulting visualization:
+
+* **t-SNE Settings:**
+  * **Perplexity:** Adjust this parameter (related to the number of nearest neighbors considered for each point) to control the balance between local and global aspects of your data. Typical values are between 5 and 50.
+  * **Iterations:** Set the number of iterations for the optimization process. More iterations can lead to a more stable layout but take longer.
+  * Other parameters like learning rate (`eta`) might also be available.
+* **Cluster Settings (for Clustered t-SNE):**
+  * Choose a clustering algorithm (e.g., k-means, DBSCAN).
+  * Configure algorithm-specific parameters (like the number of clusters `k` for k-means, or `eps` and `minPts` for DBSCAN).
+  * Optionally enable outlier detection if supported by the chosen algorithm.
+* **Theme Settings:** Customize plot aesthetics like point colors, sizes, and labels to make the clusters visually distinct and easier to interpret.
 {% endtab %}
 
 {% tab title="UMAP" %}
-[**UMAP Analysis**](umap.md) (Uniform Manifold Approximation and Projection) is another dimensionality reduction technique. It is designed to preserve more of the global structure in the data than t-SNE, making it useful for datasets where maintaining overall data structure is important.
+### UMAP Analysis
 
-* **UMAP Visualization**: Creates a two-dimensional representation where similar data points are closer together, helping to identify meaningful groups.
-* **Training and Testing Splits**: Supports supervised UMAP, allowing you to partition data into training and testing sets for predictive analysis.
+Use **Uniform Manifold Approximation and Projection (UMAP)** for dimensionality reduction and visualization. Like t-SNE, it helps visualize high-dimensional data in 2D, but UMAP often preserves more of the data's global structure. This is useful for understanding the overall relationships between groups in your data.
+
+#### Key Features
+
+* **UMAP Visualization:** Generates a 2D plot where similar data points are placed close together, revealing potential clusters and relationships.
+* **Supervised UMAP:** You can provide known labels (like experimental conditions or cell types) to guide the UMAP projection, potentially improving separation between known groups. This often involves splitting data into training and testing sets.
 
 #### Settings
 
-* **Column Selection**: Specify which variables to include in the UMAP calculations.
-* **Grouping Variable**: Select a categorical variable to group data points in the UMAP plot, which will be excluded from UMAP analysis itself.
-* **Preprocess and Remove NA**: Options for handling missing values to ensure data consistency.
-* **Partition Split**: Set a training/testing split for supervised analysis, allowing UMAP to learn group distinctions.
-* **Theme and Style Customization**: Adjust themes, colors, font sizes, and aspect ratios for visually distinct plots that aid in biological interpretation.
+Configure the UMAP analysis and visualization:
+
+* **Column Selection:** Choose which variables (columns) to use for calculating the UMAP embedding.
+* **Grouping Variable:** Select a categorical variable (e.g., 'treatment', 'cell\_type') to color the points in the UMAP plot. **Note:** This variable is used only for visualization _after_ UMAP is calculated; it does not influence the dimensionality reduction unless used in Supervised UMAP.
+* **Preprocessing:**
+  * **Remove NA:** Handle missing values before running UMAP.
+  * (Optional) Scaling/Normalization might be available depending on the implementation.
+* **UMAP Parameters:**
+  * Adjust parameters like `n_neighbors` (number of neighbors to consider, affects local vs. global balance) and `min_dist` (minimum distance between points, controls cluster density). Experimenting with these is key to getting a good visualization.
+* **Partition Split (for Supervised UMAP):** If using supervised UMAP, set the proportion of data to use for training vs. testing. UMAP learns the structure based on the labels in the training set.
+* **Theme and Style Customization:** Change colors, point sizes, font sizes, and plot aspect ratios to create clear and interpretable visualizations.
 {% endtab %}
 {% endtabs %}

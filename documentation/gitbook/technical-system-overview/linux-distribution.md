@@ -4,15 +4,17 @@ icon: linux
 
 # Linux Distribution
 
-**Custom Linux Environment**
+PANDORA runs inside a specific, controlled environment to ensure consistent behavior and manage dependencies across different systems and versions.
 
-To guarantee consistent behavior and dependency management across different deployments and versions, PANDORA operates within a custom Debian-based Linux environment.
+#### Build Process
 
-**Image Build Pipeline:**\
-We utilize a specific build pipeline, defined in the make\_image.sh script, to create this custom environment. The primary advantage of this approach is precise control over the operating system and all installed software packages, ensuring every PANDORA instance runs with the exact same dependencies.
+* **Environment:** We use a custom Debian-based Linux environment.
+* **Pipeline:** This environment is created using a dedicated build pipeline, defined in the `make_image.sh` script. This gives us precise control over the operating system and all installed software packages.
+* **Consistency:** This approach guarantees that every PANDORA instance runs with the exact same dependencies.
+* **PANDORA Pre-installation:** The PANDORA application itself is pre-installed into the environment during the image build process.
 
-**PANDORA Pre-installation:**\
-During the image build process, the PANDORA application itself is pre-installed into the environment.
+#### Base Docker Image
 
-**Base Docker Image:**\
-The final output of this pipeline is a base Docker image containing the customized OS and the pre-installed PANDORA software. This base image is published on Docker Hub and acts as the core component upon which final PANDORA releases are built.
+* The final output of the build pipeline is a **base Docker image**. This image contains the customized OS and the pre-installed PANDORA software.
+* This base image is published on Docker Hub.
+* It serves as the core component upon which final PANDORA releases are built.

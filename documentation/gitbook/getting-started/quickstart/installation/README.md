@@ -15,8 +15,8 @@ icon: laptop
     * **Operating System**: Windows, Linux, or MacOS.
     * **Docker Version**: Ensure you have Docker [version 17.05 or later](https://docs.docker.com/engine/installation/).
 2. **Install Docker**:
-   * Download Docker from [docker.com](https://www.docker.com/) and follow their easy installation instructions.
-   * If you’re unsure, you can follow these [detailed steps](https://docs.docker.com/get-docker/) on Docker’s site.
+   * Download Docker from [docker.com](https://www.docker.com/) and follow their installation instructions.
+   * You can find [detailed installation steps](https://docs.docker.com/get-docker/) on Docker  website.
    * Make sure Docker is [properly configured](docker-configuration.md).
 {% endtab %}
 
@@ -26,7 +26,7 @@ icon: laptop
    * On MacOS or Linux, open the **Terminal** app.
 2.  **Run Installation Command**:
 
-    * Copy the command below and paste it into your terminal, then press **Enter**. This command will install and start PANDORA:
+    * Copy the command below and paste it into your terminal, then press **Enter**. This command will install and start PANDORA Docker container:
 
     {% code overflow="wrap" %}
     ```bash
@@ -34,12 +34,8 @@ icon: laptop
     ```
     {% endcode %}
 3. **Access PANDORA**:
-   * Open your browser and go to [http://localhost:3010](http://localhost:3010) to start using PANDORA.
+   * Open your browser and navigate to [http://localhost:3010](http://localhost:3010)
 4. **Allow Firewall Access** (if prompted):
    * Open your browser and go to [http://localhost:3010](http://localhost:3010) to start using PANDORA.
 {% endtab %}
 {% endtabs %}
-
-
-
-With that, PANDORA is now installed and ready to use!

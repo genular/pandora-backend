@@ -7,7 +7,7 @@ icon: globe
 
 After you installed PANDORA, navigate to:
 
-* [http://localhost:3010](http://localhost:3010) if you used default installation commands
+* [http://localhost:3010](http://localhost:3010) if you used _default_ installation commands
 
 It could take up to **1 minute** for system to boot-up on first run.
 

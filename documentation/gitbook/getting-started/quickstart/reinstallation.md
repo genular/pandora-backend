@@ -51,7 +51,3 @@ icon: laptop
 ### **Step 3: Reinstall PANDORA**
 
 After removing all previous components, follow the [**Installation**](installation/) steps to install a clean version of PANDORA.
-
-***
-
-That’s it! Your PANDORA installation should now be ready for use.
