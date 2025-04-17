@@ -4,8 +4,6 @@ description: Used to examine structure and contents of dataset
 
 # Data Overview
 
-### Overview&#x20;
-
 Use the **Data Overview** tab for an initial look at your dataset. Here you can inspect, filter, preprocess, and visualize specific columns before starting more complex analyses.
 
 <figure><img src="../../.gitbook/assets/discovery-data-overview-tabls-plot.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>

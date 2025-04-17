@@ -4,8 +4,6 @@ description: Allows users to perform hierarchical clustering on a dataset.
 
 # Hierarchical Clustering
 
-### Overview
-
 Use the **Hierarchical Clustering** tab to group similar rows (e.g., samples, observations) and columns (e.g., genes, variables) in your data based on their values. This method creates a hierarchy of clusters, often visualized as a tree structure (dendrogram) alongside a heatmap.
 
 <figure><img src="../../.gitbook/assets/Discovery_Clustering_Main-min-annotate.png" alt=""><figcaption></figcaption></figure>

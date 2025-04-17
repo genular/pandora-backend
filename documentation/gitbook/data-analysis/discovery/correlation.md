@@ -4,8 +4,6 @@ description: Enables users to analyze correlations between variables within a da
 
 # Correlation
 
-### Overview&#x20;
-
 Use the **Correlation** tab to explore relationships between variables in your dataset. PANDORA creates correlograms (correlation plots) that help you visualize these connections.
 
 You can easily see the strength and direction (positive or negative) of correlations between variables. Additionally, you can check the statistical significance (p-values) of these relationships to understand how reliable they are.
