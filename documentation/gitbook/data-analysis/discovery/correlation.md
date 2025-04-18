@@ -63,7 +63,7 @@ The main output of the **Correlation** tab is a correlogram, which visually repr
 
 <figure><img src="../../.gitbook/assets/Correlation_corr_matrix_correlogram.png" alt=""><figcaption><p>This plot shows correlations between a small number of variables. You can easily see strong positive correlations (large dark red circles) between max_hai_responder and max_iga_responder, and weaker negative correlations (small light blue circles) like between max_hai_responder and h3_v0_seropositive.</p></figcaption></figure>
 
-**Example 2: Few Variables**
+**Example 2: Many Variables**
 
 <figure><img src="../../.gitbook/assets/Correlation_corr_matrix_largedataset.png" alt=""><figcaption><p>PANDORA's correlogram scales effectively even for datasets with many variables. This example reveals distinct blocks of highly correlated variables (clusters of dark red circles), which might indicate groups of related genes or biomarkers. You can also see areas with little correlation (very small, pale circles).</p></figcaption></figure>
 {% endtab %}
