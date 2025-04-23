@@ -8,7 +8,7 @@ description: >-
 
 This sub-tab within the **PCA Analysis** results panel shows outputs from two statistical tests that help assess if your data is suitable for Principal Component Analysis.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA_Bartletts Sphericity_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="Bartlett's Test of Sphericity" %}

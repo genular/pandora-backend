@@ -8,7 +8,7 @@ description: >-
 
 This sub-tab shows the importance of each principal component (PC) calculated during the PCA. It helps you decide how many components are needed to capture most of the information (variance) in your original dataset.
 
-<figure><img src="../../../.gitbook/assets/PCA_Eigenvalues_Medres-annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA_Eigenvalues_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 
 **Eigenvalue:** A measure of the amount of variance explained by each principal component. Higher eigenvalues correspond to components that capture more variance. By definition, PCs are ordered from highest eigenvalue to lowest.
 

@@ -6,7 +6,7 @@ description: Helping users assess differences between clusters in their t-SNE an
 
 This tab helps you understand the biological meaning behind the clusters identified in the **Clustered t-SNE Analysis** tab. It relates the cluster assignments back to the original high-dimensional feature data (e.g., gene expression levels, protein abundances).
 
-<figure><img src="../../../.gitbook/assets/tSNE_Dataset Analysis_Highres-min_annotated.png" alt=""><figcaption><p>Dataset Analysis tab showing a heatmap of features per cluster</p></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/tSNE_Dataset Analysis_annotated_v2.png" alt=""><figcaption><p>Dataset Analysis tab showing a heatmap of features per cluster</p></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Analysis Graph" %}

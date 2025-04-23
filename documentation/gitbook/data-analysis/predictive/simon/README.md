@@ -15,6 +15,8 @@ The **Predictive - Start** tab in SIMON offers a simple way to set up and run pr
 
 {% tabs %}
 {% tab title="1. Analysis Properties" %}
+In the analysis properties section, the user sets up their predictive model based on the dataset and its associated features. Setup options are provied below:
+
 * **Classification / Regression / Time Series**: Choose the type of analysis you want to perform. Only available options are displayed based on your dataset and selected variables.
 * **Predictor Variables**: Select the independent variables (predictors) for the model. Enable the switch to select all columns, or specify individual columns by typing their names.
 * **Response**: Define the dependent variable (response) that the model will predict or classify.
@@ -26,6 +28,8 @@ The **Predictive - Start** tab in SIMON offers a simple way to set up and run pr
 {% endtab %}
 
 {% tab title="2. Model Selection and Customization" %}
+In the model selection and customization section, the user can select the predictive models to build for their dataset. Users can either select specific packages to run, or can filter and select all packages of a specific category.
+
 * **Available Packages**: Choose from a variety of machine learning models available in SIMON. Each model displays its name, type (classification, regression, etc.), and key characteristics.
   * **AdaBoost.M1**: An example of a model available under **Boosted Classification Trees**, with tags like Tree-Based Model, Ensemble Model, Boosting, and more.
 * **Model Filtering**: Filter models by type or features to narrow down the list of packages.
@@ -33,8 +37,10 @@ The **Predictive - Start** tab in SIMON offers a simple way to set up and run pr
 {% endtab %}
 
 {% tab title="3. Advanced options" %}
-* **Multi-Set Intersection**: Enable this option to intersect multiple sets in a Venn-like manner, useful for combining features from different models.
-* **Feature Selection**: Enable feature selection to automatically reduce dimensionality and retain only the most relevant features for the model.
+SIMON offers advanced functionalities to streamline model development and optimization.
+
+* [**Multi-Set Intersection**](multiset-intersection.md): Enable this option to intersect multiple sets in a Venn-like manner, useful for combining features from different models.
+* [**Feature Selection**](feature-selection.md): Enable feature selection to automatically reduce dimensionality and retain only the most relevant features for the model.
 * **Timeout**: Set a timeout (in minutes) to limit the execution time for model training, preventing lengthy computations.
 {% endtab %}
 {% endtabs %}

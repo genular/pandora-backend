@@ -8,7 +8,7 @@ description: Enables users to analyze feature importance in machine learning mod
 
 The **Variable Importance** tab in PANDORA provides robust tools to investigate the contribution of predictor variables to the variance of the predictive models. Users can seamlessly select variables with the filter settings, visualize feature values across outcomes in the dataset, and identify top features through an interactive bar plot.
 
-<figure><img src="../../../.gitbook/assets/Exploration_Variable Importance_Highres_annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Exploration_Variable Importance_Main_v2-min.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Feature Filtering" %}
@@ -27,7 +27,7 @@ The plot display can be customized; see the [side panel options](../../discovery
 
 The dot plots can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
 
-<figure><img src="../../../.gitbook/assets/Varaible importance_Features across dataset plots.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Varaible importance_Features across dataset plots_v3.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="3. Variable Importance" %}
@@ -35,6 +35,6 @@ This **Variable importance** sub-tab provides a bar plot showing feature importa
 
 This bar plot can be right-clicked and saved as a PNG in PANDORA.
 
-<figure><img src="../../../.gitbook/assets/Varaible importance_Bar plot.png" alt="" width="375"><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Varaible importance_Bar plot_whitebackground.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}

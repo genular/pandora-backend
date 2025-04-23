@@ -8,7 +8,7 @@ description: >-
 
 This tab displays the core t-SNE visualization results. You'll find the main t-SNE plot along with additional versions if you specified **Grouping** or **Coloring** variables during setup. These plots help you visualize potential clusters and see how known sample characteristics map onto the t-SNE embedding.
 
-<figure><img src="../../../.gitbook/assets/tSNE_tSNE Plots_highres-min_annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/tSNE_tSNE Plots_annotated_V2.png" alt=""><figcaption></figcaption></figure>
 
 Available Plots in this Tab
 

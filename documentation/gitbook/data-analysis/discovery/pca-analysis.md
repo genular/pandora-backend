@@ -17,7 +17,7 @@ Use the **PCA Analysis** tab to perform Principal Component Analysis (PCA). This
 
 This tab provides tools to calculate principal components and visualize the results through various plots like scree plots, variable contribution plots, and sample scatter plots.
 
-<figure><img src="../../.gitbook/assets/PCA_main_Highres_annotated-min.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Discovery_PCA_main_annotated_v2.png" alt=""><figcaption><p>Main overview</p></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. PCA Setup" %}

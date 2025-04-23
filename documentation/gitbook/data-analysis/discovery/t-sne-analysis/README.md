@@ -17,7 +17,7 @@ Keep in mind:
 * t-SNE is primarily for **visualization**, not necessarily for preserving global distances accurately. The distances _between_ clusters in a t-SNE plot might not be meaningful.
 * The resulting plot can depend heavily on the chosen parameters (like perplexity).
 
-<figure><img src="../../../.gitbook/assets/tSNE_Main_min_annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/Discovery_tSNE_Main_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. t-SNE Setup" %}

@@ -8,7 +8,7 @@ description: >-
 
 This sub-tab focuses on the **results for the individual samples (observations, rows) in your dataset** within the principal component analysis. It helps you visualize how your samples are positioned in the reduced PCA space and understand their relationships based on the principal components.
 
-<figure><img src="../../../.gitbook/assets/PCA_Individuals_Annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA_Individuals_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Correlation circle(s)" %}

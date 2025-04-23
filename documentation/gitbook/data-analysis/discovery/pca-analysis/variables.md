@@ -8,7 +8,7 @@ description: >-
 
 This sub-tab focuses on the **relationship between your original variables (columns) and the principal components (PCs)** that were calculated. It helps you understand which variables drive the variance captured by each PC and how well the variables are represented in the reduced PCA space.
 
-<figure><img src="../../../.gitbook/assets/PCA_Variables_Notated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/PCA_Variables_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1. Correlation circle(s)" %}

@@ -8,7 +8,7 @@ description: >-
 
 This tab displays the t-SNE plot after applying a clustering algorithm (selected in the setup, e.g., Louvain) to the 2D t-SNE coordinates. This helps to automatically identify and label distinct groups within the visualization.
 
-<figure><img src="../../../.gitbook/assets/tSNE_Clustered tSNE_Highres-min_annotated.png" alt=""><figcaption><p>Screenshot of the Clustered t-SNE Analysis tab showing colored clusters</p></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/tSNE_Clustered tSNE_annotated_v2.png" alt=""><figcaption><p>Screenshot of the Clustered t-SNE Analysis tab showing colored clusters</p></figcaption></figure>
 
 #### What it Shows
 
