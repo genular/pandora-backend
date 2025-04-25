@@ -12,9 +12,7 @@ Use the **Data Overview** tab for an initial look at your dataset. Here you can 
 {% tab title="Table Plot" %}
 This plot visualizes the data in a tabular format, allowing users to examine aggregated distribution patterns across multiple variables.
 
-
-
-<figure><img src="../../.gitbook/assets/DataOverview_Table_plot.png" alt=""><figcaption><p><strong>Table Plot</strong></p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption><p>Table plot illustrating the distribution patterns across the foldchange data of the hemagglutination inhibition assay (HAI) performed with various influenza virus strains </p></figcaption></figure>
 {% endtab %}
 
 {% tab title="Distribution Plot" %}
