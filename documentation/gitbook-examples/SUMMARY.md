@@ -7,4 +7,5 @@
 
 ## Example 2: SARS-CoV-2 infection
 
-* [Page 1](example-2-sars-cov-2-infection/page-1.md)
+* [Intro](example-2-sars-cov-2-infection/intro.md)
+* [Dataset Description](example-2-sars-cov-2-infection/dataset-description.md)
