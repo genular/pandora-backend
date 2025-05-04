@@ -3,7 +3,8 @@
 ## Example 1: Flu Fighters
 
 * [Intro](README.md)
-* [Dataset Description](example-1-flu-fighters/dataset-description.md)
+* [Dataset Description](example-1-flu-fighters/dataset-description/README.md)
+  * [Variable Legend](example-1-flu-fighters/dataset-description/variable-legend.md)
 
 ***
 

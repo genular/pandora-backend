@@ -1,6 +1,6 @@
 # Phase 1: Data Configuration
 
-In this phase of the workflow, you will upload the dataset downloaded in the intro, and inspect the dataset for use in the analysis.
+In this phase of the workflow, you will upload the dataset downloaded in the [intro,](../) and inspect the dataset for use in the analysis.
 
 ### Purpose
 
