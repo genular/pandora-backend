@@ -10,24 +10,6 @@ These variables comprise demographic characteristics (e.g., age, sex, ethnicity)
 
 <details>
 
-<summary><strong>🧑‍🔬 Demographics</strong></summary>
-
-
-
-* `subid1`: Unique participant ID.
-
-- `sex` (🔵/🔴): Biological sex (`M` or `F`).
-
-* `age_months`: Age of the participant in months.
-
-- `z_score_continuous`: Weight-for-height Z-score (nutritional status).
-
-* `year`: Year of sample collection (2017 or 2018).
-
-</details>
-
-<details>
-
 <summary><strong>🧬 Baseline Immune Features</strong></summary>
 
 
@@ -49,6 +31,8 @@ These variables comprise demographic characteristics (e.g., age, sex, ethnicity)
 - **Viral and Bacterial Load**:
   * `v0_resp_virus_positive`: Presence of 14 different respiratory viruses (flu, adenoviruses, rhinoviruses, coronaviruses, etc.) detected via RT-PCR at baseline.
   * `v0_pneumo_ng_log10copies_ul`: Nasal _Streptococcus pneumoniae_ density (log10 copies per µL).
+- **Nutrition Status:**
+  * `z_score_continuous`: Weight-for-height Z-score (nutritional status).
 
 </details>
 

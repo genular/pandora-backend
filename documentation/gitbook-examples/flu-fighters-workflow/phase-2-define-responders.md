@@ -14,7 +14,10 @@ purpose
 
 #### Cluster Individuals Based on Immune Response
 
-1. steps
+1. Go to **Discovery** -> **t-SNE Analysis**
+2. Expand Column Selection
+   * Select all `*fold_change` variables
+   *
 
 #### Visualize Response Clusters
 
