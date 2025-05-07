@@ -2,17 +2,18 @@
 description: >-
   In this phase of the workflow, you will upload the dataset downloaded in the
   intro, and inspect the dataset for use in the analysis.
+icon: sliders
 ---
 
 # Phase 1: Data Configuration
 
-### Purpose:
+### Purpose
 
 Perform an initial exploratory data analysis on the `flu_fighters.csv` dataset, including data upload, inspection of missing values, visualization of variable distributions, and identification of key correlations to guide further analysis.
 
 ***
 
-### Action:
+### Action
 
 {% stepper %}
 {% step %}
