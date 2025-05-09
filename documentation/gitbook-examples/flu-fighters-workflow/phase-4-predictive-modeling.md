@@ -12,7 +12,7 @@ Prepare your dataset for predictive analysis by removing outcome variables that 
 
 ***
 
-### Action:
+### Action
 
 {% stepper %}
 {% step %}
