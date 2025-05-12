@@ -143,3 +143,8 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 
 </details>
 
+***
+
+### Summary
+
+You’ve now defined the responder variable, which classifies individuals based on immune response. This classification will guide the predictive models developed later.
