@@ -1,7 +1,5 @@
 # Dataset Description
 
-### Categorical&#x20;
-
 <details>
 
 <summary>Timepoint</summary>
@@ -205,5 +203,23 @@
 **Description**
 
 * These variables are the measurement of T cell (specifically CD4 and CD8 T cells) proliferative responses against various SARS-CoV-2 proteins&#x20;
+
+</details>
+
+<details>
+
+<summary>Responder </summary>
+
+**Variables**&#x20;
+
+* `Responder`&#x20;
+
+**Description**
+
+* This variable refers to the outcome of immune response durability. A donor is assigned a status of `low` or `high` responder&#x20;
+* Responder status was calculated based on the titer of the anti-nucleocapsid-specific antibodies measured 6 months post symptoms onset.
+* anti-N Ab titer ≥ 1.4 = High responder (seropositive). Low responders were donors who were seronegative&#x20;
+
+
 
 </details>
