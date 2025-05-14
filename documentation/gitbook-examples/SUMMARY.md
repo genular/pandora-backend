@@ -18,10 +18,10 @@
 
 ## Example 2: SARS-CoV-2 infection
 
-* [Introduction](example-2-sars-cov-2-infection/introduction.md)
+* [Introduction](example-2-sars-cov-2-infection/intro.md)
 * [Dataset Description](example-2-sars-cov-2-infection/dataset-description.md)
 * [COVID Pitch Workflow](example-2-sars-cov-2-infection/covid-pitch-workflow/README.md)
-  * [Phase 1: Data Upload and Overview](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-upload-and-overview.md)
+  * [Phase 1: Data Overview](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview.md)
   * [Phase 2: Immune Trajectories & Correlations](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-immune-trajectories-and-correlations.md)
   * [Phase 3: Data Preparation for Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-data-preparation-for-predictive-modelling.md)
   * [Phase 4: Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-predictive-modelling.md)
