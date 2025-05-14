@@ -4,7 +4,7 @@ hidden: true
 
 # Phase 6: Synthesize Findings
 
-### Purpose
+Purpose
 
 Report the best model and its test set performance (e.g., AUC). List the top predictors identified via **Variable Importance**. Describe insights from confounder analysis (Phase 3) and **Model Interpretation** (if applicable). Discuss the biological relevance of the top predictors.
 
@@ -55,9 +55,9 @@ Report the best model and its test set performance (e.g., AUC). List the top pre
 
 <details>
 
-<summary>2 - GO Term Pathway Enrichment Analysis (if applicable)</summary>
+<summary>2 - Analyze GO Terms &#x26; Biological Themes (if applicable)</summary>
 
-Pathway enrichment analysis is performed outside of PANDORA and is a powerful tool to understand the biological themes underlying top predictive GO terms that may be present in your model.
+Pathway enrichment analysis is performed outside of PANDORA and is a powerful tool to understand the biological themes, which are already shown in the top predictive GO terms that may be present in your model.&#x20;
 
 * Pathway Enrichment Analysis Tools:
   * clusterProfiler in R
@@ -72,36 +72,42 @@ Pathway enrichment analysis is performed outside of PANDORA and is a powerful to
 
 
 
-Provided below is an example workflow using Metascape:
+GO Terms can be used to identify biological themes using the following workflow:
 
 1. Identify GO terms from your top predictors
    1. Open the Gene Ontology Resource [webpage](https://geneontology.org/)
    2. Search for all your top GO predictive terms in the form GO:#
       1. i.e. `GO:0070206`, `GO:1903214`
-   3.  On the page for the GO terms, download a list of all associated gene names
+   3. Click term history to see ancestor chart, child terms, and co-occurring terms
+   4. Create a list of all biological processes and themes related to your GO Terms
+2. Check the expression levels of baseline terms in responder groups
+   1. Select your predictive processed dataset from the Workspace (This dataset should only contain baseline features and your responder columns)
+   2. Navigate to **Discovery** -> **Start** -> **Hierarchical Clustering**
+   3.  Configure Clustering **Column Selection**
 
-       * Open GO Term page and click download
+       1. Select your Responder column for the **Columns**
+       2. Set **First (n) rows** such that it is larger than the total number of baseline features
 
-       <figure><img src="../.gitbook/assets/FF_Phase 6_Download GO Terms (1).png" alt=""><figcaption></figcaption></figure>
 
-       * Select only bioentity
 
-       ![](<../.gitbook/assets/FF_Phase 6_GO Terms Select Fields.png>)
+       <figure><img src="../.gitbook/assets/FF_Phase 6_Clustering Column Selection.png" alt="" width="375"><figcaption></figcaption></figure>
+   4.  Configure Clustering **Display Options**
 
-       * Click download
-       * Copy and paste terms from report page into a single column in a spreadsheet (continue building this list for all genes in the top GO terms)
+       1. Enable **Grouped display**
+       2. Select the responder column for **Grouped column**
 
-1) Run analysis on metascape.org
-   1. Open metascape.org
-   2. Upload the Excel file containing your list of genes
-   3. Select H. Sapiens as species
-   4. Click Express Analysis
+       <figure><img src="../.gitbook/assets/FF_Phase 6_Clustering Display Options.png" alt="" width="375"><figcaption></figcaption></figure>
+   5. Click **Plot image**
+3.  Analyze the resultant heatmap
 
-<figure><img src="../.gitbook/assets/FF_Phase 6_Metascape Config.png" alt=""><figcaption></figcaption></figure>
+    1. Take note on how the expression of top predictive variables varies among the responder classes.
+    2. With biological themes in mind from both from predictive variables and top GO terms, consider the biological themes among responder classes.
 
-3. View **Analysis Report Page** to identify biological themes among the top GO terms.
 
-<figure><img src="../.gitbook/assets/FF_Phase 6_Metascape Report.png" alt=""><figcaption></figcaption></figure>
+
+    <figure><img src="../.gitbook/assets/Baseline Feature Responder Group Heatmap.png" alt="" width="375"><figcaption></figcaption></figure>
+4. Make plots reflecting biological themes (optional)
+   1. Outside of PANDORA, you may create additional plots, such as radar plots, reflecting the different immune profiles of responder classes based on the baseline or fold change expression levels of features in each class.
 
 </details>
 

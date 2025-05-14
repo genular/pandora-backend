@@ -36,7 +36,7 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 
 1. Compare all t-SNE plots generated to the responder t-SNE plot
    1. Is there an approximately equal distribution of confounding variable values in each responder class?  If not, there may be confounding in your predictive model.
-      1. e.x. Is there an equal distribution of males and females in each responder class
+      1. e.x. Is there an equal distribution of males and females in each responder class?
 
 2)  An example confounding check with the manual HAI Responder group
 
@@ -76,7 +76,7 @@ After generating all these t-SNE plots for the confounder check, it may be a goo
 
 <summary>3 - Additional Analysis</summary>
 
-In some cases, the resulting t-SNE plots for confounding analysis may be unclear, warranting further analysis, as in the example. It can be beneficial to manually check confounding variable distribution for each responder class in these cases.
+In some cases, the resulting t-SNE plots for confounding analysis may be unclear, warranting further analysis, as in the example. It can be beneficial to manually check the confounding variable distribution for each responder class in these cases.
 
 1. Open the dataset with responder columns in Excel
 

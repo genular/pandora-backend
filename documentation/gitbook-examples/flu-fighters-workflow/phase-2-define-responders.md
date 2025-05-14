@@ -85,7 +85,7 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 #### Define Responder Status Rule
 
 1. Define "High Responders" as anyone with `h1_hai_gmt_fold_change` >= 4 **OR** `h3_hai_gmt_fold_change` >= 4
-   1. This rule is based on a commonly accepted threshold in immunology for high responders, based on an antibody titer increase of fourfold or more.
+   1. This rule is based on a commonly accepted threshold in immunology for high responders, based on an antibody titer increase of fourfold or more[<sup>1</sup>](https://www.sciencedirect.com/science/article/pii/S1081120610605728?via%3Dihub).
 
 #### Implement the Rule
 
@@ -94,7 +94,7 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 
 <figure><img src="../.gitbook/assets/FF_Phase2_Dataset_Create ResponderStatus_annotated.png" alt=""><figcaption><p>Create ReponderStatus column in FluFighters.csv dataset using Excel</p></figcaption></figure>
 
-3. Search for variable `h1_hai_gmt_fold_change` in th Excel sheet
+3. Search for variable `h1_hai_gmt_fold_change` in the Excel sheet
 
 <figure><img src="../.gitbook/assets/FF_Phase2_Dataset_Search h1.png" alt=""><figcaption><p>Search for h1_hai_gmt_fold_change in FluFighters.csv datset using Excel</p></figcaption></figure>
 
@@ -137,11 +137,15 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 <figure><img src="../.gitbook/assets/FF_Phase 2_Data Overview_Manual Responder Column Select_cropped.png" alt="" width="375"><figcaption></figcaption></figure>
 
 3. Check the distribution plot to see counts of "High Responder" vs "Low Responder"
-   1. Here we see about an equal proportion of "High Responders" and "Low Responders," indicating suitability for use in further analysis
+   1. Here we see about an equal proportion of "High Responders" and "Low Responders," indicating suitability for use in further analysis.
 
 <figure><img src="../.gitbook/assets/FF_Phase2_Table Plot Manual Responders.png" alt="" width="375"><figcaption></figcaption></figure>
 
 </details>
+
+References
+
+1. Paris, K. & Sorensen, R. U. Assessment and clinical interpretation of polysaccharide antibody responses. Annals of Allergy, Asthma & Immunology 99, 462–464 (2007).
 
 ***
 

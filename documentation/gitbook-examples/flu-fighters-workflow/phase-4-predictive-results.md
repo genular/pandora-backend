@@ -17,7 +17,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <summary>1 - Configure Exploration</summary>
 
 1. Navigate to the **Dashboard** and select your predictive analysis from the queue
-   1. The queue number selected is indicated in the pink box at the top right of the PANDORA interface
+   1. The queue number selected is indicated in the pink box at the top right of the PANDORA interface.
 
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Dashboard_Select Queue.png" alt=""><figcaption></figcaption></figure>
 
@@ -26,7 +26,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Navigate.png" alt=""><figcaption></figcaption></figure>
 
 3. Configure **Exploration** space
-   1. Select all Response outcomes\\
+   1. Select all Response outcomes
    2. Select metrics of interest
    3. Select dataset
    4. Select models to evaluate
@@ -40,8 +40,8 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <summary>2 - Evaluate Model Performance</summary>
 
 1. Compare metrics
-   1. Compare models based on the metrics selected in 3.b that are shown in the table from part 3.d. Special attention can be given to `Predictive AUC` and `Training AUC` scores for each model
-   2. `Predictive AUC` and `Training AUC` should be similar values to assure the model is neither underfit nor overfit
+   1. Compare models based on the metrics selected in 3.b that are shown in the table from part 3.d. Special attention can be given to `Predictive AUC` and `Training AUC` scores for each model.
+   2. `Predictive AUC` and `Training AUC` should be similar values to assure the model is neither underfit nor overfit.
    3. A guide to interpreting AUC values is provided below:
 
 | AUC Value                | Interpretation |
@@ -53,14 +53,14 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 | $$AUC \leq 0.6$$         | Fail           |
 
 2. Select the **ROC Curve Analysis** tab in Exploration
-3. Compare ROC Curves for each model to assess classification performance and identify the best models
+3. Compare ROC Curves for each model to assess classification performance and identify the best models.
 
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_ROC Curves_v2.png" alt=""><figcaption></figcaption></figure>
 
 4. Ensure multiple models are selected, then select the **Training Summary** tab in Exploration
-   1. Compare the metrics shown on the box plots for multiple models
+   1. Compare the metrics shown on the box plots for multiple models.
    2. The **Performance measurements** section can help determine if there are significant differences between model metric values.
-   3. The **Model fitting results summary** provides the five-number summary of each model that is visualized in the box plots
+   3. The **Model fitting results summary** provides the five-number summary of each model that is visualized in the box plots.
 
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Training Summary.png" alt=""><figcaption></figcaption></figure>
 
@@ -70,7 +70,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 
 <summary>3 - Identify Key Predictors</summary>
 
-1. Select the top model and select the **Variable Importance** tab in Exploration
+1. Select the top model and select the **Variable Importance** tab in **Exploration**.
 
 2) While on the Variable Importance tab, locate the **Variable Importance** sub-tab
    1. A bar plot will appear showing the top features and their contributions to model variance
@@ -78,7 +78,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Variable Importance.png" alt=""><figcaption></figcaption></figure>
 
 3. List the top predictors for your model
-   1. In this example, the top predictors, as shown in the bar graph below, are:\\
+   1. In this example, the top predictors, as shown in the bar graph below, are:
       1. `h3_hai_v0_gmt`
       2. `hmnp_v0_cd4_ifng`
       3. `z_score_continuous`
@@ -93,7 +93,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Features Across Dataset Config.png" alt=""><figcaption></figcaption></figure>
 
 6. Examine the **dot plots** to visualize how the top predictive features vary between responder outcomes
-   1. The dot plot below is based on features in the example from part 8
+   1. The dot plot below is based on features from step 3.a
 
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Features Across Dataset Plot.png" alt=""><figcaption></figcaption></figure>
 

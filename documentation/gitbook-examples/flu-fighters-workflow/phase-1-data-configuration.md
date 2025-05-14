@@ -61,9 +61,9 @@ docker run --rm --detach --name genular --tty --interactive --env IS_DOCKER='tru
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Discovery_Data Overview_annotated.png" alt=""><figcaption></figcaption></figure>
 
-5. Select up to 5 variables for inspection.
+5. Select up to 5 variables for inspection
    1. The first variable selected will be set as the sorting variable
-   2. Examine missing values - The number of NAs per feature is provided when selecting your columns, a star next to that number indicates <10% of values are NA for a given feature.
+   2. Examine missing values - The number of NAs per feature is provided when selecting your columns, a star next to that number indicates <10% of values are NA for a given feature
    3. In this example, baseline CD4+ IFN-γ responses to H1 (`h1_v0_cd4_ifng`)is set as the sorting variable and compared to CD4 cytokine fold change variables (`h1_cd4_ifng_fold_change`, `h3_cd4_ifng_fold_change`, `h1_cd4_il2_fold_change`)
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Data Discovery_Column Selection.png" alt="" width="375"><figcaption></figcaption></figure>
@@ -79,9 +79,9 @@ Caution should be taken when using median imputation for features containing mor
 6. Plot image for the selected data
 
 7) Examine the **Distribution Plot**
-   1. This plot provides information about skewness, potential outliers, and correlations between variables
+   1. This plot provides information about skewness, potential outliers, and correlations between variables.
    2. Based on the distribution plot generated in our example below, we see:
-      1. The distribution plot for every selected feature is right-skewed, as shown in the figures along the diagonal.&#x20;
+      1. The distribution plot for every selected feature is right-skewed, as shown in the figures along the diagonal.
       2. There is a significant correlation, as shown in the red boxes, between:
          1. `h1_v0_cd4_ifng` & `h1_cd4_ifng_fold_change`
          2. `h1_cd4_ifng_fold_change` & `h1_cd4_il2_fold_change`
