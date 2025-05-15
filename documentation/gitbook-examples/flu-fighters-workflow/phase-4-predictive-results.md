@@ -40,7 +40,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <summary>2. Evaluate performance of the models</summary>
 
 1. Compare metrics
-   1. Compare models based on the metrics selected in 3.b that are shown in the table from part 3.d. Special attention can be given to `Predictive AUC` and `Training AUC` scores for each model **(Area Under the ROC Curve)**.
+   1. Compare models based on the metrics selected in 3.b that are shown in the table from part 3.d. Special attention can be given to `Predictive AUC` and `Training AUC` scores for each model **(Area Under the ROC Curve)**. More info about metrics [here](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive/exploration#model-metrics).
 
 2) Select the **ROC Curve Analysis** tab in Exploration
 3) Compare ROC Curves for each model to assess classification performance and identify the best models.
