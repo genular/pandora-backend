@@ -2,7 +2,7 @@
 description: Predicting LAIV Response
 ---
 
-# Flu Fighters Workflow
+# Flu Fighters workflow
 
 This example workflow demonstrates the application of PANDORA to investigate predictors of immune response to the Live Attenuated Influenza Vaccine (LAIV), using the "Flu Fighters" dataset. The overarching goal is to identify baseline immune features capable of classifying participants into "high" or "low" vaccine responder categories.
 
@@ -10,7 +10,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="phase-1-data-configuration.md">Phase 1: data configuration &#x26; initial inspection</a></summary>
+<summary><a href="phase-1-data-import.md">Phase 1: data configuration &#x26; initial inspection</a></summary>
 
 Prepare the dataset for analysis by uploading it into PANDORA, examining its structure, identifying missing data patterns, and visualizing initial variable distributions and correlations.
 

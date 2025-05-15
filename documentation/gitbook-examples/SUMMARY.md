@@ -9,7 +9,7 @@
 ***
 
 * [Flu Fighters workflow](flu-fighters-workflow/README.md)
-  * [Phase 1: data configuration](flu-fighters-workflow/phase-1-data-configuration.md)
+  * [Phase 1: data import](flu-fighters-workflow/phase-1-data-import.md)
   * [Phase 2: define responders](flu-fighters-workflow/phase-2-define-responders.md)
   * [Phase 3: confounding check](flu-fighters-workflow/phase-3-confounding-check/README.md)
     * [Importance of confounding checks](flu-fighters-workflow/phase-3-confounding-check/importance-of-confounding-checks.md)
