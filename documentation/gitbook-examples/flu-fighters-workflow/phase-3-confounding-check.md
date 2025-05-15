@@ -4,13 +4,7 @@ hidden: true
 
 # Phase 3: Confounding Check
 
-### Purpose
-
 Assess whether confounding variables, such as age, sex, or batch year, are evenly distributed across responder classifications. Identifying confounding ensures that any patterns in your predictive models are biologically meaningful rather than products of biased group composition.
-
-***
-
-### Action
 
 <details>
 
@@ -85,9 +79,5 @@ In some cases, the resulting t-SNE plots for confounding analysis may be unclear
 <figure><img src="../.gitbook/assets/HAI Responder_Sex and year confound.png" alt=""><figcaption></figcaption></figure>
 
 </details>
-
-***
-
-### Summary
 
 You’ve examined the distribution of key demographic variables across responder classes to detect possible confounding. If distributions appear balanced, you can proceed confidently; if not, consider addressing the imbalance before continuing with predictive modeling.

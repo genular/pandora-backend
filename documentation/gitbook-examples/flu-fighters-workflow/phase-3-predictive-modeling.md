@@ -7,17 +7,11 @@ icon: eye
 
 # Phase 3: Predictive Modeling
 
-### Purpose
-
 Prepare your dataset for predictive analysis by removing outcome variables that could bias results, ensuring that only baseline predictor variables remain. Then, configure and run predictive models in PANDORA using the cleaned dataset.
-
-***
-
-### Action
 
 <details>
 
-<summary>1 - Process Predictive Dataset</summary>
+<summary>1. Process dataset</summary>
 
 To ensure unbiased predictions, it's important to remove any outcome variables that aren't the designated responder. Various tools can be used for this step, but Excel is used in the example below.
 
@@ -38,13 +32,11 @@ To ensure unbiased predictions, it's important to remove any outcome variables t
 
 5) Upload the new file to PANDORA
 
-
-
 </details>
 
 <details>
 
-<summary>2 - Setup Prediction Task</summary>
+<summary>2. Setup prediction task</summary>
 
 1. Navigate to **Workspace**
 
@@ -91,7 +83,7 @@ When creating your own predictive models, you can experiment with the following:
 
 <details>
 
-<summary>3 - Run Analysis</summary>
+<summary>3. Run analysis</summary>
 
 1. Click the **Validate data** button
 
@@ -106,9 +98,5 @@ When creating your own predictive models, you can experiment with the following:
 
 
 </details>
-
-***
-
-### Summary
 
 You’ve successfully processed your dataset to remove bias-inducing outcome variables and configured predictive models using PANDORA. Once your models have completed processing, you're ready to interpret the results and evaluate model performance in the next phase.

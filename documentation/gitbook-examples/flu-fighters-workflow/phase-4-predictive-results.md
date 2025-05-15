@@ -4,13 +4,7 @@ icon: bullseye-arrow
 
 # Phase 4: Predictive Results
 
-### Purpose
-
 Assess and compare model performance using statistical metrics like AUC, and explainable AI techniques to understand model predictions. This allows for identification of the most reliable models and extraction of biologically meaningful insights from models.
-
-***
-
-### Action
 
 <details>
 
@@ -153,9 +147,5 @@ After evaluating the models and identifying the best model, it is time to report
 3) Compile all your findings into a report on your model.
 
 </details>
-
-***
-
-### Summary
 
 You've now assessed model performance using AUC scores, ROC curves, and summary statistics, followed by deeper exploration of variable importance and feature-level patterns. By selecting top predictors and visualizing their variation across outcome groups, you've gained insight into how specific biological variables drove your model's decisions.

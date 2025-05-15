@@ -1,7 +1,3 @@
----
-description: Enumerates and describes all variables included in the Flu Fighter's Dataset
----
-
 # Variable Legend
 
 <details>

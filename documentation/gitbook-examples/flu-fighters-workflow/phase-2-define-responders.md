@@ -7,13 +7,7 @@ icon: user-shield
 
 # Phase 2: Define Responders
 
-### Purpose
-
 Classify participants into immune response groups using unsupervised clustering (Method A) or predefined biological thresholds (Method B). The resulting responder labels will guide further analysis and visualization of immune response patterns.
-
-***
-
-### Action
 
 This phase presents two distinct methods to create the `ResponderStatus` column. Choose one path, or potentially run both for comparison.
 

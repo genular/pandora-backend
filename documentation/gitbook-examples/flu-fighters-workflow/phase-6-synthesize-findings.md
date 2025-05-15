@@ -8,10 +8,6 @@ Purpose
 
 Report the best model and its test set performance (e.g., AUC). List the top predictors identified via **Variable Importance**. Describe insights from confounder analysis (Phase 3) and **Model Interpretation** (if applicable). Discuss the biological relevance of the top predictors.
 
-***
-
-### Action:
-
 <details>
 
 <summary>1 - Combine Findings</summary>
@@ -110,9 +106,5 @@ GO Terms can be used to identify biological themes using the following workflow:
    1. Outside of PANDORA, you may create additional plots, such as radar plots, reflecting the different immune profiles of responder classes based on the baseline or fold change expression levels of features in each class.
 
 </details>
-
-***
-
-### Summary
 
 You've now identified and analyzed your strongest model through consideration of model performance, biological interpretation, and confounder analysis. By pulling all your analysis together, you have now created a comprehensive picture of your model to draw biologically relevant insights from.

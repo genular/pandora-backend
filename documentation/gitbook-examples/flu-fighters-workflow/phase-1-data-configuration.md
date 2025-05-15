@@ -7,17 +7,13 @@ icon: sliders
 
 # Phase 1: Data Configuration
 
-### Purpose
-
 Perform an initial exploratory data analysis on the `flu_fighters.csv` dataset, including data upload, inspection of missing values, visualization of variable distributions, and identification of key correlations to guide further analysis.
 
-***
 
-### Action
 
 <details>
 
-<summary>1 - Launch Pandora</summary>
+<summary>1. Launch Pandora</summary>
 
 1. Open Docker and run PANDORA container
 
@@ -44,7 +40,7 @@ docker run --rm --detach --name genular --tty --interactive --env IS_DOCKER='tru
 
 <details>
 
-<summary>2 - Inspect Data</summary>
+<summary>2. Inspect data</summary>
 
 1. Navigate to **Workspace**
 
@@ -106,7 +102,7 @@ Caution should be taken when using median imputation for features containing mor
 
 <details>
 
-<summary>3 - Explore Outcome Variable Relationships (Optional)</summary>
+<summary>3. Explore Outcome Variable Relationships (Optional)</summary>
 
 1. Navigate to **Discovery** -> **Correlation**
 
@@ -150,10 +146,6 @@ Caution should be taken when using median imputation for features containing mor
 
 
 </details>
-
-***
-
-### Summary
 
 You've now uploaded your dataset and completed an initial inspection to understand variable types, distributions, and missing values. These initial steps ensure your data is clean and well understood before deriving any responder features and running predictive models.
 
