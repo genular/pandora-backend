@@ -6,7 +6,24 @@ icon: '2'
 
 The dataset contains **input features** (Objective, Examination, Subjective) and a **target variable** indicating the presence or absence of cardiovascular disease. For our hypothetical trial, we will add a `TreatmentGroup` column.
 
-<figure><img src="https://placehold.co/600x300/EBF4FF/7F9CF5?text=Figure+1:+CardioGuard+Trial+Data+Structure" alt="Figure 1: CardioGuard Trial Data Structure"><figcaption><p><strong>Figure 1. CardioGuard Trial Data Structure.</strong> This includes baseline patient data, lifestyle factors, examination results, treatment allocation, and the cardiovascular disease outcome.</p></figcaption></figure>
+| Feature Description                           | Category            | Variable Name | Data Type        | Coding / Unit                                    |
+| --------------------------------------------- | ------------------- | ------------- | ---------------- | ------------------------------------------------ |
+| Age                                           | Objective Feature   | `age`         | int              | days                                             |
+| Height                                        | Objective Feature   | `height`      | int              | cm                                               |
+| Weight                                        | Objective Feature   | `weight`      | float            | kg                                               |
+| Gender                                        | Objective Feature   | `gender`      | categorical code | (e.g., 1: male, 2: female)                       |
+| Systolic blood pressure                       | Examination Feature | `ap_hi`       | int              | mmHg                                             |
+| Diastolic blood pressure                      | Examination Feature | `ap_lo`       | int              | mmHg                                             |
+| Cholesterol                                   | Examination Feature | `cholesterol` | categorical      | 1: normal, 2: above normal, 3: well above normal |
+| Glucose                                       | Examination Feature | `gluc`        | categorical      | 1: normal, 2: above normal, 3: well above normal |
+| Smoking                                       | Subjective Feature  | `smoke`       | binary           | (e.g., 0: no, 1: yes)                            |
+| Alcohol intake                                | Subjective Feature  | `alco`        | binary           | (e.g., 0: no, 1: yes)                            |
+| Physical activity                             | Subjective Feature  | `active`      | binary           | (e.g., 0: no, 1: yes)                            |
+| Presence or absence of cardiovascular disease | Target Variable     | `cardio`      | binary           | <p></p><p>(e.g., 0: no, 1: yes)</p>              |
+
+
+
+<figure><img src="../.gitbook/assets/CVD_higher_cholesterol.png" alt=""><figcaption><p>It can be clearly seen that patients with CVD have higher cholesterol and blood glucose level. And, generally speaking less active.</p></figcaption></figure>
 
 #### Input Features (Baseline & Examination)
 
