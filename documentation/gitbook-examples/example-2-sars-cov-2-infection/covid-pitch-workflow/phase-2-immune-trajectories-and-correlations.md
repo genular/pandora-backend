@@ -4,7 +4,7 @@ icon: chart-line-up-down
 
 # Phase 2: Immune Trajectories & Correlations
 
-### Purpose
+### PCA - Purpose
 
 PCA can be used to reduce the dimensionality of the complex immune data and visualize the features that contribute to the most variation in the dataset across all timepoints. We will use PCA to also investigate how individuals cluster based on their overall immune profile and whether this relates to features such as disease severity, changes over time, or responder status&#x20;
 
@@ -51,23 +51,57 @@ For this dataset, we will be grouping the variables based on `Disease severity`,
 ### PCA plots and analysis based on grouping variables
 
 {% tabs %}
+{% tab title="PCA Loadings" %}
+<figure><img src="../../.gitbook/assets/CP_PCA variables plot.png" alt=""><figcaption></figcaption></figure>
+{% endtab %}
+
 {% tab title="Disease Severity" %}
-<div><figure><img src="../../.gitbook/assets/pca biplot.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../.gitbook/assets/pca grouped plot.png" alt=""><figcaption></figcaption></figure></div>
+<figure><img src="../../.gitbook/assets/CP_disease_PCA indiv grouped plot.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/CP_disease_PCA indiv biplot (1).png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Timepoint" %}
+<figure><img src="../../.gitbook/assets/CP_timepoint_PCA indiv grouped plot.png" alt=""><figcaption></figcaption></figure>
 
+<figure><img src="../../.gitbook/assets/CP_timepoint_PCA indiv biplot (2).png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Responders " %}
+<figure><img src="../../.gitbook/assets/CP_responder_PCA indiv grouped plot.png" alt=""><figcaption></figcaption></figure>
 
+<figure><img src="../../.gitbook/assets/CP_responder_PCA indiv biplot (1).png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}
+
+### Correlation - Purpose
 
 <details>
 
 <summary>Correlation Analysis</summary>
 
+1. Navigate to perfrom correlation analysis by going to **Discovery -> Start -> Correlation**&#x20;
 
+<figure><img src="../../.gitbook/assets/Screenshot 2025-05-15 140554.png" alt=""><figcaption></figcaption></figure>
+
+2. Choose the same numerical immunological assays columns as used in PCA under Column Selection&#x20;
+3. Select **Spearman** for the **Correlation Method** within the Column Selection Tab
+
+<figure><img src="../../.gitbook/assets/Screenshot 2025-05-15 141012.png" alt=""><figcaption></figcaption></figure>
+
+4. Under the **Preprocessing** tab, select `center`, `scale` and `medianImpute` as the preprocessing methods&#x20;
+
+<figure><img src="../../.gitbook/assets/Screenshot 2025-05-15 141208.png" alt=""><figcaption></figcaption></figure>
+
+5. Go to the Correlation Settings tab:&#x20;
+   1. NA Action: Set it to a method that can appropriately handle missing values such as `pairwise.complete.obs`
+   2. Plot Type: Select preferred option to view the correlation in the plot. For this example, the Full type was chosen&#x20;
+   3. Reorder Correlation: Select Hierarchical clustering&#x20;
+
+<figure><img src="../../.gitbook/assets/Screenshot 2025-05-15 141316.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/CP_clustered correlation_all immune assays.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/CP_clustered correlation_all immune assays_days pso timepoints.png" alt=""><figcaption></figcaption></figure>
 
 </details>

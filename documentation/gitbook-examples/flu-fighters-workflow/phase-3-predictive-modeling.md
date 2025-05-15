@@ -5,7 +5,7 @@ description: >-
 icon: eye
 ---
 
-# Phase 4: Predictive Modeling
+# Phase 4: predictive modeling
 
 Prepare your dataset for predictive analysis by removing outcome variables that could bias results, ensuring that only baseline predictor variables remain. Then, configure and run predictive models in PANDORA using the cleaned dataset.
 
@@ -69,8 +69,8 @@ When creating your own predictive models, you can experiment with the following:
 
 * **Training/Testing dataset partition**: Different models perform better in different partitions, and experimenting with this parameter can help generate the best model.
 * **Packages:** PANDORA has 200+ packages for predictive models, and you can even select a whole family of models with similar features.
-* [**Multi-set Intersection**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive/simon/multiset-intersection)
-* [**Feature Selection**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive/simon/feature-selection)
+* [**Multi-set Intersection**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive/simon/mulset-multiset-intersection)
+* [**Feature Selection**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive/simon/rfe-feature-selection)
 {% endhint %}
 
 {% hint style="warning" %}
