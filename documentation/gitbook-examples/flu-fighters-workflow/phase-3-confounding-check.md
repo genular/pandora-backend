@@ -1,5 +1,5 @@
 ---
-hidden: true
+icon: chart-scatter-bubble
 ---
 
 # Phase 3: Confounding Check
@@ -8,7 +8,7 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 
 <details>
 
-<summary>1 - Setup Confounding Analysis</summary>
+<summary>1. Confounding analysis (Example)</summary>
 
 1. Navigate to **Discovery** -> **Start** -> **t-SNE analysis**
 2. Configure **Column Selection**
@@ -18,15 +18,13 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 
 <figure><img src="../.gitbook/assets/FF_Phase 3_Confounding Setup tSNE_annotated.png" alt=""><figcaption></figcaption></figure>
 
-4. Click the Plot Image button
-
 
 
 </details>
 
 <details>
 
-<summary>2 - Check for Confounding</summary>
+<summary>2. Check for Confounding</summary>
 
 1. Compare all t-SNE plots generated to the responder t-SNE plot
    1. Is there an approximately equal distribution of confounding variable values in each responder class?  If not, there may be confounding in your predictive model.
@@ -68,7 +66,7 @@ After generating all these t-SNE plots for the confounder check, it may be a goo
 
 <details>
 
-<summary>3 - Additional Analysis</summary>
+<summary>3. Additional analysis</summary>
 
 In some cases, the resulting t-SNE plots for confounding analysis may be unclear, warranting further analysis, as in the example. It can be beneficial to manually check the confounding variable distribution for each responder class in these cases.
 

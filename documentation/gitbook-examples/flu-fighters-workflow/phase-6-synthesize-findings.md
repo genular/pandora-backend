@@ -1,16 +1,14 @@
 ---
-hidden: true
+icon: flag-checkered
 ---
 
 # Phase 6: Synthesize Findings
-
-Purpose
 
 Report the best model and its test set performance (e.g., AUC). List the top predictors identified via **Variable Importance**. Describe insights from confounder analysis (Phase 3) and **Model Interpretation** (if applicable). Discuss the biological relevance of the top predictors.
 
 <details>
 
-<summary>1 - Combine Findings</summary>
+<summary>1. Combine Findings</summary>
 
 1. Identify the top model from phase 4 by considering
    * Model performance metrics
@@ -51,7 +49,7 @@ Report the best model and its test set performance (e.g., AUC). List the top pre
 
 <details>
 
-<summary>2 - Analyze GO Terms &#x26; Biological Themes (if applicable)</summary>
+<summary>2. Analyze GO Terms &#x26; Biological Themes (if applicable)</summary>
 
 Pathway enrichment analysis is performed outside of PANDORA and is a powerful tool to understand the biological themes, which are already shown in the top predictive GO terms that may be present in your model.&#x20;
 
