@@ -9,12 +9,12 @@
 ***
 
 * [Flu Fighters Workflow](flu-fighters-workflow/README.md)
-  * [Phase 1: Data Configuration](flu-fighters-workflow/phase-1-data-configuration.md)
-  * [Phase 2: Define Responders](flu-fighters-workflow/phase-2-define-responders.md)
-  * [Phase 3: Confounding Check](flu-fighters-workflow/phase-3-confounding-check.md)
-  * [Phase 4: Predictive Modeling](flu-fighters-workflow/phase-3-predictive-modeling.md)
-  * [Phase 5: Predictive Results](flu-fighters-workflow/phase-4-predictive-results.md)
-  * [Phase 6: Synthesize Findings](flu-fighters-workflow/phase-6-synthesize-findings.md)
+  * [Phase 1: data configuration](flu-fighters-workflow/phase-1-data-configuration.md)
+  * [Phase 2: define responders](flu-fighters-workflow/phase-2-define-responders.md)
+  * [Phase 3: confounding check](flu-fighters-workflow/phase-3-confounding-check.md)
+  * [Phase 4: predictive modeling](flu-fighters-workflow/phase-3-predictive-modeling.md)
+  * [Phase 5: model evaluation](flu-fighters-workflow/phase-5-model-evaluation.md)
+  * [Phase 6: findings](flu-fighters-workflow/phase-6-findings.md)
 
 ## Example 2: SARS-CoV-2 infection
 

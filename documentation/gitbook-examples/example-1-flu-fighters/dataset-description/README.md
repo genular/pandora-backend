@@ -4,7 +4,7 @@ The dataset contains **predictor variables** (baseline immune data, demographics
 
 <figure><img src="../../.gitbook/assets/baseline predictive modeling overview.png" alt=""><figcaption><p> <strong>Figure 2. Overview of the baseline measurements included in the dataset.</strong></p></figcaption></figure>
 
-### Predictor Variables
+### Predictor variables
 
 These variables comprise demographic characteristics (e.g., age, sex, ethnicity) and pre-vaccination immune features measured before vaccine administration (baseline).
 
@@ -36,7 +36,7 @@ These variables comprise demographic characteristics (e.g., age, sex, ethnicity)
 
 </details>
 
-### Outcome Variables
+### Outcome variables
 
 These variables measure vaccine-induced immune responses across humoral, cellular, and mucosal immunity. Fold change corresponds to the magnitude change between measurements at baseline and measurements 21 days post-vaccination.
 
