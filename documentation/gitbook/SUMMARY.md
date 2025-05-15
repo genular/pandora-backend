@@ -49,8 +49,8 @@
 
 ## Technical System Overview
 
-* [Linux Distribution](technical-system-overview/linux-distribution.md)
-* [Source Code](technical-system-overview/source-code.md)
+* [Linux distribution](technical-system-overview/linux-distribution.md)
+* [Source code](technical-system-overview/source-code.md)
 
 ## Basics
 
