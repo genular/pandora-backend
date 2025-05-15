@@ -34,7 +34,7 @@ Categorize participants into distinct immune response groups (e.g., "high" vs. "
 
 <details>
 
-<summary><a href="phase-3-confounding-check.md">Phase 3: confounding variable assessment</a></summary>
+<summary><a href="phase-3-confounding-check/">Phase 3: confounding variable assessment</a></summary>
 
 Evaluate whether potential confounding variables (e.g., age, sex, study year) are differentially distributed across the defined responder groups, which could bias downstream analyses.
 

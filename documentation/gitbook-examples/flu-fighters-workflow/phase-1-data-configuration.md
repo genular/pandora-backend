@@ -5,7 +5,7 @@ description: >-
 icon: sliders
 ---
 
-# Phase 1: Data Configuration
+# Phase 1: data configuration
 
 Perform an initial exploratory data analysis on the `flu_fighters.csv` dataset, including data upload, inspection of missing values, visualization of variable distributions, and identification of key correlations to guide further analysis.
 
@@ -13,28 +13,14 @@ Perform an initial exploratory data analysis on the `flu_fighters.csv` dataset, 
 
 <details>
 
-<summary>1. Launch Pandora</summary>
+<summary>1. Launch PANDORA (if needed)</summary>
 
-1. Open Docker and run PANDORA container
+1. Open Docker and run PANDORA container if not running
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Launch Docker_annotated.png" alt=""><figcaption></figcaption></figure>
 
-2. Open Terminal
-   * On Windows, search for PowerShell in your Start menu and open it.
-   * On MacOS or Linux, open the Terminal app.
-
-3) Run Installation Command
-
-{% code overflow="wrap" %}
-```bash
-docker run --rm --detach --name genular --tty --interactive --env IS_DOCKER='true' --env TZ=Europe/London --oom-kill-disable --volume genular_frontend_latest:/var/www/genular/pandora --volume genular_backend_latest:/var/www/genular/pandora-backend --volume genular_data_latest:/mnt/usrdata --publish 3010:3010 --publish 3011:3011 --publish 3012:3012 --publish 3013:3013 genular/pandora:latest
-```
-{% endcode %}
-
 4. Access PANDORA:
    1. Open your browser and navigate to [http://localhost:3010](http://localhost:3010)
-
-
 
 </details>
 
@@ -42,18 +28,18 @@ docker run --rm --detach --name genular --tty --interactive --env IS_DOCKER='tru
 
 <summary>2. Inspect data</summary>
 
-1. Navigate to **Workspace**
+1. Navigate to [**Workspace**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/general/workspace)
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Workspace_annotated.png" alt=""><figcaption></figcaption></figure>
 
-2. Upload the `flu_fighters.csv` dataset to **Workspace**
+2. Upload the `flu_fighters.csv` dataset to [**Workspace**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/general/workspace)
 
 3) Select the uploaded `flu_fighters.csv` dataset
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Workspace_Select Dataset_annotated.png" alt=""><figcaption></figcaption></figure>
 
-4. With the dataset selected, navigate to **Discovery** -> **Start**
-   1. Select the **Data Overview** tab
+4. With the dataset selected, navigate to[ **Discovery** -> **Start**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery)
+   1. Select the[ **Data Overview**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/data-overview) tab
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Discovery_Data Overview_annotated.png" alt=""><figcaption></figcaption></figure>
 
@@ -68,13 +54,11 @@ docker run --rm --detach --name genular --tty --interactive --env IS_DOCKER='tru
 ### Handling Missing Values
 
 Caution should be taken when using median imputation for features containing more than 10% missing values (NA). In these cases, you will want to check the dataset to ensure no bias in the missing values (ie, all high responders are missing a selected baseline measurement).
-
-
 {% endhint %}
 
 6. Plot image for the selected data
 
-7) Examine the **Distribution Plot**
+7) Examine the [**Distribution Plot**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/data-overview#distribution-plot)
    1. This plot provides information about skewness, potential outliers, and correlations between variables.
    2. Based on the distribution plot generated in our example below, we see:
       1. The distribution plot for every selected feature is right-skewed, as shown in the figures along the diagonal.
@@ -87,7 +71,7 @@ Caution should be taken when using median imputation for features containing mor
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Distribution Plot_annotated.png" alt=""><figcaption></figcaption></figure>
 
-8. Select the **Table Plot** tab and examine the table plot
+8. Select the [**Table Plot**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/data-overview#table-plot) tab and examine the table plot
    1. This plot can be used to understand columns (predictors vs. outcomes), data types, and unique value counts.
    2. The leftmost variable is the sorting variable, arranging all rows from its largest to smallest values.
    3. Based on the table plot generated in our example below, we see:
@@ -104,7 +88,7 @@ Caution should be taken when using median imputation for features containing mor
 
 <summary>3. Explore Outcome Variable Relationships (Optional)</summary>
 
-1. Navigate to **Discovery** -> **Correlation**
+1. Navigate to [**Discovery** -> **Correlation**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery#correlation)
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Dicsovery_Correlation_annotated.png" alt=""><figcaption></figcaption></figure>
 

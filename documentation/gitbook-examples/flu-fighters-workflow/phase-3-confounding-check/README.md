@@ -2,7 +2,7 @@
 icon: chart-scatter-bubble
 ---
 
-# Phase 3: Confounding Check
+# Phase 3: confounding check
 
 Assess whether confounding variables, such as age, sex, or batch year, are evenly distributed across responder classifications. Identifying confounding ensures that any patterns in your predictive models are biologically meaningful rather than products of biased group composition.
 
@@ -10,13 +10,13 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 
 <summary>1. Confounding analysis (Example)</summary>
 
-1. Navigate to **Discovery** -> **Start** -> **t-SNE analysis**
+1. Navigate to [**Discovery** -> **Start** -> **t-SNE analysis**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/t-sne-analysis)
 2. Configure **Column Selection**
    1. Select all `*fold_change` columns
    2. Select `year`, `sex`, and the responder column for **Grouping variable**
    3. Select `age_months` and `z_score_continuous` for **Color variable**
 
-<figure><img src="../.gitbook/assets/FF_Phase 3_Confounding Setup tSNE_annotated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/FF_Phase 3_Confounding Setup tSNE_annotated.png" alt=""><figcaption></figcaption></figure>
 
 
 
@@ -24,7 +24,7 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 
 <details>
 
-<summary>2. Check for Confounding</summary>
+<summary>2. Check for confounding variables</summary>
 
 1. Compare all t-SNE plots generated to the responder t-SNE plot
    1. Is there an approximately equal distribution of confounding variable values in each responder class?  If not, there may be confounding in your predictive model.
@@ -37,26 +37,26 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 
 
 
-    <figure><img src="../.gitbook/assets/FF_Phase  3_Age vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
+    <figure><img src="../../.gitbook/assets/FF_Phase  3_Age vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 
     1. Z-score vs HAI Responder
        1. Here we see no confounding effect from z-score
 
 
 
-    <figure><img src="../.gitbook/assets/FF_Phase  3_Z-score vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
+    <figure><img src="../../.gitbook/assets/FF_Phase  3_Z-score vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 
     1. Year vs HAI Responder
        1. Confounding is unclear
 
 
 
-    <figure><img src="../.gitbook/assets/FF_Phase  3_Batch Year vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
+    <figure><img src="../../.gitbook/assets/FF_Phase  3_Batch Year vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 
     1. Sex vs HAI Responder
        1. Confounding is unclear
 
-<figure><img src="../.gitbook/assets/FF_Phase  3_Sex vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/FF_Phase  3_Sex vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 
 {% hint style="success" %}
 After generating all these t-SNE plots for the confounder check, it may be a good idea to save the plots to report with your findings later.
@@ -74,7 +74,7 @@ In some cases, the resulting t-SNE plots for confounding analysis may be unclear
 
 2) Filter by responder class, and manually check the distribution for any confounder variables warranting further analysis
 
-<figure><img src="../.gitbook/assets/HAI Responder_Sex and year confound.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/HAI Responder_Sex and year confound.png" alt=""><figcaption></figcaption></figure>
 
 </details>
 

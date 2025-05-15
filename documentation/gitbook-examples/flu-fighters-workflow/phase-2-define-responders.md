@@ -5,15 +5,15 @@ description: >-
 icon: user-shield
 ---
 
-# Phase 2: Define Responders
+# Phase 2: define responders
 
-Classify participants into immune response groups using unsupervised clustering (Method A) or predefined biological thresholds (Method B). The resulting responder labels will guide further analysis and visualization of immune response patterns.
+Classify participants into immune response groups using unsupervised clustering (Example 1) or predefined biological thresholds (Example 2). The resulting responder labels will guide further analysis and visualization of immune response patterns.
 
 This phase presents two distinct methods to create the `ResponderStatus` column. Choose one path, or potentially run both for comparison.
 
 <details>
 
-<summary>Method A: <strong>Multivariate Clustering (Using PANDORA Discovery)</strong></summary>
+<summary>Example 1: <strong>Multivariate Clustering (Using PANDORA Discovery)</strong></summary>
 
 1. Navigate to **Discovery** -> **t-SNE Analysis**
 
@@ -74,7 +74,7 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 
 <details>
 
-<summary>Method B: <strong>Manual Definition Based on Biological Thresholds (Requires manual pre-processing)</strong></summary>
+<summary>Example 2: <strong>Manual Definition Based on Biological Thresholds (Requires manual pre-processing)</strong></summary>
 
 #### Define Responder Status Rule
 
@@ -140,9 +140,5 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 References
 
 1. Paris, K. & Sorensen, R. U. Assessment and clinical interpretation of polysaccharide antibody responses. Annals of Allergy, Asthma & Immunology 99, 462–464 (2007).
-
-***
-
-### Summary
 
 You’ve now defined the responder variable, which classifies individuals based on immune response. This classification will guide the predictive models developed later.
