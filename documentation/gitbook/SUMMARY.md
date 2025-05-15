@@ -51,10 +51,3 @@
 
 * [Linux distribution](technical-system-overview/linux-distribution.md)
 * [Source code](technical-system-overview/source-code.md)
-
-## Basics
-
-* [Markdown](basics/markdown.md)
-* [Interactive blocks](basics/interactive-blocks.md)
-* [OpenAPI](basics/openapi.md)
-* [Integrations](basics/integrations.md)
