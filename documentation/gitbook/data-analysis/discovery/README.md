@@ -4,7 +4,18 @@ icon: chart-scatter-bubble
 
 # Discovery
 
-The **Discovery** section provides tools for visualizing, clustering and exploring datasets. The Discovery section is divided into six tabs, each focusing on a specific type of analysis.
+The **Discovery** section provides a suite of robust tools for initial data exploration, visualization, and unsupervised pattern identification within your biomedical datasets. This phase is critical for understanding data characteristics, identifying potential relationships, and generating hypotheses before undertaking more complex modeling.
+
+**Primary Objectives in Discovery:**
+
+* **Data Familiarization:** Inspect dataset structure, variable distributions, and data quality (Data Overview).
+* **Relationship Assessment:** Quantify and visualize associations between variables (Correlation).
+* **Pattern Recognition:** Identify natural groupings and structure within data using unsupervised methods:
+  * Group similar entities based on feature values (Hierarchical Clustering).
+  * Reduce dimensionality and visualize primary sources of variation (PCA Analysis).
+  * Visualize complex, high-dimensional data in lower-dimensional spaces to reveal clusters and non-linear relationships (t-SNE Analysis, UMAP).
+
+Each tab within this section is dedicated to a specific analytical approach, allowing for a systematic exploration of your data.
 
 {% tabs %}
 {% tab title="Overview" %}

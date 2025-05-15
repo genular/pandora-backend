@@ -48,6 +48,6 @@ icon: laptop
 
 ***
 
-### **Step 3: Reinstall PANDORA**
+### **Step 3: Reinstall**
 
 After removing all previous components, follow the [**Installation**](installation/) steps to install a clean version of PANDORA.
