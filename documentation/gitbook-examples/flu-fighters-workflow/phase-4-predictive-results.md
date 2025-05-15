@@ -14,7 +14,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 
 <details>
 
-<summary>1 - Configure Exploration</summary>
+<summary>1. Select queue for exploration</summary>
 
 1. Navigate to the **Dashboard** and select your predictive analysis from the queue
    1. The queue number selected is indicated in the pink box at the top right of the PANDORA interface.
@@ -37,23 +37,13 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 
 <details>
 
-<summary>2 - Evaluate Model Performance</summary>
+<summary>2. Evaluate performance of the models</summary>
 
 1. Compare metrics
-   1. Compare models based on the metrics selected in 3.b that are shown in the table from part 3.d. Special attention can be given to `Predictive AUC` and `Training AUC` scores for each model.
-   2. `Predictive AUC` and `Training AUC` should be similar values to assure the model is neither underfit nor overfit.
-   3. A guide to interpreting AUC values is provided below:
+   1. Compare models based on the metrics selected in 3.b that are shown in the table from part 3.d. Special attention can be given to `Predictive AUC` and `Training AUC` scores for each model **(Area Under the ROC Curve)**.
 
-| AUC Value                | Interpretation |
-| ------------------------ | -------------- |
-| $$AUC \geq 0.9$$         | Excellent      |
-| $$0.8 \leq AUC \gt 0.9$$ | Good           |
-| $$0.7 \leq AUC \gt 0.8$$ | Fair           |
-| $$0.6 \leq AUC \gt 0.7$$ | Poor           |
-| $$AUC \leq 0.6$$         | Fail           |
-
-2. Select the **ROC Curve Analysis** tab in Exploration
-3. Compare ROC Curves for each model to assess classification performance and identify the best models.
+2) Select the **ROC Curve Analysis** tab in Exploration
+3) Compare ROC Curves for each model to assess classification performance and identify the best models.
 
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_ROC Curves_v2.png" alt=""><figcaption></figcaption></figure>
 
@@ -68,7 +58,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 
 <details>
 
-<summary>3 - Identify Key Predictors</summary>
+<summary>3. Identify key predictors (Variable Importance score)</summary>
 
 1. Select the top model and select the **Variable Importance** tab in **Exploration**.
 
@@ -103,7 +93,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 
 <details>
 
-<summary>4 - Interpret Model Behavior</summary>
+<summary>4. Interpret the model - Explainable AI (xAI)</summary>
 
 1. Navigate to the **Model Interpretation** tab
 
@@ -121,7 +111,7 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 
 <details>
 
-<summary>5 - Synthesize Findings</summary>
+<summary>5. Synthesize Findings</summary>
 
 After evaluating the models and identifying the best model, it is time to report your findings.
 
