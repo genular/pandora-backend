@@ -13,7 +13,7 @@ This phase presents two distinct methods to create the `ResponderStatus` column.
 
 <details>
 
-<summary>Example 1: <strong>Multivariate Clustering (Using PANDORA Discovery)</strong></summary>
+<summary>Example 1: <strong>Multivariate Clustering (Using integrated</strong> <a href="https://github.com/atomiclaboratory/immunaut">immunaut </a>package<strong>)</strong></summary>
 
 1. Navigate to **Discovery** -> **t-SNE Analysis**
 
