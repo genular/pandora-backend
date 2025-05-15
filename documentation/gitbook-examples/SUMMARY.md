@@ -3,12 +3,12 @@
 ## Example 1: Flu Fighters
 
 * [Introduction](README.md)
-* [Dataset Description](example-1-flu-fighters/dataset-description/README.md)
-  * [Variable Legend](example-1-flu-fighters/dataset-description/variable-legend.md)
+* [Dataset description](example-1-flu-fighters/dataset-description/README.md)
+  * [Variable legend](example-1-flu-fighters/dataset-description/variable-legend.md)
 
 ***
 
-* [Flu Fighters Workflow](flu-fighters-workflow/README.md)
+* [Flu Fighters workflow](flu-fighters-workflow/README.md)
   * [Phase 1: data configuration](flu-fighters-workflow/phase-1-data-configuration.md)
   * [Phase 2: define responders](flu-fighters-workflow/phase-2-define-responders.md)
   * [Phase 3: confounding check](flu-fighters-workflow/phase-3-confounding-check/README.md)
