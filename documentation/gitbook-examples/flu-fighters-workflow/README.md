@@ -1,5 +1,6 @@
 ---
 description: Predicting LAIV Response
+icon: '3'
 ---
 
 # Flu Fighters workflow

@@ -29,3 +29,9 @@
   * [Phase 4: Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-predictive-modelling.md)
   * [Phase 5: Predictive Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-results.md)
   * [Phase 6: Findings Report](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-findings-report.md)
+
+## Hypothetical: Drug Efficacy for Heart Failure
+
+* [Introduction](hypothetical-drug-efficacy-for-heart-failure/introduction.md)
+* [Dataset Description](hypothetical-drug-efficacy-for-heart-failure/dataset-description.md)
+* [CardioBoost Workflow](hypothetical-drug-efficacy-for-heart-failure/cardioboost-workflow.md)

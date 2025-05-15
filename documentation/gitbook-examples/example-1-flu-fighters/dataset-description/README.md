@@ -1,4 +1,8 @@
-# Dataset Description
+---
+icon: '2'
+---
+
+# Dataset description
 
 The dataset contains **predictor variables** (baseline immune data, demographics, and transcriptomics) and **outcome variables** (vaccine responsiveness).
 

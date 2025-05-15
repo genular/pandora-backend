@@ -1,3 +1,7 @@
+---
+icon: '1'
+---
+
 # Introduction
 
 Use this workflow to explore how baseline immune features can predict responses to the Live Attenuated Influenza Vaccine (LAIV). **The main objective is to classify participants as “high” or “low” responders based on changes in immune markers post-vaccination.**
