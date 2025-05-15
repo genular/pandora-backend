@@ -38,7 +38,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 **Objective:** To evaluate whether potential confounding variables (e.g., age, sex, study year) are differentially distributed across the defined responder groups, which could bias downstream analyses.
 
-**PANDORA Tools Utilized:** t-SNE Analysis (visualizing group distributions).
+**PANDORA Tools Utilized:** [t-SNE Analysis](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery#t-sne) (visualizing group distributions).
 
 **Outcome:** Assessment of potential confounding to ensure the robustness of predictive findings.
 
@@ -46,7 +46,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="phase-5-predictive-results.md">Phase 4: Predictive Modeling Setup</a></summary>
+<summary><a href="phase-4-predictive-results.md">Phase 4: Predictive Modeling Setup</a></summary>
 
 **Objective:** To configure and initiate machine learning models within PANDORA, using baseline immune measurements as predictors for the 'ResponderStatus' outcome defined in Phase 2.
 
@@ -58,7 +58,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary>Phase 5: Predictive Model Evaluation &#x26; Interpretation</summary>
+<summary><a href="phase-4-predictive-results.md">Phase 5: Predictive Model Evaluation &#x26; Interpretation</a></summary>
 
 **Objective:** To rigorously assess the performance of the trained models using appropriate metrics (e.g., AUC) and to identify the most influential baseline features driving the predictions using explainable AI techniques.
 
@@ -70,11 +70,11 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary>Phase 6: Synthesis of Findings</summary>
+<summary><a href="phase-6-synthesize-findings.md">Phase 6: Synthesis of Findings</a></summary>
 
 **Objective:** To consolidate all analytical results, interpret the biological significance of the top predictors, and formulate a comprehensive report on the model's performance and findings.
 
-**PANDORA Tools/External Analysis:** Review of PANDORA outputs, potential pathway enrichment analysis (external), biological literature review etc.
+**PANDORA Tools/External Analysis:** Review of PANDORA outputs, potential pathway enrichment analysis (external), biological literature review etc..
 
 **Outcome:** A complete analytical report with actionable insights.
 

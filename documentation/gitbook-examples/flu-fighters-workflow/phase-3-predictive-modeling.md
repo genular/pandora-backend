@@ -5,7 +5,7 @@ description: >-
 icon: eye
 ---
 
-# Phase 3: Predictive Modeling
+# Phase 4: Predictive Modeling
 
 Prepare your dataset for predictive analysis by removing outcome variables that could bias results, ensuring that only baseline predictor variables remain. Then, configure and run predictive models in PANDORA using the cleaned dataset.
 
