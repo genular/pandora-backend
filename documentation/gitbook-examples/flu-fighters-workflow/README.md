@@ -10,7 +10,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="./#phase-1-data-configuration">Phase 1: </a>Data Configuration &#x26; Initial Inspection</summary>
+<summary><a href="phase-1-data-configuration.md">Phase 1: Data Configuration &#x26; Initial Inspection</a></summary>
 
 **Objective:** To prepare the dataset for analysis by uploading it into PANDORA, examining its structure, identifying missing data patterns, and visualizing initial variable distributions and correlations.
 
@@ -22,7 +22,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="./#phase-2-define-responders">Phase 2: </a>Defining Vaccine Responders</summary>
+<summary><a href="phase-2-define-responders.md">Phase 2: Defining Vaccine Responders</a></summary>
 
 **Objective:** To categorize participants into distinct immune response groups (e.g., "high" vs. "low" responders) based on post-vaccination outcome variables. This establishes the target variable for subsequent predictive modeling.
 
@@ -34,7 +34,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="./#phase-3-confounding-check">Phase 3: </a>Confounding Variable Assessment</summary>
+<summary><a href="phase-3-confounding-check.md">Phase 3: Confounding Variable Assessment</a></summary>
 
 **Objective:** To evaluate whether potential confounding variables (e.g., age, sex, study year) are differentially distributed across the defined responder groups, which could bias downstream analyses.
 
@@ -46,7 +46,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="./#phase-4-predictive-modeling">Phase 4: </a>Predictive Modeling Setup</summary>
+<summary><a href="phase-5-predictive-results.md">Phase 4: Predictive Modeling Setup</a></summary>
 
 **Objective:** To configure and initiate machine learning models within PANDORA, using baseline immune measurements as predictors for the 'ResponderStatus' outcome defined in Phase 2.
 
@@ -58,7 +58,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="./#phase-5-predictive-results">Phase 5: </a>Predictive Model Evaluation &#x26; Interpretation</summary>
+<summary>Phase 5: Predictive Model Evaluation &#x26; Interpretation</summary>
 
 **Objective:** To rigorously assess the performance of the trained models using appropriate metrics (e.g., AUC) and to identify the most influential baseline features driving the predictions using explainable AI techniques.
 
@@ -70,7 +70,7 @@ This example workflow demonstrates the application of PANDORA to investigate pre
 
 <details>
 
-<summary><a href="./#phase-6-synthesize-findings">Phase 6: </a>Synthesis of Findings</summary>
+<summary>Phase 6: Synthesis of Findings</summary>
 
 **Objective:** To consolidate all analytical results, interpret the biological significance of the top predictors, and formulate a comprehensive report on the model's performance and findings.
 

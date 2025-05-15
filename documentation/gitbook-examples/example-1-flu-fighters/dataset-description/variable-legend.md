@@ -1,5 +1,7 @@
 # Variable Legend
 
+This document provides a detailed legend for variables present in the `flu_fighters.csv` dataset. Variables are grouped by analytical category or biological measurement type.
+
 <details>
 
 <summary>Blood Gene Expression (Baseline and Fold Change) 🩸🧪</summary>
