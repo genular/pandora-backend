@@ -64,7 +64,7 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 
 7. Click **Actions** -> **Save to workspace**
    * Enter a desired file name for the new dataset and click ok
-   * This saves a new dataset to your dashboard with an added column for cluster assignment
+   * This saves a new dataset to your dashboard with an added column **pandora\_clusters -** you can now continue using this newly created dataset.
 
 <figure><img src="../.gitbook/assets/FF_Phase 2_tSNE Anlaysis_Save Clustered Dataset_annotated.png" alt=""><figcaption></figcaption></figure>
 
@@ -123,7 +123,7 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 
 <figure><img src="../.gitbook/assets/FF_Phase 2_Workspace_Upload Manual Responders.png" alt=""><figcaption></figcaption></figure>
 
-1. Select the file and navigate to **Discovery** -> **Data Overview**
+1. Select the file and navigate to[ **Discovery** -> **Data Overview**](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery#overview)
 2. Expand **Column Selection**
    1. Select the `ResponderStatus` column & another column of choice
    2. Click the **Plot Image** button
