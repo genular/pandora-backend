@@ -1,93 +1,81 @@
+---
+description: Predicting LAIV Response
+---
+
 # Flu Fighters Workflow
 
-In this workflow, you will learn how to use PANDORA to create and analyze a predictive model using the Flu Fighter dataset. You’ll begin by preparing the dataset for use with PANDORA, then explore key tools in the Discovery section, which includes [Data Overview](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/data-overview), [Correlation](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/correlation), [t-SNE Analysis](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/t-sne-analysis), and [Hierarchical Clustering](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/hierarchical-clustering). You will then learn how to build and evaluate predictive models using PANDORA's [Predictive section](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive). Each phase of the workflow is outlined below.
+This example workflow demonstrates the application of PANDORA to investigate predictors of immune response to the Live Attenuated Influenza Vaccine (LAIV), using the "Flu Fighters" dataset. The overarching goal is to identify baseline immune features capable of classifying participants into "high" or "low" vaccine responder categories.
+
+**Workflow Phases:**
 
 <details>
 
-<summary><a href="./#phase-1-data-configuration">Phase 1: Data Configuration</a></summary>
+<summary><a href="./#phase-1-data-configuration">Phase 1: </a>Data Configuration &#x26; Initial Inspection</summary>
 
-Configure and understand the dataset for use in the predictive analysis
+**Objective:** To prepare the dataset for analysis by uploading it into PANDORA, examining its structure, identifying missing data patterns, and visualizing initial variable distributions and correlations.
 
-1. **Launch PANDORA**
-   * Brief intro on how to launch PANDORA after installation.
+**PANDORA Tools Utilized:** [Workspace](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/general/workspace), [Data Overview](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/data-overview), [Correlation](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/correlation).
 
-2) **Inspect Data**
-   * Upload dataset and inspect data to understand variable types and distributions.
-
-3. **Explore Outcome Variable Relationships**
-   * Run analysis to uncover correlations between outcome variables.
+**Outcome:** A foundational understanding of the dataset's characteristics and quality.
 
 </details>
 
 <details>
 
-<summary><a href="./#phase-2-define-responders">Phase 2: Define Responders</a></summary>
+<summary><a href="./#phase-2-define-responders">Phase 2: </a>Defining Vaccine Responders</summary>
 
-Define the responder column to be used in the predictive analysis via method A or method B
+**Objective:** To categorize participants into distinct immune response groups (e.g., "high" vs. "low" responders) based on post-vaccination outcome variables. This establishes the target variable for subsequent predictive modeling.
 
-1. **Method A**
-   1. Define responder classification via clustering with t-SNE
-2. **Method B**
-   1. Manually define responder classification based on a  biological threshold
+**PANDORA Tools/Methods Utilized:** [t-SNE Analysis](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/discovery/t-sne-analysis) (for data-driven clustering) or manual definition based on external biological thresholds.
 
-</details>
-
-<details>
-
-<summary><a href="./#phase-3-confounding-check">Phase 3: Confounding Check</a></summary>
-
-Ensure your model isn't biased by checking for any potential confounding demographic variables
-
-1. **Set Up Confounding Analysis**
-   * Configure t-SNE analysis for confounding variable check.
-2. **Check for Confounding**
-   * Analyze resulting t-SNE plots and check the distribution of confounding variables in responder classifications.
-3. **Additional Analysis**
-   * Further analysis in the case that the confounding variable distribution among responder classifications is unclear on the t-SNE plot.
+**Outcome:** A new 'ResponderStatus' variable classifying each participant.
 
 </details>
 
 <details>
 
-<summary><a href="./#phase-4-predictive-modeling">Phase 4: Predictive Modeling</a></summary>
+<summary><a href="./#phase-3-confounding-check">Phase 3: </a>Confounding Variable Assessment</summary>
 
-Create your predictive models for responder classification based on baseline data.
+**Objective:** To evaluate whether potential confounding variables (e.g., age, sex, study year) are differentially distributed across the defined responder groups, which could bias downstream analyses.
 
-1. **Process Predictive Dataset**
-   * Remove outcome variables from the dataset for predictive analysis
-2. **Set Up Prediction Task**
-   * Using PANDORA, configure predictive models for responder classification
-3. **Run Analysis**
-   * Generate and analyze predictive models
+**PANDORA Tools Utilized:** t-SNE Analysis (visualizing group distributions).
+
+**Outcome:** Assessment of potential confounding to ensure the robustness of predictive findings.
 
 </details>
 
 <details>
 
-<summary><a href="./#phase-5-predictive-results">Phase 5: Predictive Results</a></summary>
+<summary><a href="./#phase-4-predictive-modeling">Phase 4: </a>Predictive Modeling Setup</summary>
 
-Assess predictive model results to identify top models and understand model predictions with Explainable AI
+**Objective:** To configure and initiate machine learning models within PANDORA, using baseline immune measurements as predictors for the 'ResponderStatus' outcome defined in Phase 2.
 
-1. **Configure Exploration**
-   * Select analysis from Dashboard, then select the dataset and models for which to view results.
-2. **Evaluate Model Performance**
-   * View and compare performance metrics for each model.
-3. **Identify Key Predictors**
-   * Identify and analyze top predictive features for top models.
-4. **Interpret Model Behavior**
-   * Utilize explainable AI tools to uncover variable relationships and contributions to model behavior.
+**PANDORA Tools Utilized:** [Predictive (SIMON interface).](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive#id-1.-simon-machine-learning)
+
+**Outcome:** Trained predictive models ready for evaluation.
 
 </details>
 
 <details>
 
-<summary><a href="./#phase-6-synthesize-findings">Phase 6: Synthesize Findings</a></summary>
+<summary><a href="./#phase-5-predictive-results">Phase 5: </a>Predictive Model Evaluation &#x26; Interpretation</summary>
 
-Combine all your findings to report on your best model
+**Objective:** To rigorously assess the performance of the trained models using appropriate metrics (e.g., AUC) and to identify the most influential baseline features driving the predictions using explainable AI techniques.
 
-1. **Combine Findings**
-   * Take record of all relevant model information including confounding check, performance measurements, and predictive features
-2. **GO Term Analysis & Biological Themes (if applicable)**
-   * Analyze top predictive GO terms and uncover biological themes
+**PANDORA Tools Utilized:** [Predictive ](https://app.gitbook.com/s/9LdC62ZpkxqvCBTPwVZU/data-analysis/predictive/exploration)(Exploration: Metrics, ROC Curve Analysis, Variable Importance, Model Interpretation).
+
+**Outcome:** Identification of the optimal predictive model(s) and key predictive biomarkers.
+
+</details>
+
+<details>
+
+<summary><a href="./#phase-6-synthesize-findings">Phase 6: </a>Synthesis of Findings</summary>
+
+**Objective:** To consolidate all analytical results, interpret the biological significance of the top predictors, and formulate a comprehensive report on the model's performance and findings.
+
+**PANDORA Tools/External Analysis:** Review of PANDORA outputs, potential pathway enrichment analysis (external), biological literature review etc.
+
+**Outcome:** A complete analytical report with actionable insights.
 
 </details>
