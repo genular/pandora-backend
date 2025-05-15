@@ -37,10 +37,3 @@ layout:
 * **Assess model performance:** Use robust tools like variable importance metrics and ROC curve analysis to evaluate how well your models are working.
 * **Understand model predictions:** Employ advanced model interpretation methods, including Explainable AI, to gain insights into why your models make certain predictions.
 * **Analyze complex OMICS data:** PANDORA is designed for the robust analysis of OMICS datasets, helping you achieve reliable and reproducible results.
-
-**Why use PANDORA:**
-
-* **Advanced analysis made accessible:** PANDORA provides access to sophisticated statistical methods and machine learning algorithms through an intuitive graphical interface, reducing the need for extensive programming.
-* **Focus on biomedical research:** It's optimized for the specific challenges of high-dimensional data in fields like genomics, proteomics, and systems immunology.
-* **Integrated workflow:** PANDORA supports your entire data analysis process, from initial data exploration and preprocessing to predictive modeling and interpreting results.
-* **Simplified setup:** It uses Docker, which means installation is straightforward and PANDORA runs consistently across different systems.
