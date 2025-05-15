@@ -19,26 +19,28 @@ layout:
 
 {% include ".gitbook/includes/pandora-overview.md" %}
 
-### Core Capabilities
+**Data exploration and visualization:**
 
-PANDORA provides a suite of functionalities designed to address the analytical demands of contemporary biomedical research:
+* **Inspect your datasets:** Quickly understand the structure and content of your data.
+* **Analyze correlations:** Examine how different variables relate to each other.
+* **Perform hierarchical clustering:** Group similar samples or features.
+* **Reduce dimensionality and find patterns:** Use techniques like PCA (Principal Component Analysis), t-SNE, and UMAP to effectively visualize and identify patterns in high-dimensional data (e.g., transcriptomics, proteomics, cytometry data).
 
-* **Data Exploration and Visualization:**
-  * Facilitates comprehensive dataset inspection, offering an immediate understanding of data structure and content.
-  * Enables rigorous analysis of inter-variable **correlations**.
-  * Performs **hierarchical clustering** for systematic grouping of similar samples or features.
-  * Implements dimensionality reduction techniques such as **PCA (Principal Component Analysis)**, **t-SNE**, and **UMAP** for effective visualization and pattern identification within high-dimensional datasets (e.g., transcriptomics, proteomics, cytometry data).
-* **Predictive Modeling and Biomarker Discovery:**
-  * Integrates the **SIMON** toolkit for streamlined development and execution of machine learning models.
-  * Supports the construction of models for diverse applications, including outcome prediction (e.g., treatment efficacy, patient stratification) and classification tasks.
-  * Aids in the identification of statistically significant **biomarkers** that contribute substantially to model predictions.
-* **Model Evaluation and Interpretation:**
-  * Provides robust tools for in-depth model assessment, including **variable importance** metrics, **ROC curve analysis** for diagnostic capability evaluation, and advanced **model interpretation** methodologies (Explainable AI).
-  * Specifically engineered for the robust analysis of complex **OMICS datasets**, ensuring reliable and reproducible results.
+**Predictive modeling and biomarker discovery:**
 
-PANDORA is distinguished by the following attributes:
+* **Build machine learning models:** The integrated SIMON toolkit helps you develop and run machine learning models more easily.
+* **Create models for various applications:** Build models for tasks such as predicting outcomes (like treatment efficacy or patient stratification) and other classification needs.
+* **Identify key biomarkers:** Find statistically significant biomarkers that strongly influence your model's predictions.
 
-* **Advanced Analytical Power:** Provides access to sophisticated statistical methods and machine learning algorithms through an intuitive graphical user interface, minimizing the need for extensive programming expertise.
-* **Biomedical Research Focus:** Optimized for the specific challenges posed by high-dimensional data in fields such as genomics, proteomics, and systems immunology.
-* **Integrated Workflow:** Offers a comprehensive, end-to-end environment supporting the entire data analysis pipeline, from initial data exploration and preprocessing to predictive modeling and results interpretation.
-* **Simplified Deployment:** Utilizes Docker containerization for streamlined installation and consistent operational environments across various systems.
+**Model evaluation and interpretation:**
+
+* **Assess model performance:** Use robust tools like variable importance metrics and ROC curve analysis to evaluate how well your models are working.
+* **Understand model predictions:** Employ advanced model interpretation methods, including Explainable AI, to gain insights into why your models make certain predictions.
+* **Analyze complex OMICS data:** PANDORA is designed for the robust analysis of OMICS datasets, helping you achieve reliable and reproducible results.
+
+**Why use PANDORA:**
+
+* **Advanced analysis made accessible:** PANDORA provides access to sophisticated statistical methods and machine learning algorithms through an intuitive graphical interface, reducing the need for extensive programming.
+* **Focus on biomedical research:** It's optimized for the specific challenges of high-dimensional data in fields like genomics, proteomics, and systems immunology.
+* **Integrated workflow:** PANDORA supports your entire data analysis process, from initial data exploration and preprocessing to predictive modeling and interpreting results.
+* **Simplified setup:** It uses Docker, which means installation is straightforward and PANDORA runs consistently across different systems.

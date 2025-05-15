@@ -22,11 +22,11 @@ The table on Dashboard consists of various information and operations related to
 
 <figure><img src="../.gitbook/assets/Dashboard_Model_status.png" alt=""><figcaption></figcaption></figure>
 
-**Extraction**: Is RFF[ ](../data-analysis/predictive/simon/multiset-intersection.md)(Backward Selection) being used?
+**Extraction**: Is RFF[ ](../data-analysis/predictive/simon/mulset-multiset-intersection.md)(Backward Selection) being used?
 
 **Sparsity**: Percentage of how sparse the given dataset is. Sparsity below 50% is preferred.
 
-**Resamples:** how many different datasets are being created & tested in specific task. Especially if [mulset ](../data-analysis/predictive/simon/multiset-intersection.md)is used there can be a number of different datasets.
+**Resamples:** how many different datasets are being created & tested in specific task. Especially if [mulset ](../data-analysis/predictive/simon/mulset-multiset-intersection.md)is used there can be a number of different datasets.
 
 **Models processed**: Illustrates how far along has SIMON reached in training and testing the predictive models for the given dataset.
 

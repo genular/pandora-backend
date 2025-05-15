@@ -18,8 +18,6 @@ icon: laptop
 4. **Find Existing PANDORA Volumes**:
    * Type `docker volume ls` and press Enter. This will list all volumes.
 
-***
-
 ### **Step 2: Remove Old PANDORA Components**
 
 1. **Stop and Remove Containers**:
@@ -45,8 +43,6 @@ icon: laptop
        ```bash
        docker volume rm genular_frontend_latest genular_backend_latest genular_data_latest
        ```
-
-***
 
 ### **Step 3: Reinstall**
 

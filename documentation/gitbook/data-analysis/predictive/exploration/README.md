@@ -26,7 +26,7 @@ PANDORA provides a variety of tools to analyze the results of your predictive mo
 * [**Variable Importance**](variable-importance.md)**:** Allows for assessment of feature contributions to model variance and visualization of feature value distribution for each outcome. This can reveal the top contributing features in the model for further investigation.
 * [**Training Summary:**](training-summary.md) Provides whiskerplot comparison of training performance metrics between the selected models.
 * [**ROC Curve Analysis:**](roc-curve-analysis.md) Provides a graphical representation for evaluating binary classification performance in models from both training and testing.
-* [**Model Interpretation:**](model-interpretation.md) Allows for investigation of feature impact on model performance through a variety of analysis options.
+* [**Model Interpretation:**](model-interpretation-xai.md) Allows for investigation of feature impact on model performance through a variety of analysis options.
 {% endtab %}
 {% endtabs %}
 

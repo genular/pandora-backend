@@ -4,16 +4,16 @@ icon: chart-scatter-bubble
 
 # Discovery
 
-The **Discovery** section provides a suite of robust tools for initial data exploration, visualization, and unsupervised pattern identification within your biomedical datasets. This phase is critical for understanding data characteristics, identifying potential relationships, and generating hypotheses before undertaking more complex modeling.
+The **Discovery** section in PANDORA offers a set of tools to help you get to know your biomedical datasets. It's designed for initial data exploration, visualization, and finding underlying patterns. Using these tools first can help you understand your data's characteristics, spot potential relationships, and form hypotheses before you move on to more complex modeling.
 
-**Primary Objectives in Discovery:**
+Key goals when using the Discovery tools:
 
-* **Data Familiarization:** Inspect dataset structure, variable distributions, and data quality (Data Overview).
-* **Relationship Assessment:** Quantify and visualize associations between variables (Correlation).
-* **Pattern Recognition:** Identify natural groupings and structure within data using unsupervised methods:
-  * Group similar entities based on feature values (Hierarchical Clustering).
-  * Reduce dimensionality and visualize primary sources of variation (PCA Analysis).
-  * Visualize complex, high-dimensional data in lower-dimensional spaces to reveal clusters and non-linear relationships (t-SNE Analysis, UMAP).
+* **Get familiar with your data:** Use the **Data Overview** to check the structure of your dataset, how your variables are distributed, and the overall data quality.
+* **Assess relationships:** The **Correlation** tool helps you measure and visualize how different variables in your dataset relate to each other.
+* **Find patterns:** Identify natural groupings and structures within your data using unsupervised methods:
+  * **Hierarchical Clustering:** Groups similar samples or features based on their values.
+  * **PCA Analysis (Principal Component Analysis):** Simplifies complex data by finding the main sources of variation, helping you visualize these in lower dimensions.
+  * **t-SNE Analysis and UMAP:** Visualize high-dimensional data (like genomics or proteomics) in 2D or 3D plots to reveal clusters and non-linear relationships that might not be obvious otherwise.
 
 Each tab within this section is dedicated to a specific analytical approach, allowing for a systematic exploration of your data.
 

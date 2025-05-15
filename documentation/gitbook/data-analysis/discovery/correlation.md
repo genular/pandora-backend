@@ -65,7 +65,7 @@ The main output of the **Correlation** tab is a correlogram, which visually repr
 
 **Example 2: Many Variables**
 
-<figure><img src="../../.gitbook/assets/Correlation_corr_matrix_largedataset.png" alt=""><figcaption><p>PANDORA's correlogram scales effectively even for datasets with many variables. This example reveals distinct blocks of highly correlated variables (clusters of dark red circles), which might indicate groups of related genes or biomarkers. You can also see areas with little correlation (very small, pale circles).</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Correlation_corr_matrix_largedataset.png" alt=""><figcaption><p>Correlogram handles datasets with many variables effectively. For instance, this example shows how it can reveal distinct blocks of highly correlated variables, which appear as clusters of dark red circles. Such patterns might suggest related genes or biomarkers. You'll also notice areas with minimal correlation, indicated by very small, pale circles.</p></figcaption></figure>
 {% endtab %}
 
 {% tab title="3. Significance" %}

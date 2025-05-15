@@ -29,6 +29,6 @@ The **Predictive** section allows users to create predictive models and explore 
 
 * [**Variable Importance:** ](exploration/variable-importance.md)Understand how much each feature contributes to the variance of your predictive model.
 * [**ROC Curve Analysis:**](exploration/roc-curve-analysis.md) Provides a visual understanding of the predictive models' diagnostic capabilities for both the training and testing datasets.
-* [**Model Interpretation:**](exploration/model-interpretation.md) Perform a variety of analyses to uncover feature interactions and contributions to model performance.
+* [**Model Interpretation:**](exploration/model-interpretation-xai.md) Perform a variety of analyses to uncover feature interactions and contributions to model performance.
 {% endtab %}
 {% endtabs %}

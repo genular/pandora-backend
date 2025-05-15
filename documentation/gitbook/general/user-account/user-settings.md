@@ -2,13 +2,11 @@
 icon: gear
 ---
 
-# User Settings
+# User settings
 
 To access the "Settings" panel, click on the person icon at the top right corner of the homepage. This has been illustrated in the image below:&#x20;
 
 <figure><img src="../../.gitbook/assets/UserSettings_how_to_access.png" alt=""><figcaption></figcaption></figure>
-
-### Key Functionalities
 
 {% tabs %}
 {% tab title="Profile" %}

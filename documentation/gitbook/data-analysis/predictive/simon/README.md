@@ -39,8 +39,8 @@ In the model selection and customization section, the user can select the predic
 {% tab title="3. Advanced options" %}
 SIMON offers advanced functionalities to streamline model development and optimization.
 
-* [**Multi-Set Intersection**](multiset-intersection.md): Enable this option to intersect multiple sets in a Venn-like manner, useful for combining features from different models.
-* [**Feature Selection**](feature-selection.md): Enable feature selection to automatically reduce dimensionality and retain only the most relevant features for the model.
+* [**Multi-Set Intersection**](mulset-multiset-intersection.md): Enable this option to intersect multiple sets in a Venn-like manner, useful for combining features from different models.
+* [**Feature Selection**](rfe-feature-selection.md): Enable feature selection to automatically reduce dimensionality and retain only the most relevant features for the model.
 * **Timeout**: Set a timeout (in minutes) to limit the execution time for model training, preventing lengthy computations.
 {% endtab %}
 {% endtabs %}
