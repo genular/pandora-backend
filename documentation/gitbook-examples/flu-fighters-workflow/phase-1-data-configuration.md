@@ -127,7 +127,7 @@ Caution should be taken when using median imputation for features containing mor
 
 <figure><img src="../.gitbook/assets/FF_Phase1_Correlation_Correlation Plot.png" alt=""><figcaption><p>Flu Fighters correlation plot for all fold_change variables</p></figcaption></figure>
 
-
+This correlogram visualizes the pairwise correlations between the variables listed on both axes; in this instance, these are various \_fold\_change immune parameters. The diagonal line of large, dark red circles represents each variable's perfect positive correlation (+1) with itself. For all other pairs, **reddish circles indicate a positive correlation** (meaning as one variable's fold change increases, the other's also tends to increase), while **bluish circles signify a negative correlation** (as one increases, the other tends to decrease). The **size of each circle and the intensity of its color directly reflect the strength** of this relationship, with the exact correlation coefficient values corresponding to the color bar on the right (ranging from -1 for strong negative to +1 for strong positive). Users should look for **clusters or blocks of similarly colored and sized circles**, as these highlight groups of immune responses whose magnitudes of change are often interlinked or coordinated within the studied cohort; the variables are typically reordered to make such patterns more visually apparent.
 
 </details>
 
