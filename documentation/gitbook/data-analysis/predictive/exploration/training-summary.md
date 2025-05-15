@@ -4,17 +4,13 @@ description: Compare performance metrics for your machine learning models.
 
 # Training Summary
 
-### Overview
-
-The **Training Summary** tab in PANDORA offers a comprehensive summary of performance metrics for the selected predictive models. This feature provides users with essential information to compare, evaluate, and refine their predictive models.
-
-
+Summary of performance metrics for the selected predictive models.
 
 <figure><img src="../../../.gitbook/assets/Exploration_Training Summary.png" alt=""><figcaption></figcaption></figure>
 
 {% tabs %}
 {% tab title="1.  Comparison" %}
-The **Comparison of model performance measurments** sub-tab provides box plots for each model training metric to allow visual comparison. The box plots show the distribution of data and skewness for each model selected in the comparison. Two or more models must be selected from the dataset to view the "Training Summary" tab.
+The **Comparison of model performance measurements** sub-tab provides box plots for each model training metric to allow visual comparison. The box plots show the distribution of data and skewness for each model selected in the comparison. Two or more models must be selected from the dataset to view the "Training Summary" tab.
 
 The box plots can be downloaded as SVG files or right-clicked and saved as a PNG in PANDORA.
 

@@ -6,11 +6,24 @@ description: >-
 
 # ROC Curve Analysis
 
-### Overview
+**What ROC Curves (Training & Testing) Plot:**
 
-The **ROC Curve Analysis** tab in PANDORA provides a clear interface for visualizing the classification performance of predictive models. Its intuitive design allows users to easily compare individual or multiple models at once, and provides comprehensive customization options for ROC Curve visualization.
+* A **ROC (Receiver Operating Characteristic) curve** is a graph.
+* It plots the **True Positive Rate (Sensitivity/Recall)** on the y-axis against the **False Positive Rate (1 - Specificity)** on the x-axis, at various classification thresholds.
+  * **Training ROC:** Shows this performance on the data the model was trained on.
+  * **Testing ROC:** Shows this performance on new, unseen (test/validation) data.
 
+**How This Helps:**
 
+1. **Visualizes Performance:**
+   * A curve closer to the **top-left corner** means better performance (high true positives, low false positives).
+   * The **Area Under the Curve (AUC)** is a single number summarizing this: 1.0 is perfect, 0.5 is like random guessing.
+2. **Detects Overfitting:**
+   * **Crucially, you compare the two curves.**
+   * If the **Training ROC is much better** (further top-left, higher AUC) than the **Testing ROC**, your model is likely **overfitting**. It performs well on data it's seen but poorly on new data. The Testing ROC shows its true generalization ability.
+3. **Threshold Independent View:** It shows how well the model separates classes regardless of which specific probability cut-off you choose to make a final classification.
+
+In short: ROC curves (especially comparing train vs. test) help you see how well your model distinguishes between classes and diagnose if it's just memorizing the training data (overfitting) or actually learning generalizable patterns.
 
 <figure><img src="../../../.gitbook/assets/ROC curve_Main_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 

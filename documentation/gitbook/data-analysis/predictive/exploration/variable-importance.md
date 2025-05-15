@@ -4,9 +4,14 @@ description: Enables users to analyze feature importance in machine learning mod
 
 # Variable Importance
 
-### Overview
+A **Variable Importance Score** in a machine learning model tells you **how much each input feature (or variable) contributes to the model's predictions.**
 
-The **Variable Importance** tab in PANDORA provides robust tools to investigate the contribution of predictor variables to the variance of the predictive models. Users can seamlessly select variables with the filter settings, visualize feature values across outcomes in the dataset, and identify top features through an interactive bar plot.
+Essentially:
+
+* **Higher score = More influential:** The variable has a greater impact on the model's output.
+* **Lower score = Less influential:** The variable has less impact.
+
+It helps you understand which factors are the key drivers for your model's outcomes and can be useful for feature selection (deciding which variables are most useful to keep).
 
 <figure><img src="../../../.gitbook/assets/Exploration_Variable Importance_Main_v2-min.png" alt=""><figcaption></figcaption></figure>
 
