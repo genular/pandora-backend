@@ -28,10 +28,4 @@ This tab has several options to use when trying to debug errors on PANDORA:&#x20
 * **System log file:** Download various tar.gz logs of the PANDORA and server backends to trace source of any bugs
 * **Browse log file:** Download the log of all actions the user performed on PANDORA from the start of the current session to trace when and where an error my have occurred
 {% endtab %}
-
-{% tab title="Danger area" %}
-<figure><img src="../../.gitbook/assets/UserSettings_delete_tab.png" alt=""><figcaption></figcaption></figure>
-
-If required, this tab consists of the option of deleting the user's PANDORA account permanently.
-{% endtab %}
 {% endtabs %}

@@ -20,8 +20,6 @@ The table on Dashboard consists of various information and operations related to
 
 **Status**: Tells us current progress of specific task
 
-<figure><img src="../.gitbook/assets/Dashboard_Model_status.png" alt=""><figcaption></figcaption></figure>
-
 **Extraction**: Is RFF[ ](../data-analysis/predictive/simon/mulset-multiset-intersection.md)(Backward Selection) being used?
 
 **Sparsity**: Percentage of how sparse the given dataset is. Sparsity below 50% is preferred.

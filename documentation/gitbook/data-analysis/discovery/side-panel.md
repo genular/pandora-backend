@@ -24,11 +24,7 @@ PANDORA provides several ways to specify the columns (variables) you want to wor
   * (Available in some tabs) Remove specific columns that you _don't_ want to include in the current analysis.
   * Similar to the "Columns" selector, this dropdown is searchable and filterable.
 
-<figure><img src="../../.gitbook/assets/SidePanel_Columns.png" alt=""><figcaption></figcaption></figure>
-
-<figure><img src="../../.gitbook/assets/SidePanel_First_n_columns.png" alt=""><figcaption></figcaption></figure>
-
-<figure><img src="../../.gitbook/assets/SidePanel_Exclude_columns.png" alt=""><figcaption></figcaption></figure>
+<div><figure><img src="../../.gitbook/assets/SidePanel_Columns.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../.gitbook/assets/SidePanel_First_n_columns.png" alt=""><figcaption></figcaption></figure> <figure><img src="../../.gitbook/assets/SidePanel_Exclude_columns.png" alt=""><figcaption></figcaption></figure></div>
 {% endtab %}
 
 {% tab title="Preprocessing" %}

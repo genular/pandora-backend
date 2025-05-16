@@ -4,7 +4,7 @@ description: >-
   component analysis (PCA).
 ---
 
-# Bartlett's Sphericity
+# Bartlett's sphericity
 
 This sub-tab within the **PCA Analysis** results panel shows outputs from two statistical tests that help assess if your data is suitable for Principal Component Analysis.
 
@@ -16,9 +16,9 @@ Bartlett's Test of Sphericity
 
 * **Purpose:** Tests the hypothesis that your variables are uncorrelated in the population (i.e., the correlation matrix is an identity matrix). If variables are uncorrelated, PCA is not very useful.
 * **Output:**
-  * $chisq: The test statistic value.
-  * $p.value: The significance level (p-value) of the test.
-  * $df: Degrees of freedom.
+  * **$chisq**: The test statistic value.
+  * **$p.value**: The significance level (p-value) of the test.
+  * **$df**: Degrees of freedom.
 * **Interpretation:** You generally want to **reject** the null hypothesis. A **significant p-value (typically < 0.05)** indicates that the correlation matrix is significantly different from an identity matrix, meaning there are correlations between your variables, and PCA is likely appropriate. If the p-value is > 0.05, PCA might not be the best technique for your data.
 
 <figure><img src="../../../.gitbook/assets/PCA_Bartletts output.png" alt=""><figcaption></figcaption></figure>

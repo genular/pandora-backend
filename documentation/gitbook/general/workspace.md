@@ -33,11 +33,7 @@ Upload files by dropping at the stated location or by clicking at that same loca
 {% tab title="Directory and Delete" %}
 At the top right corner of the Workspace page, the **New Directory** and **Delete all** options reside:&#x20;
 
-<figure><img src="../.gitbook/assets/Workspace_directory_delete_options.png" alt=""><figcaption></figcaption></figure>
-
-* **New Directory**
-
-<div><figure><img src="../.gitbook/assets/Workspace_New_directory.png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Workspace_Directory_folder.png" alt=""><figcaption></figcaption></figure></div>
+<div><figure><img src="../.gitbook/assets/Workspace_directory_delete_options.png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Workspace_New_directory.png" alt=""><figcaption></figcaption></figure> <figure><img src="../.gitbook/assets/Workspace_Directory_folder.png" alt=""><figcaption></figcaption></figure></div>
 
 **Delete all**: Delete all the files present in the workspace.&#x20;
 {% endtab %}

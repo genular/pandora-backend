@@ -105,5 +105,3 @@ The images below show correlograms where significance testing and confidence int
 {% endtab %}
 {% endtabs %}
 
-**Download Options**: Users can download the raw data and plot images for offline analysis. Images are available in SVG format for scalability.
-
