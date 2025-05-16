@@ -2,7 +2,7 @@
 icon: globe
 ---
 
-# Account Creation
+# Account creation
 
 After you installed PANDORA, navigate to:
 
@@ -14,7 +14,7 @@ It could take up to **1 minute** for system to boot-up on first run.
 {% tab title="1. Login" %}
 Now, you will see main login screen where you can create  your account by clicking on **"Sign up now"**
 
-<figure><img src="../../.gitbook/assets/login.png" alt=""><figcaption><p>Sign-in screen</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/login (1).png" alt=""><figcaption><p>Sign-in screen</p></figcaption></figure>
 {% endtab %}
 
 {% tab title="2. Register" %}
