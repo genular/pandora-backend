@@ -1,6 +1,7 @@
 ---
+hidden: true
 icon: file-chart-column
 ---
 
-# Phase 6: Findings Report
+# Phase 7: Findings Report
 
