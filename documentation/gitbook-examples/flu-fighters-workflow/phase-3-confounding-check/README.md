@@ -1,4 +1,7 @@
 ---
+description: >-
+  In this phase, you will run t-SNE analysis to check for confounding variables
+  within your dataset.
 icon: chart-scatter-bubble
 ---
 

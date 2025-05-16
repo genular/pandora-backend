@@ -1,4 +1,7 @@
 ---
+description: >-
+  In this phase, you will gather and report findings for your top predictive
+  model.
 icon: flag-checkered
 ---
 

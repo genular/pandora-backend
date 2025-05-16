@@ -79,7 +79,7 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 #### Define Responder Status Rule
 
 1. Define "High Responders" as anyone with `h1_hai_gmt_fold_change` >= 4 **OR** `h3_hai_gmt_fold_change` >= 4
-   1. This rule is based on a commonly accepted threshold in immunology for high responders, based on an antibody titer increase of fourfold or more[<sup>1</sup>](https://www.sciencedirect.com/science/article/pii/S1081120610605728?via%3Dihub).
+   1. This rule is based on a commonly accepted threshold in immunology for high responders, based on an antibody titer increase of fourfold or more[<sup>1</sup>](https://www.cdc.gov/mmwr/preview/mmwrhtml/rr6207a1.htm).
 
 #### Implement the Rule
 
@@ -139,6 +139,6 @@ Feel free to experiment and observe the effects of other t-SNE side panel settin
 
 References
 
-1. Paris, K. & Sorensen, R. U. Assessment and clinical interpretation of polysaccharide antibody responses. Annals of Allergy, Asthma & Immunology 99, 462–464 (2007).
+1. Centers for Disease Control and Prevention. 2013. Prevention and control of seasonal   &#x20;influenza with vaccines. Recommendations of the advisory committee on immunization practices - United States, 2013-2014. \[Published erratum appears in   &#x20;2013 MMWR Recomm. Rep. 62: 906.] MMWR Recomm. Rep. 62: 1–43.
 
 You’ve now defined the responder variable, which classifies individuals based on immune response. This classification will guide the predictive models developed later.

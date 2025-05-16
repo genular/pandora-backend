@@ -1,4 +1,7 @@
 ---
+description: >-
+  In this phase, you will evaluate and assess model performance with statistical
+  methods and explainable AI techniques.
 icon: bullseye-arrow
 ---
 
