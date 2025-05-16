@@ -1,4 +1,5 @@
 ---
+description: Exploratory Data Analysis
 icon: chart-scatter-bubble
 ---
 

@@ -1,4 +1,5 @@
 ---
+description: Machine model building and interpretation
 icon: brain-circuit
 ---
 

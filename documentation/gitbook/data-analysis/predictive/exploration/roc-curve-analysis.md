@@ -2,6 +2,7 @@
 description: >-
   Provides users an easy way and visual way to assess diagnostic capabilities of
   their machine learning models
+icon: chart-line
 ---
 
 # ROC curve analysis

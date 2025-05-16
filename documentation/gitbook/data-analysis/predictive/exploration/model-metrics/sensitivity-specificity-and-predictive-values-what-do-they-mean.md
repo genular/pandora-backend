@@ -1,3 +1,7 @@
+---
+icon: info
+---
+
 # Sensitivity, specificity, and predictive values: what do they mean?
 
 So, you've built a predictive model in PANDORA, and you're looking at a bunch of metrics. Terms like Sensitivity, Specificity, PPV, and NPV can sound a bit intense, but they're actually super useful for understanding how well your model is performing, especially for classification tasks. Let's break them down in plain English.

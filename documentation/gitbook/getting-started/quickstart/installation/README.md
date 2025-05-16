@@ -69,3 +69,36 @@ icon: laptop
       * You will be directed to the PANDORA login screen. Proceed with [Account Creation](../../../general/user-account/account-creation.md) to begin using the platform.
 {% endtab %}
 {% endtabs %}
+
+### Launching PANDORA (**Previously Installed**)
+
+Follow these steps to launch PANDORA.
+
+**1. Ensure Docker is Running**\
+Make sure Docker Desktop (or your Docker environment) is running on your PC.
+
+**2. Check if PANDORA is Already Running**
+
+* Open your web browser and go to: `http://localhost:3010`
+* If PANDORA loads, it's already running, and you're good to go!
+
+**3. Starting a Previously Installed PANDORA Container (If Not Running)**\
+If PANDORA didn't load at the address above, but you've installed it before, the container might be stopped.
+
+* **Using Docker Desktop (GUI):**  \
+  1\. Open Docker Desktop.  \
+  2\. Go to the "Containers" section.  \
+  3\. Look for a container named `genular` (or similar, based on how you named it during installation).  \
+  4\. If it's listed but "Stopped", click the "Start" button (usually a play icon) next to it.  \
+  5\. Once started, try accessing `http://localhost:3010` again.
+*   **Using the Command Line:**    \
+    1\. Open your terminal or PowerShell.    \
+    2\. Try to start the existing container:
+
+    ```bash
+    docker start genular
+    ```
+
+    (Replace `genular` if you used a different name for the container).    \
+    3\. Once started, try accessing `http://localhost:3010` again.
+

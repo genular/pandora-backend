@@ -2,9 +2,10 @@
 description: >-
   Helping to reduce dimensionality and visualize relationships in a non-linear
   fashion
+icon: chart-scatter
 ---
 
-# t-SNE Analysis
+# t-SNE analysis
 
 Use the **t-SNE (t-distributed Stochastic Neighbor Embedding)** tab to visualize high-dimensional data in a low-dimensional map, typically 2D.
 

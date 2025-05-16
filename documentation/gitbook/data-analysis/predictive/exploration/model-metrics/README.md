@@ -1,3 +1,7 @@
+---
+icon: circle-info
+---
+
 # Model metrics
 
 When PANDORA builds a machine learning model, it provides a set of metrics to help you evaluate its performance. Understanding these metrics is crucial for knowing how well your model is working and whether it's suitable for your research questions in systems vaccinology and immunology.

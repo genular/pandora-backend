@@ -1,8 +1,9 @@
 ---
 description: Enables users to analyze feature importance in machine learning models.
+icon: chart-gantt
 ---
 
-# Variable Importance
+# Variable importance
 
 A **Variable Importance Score** in a machine learning model tells you **how much each input feature (or variable) contributes to the model's predictions.**
 

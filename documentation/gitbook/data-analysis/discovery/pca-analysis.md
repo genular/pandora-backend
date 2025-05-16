@@ -1,8 +1,9 @@
 ---
 description: Helping to reduce dimensionality and visualize relationships.
+icon: chart-scatter
 ---
 
-# PCA Analysis
+# PCA analysis
 
 Use the **PCA Analysis** tab to perform Principal Component Analysis (PCA). This is a powerful technique for **dimensionality reduction**, simplifying complex datasets by identifying the main axes of variation (principal components).
 

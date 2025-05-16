@@ -1,4 +1,8 @@
-# Side Panel
+---
+icon: circle-info
+---
+
+# Side panel
 
 The **Side Panel Options** presents the common tools and settings the user can find in the side panels for the tabs in Discovery
 

@@ -1,8 +1,9 @@
 ---
 description: Compare performance metrics for your machine learning models.
+icon: chart-line
 ---
 
-# Training Summary
+# Training summary
 
 Summary of performance metrics for the selected predictive models.
 
