@@ -71,7 +71,7 @@ Assess the performance of the trained models using appropriate metrics (e.g., AU
 
 <details>
 
-<summary><a href="phase-6-findings.md">Phase 6: synthesis of findings</a></summary>
+<summary><a href="phase-6-results.md">Phase 6: synthesis of findings</a></summary>
 
 Consolidate all analytical results, interpret the biological significance of the top predictors, and formulate a comprehensive report on the model's performance and findings.
 

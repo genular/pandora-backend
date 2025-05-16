@@ -15,7 +15,7 @@
     * [Importance of confounding checks](flu-fighters-workflow/phase-3-confounding-check/importance-of-confounding-checks.md)
   * [Phase 4: predictive modeling](flu-fighters-workflow/phase-3-predictive-modeling.md)
   * [Phase 5: model evaluation](flu-fighters-workflow/phase-5-model-evaluation.md)
-  * [Phase 6: findings](flu-fighters-workflow/phase-6-findings.md)
+  * [Phase 6: Results](flu-fighters-workflow/phase-6-results.md)
 
 ## Example 2: SARS-CoV-2 infection
 
