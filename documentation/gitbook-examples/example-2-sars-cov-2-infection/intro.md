@@ -1,5 +1,6 @@
 ---
 description: SARS-CoV-2 infection example workflow
+icon: '1'
 ---
 
 # Introduction
@@ -13,7 +14,7 @@ The **main objectives** are to:
 
 The dataset can be downloaded from this [**Zenodo data repository**](https://zenodo.org/records/4905965) or from below:&#x20;
 
-{% file src="../.gitbook/assets/covid_pitch.csv" %}
+{% file src="../.gitbook/assets/covid_pitch (1).csv" %}
 
 For more details, refer to the publication that describes the cohort and various analyses performed on the dataset:
 

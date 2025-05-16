@@ -24,11 +24,12 @@
   * [Variable Legend](example-2-sars-cov-2-infection/dataset-description/variable-legend.md)
 * [COVID Pitch Workflow](example-2-sars-cov-2-infection/covid-pitch-workflow/README.md)
   * [Phase 1: Data Overview](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview.md)
-  * [Phase 2: Immune Trajectories & Correlations](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-immune-trajectories-and-correlations.md)
-  * [Phase 3: Data Preparation for Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-data-preparation-for-predictive-modelling.md)
-  * [Phase 4: Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-predictive-modelling.md)
-  * [Phase 5: Predictive Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-results.md)
-  * [Phase 6: Findings Report](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-findings-report.md)
+  * [Phase 2: Immune Trajectories](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-immune-trajectories.md)
+  * [Phase 3: Correlations across immune responses](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-correlations-across-immune-responses.md)
+  * [Phase 4: Data Preparation for Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-data-preparation-for-predictive-modelling.md)
+  * [Phase 5: Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-modelling.md)
+  * [Phase 6: Predictive Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-predictive-results.md)
+  * [Phase 7: Findings Report](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-7-findings-report.md)
 
 ## Hypothetical: Drug Efficacy for Heart Failure
 

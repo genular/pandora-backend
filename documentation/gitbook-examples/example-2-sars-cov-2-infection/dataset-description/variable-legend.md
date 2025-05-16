@@ -1,8 +1,10 @@
 # Variable Legend
 
+
+
 <details>
 
-<summary>Timepoint</summary>
+<summary>Timepoint <span data-gb-custom-inline data-tag="emoji" data-code="1f559">🕙</span></summary>
 
 **Variables**&#x20;
 
@@ -23,7 +25,7 @@
 
 <details>
 
-<summary>Disease Severity </summary>
+<summary>Disease Severity <span data-gb-custom-inline data-tag="emoji" data-code="1f637">😷</span></summary>
 
 **Variables**&#x20;
 
@@ -38,7 +40,7 @@
 
 <details>
 
-<summary>Clinical Symptoms </summary>
+<summary>Clinical Symptoms <span data-gb-custom-inline data-tag="emoji" data-code="1f321">🌡️</span></summary>
 
 **Variables**&#x20;
 
@@ -53,7 +55,7 @@
 
 <details>
 
-<summary>Demographics</summary>
+<summary>Demographics <span data-gb-custom-inline data-tag="emoji" data-code="1f464">👤</span></summary>
 
 **Variables**&#x20;
 
@@ -68,7 +70,7 @@
 
 <details>
 
-<summary>Pseudo-Neutralisating Antibodies</summary>
+<summary>Pseudo-Neutralisating Antibodies <span data-gb-custom-inline data-tag="emoji" data-code="1f6e1">🛡️</span>🦠</summary>
 
 **Variables**&#x20;
 
@@ -84,7 +86,7 @@
 
 <details>
 
-<summary>Antibody-Dependent Effector Functions</summary>
+<summary>Antibody-Dependent Effector Functions <span data-gb-custom-inline data-tag="emoji" data-code="1f9ea">🧪</span><span data-gb-custom-inline data-tag="emoji" data-code="1f6e1">🛡️</span></summary>
 
 **Variables**&#x20;
 
@@ -103,7 +105,7 @@
 
 <details>
 
-<summary>SARS-CoV-2 protein-specific T cell responses</summary>
+<summary>SARS-CoV-2 protein-specific T cell responses 🦠🔬</summary>
 
 **Variables**&#x20;
 
@@ -120,7 +122,7 @@
 
 <details>
 
-<summary>Days post symptoms onset </summary>
+<summary>Days post symptoms onset <span data-gb-custom-inline data-tag="emoji" data-code="231b">⌛</span></summary>
 
 **Variables**&#x20;
 
@@ -134,7 +136,7 @@
 
 <details>
 
-<summary>Immunoglobin Assays - Antibody responses</summary>
+<summary>Immunoglobin Assays - Antibody responses <span data-gb-custom-inline data-tag="emoji" data-code="1f6e1">🛡️</span><span data-gb-custom-inline data-tag="emoji" data-code="1f52c">🔬</span></summary>
 
 **Variables**&#x20;
 
@@ -156,7 +158,7 @@
 
 <details>
 
-<summary>Spike-specific IgG+ Memory B cells</summary>
+<summary>Spike-specific IgG+ Memory B cells <span data-gb-custom-inline data-tag="emoji" data-code="1f4ad">💭</span>🦠</summary>
 
 **Variables**&#x20;
 
@@ -173,7 +175,7 @@
 
 <details>
 
-<summary>Meso Scale Discovery (MSD) Assays</summary>
+<summary>Meso Scale Discovery (MSD) Assays<span data-gb-custom-inline data-tag="emoji" data-code="1f52c">🔬</span><span data-gb-custom-inline data-tag="emoji" data-code="1f9ea">🧪</span></summary>
 
 **Variables**&#x20;
 
@@ -194,7 +196,7 @@
 
 <details>
 
-<summary>T cell proliferative responses</summary>
+<summary>T cell proliferative responses 🦠🔬</summary>
 
 **Variables**&#x20;
 
@@ -208,7 +210,7 @@
 
 <details>
 
-<summary>Responder </summary>
+<summary>Responder <span data-gb-custom-inline data-tag="emoji" data-code="1f6e1">🛡️</span><span data-gb-custom-inline data-tag="emoji" data-code="1f4aa">💪</span></summary>
 
 **Variables**&#x20;
 

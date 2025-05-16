@@ -41,7 +41,7 @@ The purpose of this phase is to examine the structure of the dataset, Specifical
 2. Upload the `covid_pitch.csv` file onto the Workspace&#x20;
 3. Select this dataset to start exploring and analyzing!&#x20;
 
-<figure><img src="../../.gitbook/assets/CP_Workspace_file selection.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/CP_Workspace_file selection.png" alt=""><figcaption><p>Selecting COVID Pitch dataset in Workspace </p></figcaption></figure>
 
 </details>
 
@@ -51,7 +51,7 @@ The purpose of this phase is to examine the structure of the dataset, Specifical
 
 1. Navigate to Data Overview by going to **Discovery -> Start -> Data overview**&#x20;
 
-<figure><img src="../../.gitbook/assets/Screenshot 2025-05-14 070809.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Screenshot 2025-05-14 070809.png" alt=""><figcaption><p>Steps to access 'Data overview' on PANDORA</p></figcaption></figure>
 
 2.  Select up to 5 variables for visualizing data distributions
 
@@ -73,14 +73,18 @@ As this dataset consists of both categorical and numerical features, [below](pha
 
 {% tabs %}
 {% tab title="Categorical Variables" %}
+As there are multiple data types within this dataset, it is valuable to view the distributions of these data types. Here, we are analyzing the distributions of the categorical variables, specifically `Donor ID` (manually added to the dataset), `Responder`, `Disease Severity`, `Sex`, and `Change or loss of taste`.&#x20;
+
 <figure><img src="../../.gitbook/assets/CP_data_categorical var distribution plot.png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/CP_data_categorical var table plot.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 
 {% tab title="Numerical Assays" %}
-<figure><img src="../../.gitbook/assets/CP_data_continuous var distribution plot.png" alt=""><figcaption></figcaption></figure>
+This is analysis of the numerical immunological assays with days as sorting&#x20;
 
-<figure><img src="../../.gitbook/assets/CP_data_continuous var table plot.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/CP_numerical distribution plot.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/CP_numerical table plot.png" alt=""><figcaption></figcaption></figure>
 {% endtab %}
 {% endtabs %}
