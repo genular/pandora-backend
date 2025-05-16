@@ -9,12 +9,12 @@
 ***
 
 * [Flu Fighters workflow](flu-fighters-workflow/README.md)
-  * [Phase 1: data import](flu-fighters-workflow/phase-1-data-import.md)
-  * [Phase 2: define responders](flu-fighters-workflow/phase-2-define-responders.md)
-  * [Phase 3: confounding check](flu-fighters-workflow/phase-3-confounding-check/README.md)
+  * [Phase 1: Data import](flu-fighters-workflow/phase-1-data-import.md)
+  * [Phase 2: Define responders](flu-fighters-workflow/phase-2-define-responders.md)
+  * [Phase 3: Confounding check](flu-fighters-workflow/phase-3-confounding-check/README.md)
     * [Importance of confounding checks](flu-fighters-workflow/phase-3-confounding-check/importance-of-confounding-checks.md)
-  * [Phase 4: predictive modeling](flu-fighters-workflow/phase-3-predictive-modeling.md)
-  * [Phase 5: model evaluation](flu-fighters-workflow/phase-5-model-evaluation.md)
+  * [Phase 4: Predictive modeling](flu-fighters-workflow/phase-3-predictive-modeling.md)
+  * [Phase 5: Model evaluation](flu-fighters-workflow/phase-5-model-evaluation.md)
   * [Phase 6: Results](flu-fighters-workflow/phase-6-results.md)
 
 ## Example 2: SARS-CoV-2 infection
