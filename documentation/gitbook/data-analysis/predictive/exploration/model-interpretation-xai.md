@@ -4,7 +4,7 @@ description: >-
   contributions to the model's performance.
 ---
 
-# Model Interpretation
+# Model interpretation - xAI
 
 <figure><img src="../../../.gitbook/assets/Prediction_Model Interpretation_Main_annotated_v2.png" alt=""><figcaption></figcaption></figure>
 
@@ -21,16 +21,16 @@ Users can perform multiple analyses with select features to investigate their co
    * Select two **variables** to compare in this analysis
 2. **Heatmap:** Depicts the interactions between two features by coloring cells according to the model’s output for combinations of feature values, showing how joint variations influence the prediction.
    * Select **two variables** for this analysis
-3. **ICE Plot (Individual Conditional Expectation):** Visualize the change in the prediction outcome as a feature varies while all other features are held constant, highlighting the marginal effect of each feature
+3. **ICE Plot** (Individual Conditional Expectation): Visualize the change in the prediction outcome as a feature varies while all other features are held constant, highlighting the marginal effect of each feature
    1. Select one **variable** to vary in this analysis
-4. **LIME Plot (Local Interpretable Model-agnostic Explanations):** Explain individual predictions by showing which features were most influential, helping to demystify the model’s behavior on a case-by-case basis.
+4. **LIME Plot** (Local Interpretable Model-agnostic Explanations): Explain individual predictions by showing which features were most influential, helping to demystify the model’s behavior on a case-by-case basis.
    * Plots the most influential variables that best explain the individual predictions
    * &#x20;Green bars indicate that a variable causes an increase in the probability (supports) the model. Red bars indicate that a variable causes a decrease in the probability (contradicts) the model.
    * Explanation Fit: Measure of how well the linear LIME model matches the region
 5. **Feature Importance:** Illustrates the importance of each feature in the predictive model, showing which features have the most significant impact on the model's predictions.
 6. **Interactive Effects:** Shows the interaction effects between features, highlighting how the combination of different features affects the model's output.
-7. **ALE Plot (Accumulated Local Effects):** Visualize how features impact the prediction on average, focusing on how the model’s output changes when a feature varies over its distribution
-8. **PDP  (Partial Dependence Plots) & ICE (Individual Conditional Expectation) Plot:** Show both average and individual feature effects on the model's prediction
+7. **ALE Plot** (Accumulated Local Effects): Visualize how features impact the prediction on average, focusing on how the model’s output changes when a feature varies over its distribution
+8. **PDP**  (Partial Dependence Plots) **& ICE** (Individual Conditional Expectation) Plot: Show both average and individual feature effects on the model's prediction
    1. Select variables to compare.
 
 <figure><img src="../../../.gitbook/assets/Model Interpretation_PDP and ICE.png" alt="" width="375"><figcaption></figcaption></figure>

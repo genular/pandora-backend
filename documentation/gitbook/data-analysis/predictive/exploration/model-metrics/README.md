@@ -1,4 +1,4 @@
-# Model Metrics
+# Model metrics
 
 When PANDORA builds a machine learning model, it provides a set of metrics to help you evaluate its performance. Understanding these metrics is crucial for knowing how well your model is working and whether it's suitable for your research questions in systems vaccinology and immunology.
 
@@ -47,3 +47,10 @@ There's no single magic number. Here's how to think about it:
 4. Don't Rely on a Single Metric: Look at a collection of relevant metrics. A model might have high `Accuracy` but terrible `Recall` for a rare but important group.
 5. Consider the Trade-offs: Often, improving `Precision` can lower `Recall`, and vice-versa. The `AUC` metrics help evaluate performance independent of picking a specific threshold, while metrics like `F1-Score` try to balance this trade-off.
 6. Iterate and Refine: Use these metrics to guide further model improvements, feature selection, or even how you define your groups.
+
+### References
+
+Beyer, W. H. [CRC Standard Mathematical Tables, 31st ed. ](https://www.amazon.com/exec/obidos/ASIN/1584882913)Boca Raton, FL: CRC Press, pp. 536 and 571, 2002.\
+Dodge, Y. (2008). [The Concise Encyclopedia of Statistics](https://www.amazon.com/Concise-Encyclopedia-Statistics-Springer-Reference/dp/0387317422). Springer.\
+Everitt, B. S.; Skrondal, A. (2010), [The Cambridge Dictionary of Statistics](https://www.amazon.com/Cambridge-Dictionary-Statistics-B-Everitt/dp/0521766990), Cambridge University Press.\
+Kotz, S.; et al., eds. (2006), [Encyclopedia of Statistical Sciences](https://www.amazon.com/Encyclopedia-Statistical-Sciences-Vol-Set/dp/0471055441), Wiley.

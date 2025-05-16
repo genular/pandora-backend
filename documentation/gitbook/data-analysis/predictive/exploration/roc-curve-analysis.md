@@ -4,9 +4,9 @@ description: >-
   their machine learning models
 ---
 
-# ROC Curve Analysis
+# ROC curve analysis
 
-**What ROC Curves (Training & Testing) Plot:**
+**What are ROC Curves (Training & Testing) Plots:**
 
 * A **ROC (Receiver Operating Characteristic) curve** is a graph.
 * It plots the **True Positive Rate (Sensitivity/Recall)** on the y-axis against the **False Positive Rate (1 - Specificity)** on the x-axis, at various classification thresholds.
@@ -15,13 +15,13 @@ description: >-
 
 **How This Helps:**
 
-1. **Visualizes Performance:**
+1. **Visualizes performance:**
    * A curve closer to the **top-left corner** means better performance (high true positives, low false positives).
    * The **Area Under the Curve (AUC)** is a single number summarizing this: 1.0 is perfect, 0.5 is like random guessing.
-2. **Detects Overfitting:**
+2. **Detects overfitting:**
    * **Crucially, you compare the two curves.**
    * If the **Training ROC is much better** (further top-left, higher AUC) than the **Testing ROC**, your model is likely **overfitting**. It performs well on data it's seen but poorly on new data. The Testing ROC shows its true generalization ability.
-3. **Threshold Independent View:** It shows how well the model separates classes regardless of which specific probability cut-off you choose to make a final classification.
+3. **Threshold independent view:** It shows how well the model separates classes regardless of which specific probability cut-off you choose to make a final classification.
 
 In short: ROC curves (especially comparing train vs. test) help you see how well your model distinguishes between classes and diagnose if it's just memorizing the training data (overfitting) or actually learning generalizable patterns.
 
