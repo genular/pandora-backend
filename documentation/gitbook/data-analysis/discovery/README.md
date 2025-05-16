@@ -5,7 +5,7 @@ icon: chart-scatter-bubble
 
 # Discovery
 
-The **Discovery** section in PANDORA offers a set of tools to help you get to know your biomedical datasets. It's designed for initial data exploration, visualization, and finding underlying patterns. Using these tools first can help you understand your data's characteristics, spot potential relationships, and form hypotheses before you move on to more complex modeling.
+The **Discovery** section in PANDORA offers a set of tools to help you get to know your biomedical datasets. It's designed for initial data exploration, visualization, and finding underlying patterns using unsupervised machine learning tools. Using these tools first can help you understand your data's characteristics, spot potential relationships, and form hypotheses before you move on to more complex modeling.
 
 Key goals when using the Discovery tools:
 
