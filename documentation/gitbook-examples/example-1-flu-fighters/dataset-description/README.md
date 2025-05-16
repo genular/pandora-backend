@@ -14,6 +14,20 @@ These variables comprise demographic characteristics (e.g., age, sex, ethnicity)
 
 <details>
 
+<summary><span data-gb-custom-inline data-tag="emoji" data-code="1f465">👥</span> Demographics</summary>
+
+
+
+* `subid1`: Unique participant ID.
+* `sex` (🔵/🔴): Biological sex (`M` or `F`).
+
+- `z_score_continuous`: Weight-for-height Z-score (nutritional status).
+- `year`: Year of sample collection (2017 or 2018).
+
+</details>
+
+<details>
+
 <summary><strong>🧬 Baseline Immune Features</strong></summary>
 
 

@@ -2,7 +2,7 @@
 icon: bullseye-arrow
 ---
 
-# Phase 5: Predictive Results
+# Phase 5: model evaluation
 
 Assess and compare model performance using statistical metrics like AUC, and explainable AI techniques to understand model predictions. This allows for identification of the most reliable models and extraction of biologically meaningful insights from models.
 
@@ -100,51 +100,6 @@ Assess and compare model performance using statistical metrics like AUC, and exp
 <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Model Interpretation_Heatmap.png" alt=""><figcaption></figcaption></figure>
 
 
-
-</details>
-
-<details>
-
-<summary>5. Synthesize Findings</summary>
-
-After evaluating the models and identifying the best model, it is time to report your findings.
-
-1.  Save results for your best model, which may include the following. (You can save most graphs and plots by right-clicking and saving the image as a PNG, or hovering your cursor over the image until a green box appears to download the graph as an SVG)
-
-    * Table of performance metrics for your model
-    * Box plots comparing performance metrics for top models
-
-    <figure><img src="../.gitbook/assets/FF_Phase 5_Training Summary Box Plots.png" alt="" width="375"><figcaption></figcaption></figure>
-
-
-
-    * Training and Testing ROC Curves
-
-    <figure><img src="../.gitbook/assets/FF_Phase 5_Combined ROC Curves RF.png" alt="" width="563"><figcaption></figcaption></figure>
-
-
-
-    * Model Interpretation Plots
-
-    <figure><img src="../.gitbook/assets/FF_Phase 5_Model Interp Heatmap RF.png" alt="" width="375"><figcaption></figcaption></figure>
-
-
-
-    * Variable Importance bar plot (top predictive features
-
-
-
-    <figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Variable Importance Plot_white background.png" alt="" width="375"><figcaption></figcaption></figure>
-
-    * Features across dataset dot plots
-
-<figure><img src="../.gitbook/assets/FF_ Phase 5_Exploration_Features Across Dataset Plot.png" alt="" width="375"><figcaption></figcaption></figure>
-
-2. Identify biological themes associated with the top baseline predictors
-   * Research and discuss biological relevance of top predictors
-   * Consider whether top predictors are exhibited as high or low (upregulated or downregulated) for each responder group
-
-3) Compile all your findings into a report on your model.
 
 </details>
 

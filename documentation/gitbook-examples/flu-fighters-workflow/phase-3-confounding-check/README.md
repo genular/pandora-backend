@@ -14,7 +14,7 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 2. Configure **Column Selection**
    1. Select all `*fold_change` columns
    2. Select `year`, `sex`, and the responder column for **Grouping variable**
-   3. Select `age_months` and `z_score_continuous` for **Color variable**
+   3. Select `z_score_continuous` for **Color variable**
 
 <figure><img src="../../.gitbook/assets/FF_Phase 3_Confounding Setup tSNE_annotated.png" alt=""><figcaption></figcaption></figure>
 
@@ -27,34 +27,27 @@ Assess whether confounding variables, such as age, sex, or batch year, are evenl
 <summary>2. Check for confounding variables</summary>
 
 1. Compare all t-SNE plots generated to the responder t-SNE plot
-   1. Is there an approximately equal distribution of confounding variable values in each responder class?  If not, there may be confounding in your predictive model.
-      1. e.x. Is there an equal distribution of males and females in each responder class?
+   * Is there an approximately equal distribution of confounding variable values in each responder class?  If not, there may be confounding in your predictive model.
+     * ex. Is there an equal distribution of males and females in each responder class?
 
 2)  An example confounding check with the manual HAI Responder group
 
-    1. Age vs HAI Responder
-       1. Here we see no confounding effect from age
-
-
-
-    <figure><img src="../../.gitbook/assets/FF_Phase  3_Age vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
-
-    1. Z-score vs HAI Responder
-       1. Here we see no confounding effect from z-score
+    * Z-score vs HAI Responder
+      * Here we see no confounding effect from z-score
 
 
 
     <figure><img src="../../.gitbook/assets/FF_Phase  3_Z-score vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 
-    1. Year vs HAI Responder
-       1. Confounding is unclear
+    * Year vs HAI Responder
+      * Confounding is unclear
 
 
 
     <figure><img src="../../.gitbook/assets/FF_Phase  3_Batch Year vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 
-    1. Sex vs HAI Responder
-       1. Confounding is unclear
+    * Sex vs HAI Responder
+      * Confounding is unclear
 
 <figure><img src="../../.gitbook/assets/FF_Phase  3_Sex vs HAI Responder.png" alt="" width="563"><figcaption></figcaption></figure>
 

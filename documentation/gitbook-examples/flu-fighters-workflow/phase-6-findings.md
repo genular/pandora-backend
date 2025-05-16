@@ -2,7 +2,7 @@
 icon: flag-checkered
 ---
 
-# Phase 6: Synthesize Findings
+# Phase 6: findings
 
 Report the best model and its test set performance (e.g., AUC). List the top predictors identified via **Variable Importance**. Describe insights from confounder analysis (Phase 3) and **Model Interpretation** (if applicable). Discuss the biological relevance of the top predictors.
 
@@ -49,9 +49,9 @@ Report the best model and its test set performance (e.g., AUC). List the top pre
 
 <details>
 
-<summary>2. Analyze GO Terms &#x26; Biological Themes (if applicable)</summary>
+<summary>2. Analyze GO Terms &#x26; Biological Themes</summary>
 
-Pathway enrichment analysis is performed outside of PANDORA and is a powerful tool to understand the biological themes, which are already shown in the top predictive GO terms that may be present in your model.&#x20;
+The GO terms present in your dataset are a result of pathway enrichment analysis, which is a powerful tool external to PANDORA that helps identify biological themes from gene expression. You can use GO term databases to identify GO terms to uncover overall biological themes in responder groups and model prediction.
 
 * Pathway Enrichment Analysis Tools:
   * clusterProfiler in R
@@ -66,7 +66,7 @@ Pathway enrichment analysis is performed outside of PANDORA and is a powerful to
 
 
 
-GO Terms can be used to identify biological themes using the following workflow:
+GO Terms alongside predictive variables can be used to identify biological themes using the following workflow:
 
 1. Identify GO terms from your top predictors
    1. Open the Gene Ontology Resource [webpage](https://geneontology.org/)
@@ -95,7 +95,7 @@ GO Terms can be used to identify biological themes using the following workflow:
 3.  Analyze the resultant heatmap
 
     1. Take note on how the expression of top predictive variables varies among the responder classes.
-    2. With biological themes in mind from both from predictive variables and top GO terms, consider the biological themes among responder classes.
+    2. With biological themes in mind from predictive variables and top GO terms, consider the biological themes among responder classes.
 
 
 
