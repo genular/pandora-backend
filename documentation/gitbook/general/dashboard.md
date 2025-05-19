@@ -32,8 +32,6 @@ The table on Dashboard consists of various information and operations related to
 {% endtab %}
 
 {% tab title="Operations" %}
-<figure><img src="../.gitbook/assets/Dashboard_Operations.png" alt=""><figcaption></figcaption></figure>
-
 The operations column consists of the following:&#x20;
 
 * **More information**: View basic information, processing time and statistics for the successful models and resamples in specific Task.

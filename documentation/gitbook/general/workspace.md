@@ -7,7 +7,7 @@ icon: copy
 The Workspace is a space where the user is able to upload their datasets for analysis. This is also the space where any files saved to PANDORA (e.g. saving your cluster classifications with the dataset) will show up.
 
 {% hint style="info" %}
-System currently supports only **.csv** files.
+System currently supports only **.csv** file format.
 {% endhint %}
 
 <figure><img src="../.gitbook/assets/workspace.png" alt=""><figcaption></figcaption></figure>
