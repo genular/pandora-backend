@@ -1,5 +1,6 @@
 ---
 description: Overview of the phases within the workflow
+hidden: true
 icon: '3'
 ---
 
