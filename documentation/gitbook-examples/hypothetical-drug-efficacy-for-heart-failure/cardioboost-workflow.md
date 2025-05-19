@@ -244,6 +244,6 @@ icon: '3'
 
 
 **Example Conclusion:**\
-PANDORA analysis of the hypothetical CardioGuard trial suggests that treatment with CardioGuard is an important factor associated with a reduced likelihood of having cardiovascular disease (best model Test AUC: 0.75). The `TreatmentGroup` variable was a key predictor, and PDP/ICE plots indicated an estimated 15% absolute risk reduction in predicted `cardio` status for the CardioGuard group. Other significant predictors included `ap_hi`, `cholesterol` (level 3 vs 1), and `smoke`. These findings warrant further investigation into CardioGuard as a cardiovascular protective agent.
+&#xNAN;_&#x50;ANDORA analysis of the hypothetical CardioGuard trial suggests that treatment with CardioGuard is an important factor associated with a reduced likelihood of having cardiovascular disease (best model Test AUC: 0.75). The `TreatmentGroup` variable was a key predictor, and PDP/ICE plots indicated an estimated 15% absolute risk reduction in predicted `cardio` status for the CardioGuard group. Other significant predictors included `ap_hi`, `cholesterol` (level 3 vs 1), and `smoke`. These findings warrant further investigation into CardioGuard as a cardiovascular protective agent._
 
 </details>

@@ -12,9 +12,9 @@ This workflow demonstrates how to use PANDORA to analyze data from a hypothetica
 2. Develop a predictive model to identify individuals at higher or lower risk of cardiovascular disease, and how CardioGuard modifies this risk.
 3. Explore baseline patient characteristics and examination features that predict cardiovascular disease status in the context of the trial.
 
-Link to a hypothetical example dataset (conceptual, based on your description):`cardioguard_trial_data.csv` (This CSV would contain the features you listed, plus a `TreatmentGroup` column for the trial).
 
-The dataset would conceptually contain data from a cohort of individuals, some of whom might be at risk for cardiovascular disease. They are randomized to receive either CardioGuard or a placebo.
+
+The dataset contain data from a cohort of individuals, some of whom might be at risk for cardiovascular disease. They are randomized to receive either CardioGuard or a placebo.
 
 {% file src="../.gitbook/assets/cardioguard_trial_data.csv" %}
 The dataset consists of 70 000 records of patients data, 11 features + target.
