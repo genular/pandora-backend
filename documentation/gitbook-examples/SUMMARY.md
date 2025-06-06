@@ -22,14 +22,14 @@
 * [Introduction](example-2-sars-cov-2-infection/intro.md)
 * [Dataset Description](example-2-sars-cov-2-infection/dataset-description/README.md)
   * [Variable Legend](example-2-sars-cov-2-infection/dataset-description/variable-legend.md)
-* [COVID Pitch Workflow](example-2-sars-cov-2-infection/covid-pitch-workflow/README.md)
-  * [Phase 1: Data Overview](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview.md)
-  * [Phase 2: Immune Trajectories](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-immune-trajectories.md)
-  * [Phase 3: Correlations across immune responses](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-correlations-across-immune-responses.md)
-  * [Phase 4: Data Preparation for Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-data-preparation-for-predictive-modelling.md)
-  * [Phase 5: Predictive Modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-modelling.md)
-  * [Phase 6: Predictive Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-predictive-results.md)
-  * [Phase 7: Findings Report](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-7-findings-report.md)
+* [COVID Pitch workflow](example-2-sars-cov-2-infection/covid-pitch-workflow/README.md)
+  * [Phase 1: Data overview](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview.md)
+  * [Phase 2: Dimensionality reduction](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-dimensionality-reduction.md)
+  * [Phase 3: Correlation analysis](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-correlation-analysis.md)
+  * [Phase 4: Data pre-processing](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-data-pre-processing.md)
+  * [Phase 5: Predictive modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-modelling.md)
+  * [Phase 6: Model evaluation](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-model-evaluation.md)
+  * [Phase 7: Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-7-results.md)
 
 ## Hypothetical: Drug Efficacy for Heart Failure
 

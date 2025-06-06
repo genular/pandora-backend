@@ -3,7 +3,7 @@ hidden: true
 icon: chart-scatter-bubble
 ---
 
-# Phase 2: Immune Trajectories
+# Phase 2: Dimensionality reduction
 
 ### Purpose
 
@@ -45,7 +45,7 @@ To choose a grouping variable, go to PCA Settings (below Preprocessing Options)&
 
 <figure><img src="../../.gitbook/assets/Screenshot 2025-05-14 084250 (1).png" alt=""><figcaption></figcaption></figure>
 
-For this dataset, we will be grouping the variables based on `Disease severity`, `Timepoint` and optionally `Responder` variables. The plots and analysis using these grouping variables can be seen [below](phase-2-immune-trajectories.md#pca-plots-and-analysis-based-on-grouping-variables).
+For this dataset, we will be grouping the variables based on `Disease severity`, `Timepoint` and optionally `Responder` variables. The plots and analysis using these grouping variables can be seen [below](phase-2-dimensionality-reduction.md#pca-plots-and-analysis-based-on-grouping-variables).
 
 </details>
 
