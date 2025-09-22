@@ -1,7 +1,6 @@
 ---
-hidden: true
-icon: file-chart-column
+icon: file-magnifying-glass
 ---
 
-# Phase 7: Findings Report
+# Phase 7: Results
 

@@ -6,9 +6,18 @@ icon: '2'
 
 This dataset contains a mixture of categorical **clinical parameters** (clinical symptoms, disease severity) and numerical **immunological parameters** (immunoglobin, T cells, memory B cells, antibodies) taken over a period of 6 months, denoted by timepoint and days post onset of symptoms, along with basic demographics (age, sex) for each donor.&#x20;
 
-For more details about each variable, see the [**variable legend**](variable-legend.md) for this dataset&#x20;
+For more details about each variable, see the [**variable legend**](variable-legend.md) for this dataset.
 
 <figure><img src="../../.gitbook/assets/CP_Dataset overview_natcomm paper.png" alt=""><figcaption><p>Figure 1. Clinical study overview (<em>Tomic, A et al. NatComm, 2022)</em></p></figcaption></figure>
+
+### Questions to answer
+
+The goal of this workflow is to use this COVID Pitch dataset to answer two important questions:&#x20;
+
+* Are there certain immune parameters that can explain the disease severity experienced by individuals and that are dependent on time post SARS-CoV-2 infection?&#x20;
+* Can we utilize certain immune parameters measured early after infection to predict whether an individual builds a durable immune response to SARS-CoV-2?&#x20;
+
+As this study was conducted at the beginning of the COVID-19 pandemic, these questions were critical for determining correlates of protection for this disease, understanding immune profiles from various degrees of infection and innovating measures for future cases. Below, we explain the broad groups of variables in this dataset that allowed to find answers to these questions.&#x20;
 
 ### Clinical Parameters&#x20;
 
@@ -84,7 +93,7 @@ These variables comprise of various immunological assays that quantify immune pa
 
 ### Responder Status&#x20;
 
-The **seropositivity** of the donors at 6 months post symptoms onset determined whether the donor was a **low or high responder**. This seropositivity was calculated by the titer of the anti-nucleocapsid-specific antibodies. A titer of greater than or equal to 1.4 indicated seropositivity.&#x20;
+The **seropositivity** of the donors at 6 months post symptoms onset determined whether the donor was a **low or high responder**. This seropositivity was calculated by the titer of the anti-nucleocapsid-specific antibodies. A titer of greater than or equal to 1.4 indicated seropositivity. We use the corresponding variable, **`Responder`**, as the feature that machine learning algorithms predict using early timepoint immune parameters.&#x20;
 
 ### Demographic and Time variables&#x20;
 
