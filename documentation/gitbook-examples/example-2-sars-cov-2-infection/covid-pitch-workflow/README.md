@@ -12,7 +12,7 @@ This example workflow illustrates the application of PANDORA to&#x20;
 
 <details>
 
-<summary><a href="phase-1-data-overview/"><strong>Phase 1: Data overview</strong></a></summary>
+<summary><a href="broken-reference"><strong>Phase 1: Data overview</strong></a></summary>
 
 
 

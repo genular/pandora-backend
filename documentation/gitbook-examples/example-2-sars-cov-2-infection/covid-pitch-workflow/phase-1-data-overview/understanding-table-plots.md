@@ -15,12 +15,12 @@ Table plots also provide vital information to understand the structure of the da
 * Visualize and examine aggregated distribution patterns across multiple variables&#x20;
 * Identify variables with missing data and outliers&#x20;
 
-### What does PANDORA's tables plots show?&#x20;
+### What do PANDORA's table plots show?&#x20;
 
 Generally the table plot will consist of the following features:&#x20;
 
 * **Sorting variable:** The first plot will be the sorting variable that will determine the position of the samples.
-* **Y-axis**: The position of a sample in the sorted list (0-100% quantiles). Hence earlier datapoints are present on top of the graph while later datapoints are present in the bottom.&#x20;
+* **Y-axis**: The position of a sample in the sorted list (0-100% quantiles). Hence, earlier datapoints are present on top of the graph while later datapoints are present in the bottom.&#x20;
 * **Table bins information:** Present in the bottom left of the plot. Provides information about:&#x20;
   * Number of row bins&#x20;
   * Number of objects&#x20;
@@ -29,7 +29,7 @@ Generally the table plot will consist of the following features:&#x20;
 
 <figure><img src="../../../.gitbook/assets/CP_table plot example.png" alt=""><figcaption></figcaption></figure>
 
-### What features to observe to obtain information from a table plot?
+### How to obtain information from a table plot?
 
 As an example, let us look at a table plot with **days after positive SARS-Cov-2 test a sample was taken** (`Timepoint`) as the **sorting variable** and variables of interest as&#x20;
 
@@ -38,7 +38,9 @@ As an example, let us look at a table plot with **days after positive SARS-Cov-2
 * `Total pos T cell elispot` : total activated T cell count
 * `Responder`: outcome of immune response durability at 6 months
 
-Here are the features to look for each type of variable:&#x20;
+<figure><img src="../../../.gitbook/assets/CP_table plot explanation.png" alt=""><figcaption></figcaption></figure>
+
+Here are the key features to analyze in the plot for each type of variable:&#x20;
 
 * Numerical variables
   * **Log transformation:** The title of the graph can appear as the variable name, or log (variable name), like seen with `log(S.IgG)` in the plot below (third graph).&#x20;
@@ -55,6 +57,4 @@ Here are the features to look for each type of variable:&#x20;
     * These bar colors give a general indication of the distribution of data within each category. It can also indicate missing values when present
     * For example, in the second graph of `Disease.severity`, it is clear a higher number of blue bars are present compared to orange and yellow
   * **Legend:** Provides name of the category corresponding to each color and includes missing values&#x20;
-    * For example in the fifth graph of the `Responder` variable, we can see that there are about the same numbers of high and low responders and a few missing values
-
-<figure><img src="../../../.gitbook/assets/CP_table plot explanation.png" alt=""><figcaption></figcaption></figure>
+    * For example, in the `Responder` variable graph, we can see that there are about the same numbers of high and low responders and a few missing values
