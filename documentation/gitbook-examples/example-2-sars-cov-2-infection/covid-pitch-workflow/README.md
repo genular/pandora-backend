@@ -20,7 +20,7 @@ This example workflow illustrates the application of PANDORA to&#x20;
 
 <details>
 
-<summary><a href="phase-2-dimensionality-reduction/"><strong>Phase 2: Dimensionality reduction</strong></a> </summary>
+<summary><a href="phase-2-multivariate-exploratory-analysis/"><strong>Phase 2: Dimensionality reduction</strong></a> </summary>
 
 
 
@@ -28,7 +28,7 @@ This example workflow illustrates the application of PANDORA to&#x20;
 
 <details>
 
-<summary><a href="phase-3-correlation-analysis.md"><strong>Phase 3: Correlation analysis</strong></a></summary>
+<summary><a href="broken-reference"><strong>Phase 3: Correlation analysis</strong></a></summary>
 
 
 
@@ -36,7 +36,7 @@ This example workflow illustrates the application of PANDORA to&#x20;
 
 <details>
 
-<summary><a href="phase-4-data-pre-processing.md"><strong>Phase 4: Data pre-processing</strong></a></summary>
+<summary><a href="phase-3-data-pre-processing.md"><strong>Phase 4: Data pre-processing</strong></a></summary>
 
 This phase isolates the specific data needed for the supervised task: predicting the 6-month outcome from early data
 
@@ -44,7 +44,7 @@ This phase isolates the specific data needed for the supervised task: predicting
 
 <details>
 
-<summary><a href="phase-5-predictive-modelling/"><strong>Phase 5: Predictive modelling</strong></a> </summary>
+<summary><a href="phase-4-predictive-modelling/"><strong>Phase 5: Predictive modelling</strong></a> </summary>
 
 
 
@@ -52,7 +52,7 @@ This phase isolates the specific data needed for the supervised task: predicting
 
 <details>
 
-<summary><a href="phase-6-model-evaluation/"><strong>Phase 6: Model evaluation</strong></a></summary>
+<summary><a href="phase-5-model-evaluation/"><strong>Phase 6: Model evaluation</strong></a></summary>
 
 
 

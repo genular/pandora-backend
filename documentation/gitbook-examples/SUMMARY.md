@@ -26,15 +26,14 @@
   * [Phase 1: Data overview](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview/README.md)
     * [Understanding distribution plots](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview/understanding-distribution-plots.md)
     * [Understanding table plots](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-1-data-overview/understanding-table-plots.md)
-  * [Phase 2: Dimensionality reduction](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-dimensionality-reduction/README.md)
-    * [Why PCA?](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-dimensionality-reduction/why-pca.md)
-  * [Phase 3: Correlation analysis](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-correlation-analysis.md)
-  * [Phase 4: Data pre-processing](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-data-pre-processing.md)
-  * [Phase 5: Predictive modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-modelling/README.md)
-    * [Algorithms for biomedical data](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-predictive-modelling/algorithms-for-biomedical-data.md)
-  * [Phase 6: Model evaluation](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-model-evaluation/README.md)
-    * [How to evaluate the model?](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-model-evaluation/how-to-evaluate-the-model.md)
-  * [Phase 7: Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-7-results.md)
+  * [Phase 2: Multivariate exploratory analysis](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-multivariate-exploratory-analysis/README.md)
+    * [Why PCA?](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-2-multivariate-exploratory-analysis/why-pca.md)
+  * [Phase 3: Data pre-processing](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-3-data-pre-processing.md)
+  * [Phase 4: Predictive modelling](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-predictive-modelling/README.md)
+    * [Algorithms for biomedical data](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-4-predictive-modelling/algorithms-for-biomedical-data.md)
+  * [Phase 5: Model evaluation](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-model-evaluation/README.md)
+    * [How to evaluate the model?](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-5-model-evaluation/how-to-evaluate-the-model.md)
+  * [Phase 6: Results](example-2-sars-cov-2-infection/covid-pitch-workflow/phase-6-results.md)
 
 ## Hypothetical: Drug Efficacy for Heart Failure
 

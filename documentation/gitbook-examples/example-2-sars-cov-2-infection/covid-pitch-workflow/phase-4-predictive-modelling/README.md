@@ -6,9 +6,9 @@ hidden: true
 icon: diagram-predecessor
 ---
 
-# Phase 5: Predictive modelling
+# Phase 4: Predictive modelling
 
-Upload the processed dataset from [**Phase 4**](../phase-4-data-pre-processing.md), then configure and run predictive models in PANDORA&#x20;
+Upload the processed dataset from [**Phase 4**](../phase-3-data-pre-processing.md), then configure and run predictive models in PANDORA&#x20;
 
 <details>
 
