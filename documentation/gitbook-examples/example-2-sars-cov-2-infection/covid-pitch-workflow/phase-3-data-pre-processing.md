@@ -6,15 +6,15 @@ hidden: true
 icon: table
 ---
 
-# Phase 4: Data pre-processing
+# Phase 3: Data pre-processing
 
-The goal of our predictive model is to determine early immune signatures that can predict the durability of person's immune response to SARS-CoV-2 infection. In terms of our data, we aim to use an early timepoint, specifically **28 days post onset of SARS-CoV-2 symptoms** (days 21-41 for asymptomatic samples), to predict the **responder status** of the health care workers, which was calculated based on the **titer of the anti-nucleocapsid-specific antibodies measured 6 months post symptoms onset.**&#x20;
+The goal of our predictive model is to determine early immune signatures that can predict the durability of person's immune response to SARS-CoV-2 infection. Thus, the predictive variables used from our dataset should be early timepoint immunological assays, specifically **28 days post onset of SARS-CoV-2 symptoms** (days 21-41 for asymptomatic samples). The outcome variable (what is being predicted) should be **responder status** of the health care workers, which was calculated based on the **titer of the anti-nucleocapsid-specific antibodies measured 6 months post symptom onset.** &#x20;
 
-Below provided in the procedure on how to filter the data for this task. This step requires data manipulation **outside** of PANDORA using programming tools like Python and R. An example of the procedure using Python has also been provided below.&#x20;
+Provided below is the procedure on how to filter the data for this task. This step requires data manipulation **outside** of PANDORA using programming tools like Python and R, or Excel. An example of the procedure using Python has also been provided below.&#x20;
 
 <details>
 
-<summary>Procedure for data manipulation </summary>
+<summary>Procedure Outline for data manipulation </summary>
 
 * Start with the original [durability.csv](../../).
 * **Filter Samples:** Select only the samples corresponding to an _**early**_**&#x20;timepoint**, specifically **Day 28 post-symptom onset** ( `Days pso` = 28)or equivalent for asymptomatic (`Days pso` roughly between 21-41).
@@ -50,7 +50,7 @@ remove_columns = ['Fever', 'Cough', 'Change or loss of taste', 'Anosmia', 'Fatig
                   'Arthralgia', 'Headache', 'Diarrhoea', 'Vomiting', 'Nausea', 
                   'Chest pain', 'Anorexia', 'Asthma', 'Timepoint', 'Responder']
 
-# Keep all columns except the remove columns 
+# Keep all columns except the removed columns 
 feature_columns = [col for col in df.columns if col not in remove_columns] 
 day28_df = day28_df[feature_columns]
 
@@ -68,5 +68,17 @@ final_df.to_csv('covid_pitch_day28_predictors_month6_outcome.csv', index=False)
 
 
 </details>
+
+{% hint style="info" %}
+### Why is data pre-processing important?
+
+Data pre-processing involves vital steps in cleaning, organizing, and transforming your raw data into a form that your predictive ML model can use effectively. The steps taken in this process are largely informed by your immunological question and findings in exploratory data analysis. The steps described above are important for the following reasons:
+
+* **Improving model accuracy:** Clean and focused data allows your algorithm to learn patterns effectively.
+* **Reducing noise:** Removing irrelevant data prevents misleading insights. In our case, based on the immunological question, we care only about early immune signatures, so we removed any predictive feature data from later timepoints and that was not considered an immune signature (such as demographics)
+* **Reducing bias:** A model may give extra weight in the direction of duplicate observations that is not representative of the true model. Removing duplicate Donor IDs prevents this issue.
+{% endhint %}
+
+***
 
 Now that we have our filtered dataset, we are ready to start the predictive modelling on the next phase!&#x20;
