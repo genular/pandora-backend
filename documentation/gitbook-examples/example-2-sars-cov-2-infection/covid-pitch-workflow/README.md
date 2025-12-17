@@ -12,7 +12,7 @@ This example workflow illustrates the application of PANDORA to&#x20;
 
 <details>
 
-<summary><a href="broken-reference"><strong>Phase 1: Data overview</strong></a></summary>
+<summary><a href="/broken/pages/iwveH8eSR2l8Os81YGNc"><strong>Phase 1: Data overview</strong></a></summary>
 
 
 
@@ -28,7 +28,7 @@ This example workflow illustrates the application of PANDORA to&#x20;
 
 <details>
 
-<summary><a href="broken-reference"><strong>Phase 3: Correlation analysis</strong></a></summary>
+<summary><a href="/broken/pages/B3FCqMaVWKisZCae9PQu"><strong>Phase 3: Correlation analysis</strong></a></summary>
 
 
 

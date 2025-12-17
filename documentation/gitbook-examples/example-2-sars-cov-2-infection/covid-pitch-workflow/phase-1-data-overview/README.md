@@ -131,7 +131,7 @@ Caution should be taken when using median imputation for features containing mor
 The distribution plot displays the frequency and spread of individual variables, hence providing information about skewness, potential outliers, and correlations between variables. Here, we will provide an example of interpreting results from the distribution plot generated in the previous steps.
 
 {% hint style="info" %}
-For a more comprehensive overview and understanding of distribution plots, along with how to analyze the ones produced in PANDORA, visit the [**Understanding distribution plots**](broken-reference) page
+For a more comprehensive overview and understanding of distribution plots, along with how to analyze the ones produced in PANDORA, visit the [**Understanding distribution plots**](/broken/pages/1RKG02GU57A8IHjZ4ZqY) page
 {% endhint %}
 
 <figure><img src="../../../.gitbook/assets/CovidPitch_Distribution Plot_annotated.png" alt=""><figcaption><p>Distribution plot generated in the COVID Pitch example for variables <code>Timepoint</code>, <code>Disease severity</code>, <code>Responder, S-IgG</code>, and <code>S-IgG memB SARS-CoV2</code></p></figcaption></figure>
@@ -161,7 +161,7 @@ Based on the distribution plot that was generated in our example, and is shown a
 This plot can be used to visualize distribution patterns for multiple variables together in a single figure, examine missing values, and understand data types and unique value counts.
 
 {% hint style="info" %}
-For a more comprehensive overview and understanding of table plots, along with how to analyze the ones produced in PANDORA, visit the [**Understanding table plots**](broken-reference) page
+For a more comprehensive overview and understanding of table plots, along with how to analyze the ones produced in PANDORA, visit the [**Understanding table plots**](/broken/pages/inRqGpJtmqaHUwEVEhqh) page
 {% endhint %}
 
 To view the table plots, select the **Table Plot** tab (located left of the Distribution Plot tab)
