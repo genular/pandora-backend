@@ -52,7 +52,7 @@ This phase isolates the specific data needed for the supervised task: predicting
 
 <details>
 
-<summary><a href="phase-5-model-evaluation/"><strong>Phase 6: Model evaluation</strong></a></summary>
+<summary><a href="phase-5-model-evaluation.md"><strong>Phase 6: Model evaluation</strong></a></summary>
 
 
 

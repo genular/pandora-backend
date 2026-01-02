@@ -199,8 +199,8 @@ The **biplot** for `disease severity` is shown below:&#x20;
 
 From the biplot, we can infer parameters that lead to the separation between the immunophenotypic groups.
 
-* We can see that the **antibody responses** separated **immunophenotypic group 1,** which consisted of the distinct immunophenotypes for the samples with mild disease severity
-* The **T-cell responses** separated **immunophenotypic group 2,** which consisted of the samples with mild disease severity whose immunophenotype shared similarity with those with severe disease severity
+* The **T-cell responses** separated **immunophenotypic group 1,** which consisted of the samples with mild disease severity whose immunophenotype shared similarity with those with severe disease severity
+* We can see that the **antibody responses** separated **immunophenotypic group 2,** which consisted of the distinct immunophenotypes for the samples with mild disease severity
 
 ***
 
