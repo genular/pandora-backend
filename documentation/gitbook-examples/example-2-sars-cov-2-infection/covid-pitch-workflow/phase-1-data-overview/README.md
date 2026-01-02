@@ -2,7 +2,6 @@
 description: >-
   In this phase, we will import the dataset downloaded from 'Introduction', and
   examine the structure of the dataset for downstream analysis.
-hidden: true
 icon: chart-mixed
 ---
 

@@ -2,7 +2,6 @@
 description: >-
   In this phase, you will create models to predict the responder status at 6
   months after infection from early timepoint data (day 28)
-hidden: true
 icon: diagram-predecessor
 ---
 

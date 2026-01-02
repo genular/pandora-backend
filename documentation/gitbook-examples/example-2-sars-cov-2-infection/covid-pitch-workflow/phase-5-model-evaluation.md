@@ -2,7 +2,6 @@
 description: >-
   In this phase, we will evaluate and assess model performance with statistical
   methods and explainable AI techniques.
-hidden: true
 icon: square-poll-vertical
 ---
 

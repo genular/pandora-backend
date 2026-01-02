@@ -2,7 +2,6 @@
 description: >-
   In this phase, we will conduct analyses to identify patterns within the
   dataset
-hidden: true
 icon: chart-scatter-bubble
 ---
 
@@ -269,7 +268,7 @@ This analysis can used to inform hypotheses that look deeper into distinct immun
 
 ### Analysis 2 - Correlation Analysis
 
-Correlation analysis helps understand the relationships _between_ different immune measurements across all samples and timepoints. This helps confirm if certain responses tend to occur together (positive correlation) or are mutually exclusive/inversely related (negative correlation). This section presents how to produce a correlation matrix and interpret biological insight from those correlations.&#x20;
+Correlation analysis helps understand the relationships _between_ different immune measurements across all samples and timepoints. This helps co nfirm if certain responses tend to occur together (positive correlation) or are mutually exclusive/inversely related (negative correlation). This section presents how to produce a correlation matrix and interpret biological insight from those correlations.&#x20;
 
 <details>
 

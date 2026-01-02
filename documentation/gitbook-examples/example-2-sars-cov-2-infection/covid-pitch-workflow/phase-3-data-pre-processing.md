@@ -2,7 +2,6 @@
 description: >-
   How to isolate certain part of the data for our predictive model for
   determining early parameters that lead to durable immunity
-hidden: true
 icon: table
 ---
 
